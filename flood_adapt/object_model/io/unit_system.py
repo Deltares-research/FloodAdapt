@@ -31,6 +31,7 @@ __all__ = [
 ]
 
 TUnit = TypeVar("TUnit", bound=enum.Enum)
+TClass = TypeVar("TClass", bound="ValueUnitPair")
 
 
 class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
@@ -71,6 +72,18 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
             raise ValueError(f"Invalid units: {new_units}")
         in_default_units = self.value / self._CONVERSION_FACTORS[self.units]
         return in_default_units * self._CONVERSION_FACTORS[new_units]
+
+    def transform(self: TClass, new_units: TUnit) -> TClass:
+        """Return a new ValueUnitPair instance with the value converted to the new units.
+
+        Args:
+            new_units (str): The new units.
+
+        Returns
+        -------
+            ValueUnitPair: A new ValueUnitPair instance with the value converted to the new units.
+        """
+        return type(self)(value=self.convert(new_units), units=new_units)
 
     @model_validator(mode="before")
     @classmethod
@@ -114,7 +127,7 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __sub__(self, other):
+    def __sub__(self: TClass, other: TClass) -> TClass:
         if not isinstance(other, type(self)):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
@@ -123,7 +136,7 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
             value=self.value - other.convert(self.units), units=self.units
         )
 
-    def __add__(self, other):
+    def __add__(self: TClass, other: TClass) -> TClass:
         if not isinstance(other, type(self)):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
@@ -132,7 +145,7 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
             value=self.value + other.convert(self.units), units=self.units
         )
 
-    def __eq__(self, other):
+    def __eq__(self: TClass, other: TClass) -> bool:
         if not isinstance(other, ValueUnitPair):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
@@ -149,42 +162,42 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
             self.value, other.convert(self.units), rel_tol=1e-2
         )  # 1% relative tolerance for equality. So 1.0 == 1.01 evaluates to True
 
-    def __lt__(self, other):
+    def __lt__(self: TClass, other: TClass) -> bool:
         if not isinstance(other, type(self)):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
         return self.value < other.convert(self.units)
 
-    def __gt__(self, other):
+    def __gt__(self: TClass, other: TClass) -> bool:
         if not isinstance(other, type(self)):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
         return self.value > other.convert(self.units)
 
-    def __ge__(self, other):
+    def __ge__(self: TClass, other: TClass) -> bool:
         if not isinstance(other, type(self)):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
         return (self > other) or (self == other)
 
-    def __le__(self, other):
+    def __le__(self: TClass, other: TClass) -> bool:
         if not isinstance(other, type(self)):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
         return (self < other) or (self == other)
 
-    def __ne__(self, other):
+    def __ne__(self: TClass, other: TClass) -> bool:
         if not isinstance(other, type(self)):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
         return not (self == other)
 
-    def __mul__(self, other):
+    def __mul__(self: TClass, other: int | float) -> TClass:
         if isinstance(other, int) or isinstance(other, float):
             return type(self)(value=self.value * other, units=self.units)
         else:
@@ -192,7 +205,7 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
                 f"Cannot multiply self: {type(self).__name__} with other: {type(other).__name__}. Only int and float are allowed."
             )
 
-    def __div__(self, other):
+    def __div__(self: TClass, other: TClass | int | float) -> TClass | float:
         if isinstance(other, int) or isinstance(other, float):
             return type(self)(value=self.value / other, units=self.units)
         elif isinstance(other, type(self)):
@@ -202,7 +215,7 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
                 f"Cannot divide self: {type(self).__name__} with other: {type(other).__name__}. Only {type(self).__name__}, int and float are allowed."
             )
 
-    def __truediv__(self, other):
+    def __truediv__(self: TClass, other: TClass | int | float) -> TClass | float:
         if isinstance(other, int) or isinstance(other, float):
             return type(self)(value=self.value / other, units=self.units)
         elif isinstance(other, type(self)):

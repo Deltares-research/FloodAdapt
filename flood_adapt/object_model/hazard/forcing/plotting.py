@@ -30,6 +30,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindCSV,
     WindSynthetic,
 )
+from flood_adapt.object_model.hazard.interface.events import Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -197,6 +198,14 @@ def plot_waterlevel(
         logger.error(f"Could not retrieve waterlevel data: {waterlevel} {data}")
         return "", None
 
+    if event.attrs.template == Template.Synthetic:
+        data.index = (
+            data.index - data.index[0]
+        ).total_seconds() / 3600  # Convert to hours
+        x_title = "Hours from start"
+    else:
+        x_title = "Time"
+
     # Plot actual thing
     fig = px.line(data + site.attrs.sfincs.water_level.msl.height.convert(units))
 
@@ -226,12 +235,12 @@ def plot_waterlevel(
         font={"size": 10, "color": "black", "family": "Arial"},
         title_font={"size": 10, "color": "black", "family": "Arial"},
         legend=None,
-        xaxis_title="Time",
+        xaxis_title=x_title,
         yaxis_title=f"Water level [{units.value}]",
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         showlegend=False,
-        xaxis={"range": [event.attrs.time.start_time, event.attrs.time.end_time]},
+        xaxis={"range": [data.index.min(), data.index.max()]},
     )
 
     # Only save to the the event folder if that has been created already.
