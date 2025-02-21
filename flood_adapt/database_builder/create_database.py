@@ -594,6 +594,14 @@ class DatabaseBuilder:
         self.fiat_model = HydroMtFiatModel(root=fiat_path, mode="w+")
         self.fiat_model.read()
 
+        # Make sure only csv objects have geometries
+        for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
+            keep = geoms["Object ID"].isin(
+                self.fiat_model.exposure.exposure_db["Object ID"]
+            )
+            geoms = geoms[keep].reset_index(drop=True)
+            self.fiat_model.exposure.exposure_geoms[i] = geoms
+
         # Read in geometries of buildings
         ind = self.fiat_model.exposure.geom_names.index(self.config.fiat_buildings_name)
         self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
@@ -691,10 +699,9 @@ class DatabaseBuilder:
                     )
                     footprints_found = True
             if not footprints_found:
-                self.logger.error(
-                    "No building footprints are available. These are needed in FloodAdapt."
-                )
-                raise ValueError
+                msg = "No building footprints are available. These are needed in FloodAdapt."
+                self.logger.error(msg)
+                raise ValueError(msg)
         else:
             self.config.building_footprints.file = self._check_path(
                 self.config.building_footprints.file
@@ -813,7 +820,7 @@ class DatabaseBuilder:
                 buildings_joined, _ = spatial_join(
                     self.buildings,
                     region,
-                    "id",
+                    "aggr_id",
                     rename=f"{FiatColumns.aggregation_label}region",
                 )
                 exposure_csv = exposure_csv.merge(
@@ -824,9 +831,9 @@ class DatabaseBuilder:
                     "No aggregation areas were available in the FIAT model. The region file will be used as a mock aggregation area."
                 )
             else:
-                self.logger.error(
-                    "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
-                )
+                msg = "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
+                self.logger.error(msg)
+                raise ValueError(msg)
         else:
             for aggr_0 in self.fiat_model.spatial_joins["aggregation_areas"]:
                 if aggr_0["equity"] is not None:
@@ -1133,12 +1140,11 @@ class DatabaseBuilder:
         if subgrid_sfincs.exists():
             fa_path2 = self.root.joinpath("static", "dem", fn)
         else:
-            self.logger.error(
+            msg = (
                 f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
             )
-            raise ValueError(
-                f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
-            )
+            self.logger.error(msg)
+            raise ValueError(msg)
 
         # Check if tiles already exist in the SFINCS model
         if tiles_sfincs.exists():
@@ -1699,7 +1705,7 @@ class DatabaseBuilder:
                     "Default OSM infometrics and infographics will be created."
                 )
 
-            if hasattr(self.site_attrs["fiat"]["config"], "svi"):
+            if self.site_attrs["fiat"]["config"].svi is not None:
                 svi_folder_name = "with_SVI"
             else:
                 svi_folder_name = "without_SVI"
@@ -1864,6 +1870,9 @@ class DatabaseBuilder:
         # Clip the exposure geometries
         # Filter buildings and roads
         road_inds = gdf[FiatColumns.primary_object_type].str.contains("road")
+        # Ensure road_inds is a boolean Series
+        if not road_inds.dtype == bool:
+            road_inds = road_inds.astype(bool)
         # Clip buildings
         gdf_buildings = gdf[~road_inds]
         gdf_buildings = self._clip_gdf(
