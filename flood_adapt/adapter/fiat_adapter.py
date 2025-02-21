@@ -809,6 +809,7 @@ class FiatAdapter(IImpactAdapter):
             aggregation_area_fn=aggregation_areas,
             attribute_names=attribute_names,
             label_names=label_names,
+            geom_name="new_development_area",
             **kwargs,
         )
 
@@ -1346,7 +1347,7 @@ class FiatAdapter(IImpactAdapter):
             self.outputs["table"].merge(
                 buildings[[FiatColumns.object_id, "geometry"]],
                 on=FiatColumns.object_id,
-                how="left",
+                how="inner",
             )
         )
 
