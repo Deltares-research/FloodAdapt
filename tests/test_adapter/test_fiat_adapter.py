@@ -77,7 +77,7 @@ class TestFiatAdapter:
         exp1 = exposure_scenario.loc[inds1, "Max Potential Damage: structure"]
         inds0 = exposure_template[_FIAT_COLUMNS.primary_object_type] != "road"
         exp0 = exposure_template.loc[
-            inds0, f"{_FIAT_COLUMNS.max_potential_damage}structure"
+            inds0, _FIAT_COLUMNS.max_potential_damage.format(name="structure")
         ]
         eg = test_scenario.impacts.socio_economic_change.attrs.economic_growth
         pg = (
@@ -107,7 +107,7 @@ class TestFiatAdapter:
                 / 100
             )
             * exposure_template.loc[
-                :, f"{_FIAT_COLUMNS.max_potential_damage}structure"
+                :, _FIAT_COLUMNS.max_potential_damage.format(name="structure")
             ].sum()
         )
 
@@ -194,7 +194,9 @@ class TestFiatAdapter:
             2
         ].attrs.property_type
         inds1 = (
-            exposure_template.loc[:, f"{_FIAT_COLUMNS.aggregation_label}{aggr_label}"]
+            exposure_template.loc[
+                :, _FIAT_COLUMNS.aggregation_label.format(name=aggr_label)
+            ]
             == aggr_name
         ) & (exposure_template.loc[:, _FIAT_COLUMNS.primary_object_type] == build_type)
         inds2 = (
@@ -203,7 +205,9 @@ class TestFiatAdapter:
 
         assert all(
             exposure_scenario.loc[inds2, "Damage Function: structure"]
-            != exposure_template.loc[inds1, f"{_FIAT_COLUMNS.damage_function}structure"]
+            != exposure_template.loc[
+                inds1, _FIAT_COLUMNS.damage_function.format(name="structure")
+            ]
         )
 
     def test_raise_datum(self, run_scenario_raise_datum):
@@ -228,7 +232,9 @@ class TestFiatAdapter:
             0
         ].attrs.property_type
         inds1 = (
-            exposure_template.loc[:, f"{_FIAT_COLUMNS.aggregation_label}{aggr_label}"]
+            exposure_template.loc[
+                :, _FIAT_COLUMNS.aggregation_label.format(name=aggr_label)
+            ]
             == aggr_name
         ) & (exposure_template.loc[:, _FIAT_COLUMNS.primary_object_type] == build_type)
         inds2 = (

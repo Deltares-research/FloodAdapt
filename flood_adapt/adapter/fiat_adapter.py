@@ -18,6 +18,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 )
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.footprints import Footprints
+from fiat_toolbox.utils import matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt import unit_system as us
@@ -49,12 +50,15 @@ _IMPACT_COLUMNS = FiatColumns(
     extraction_method="Extraction Method",
     ground_floor_height="Ground Floor Height",
     ground_elevation="Ground Elevation",
-    damage_function="Damage Function: ",
-    max_potential_damage="Max Potential Damage: ",
-    aggregation_label="Aggregation Label: ",
+    damage_function="Damage Function: {name}",
+    max_potential_damage="Max Potential Damage: {name}",
+    aggregation_label="Aggregation Label: {name}",
     inundation_depth="Inundation Depth",
-    damage="Damage: ",
+    inundation_depth_rp="Inundation Depth ({years}Y)",
+    damage="Damage: {name}",
+    damage_rp="Damage: {name} ({years}Y)",
     total_damage="Total Damage",
+    total_damage_rp="Total Damage ({years}Y)",
     risk_ead="Risk (EAD)",
     segment_length="Segment Length",
 )
@@ -429,21 +433,13 @@ class FiatAdapter(IImpactAdapter):
         for col in self.outputs["table"].columns:  # iterate through output columns
             for field in list(self.impact_columns.model_fields):  # check for each field
                 fiat_col = getattr(self.fiat_columns, field)
-                if col.startswith(fiat_col):  # check if column is relevant
-                    if mode == Mode.risk:
-                        if fiat_col in [
-                            self.fiat_columns.inundation_depth,
-                            self.fiat_columns.damage,
-                            self.fiat_columns.total_damage,
-                        ]:
-                            rp = col.split(fiat_col + "_")[-1].split("y")[-0]
-                            rp = int(
-                                float(rp)
-                            )  # TODO for now take integer to avoid issues with metrics but this could be float!
-                    new_col = col.replace(
-                        getattr(self.fiat_columns, field),
-                        getattr(self.impact_columns, field),
-                    )  # replace
+                if matches_pattern(col, fiat_col):
+                    impact_col = getattr(self.impact_columns, field)
+                    new_col = replace_pattern(col, fiat_col, impact_col)
+                    if (
+                        ".0Y" in new_col
+                    ):  # TODO for now quick fix to account for float RP years, while metrics have integers
+                        new_col = new_col.replace(".0Y", "Y")
                     name_translation[col] = new_col  # save mapping
         self.name_mapping = name_translation
 
@@ -711,7 +707,7 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if self.fiat_columns.max_potential_damage in c
+            if matches_pattern(c, self.fiat_columns.max_potential_damage)
         ]
 
         # Get objects that are buildings (using site info)
@@ -758,7 +754,7 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if self.fiat_columns.max_potential_damage in c
+            if matches_pattern(c, self.fiat_columns.max_potential_damage)
         ]
 
         # Get objects that are buildings (using site info)
@@ -838,7 +834,7 @@ class FiatAdapter(IImpactAdapter):
         ]
         attribute_names = [aggr.field_name for aggr in self.config.aggregation]
         label_names = [
-            f"{self.fiat_columns.aggregation_label}{aggr.name}"
+            self.fiat_columns.aggregation_label.format(name=aggr.name)
             for aggr in self.config.aggregation
         ]
         # Use hydromt function
@@ -952,7 +948,7 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if self.fiat_columns.max_potential_damage in c
+            if matches_pattern(c, self.fiat_columns.max_potential_damage)
         ]
 
         # Get objects that are buildings (using site info)
