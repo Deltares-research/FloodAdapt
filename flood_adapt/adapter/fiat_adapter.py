@@ -1018,11 +1018,22 @@ class FiatAdapter(IImpactAdapter):
             raise ValueError(
                 "FIAT model does not have exposure, make sure your model has been initialized."
             )
-        return self._model.exposure.select_objects(
+        gdf_0 = self._model.exposure.select_objects(
             primary_object_type="ALL",
             non_building_names=self.config.non_building_names,
             return_gdf=True,
         )
+        # Rename columns
+        name_translation = {}
+        for col in gdf_0.columns:  # iterate through output columns
+            for field in list(self.impact_columns.model_fields):  # check for each field
+                fiat_col = getattr(self.fiat_columns, field)
+                if matches_pattern(col, fiat_col):
+                    impact_col = getattr(self.impact_columns, field)
+                    new_col = replace_pattern(col, fiat_col, impact_col)
+                    name_translation[col] = new_col  # save mapping
+        gdf = gdf_0.rename(columns=name_translation)
+        return gdf
 
     def get_property_types(self) -> list:
         """
