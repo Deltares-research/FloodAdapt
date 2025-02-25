@@ -147,6 +147,12 @@ class Settings(BaseSettings):
         description="Whether to delete the output of crashed/corrupted runs. Be careful when setting this to False, as it may lead to a broken database that cannot be read in anymore.",
         exclude=True,
     )
+    validate_allowed_forcings: bool = Field(
+        alias="VALIDATE_ALLOWED_FORCINGS",  # environment variable: VALIDATE_ALLOWED_FORCINGS
+        default=True,
+        description="Whether to validate the forcing types and sources against the allowed forcings in the event model.",
+        exclude=True,
+    )
     unit_system: UnitSystem = Field(
         default=UnitSystem(),
         description="The unit system to use for the calculations. Must be 'imperial' or 'metric'.",
@@ -169,16 +175,20 @@ class Settings(BaseSettings):
         return self.database_root / self.database_name
 
     @model_validator(mode="after")
-    def validate_paths(self):
+    def validate_settings(self):
         self._validate_database_path()
         self._validate_system_folder()
         self._validate_fiat_path()
         self._validate_sfincs_path()
+        self._update_environment_variables()
+        return self
 
+    def _update_environment_variables(self):
         environ["DATABASE_ROOT"] = str(self.database_root)
         environ["DATABASE_NAME"] = self.database_name
         environ["SYSTEM_FOLDER"] = str(self.system_folder)
-
+        environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
+        environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
         return self
 
     def _validate_database_path(self):
@@ -286,6 +296,7 @@ class Settings(BaseSettings):
         with open(toml_path, "wb") as f:
             tomli_w.dump(
                 self.model_dump(
+                    by_alias=True,
                     exclude={"sfincs_path", "fiat_path", "database_path"},
                 ),
                 f,

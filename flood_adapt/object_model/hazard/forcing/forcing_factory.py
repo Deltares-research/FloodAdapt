@@ -12,6 +12,7 @@ from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallCSV,
     RainfallMeteo,
+    RainfallNetCDF,
     RainfallSynthetic,
     RainfallTrack,
 )
@@ -25,6 +26,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
     WindCSV,
     WindMeteo,
+    WindNetCDF,
     WindSynthetic,
     WindTrack,
 )
@@ -78,6 +80,7 @@ class ForcingFactory(IForcingFactory):
         ForcingSource.CSV: WindCSV,
         ForcingSource.SYNTHETIC: WindSynthetic,
         ForcingSource.CONSTANT: WindConstant,
+        ForcingSource.NETCDF: WindNetCDF,
     }
 
     RAINFALL: dict[ForcingSource, Type[IForcing]] = {
@@ -86,6 +89,7 @@ class ForcingFactory(IForcingFactory):
         ForcingSource.CSV: RainfallCSV,
         ForcingSource.SYNTHETIC: RainfallSynthetic,
         ForcingSource.CONSTANT: RainfallConstant,
+        ForcingSource.NETCDF: RainfallNetCDF,
     }
 
     DISCHARGE: dict[ForcingSource, Type[IForcing]] = {

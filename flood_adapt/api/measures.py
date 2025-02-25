@@ -105,7 +105,7 @@ def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
         raise ValueError(f"Invalid measure type: {type}")
 
 
-def save_measure(measure: IMeasure) -> None:
+def save_measure(measure: IMeasure, overwrite: bool = False) -> None:
     """Save an event object to the database.
 
     Parameters
@@ -113,13 +113,12 @@ def save_measure(measure: IMeasure) -> None:
     measure : IMeasure
         The measure object to save.
 
-
     Raises
     ------
     ValueError
         If the event object is not valid.
     """
-    Database().measures.save(measure)
+    Database().measures.save(measure, overwrite=overwrite)
 
 
 def edit_measure(measure: IMeasure) -> None:

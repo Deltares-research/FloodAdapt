@@ -13,13 +13,23 @@ class SyntheticEventModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
-        ForcingType.RAINFALL: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
-        ForcingType.WIND: [ForcingSource.CONSTANT, ForcingSource.CSV],
-        ForcingType.WATERLEVEL: [ForcingSource.SYNTHETIC, ForcingSource.CSV],
-        ForcingType.DISCHARGE: [
+        ForcingType.RAINFALL: [
             ForcingSource.CONSTANT,
             ForcingSource.CSV,
             ForcingSource.SYNTHETIC,
+        ],
+        ForcingType.WIND: [
+            ForcingSource.CSV,
+            ForcingSource.CONSTANT,
+        ],
+        ForcingType.WATERLEVEL: [
+            ForcingSource.CSV,
+            ForcingSource.SYNTHETIC,
+        ],
+        ForcingType.DISCHARGE: [
+            ForcingSource.CSV,
+            ForcingSource.SYNTHETIC,
+            ForcingSource.CONSTANT,
         ],
     }
     template: Template = Template.Synthetic

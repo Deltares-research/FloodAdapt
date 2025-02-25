@@ -77,7 +77,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         self.logger.info(
             f"Preparing offshore model to generate waterlevels for `{scenario.attrs.name}`"
         )
-
+        input_dir = self.database.events.input_path / scenario.event.attrs.name
         sim_path = self._get_simulation_path(scenario)
         with SfincsAdapter(model_root=self.template_path) as _offshore_model:
             if _offshore_model.sfincs_completed(scenario):
@@ -98,7 +98,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             physical_projection = scenario.projection.get_physical_projection()
 
             # Create any event specific files
-            event.preprocess(sim_path)
+            event.preprocess(input_dir)
 
             # Edit offshore model
             _offshore_model.set_timing(event.attrs.time)
@@ -108,9 +108,8 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
             # Add spw if applicable
             if isinstance(event, HurricaneEvent):
-                _offshore_model._add_forcing_spw(
-                    sim_path / f"{event.attrs.track_name}.spw"
-                )
+                spw_path = input_dir / f"{event.attrs.track_name}.spw"
+                _offshore_model._add_forcing_spw(spw_path)
 
             # Add wind and if applicable pressure forcing from meteo data
             elif isinstance(event, HistoricalEvent):
