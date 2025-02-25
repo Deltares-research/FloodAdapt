@@ -65,6 +65,10 @@ _IMPACT_COLUMNS = FiatColumns(
     segment_length="Segment Length",
 )
 
+_FIAT_COLUMNS: FiatColumns = get_fiat_columns(
+    fiat_version="0.2.1"
+)  # columns of FIAT # TODO add version from config
+
 
 class FiatAdapter(IImpactAdapter):
     """
@@ -100,9 +104,7 @@ class FiatAdapter(IImpactAdapter):
         self.delete_crashed_runs = delete_crashed_runs
         self._model = FiatModel(root=str(model_root.resolve()), mode="r")
         self._model.read()
-        self.fiat_columns = (
-            get_fiat_columns()
-        )  # columns of FIAT # TODO add version from config
+        self.fiat_columns = _FIAT_COLUMNS
         self.impact_columns = _IMPACT_COLUMNS  # columns of FA impact output
 
     @property
@@ -839,6 +841,7 @@ class FiatAdapter(IImpactAdapter):
             self.fiat_columns.aggregation_label.format(name=aggr.name)
             for aggr in self.config.aggregation
         ]
+        new_dev_geom_name = Path(self.config.new_development_file_name).stem
         # Use hydromt function
         self._model.exposure.setup_new_composite_areas(
             percent_growth=population_growth,
@@ -850,7 +853,7 @@ class FiatAdapter(IImpactAdapter):
             aggregation_area_fn=aggregation_areas,
             attribute_names=attribute_names,
             label_names=label_names,
-            geom_name="new_development_area",
+            geom_name=new_dev_geom_name,
             **kwargs,
         )
 
