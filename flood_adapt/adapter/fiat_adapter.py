@@ -87,6 +87,8 @@ class FiatAdapter(IImpactAdapter):
     _model: FiatModel  # hydroMT-FIAT model
     config: Optional[FiatConfigModel] = None
     exe_path: Optional[os.PathLike] = None
+    fiat_columns: FiatColumns
+    impact_columns: FiatColumns
 
     def __init__(
         self,
