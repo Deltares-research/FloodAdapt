@@ -55,6 +55,8 @@ _IMPACT_COLUMNS = FiatColumns(
     aggregation_label="Aggregation Label: {name}",
     inundation_depth="Inundation Depth",
     inundation_depth_rp="Inundation Depth ({years}Y)",
+    reduction_factor="Reduction Factor",
+    reduction_factor_rp="Reduction Factor ({years}Y)",
     damage="Damage: {name}",
     damage_rp="Damage: {name} ({years}Y)",
     total_damage="Total Damage",
@@ -1177,7 +1179,10 @@ class FiatAdapter(IImpactAdapter):
         # Check if type of metric configuration is available
         for metric_file in metric_config_paths:
             if metric_file.exists():
-                metrics_writer = MetricsFileWriter(metric_file)
+                metrics_writer = MetricsFileWriter(
+                    metric_file,
+                    aggregation_label_fmt=self.impact_columns.aggregation_label,
+                )
 
                 metrics_writer.parse_metrics_to_file(
                     df_results=self.outputs["table"],
