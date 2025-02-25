@@ -65,6 +65,7 @@ _IMPACT_COLUMNS = FiatColumns(
     segment_length="Segment Length",
 )
 
+# Define column naming of FIAT model
 _FIAT_COLUMNS: FiatColumns = get_fiat_columns(
     fiat_version="0.2.1"
 )  # columns of FIAT # TODO add version from config
