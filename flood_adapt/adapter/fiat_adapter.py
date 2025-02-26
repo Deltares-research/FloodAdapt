@@ -18,7 +18,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 )
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.footprints import Footprints
-from fiat_toolbox.utils import matches_pattern, replace_pattern
+from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt import unit_system as us
@@ -113,6 +113,16 @@ class FiatAdapter(IImpactAdapter):
     @property
     def model_root(self):
         return Path(self._model.root)
+
+    @property
+    def damage_types(self):
+        """Get the damage types that are present in the exposure."""
+        types = []
+        for col in self._model.exposure.exposure_db.columns:
+            if matches_pattern(col, self.fiat_columns.damage_function):
+                name = extract_variables(col, self.fiat_columns.damage_function)["name"]
+                types.append(name)
+        return types
 
     def read(self, path: Path) -> None:
         """Read the fiat model from the current model root."""
@@ -850,7 +860,7 @@ class FiatAdapter(IImpactAdapter):
             percent_growth=population_growth,
             geom_file=Path(area_path),
             ground_floor_height=ground_floor_height,
-            damage_types=["structure", "content"],
+            damage_types=self.damage_types,
             vulnerability=self._model.vulnerability,
             ground_elevation=ground_elevation,
             aggregation_area_fn=aggregation_areas,
@@ -1002,7 +1012,7 @@ class FiatAdapter(IImpactAdapter):
         self._model.exposure.truncate_damage_function(
             objectids=objectids,
             floodproof_to=floodproof.attrs.elevation.value,
-            damage_function_types=["structure", "content"],
+            damage_function_types=self.damage_types,
             vulnerability=self._model.vulnerability,
         )
 
