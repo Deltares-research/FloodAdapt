@@ -68,9 +68,7 @@ class TestMeteoHandler:
     def mock_meteogrid_download(self):
         """Mock the download method of MeteoGrid to not do an expensive MeteoGrid.download call, and write a mock netcdf file instead."""
 
-        def side_effect(
-            time_range: tuple[datetime, datetime], parameters: list[str], path: Path
-        ):
+        def side_effect(time_range: tuple[datetime, datetime], path: Path):
             write_mock_nc_file(path, time_range)
 
         with patch(
@@ -105,7 +103,7 @@ class TestMeteoHandler:
         # Arrange
         handler, time = setup_meteo_test
         mock_meteogrid_download.side_effect = (
-            lambda time_range, parameters, path: None
+            lambda time_range, path: None
         )  # Mock download to not write any files
 
         # Act

@@ -1,15 +1,11 @@
-import glob
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 import cht_meteo.cht.meteo as meteo
 import numpy as np
-import pandas as pd
 import xarray as xr
-from cht_meteo.meteo import (
-    MeteoGrid,
-)
+from cht_meteo.cht.meteo.dataset import MeteoDataset
 
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.interface.meteo_handler import IMeteoHandler
@@ -24,76 +20,35 @@ class MeteoHandler(IMeteoHandler):
         self.site: Site = site or Site.load_file(
             Settings().database_path / "static" / "config" / "site.toml"
         )
-
-    def download(self, time: TimeModel):
         # Create GFS dataset
-        gfs_conus = meteo.dataset(
+        self.dataset = meteo.dataset(
             name="gfs_anl_0p50",
             source="gfs_analysis_0p50",
             path=self.dir,
             lon_range=(self.site.attrs.lon - 10, self.site.attrs.lon + 10),
             lat_range=(self.site.attrs.lat - 10, self.site.attrs.lat + 10),
         )
-
         # quick fix for sites near the 0 degree longitude -> shift the meteo download area either east or west of the 0 degree longitude
         # TODO implement a good solution to this in cht_meteo
-        def _shift_grid_to_positive_lon(grid: MeteoGrid):
-            """Shift the grid to positive longitudes if the grid crosses the 0 degree longitude."""
-            if np.prod(grid.lon_range) < 0:
-                if np.abs(grid.lon_range[0]) > np.abs(grid.lon_range[1]):
-                    grid.lon_range = [
-                        grid.lon_range[0] - grid.lon_range[1] - 1,
-                        grid.lon_range[1] - grid.lon_range[1] - 1,
-                    ]
-                else:
-                    grid.lon_range = [
-                        grid.lon_range[0] - grid.lon_range[0] + 1,
-                        grid.lon_range[1] - grid.lon_range[0] + 1,
-                    ]
-            return grid.lon_range
+        self.dataset.lon_range = self._shift_grid_to_positive_lon(self.dataset)
 
-        gfs_conus.lon_range = _shift_grid_to_positive_lon(gfs_conus)
-
+    def download(self, time: TimeModel):
         # Download and collect data
-        t0 = time.start_time
-        t1 = time.end_time
-        if not isinstance(t0, datetime):
-            t0 = datetime.strptime(t0, "%Y%m%d %H%M%S")
-        if not isinstance(t1, datetime):
-            t1 = datetime.strptime(t1, "%Y%m%d %H%M%S")
+        time_range = self._get_time_range(time)
 
-        time_range = (t0, t1)
-
-        gfs_conus.download(time_range=time_range)
+        self.dataset.download(time_range=time_range)
 
     def read(self, time: TimeModel) -> xr.Dataset:
-        self.download(time)
+        time_range = self._get_time_range(time)
+        if not self.dataset:
+            self.download(time)
+        ds = self.dataset.collect(time_range=time_range)
 
-        # Create an empty list to hold the datasets
-        datasets = []
-        nc_files = sorted(glob.glob(str(self.dir.joinpath("*.nc"))))
-
-        if not nc_files:
+        if not ds:
             raise FileNotFoundError(
                 f"No meteo files found in meteo directory {self.dir}"
             )
 
-        # Loop over each file and create a new dataset with a time coordinate
-        for filename in nc_files:
-            # Open the file as an xarray dataset
-            with xr.open_dataset(filename) as ds:
-                # Extract the timestring from the filename and convert to pandas datetime format
-                time_str = filename.split(".")[-2]
-                _time = pd.to_datetime(time_str, format="%Y%m%d_%H%M")
-
-                # Add the time coordinate to the dataset
-                ds["time"] = _time
-
-                # Append the dataset to the list
-                datasets.append(ds)
-
-        # Concatenate the datasets along the new time coordinate
-        ds = xr.concat(datasets, dim="time")
         ds.raster.set_crs(4326)
 
         # Rename the variables to match what hydromt-sfincs expects
@@ -111,3 +66,30 @@ class MeteoHandler(IMeteoHandler):
             ds["lon"] = ds["lon"] - 360
 
         return ds
+
+    @staticmethod
+    def _get_time_range(time: TimeModel) -> tuple:
+        t0 = time.start_time
+        t1 = time.end_time
+        if not isinstance(t0, datetime):
+            t0 = datetime.strptime(t0, "%Y%m%d %H%M%S")
+        if not isinstance(t1, datetime):
+            t1 = datetime.strptime(t1, "%Y%m%d %H%M%S")
+        time_range = (t0, t1)
+        return time_range
+
+    @staticmethod
+    def _shift_grid_to_positive_lon(grid: MeteoDataset):
+        """Shift the grid to positive longitudes if the grid crosses the 0 degree longitude."""
+        if np.prod(grid.lon_range) < 0:
+            if np.abs(grid.lon_range[0]) > np.abs(grid.lon_range[1]):
+                grid.lon_range = [
+                    grid.lon_range[0] - grid.lon_range[1] - 1,
+                    grid.lon_range[1] - grid.lon_range[1] - 1,
+                ]
+            else:
+                grid.lon_range = [
+                    grid.lon_range[0] - grid.lon_range[0] + 1,
+                    grid.lon_range[1] - grid.lon_range[0] + 1,
+                ]
+        return grid.lon_range
