@@ -77,7 +77,7 @@ class FiatConfigModel(BaseModel):
     damage_unit: str = "$"
     building_footprints: Optional[str] = None
     roads_file_name: Optional[str] = None
-    new_development_file_name: Optional[str] = None
+    new_development_file_name: Optional[str] = "new_development_area.gpkg"
     save_simulation: Optional[bool] = False
     svi: Optional[SVIModel] = None
     infographics: Optional[bool] = False
