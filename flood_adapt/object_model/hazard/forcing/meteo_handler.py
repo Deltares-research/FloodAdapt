@@ -34,17 +34,19 @@ class MeteoHandler(IMeteoHandler):
 
     def download(self, time: TimeModel):
         # Download and collect data
-        time_range = self._get_time_range(time)
+        time_range = self.get_time_range(time)
 
         self.dataset.download(time_range=time_range)
 
     def read(self, time: TimeModel) -> xr.Dataset:
-        time_range = self._get_time_range(time)
-        if not self.dataset:
-            self.download(time)
+        time_range = self.get_time_range(time)
+
         ds = self.dataset.collect(time_range=time_range)
 
-        if not ds:
+        if ds is None:
+            self.download(time_range)
+
+        if ds is None:
             raise FileNotFoundError(
                 f"No meteo files found in meteo directory {self.dir}"
             )
@@ -68,7 +70,7 @@ class MeteoHandler(IMeteoHandler):
         return ds
 
     @staticmethod
-    def _get_time_range(time: TimeModel) -> tuple:
+    def get_time_range(time: TimeModel) -> tuple:
         t0 = time.start_time
         t1 = time.end_time
         if not isinstance(t0, datetime):
