@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from unittest.mock import patch
 
@@ -11,9 +11,8 @@ from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
 from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
 
 
-def write_mock_nc_file(
-    meteo_dir: Path, time_range: tuple[datetime, datetime]
-) -> xr.Dataset:
+def write_mock_nc_file(meteo_dir: Path, time: TimeModel) -> xr.Dataset:
+    time_range = MeteoHandler.get_time_range(time)
     METEO_DATETIME_FORMAT = "%Y%m%d_%H%M"
     duration = time_range[1] - time_range[0]
     intervals = int(duration.total_seconds() // timedelta(hours=3).total_seconds())
@@ -64,19 +63,6 @@ class TestMeteoHandler:
 
         yield handler, time
 
-    @pytest.fixture
-    def mock_meteogrid_download(self):
-        """Mock the download method of MeteoGrid to not do an expensive MeteoGrid.download call, and write a mock netcdf file instead."""
-
-        def side_effect(time_range: tuple[datetime, datetime], path: Path):
-            write_mock_nc_file(path, time_range)
-
-        with patch(
-            "flood_adapt.object_model.hazard.forcing.meteo_handler.MeteoGrid.download",
-            side_effect=side_effect,
-        ) as mock_download:
-            yield mock_download
-
     def test_download_meteo_data(
         self, setup_meteo_test: tuple[MeteoHandler, TimeModel]
     ):
@@ -98,64 +84,75 @@ class TestMeteoHandler:
                     assert var in ds, f"`{var}` not found in dataset"
 
     def test_read_meteo_no_nc_files_raises_filenotfound(
-        self, mock_meteogrid_download, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+        self, setup_meteo_test: tuple[MeteoHandler, TimeModel]
     ):
         # Arrange
         handler, time = setup_meteo_test
-        mock_meteogrid_download.side_effect = (
-            lambda time_range, path: None
-        )  # Mock download to not write any files
 
-        # Act
-        with pytest.raises(FileNotFoundError) as excinfo:
-            handler.read(time)
+        # patch MeteoHandler download to not download files
+        with patch(
+            "flood_adapt.object_model.hazard.forcing.meteo_handler.MeteoHandler.download",
+        ):
+            # Act
+            with pytest.raises(FileNotFoundError) as excinfo:
+                handler.read(time)
 
-        assert f"No meteo files found in meteo directory {handler.dir}" in str(
-            excinfo.value
-        )
+            assert f"No meteo files found in meteo directory {handler.dir}" in str(
+                excinfo.value
+            )
 
     def test_read_meteo_1_nc_file(
-        self, mock_meteogrid_download, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+        self, setup_meteo_test: tuple[MeteoHandler, TimeModel]
     ):
         # Arrange
         handler, time = setup_meteo_test
 
-        # Act
-        result = handler.read(time)
+        # patch MeteoHandler
+        with patch(
+            "flood_adapt.object_model.hazard.forcing.meteo_handler.MeteoHandler.download",
+        ) as mock_download:
+            mock_download.side_effect = write_mock_nc_file(handler.dir, time)
+            # Act
+            result = handler.read(time)
 
-        # Assert
-        assert isinstance(result, xr.Dataset)
-        assert (
-            len(os.listdir(handler.dir)) == 1
-        ), "Expected 1 NetCDF file in the directory"
+            # Assert
+            assert isinstance(result, xr.Dataset)
+            assert (
+                len(os.listdir(handler.dir)) == 1
+            ), "Expected 1 NetCDF file in the directory"
 
-        for var in self.VARIABLES_RETURNED:
-            assert var in result, f"Expected `{var}` in databaset, but not found"
+            for var in self.VARIABLES_RETURNED:
+                assert var in result, f"Expected `{var}` in databaset, but not found"
 
-        assert (
-            result["lon"].min() > -180 and result["lon"].max() < 180
-        ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"
+            assert (
+                result["lon"].min() > -180 and result["lon"].max() < 180
+            ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"
 
     def test_read_meteo_multiple_nc_files(
-        self, mock_meteogrid_download, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+        self, setup_meteo_test: tuple[MeteoHandler, TimeModel]
     ):
         # Arrange
         handler, time = setup_meteo_test
         time.start_time = REFERENCE_TIME
         time.end_time = REFERENCE_TIME + timedelta(hours=12)
 
-        # Act
-        result = handler.read(time)
+        # patch MeteoHandler
+        with patch(
+            "flood_adapt.object_model.hazard.forcing.meteo_handler.MeteoHandler.download",
+        ) as mock_download:
+            mock_download.side_effect = write_mock_nc_file(handler.dir, time)
+            # Act
+            result = handler.read(time)
 
-        # Assert
-        assert isinstance(result, xr.Dataset)
-        assert (
-            len(os.listdir(handler.dir)) > 1
-        ), "Expected multiple NetCDF files in the directory"
+            # Assert
+            assert isinstance(result, xr.Dataset)
+            assert (
+                len(os.listdir(handler.dir)) > 1
+            ), "Expected multiple NetCDF files in the directory"
 
-        for var in self.VARIABLES_RETURNED:
-            assert var in result, f"Expected `{var}` in databaset, but not found"
+            for var in self.VARIABLES_RETURNED:
+                assert var in result, f"Expected `{var}` in databaset, but not found"
 
-        assert (
-            result["lon"].min() > -180 and result["lon"].max() < 180
-        ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"
+            assert (
+                result["lon"].min() > -180 and result["lon"].max() < 180
+            ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"
