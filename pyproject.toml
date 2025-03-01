@@ -30,7 +30,7 @@ dependencies = [
     "cht-observations",
     "cht-tide",
     "dask<2024.7.0",  # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
-    "fiat-toolbox==0.1.15",
+    "fiat-toolbox==0.1.16",
     "fiona",
     "geojson",
     "geopandas",
