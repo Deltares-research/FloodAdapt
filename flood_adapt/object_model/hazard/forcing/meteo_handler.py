@@ -2,10 +2,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-import cht_meteo.cht.meteo as meteo
+import cht_meteo
 import numpy as np
 import xarray as xr
-from cht_meteo.cht.meteo.dataset import MeteoDataset
+from cht_meteo.dataset import MeteoDataset
 
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.interface.meteo_handler import IMeteoHandler
@@ -21,7 +21,7 @@ class MeteoHandler(IMeteoHandler):
             Settings().database_path / "static" / "config" / "site.toml"
         )
         # Create GFS dataset
-        self.dataset = meteo.dataset(
+        self.dataset = cht_meteo.dataset(
             name="gfs_anl_0p50",
             source="gfs_analysis_0p50",
             path=self.dir,
