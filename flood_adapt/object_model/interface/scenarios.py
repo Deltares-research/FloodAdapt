@@ -20,20 +20,12 @@ class IScenario(IObject[ScenarioModel]):
     dir_name = ObjectDir.scenario
     display_name = "Scenario"
 
-    @abstractmethod
-    def run(self) -> None: ...
+    event: IEvent
+    projection: IProjection
+    strategy: IStrategy
 
     @abstractmethod
-    def equal_hazard_components(self, other: "IScenario") -> bool: ...
+    def load_objects(self, database) -> None: ...
 
-    @property
     @abstractmethod
-    def event(self) -> IEvent: ...
-
-    @property
-    @abstractmethod
-    def projection(self) -> IProjection: ...
-
-    @property
-    @abstractmethod
-    def strategy(self) -> IStrategy: ...
+    def equal_hazard_components(self, other: "IScenario", database) -> bool: ...

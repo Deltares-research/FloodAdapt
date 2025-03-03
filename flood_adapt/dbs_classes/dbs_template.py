@@ -3,7 +3,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Type, TypeVar
 
-from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.object_model.interface.object_model import IObject
 
@@ -13,7 +12,7 @@ T_OBJECT = TypeVar("T_OBJECT", bound=IObject)
 class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
     _object_class: Type[T_OBJECT]
 
-    def __init__(self, database: IDatabase):
+    def __init__(self, database):
         """Initialize any necessary attributes."""
         self._database = database
         self.input_path = database.input_path / self._object_class.dir_name.value

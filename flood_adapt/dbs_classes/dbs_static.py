@@ -7,8 +7,7 @@ from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
-from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.dbs_classes.interface.static import IDbsStatic
+from flood_adapt.dbs_classes.interface.database import IDatabase, IDbsStatic
 from flood_adapt.misc.config import Settings
 
 
@@ -217,7 +216,11 @@ class DbsStatic(IDbsStatic):
             / "templates"
             / self._database.site.attrs.sfincs.config.overland_model
         )
-        with SfincsAdapter(model_root=overland_path) as overland_model:
+        with SfincsAdapter(
+            model_root=overland_path,
+            settings=self._database.site.attrs.sfincs,
+            unit_system=self._database.site.attrs.gui.units,
+        ) as overland_model:
             return overland_model
 
     def get_offshore_sfincs_model(self) -> SfincsAdapter:
@@ -230,7 +233,11 @@ class DbsStatic(IDbsStatic):
             / "templates"
             / self._database.site.attrs.sfincs.config.offshore_model
         )
-        with SfincsAdapter(model_root=offshore_path) as offshore_model:
+        with SfincsAdapter(
+            model_root=offshore_path,
+            settings=self._database.site.attrs.sfincs,
+            unit_system=self._database.site.attrs.gui.units,
+        ) as offshore_model:
             return offshore_model
 
     def get_fiat_model(self) -> FiatAdapter:

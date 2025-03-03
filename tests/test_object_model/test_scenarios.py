@@ -5,6 +5,7 @@ import pytest
 
 from flood_adapt.adapter.impacts_integrator import Impacts
 from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
@@ -43,7 +44,7 @@ def test_init_valid_input(test_db, test_scenarios: dict[str, Scenario]):
     assert isinstance(test_scenario.impacts, Impacts)
     assert isinstance(test_scenario.impacts.socio_economic_change, SocioEconomicChange)
     assert isinstance(test_scenario.impacts.impact_strategy, ImpactStrategy)
-    assert isinstance(test_scenario.impacts.hazard, FloodMap)
+    assert isinstance(test_scenario.impacts.flood_map, FloodMap)
 
     assert isinstance(test_scenario.impacts.hazard.hazard_strategy, HazardStrategy)
     assert isinstance(
@@ -53,20 +54,18 @@ def test_init_valid_input(test_db, test_scenarios: dict[str, Scenario]):
 
 class Test_scenario_run:
     @pytest.fixture(scope="class")
-    def test_scenario_before_after_run(self, test_db_class: IDatabase):
+    def test_scenario_before_after_run(self, test_fa_class: FloodAdapt):
         run_name = "all_projections_extreme12ft_strategy_comb"
         not_run_name = f"{run_name}_NOT_RUN"
 
-        test_db_class.scenarios.copy(
+        test_fa_class.database.scenarios.copy(
             old_name=run_name,
             new_name=not_run_name,
             new_description="temp_description",
         )
+        test_fa_class.run_scenario(run_name)
 
-        to_run = test_db_class.scenarios.get(run_name)
-        to_run.run()
-
-        yield test_db_class, run_name, not_run_name
+        yield test_fa_class, run_name, not_run_name
 
     def test_run_change_has_run(
         self, test_scenario_before_after_run: tuple[IDatabase, str, str]

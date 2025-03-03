@@ -1,15 +1,14 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from pathlib import Path
 
-from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.scenarios import IScenario
 
 
-class IAdapter(DatabaseUser):
+class IAdapter(ABC):
     """Adapter interface for all models run in FloodAdapt."""
 
     @abstractmethod
-    def has_run(self, scenario: IScenario) -> bool:
+    def has_run(self, scenario: IScenario, database) -> bool:
         """Return True if the model has been run."""
         pass
 
@@ -64,7 +63,7 @@ class IAdapter(DatabaseUser):
         pass
 
     @abstractmethod
-    def run(self, scenario: IScenario):
+    def run(self, scenario: IScenario, database, **kwargs):
         """Perform the whole workflow (preprocess, execute and postprocess) of running the model."""
         pass
 

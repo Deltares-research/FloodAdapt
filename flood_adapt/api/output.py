@@ -142,17 +142,18 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
     str
         The HTML strings of the water level timeseries
     """
+    db = Database()
     # Get the impacts objects from the scenario
-    hazard = Database().scenarios.get(name).impacts.hazard
+    floodmap = db.scenarios.get_floodmap(name)
 
     # Check if the scenario has run
-    if not hazard.has_run:
+    if floodmap is None:
         raise ValueError(
             f"Scenario {name} has not been run. Please run the scenario first."
         )
 
-    output_path = Database().scenarios.output_path.joinpath(hazard.name)
-    gdf = Database().static.get_obs_points()
+    output_path = db.scenarios.output_path.joinpath(floodmap.name)
+    gdf = db.static.get_obs_points()
     gdf["html"] = [
         str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
         for station in gdf.name
@@ -176,21 +177,21 @@ def get_infographic(name: str) -> str:
     """
     # Get the impacts objects from the scenario
     database = Database()
-    impact = database.scenarios.get(name).impacts
+    flood_map = database.scenarios.get_floodmap(name)
 
     # Check if the scenario has run
-    if not impact.has_run_check():
+    if flood_map is None:
         raise ValueError(
             f"Scenario {name} has not been run. Please run the scenario first."
         )
 
     config_path = database.static_path.joinpath("templates", "infographics")
-    output_path = database.scenarios.output_path.joinpath(impact.name)
-    metrics_outputs_path = output_path.joinpath(f"Infometrics_{impact.name}.csv")
+    output_path = database.scenarios.output_path.joinpath(flood_map.name)
+    metrics_outputs_path = output_path.joinpath(f"Infometrics_{flood_map.name}.csv")
 
     infographic_path = InforgraphicFactory.create_infographic_file_writer(
-        infographic_mode=impact.hazard.mode,
-        scenario_name=impact.name,
+        infographic_mode=flood_map.mode,
+        scenario_name=flood_map.name,
         metrics_full_path=metrics_outputs_path,
         config_base_path=config_path,
         output_base_path=output_path,

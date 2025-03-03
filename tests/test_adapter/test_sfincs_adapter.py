@@ -15,6 +15,7 @@ import xarray as xr
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
     SyntheticEventModel,
@@ -1152,7 +1153,7 @@ class TestPostProcessing:
     @pytest.fixture(scope="class")
     def adapter_preprocess_process_scenario_class(
         self,
-        test_db_class: IDatabase,
+        test_fa_class: FloodAdapt,
         test_event_all_synthetic_class,
     ) -> Tuple[SfincsAdapter, Scenario]:
         """
@@ -1174,7 +1175,7 @@ class TestPostProcessing:
             end_time=start_time + duration,
         )
         event.attrs.time = time
-        test_db_class.events.save(event)
+        test_fa_class.database.events.save(event)
         scn = Scenario(
             ScenarioModel(
                 name="synthetic",
@@ -1183,13 +1184,17 @@ class TestPostProcessing:
                 strategy="no_measures",
             )
         )
-        test_db_class.scenarios.save(scn)
+        test_fa_class.database.scenarios.save(scn)
 
         # Prepare adapter
         overland_path = (
-            test_db_class.static.get_overland_sfincs_model().get_model_root()
+            test_fa_class.database.static.get_overland_sfincs_model().get_model_root()
         )
-        with SfincsAdapter(model_root=overland_path) as adapter:
+        with SfincsAdapter(
+            model_root=overland_path,
+            settings=test_fa_class.database.site.attrs.sfincs,
+            unit_system=test_fa_class.database.site.attrs.gui.units,
+        ) as adapter:
             adapter.ensure_no_existing_forcings()
 
             adapter.preprocess(scn)

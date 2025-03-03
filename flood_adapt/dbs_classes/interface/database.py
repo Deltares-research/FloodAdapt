@@ -6,13 +6,56 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
+from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
+from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
-from flood_adapt.dbs_classes.interface.static import IDbsStatic
 from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.config.site import Site
+
+
+class IDbsStatic(ABC):
+    @abstractmethod
+    def get_aggregation_areas(self) -> dict: ...
+
+    @abstractmethod
+    def get_model_boundary(self) -> gpd.GeoDataFrame: ...
+
+    @abstractmethod
+    def get_model_grid(self): ...
+
+    @abstractmethod
+    def get_obs_points(self) -> gpd.GeoDataFrame: ...
+
+    @abstractmethod
+    def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame: ...
+
+    @abstractmethod
+    def get_slr_scn_names(self) -> list: ...
+
+    @abstractmethod
+    def get_green_infra_table(self, measure_type: str) -> pd.DataFrame: ...
+
+    @abstractmethod
+    def get_buildings(self) -> gpd.GeoDataFrame: ...
+
+    @abstractmethod
+    def get_property_types(self) -> list: ...
+
+    @abstractmethod
+    def get_overland_sfincs_model(self) -> IHazardAdapter: ...
+
+    @abstractmethod
+    def get_offshore_sfincs_model(self) -> IHazardAdapter: ...
+
+    @abstractmethod
+    def get_fiat_model(self) -> IImpactAdapter: ...
+
+    @abstractmethod
+    def get_cyclone_track_database(self) -> CycloneTrackDatabase: ...
 
 
 class IDatabase(ABC):

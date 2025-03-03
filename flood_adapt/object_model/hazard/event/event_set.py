@@ -9,7 +9,6 @@ from flood_adapt.object_model.hazard.event.template_event import (
     EventModel,
 )
 from flood_adapt.object_model.hazard.interface.events import IEvent, Mode
-from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 
 
@@ -19,7 +18,7 @@ class EventSetModel(IObjectModel):
     mode: Mode = Mode.risk
 
     sub_events: List[EventModel]
-    frequency: List[Annotated[float, Field(strict=True, ge=0, le=1)]]
+    frequency: List[Annotated[float, Field(strict=True)]]  # ge=0, le=1
 
     @model_validator(mode="before")
     def load_sub_events(self):
@@ -45,7 +44,7 @@ class EventSetModel(IObjectModel):
         return self
 
 
-class EventSet(IObject[EventSetModel], DatabaseUser):
+class EventSet(IObject[EventSetModel]):
     _attrs_type = EventSetModel
 
     events: List[IEvent]

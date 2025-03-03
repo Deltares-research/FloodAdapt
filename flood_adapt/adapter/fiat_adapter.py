@@ -22,12 +22,13 @@ from hydromt_fiat.fiat import FiatModel
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.floodmap import FloodMap, FloodMapType
+from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.interface.events import Mode
 from flood_adapt.object_model.impact.measure.buyout import Buyout
 from flood_adapt.object_model.impact.measure.elevate import Elevate
 from flood_adapt.object_model.impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.interface.config.fiat import FiatConfigModel
+from flood_adapt.object_model.interface.config.sfincs import FloodmapType
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
     MeasureType,
@@ -132,7 +133,7 @@ class FiatAdapter(IImpactAdapter):
         self.close_files()
         return False
 
-    def has_run(self, scenario: IScenario) -> bool:
+    def has_run(self, scenario: IScenario, database) -> bool:
         # TODO this should include a check for all output files , and then maybe save them as output paths and types
         """
         Check if the impact results file for the given scenario exists.
@@ -147,9 +148,11 @@ class FiatAdapter(IImpactAdapter):
         bool
             True if the FIAT results file exists, False otherwise.
         """
-        impacts_output_path = scenario.impacts.impacts_path
-        fiat_results_path = impacts_output_path.joinpath(
-            f"Impacts_detailed_{scenario.attrs.name}.csv"
+        fiat_results_path = (
+            database.scenarios.output_path
+            / scenario.attrs.name
+            / "Impacts"
+            / f"Impacts_detailed_{scenario.attrs.name}.csv"
         )
         return fiat_results_path.exists()
 
@@ -202,6 +205,7 @@ class FiatAdapter(IImpactAdapter):
             None
         """
         self.logger.info("Pre-processing Delft-FIAT model")
+
         # Projection
         self.add_projection(scenario.projection)
 
@@ -210,22 +214,20 @@ class FiatAdapter(IImpactAdapter):
             self.add_measure(measure)
 
         # Hazard
-        floodmap = FloodMap(scenario.attrs.name)
-        var = "risk_maps" if floodmap.mode == Mode.risk else "zsmax"
-        is_risk = floodmap.mode == Mode.risk
+        var = "risk_maps" if self.floodmap.mode == Mode.risk else "zsmax"
+        is_risk = self.floodmap.mode == Mode.risk
         self.set_hazard(
-            map_fn=floodmap.path,
-            map_type=floodmap.type,
+            map_fn=self.floodmap.path,
+            map_type=self.floodmap.type,
             var=var,
             is_risk=is_risk,
             units=us.UnitTypesLength.meters,
         )
 
         # Save any changes made to disk as well
-        output_path = scenario.impacts.impacts_path / "fiat_model"
-        self.write(path_out=output_path)
+        self.write(path_out=self.output_path)
 
-    def run(self, scenario) -> None:
+    def run(self, scenario: IScenario, database, **kwargs) -> None:
         """
         Execute the full process for a given scenario, including preprocessing, executing the simulation, and postprocessing steps.
 
@@ -236,9 +238,29 @@ class FiatAdapter(IImpactAdapter):
         -------
             None
         """
-        self.preprocess(scenario)
-        self.execute(scenario.impacts.impacts_path / "fiat_model")
-        self.postprocess(scenario)
+        self.database = database
+        self.output_path: Path = (
+            database.scenarios.output_path
+            / scenario.attrs.name
+            / "Impacts"
+            / "fiat_model"
+        )
+        self.floodmap: FloodMap = database.scenarios.get_floodmap(scenario.attrs.name)
+        self.dem = (
+            self.database.static_path
+            / "dem"
+            / self.database.site.attrs.sfincs.dem.filename
+        )
+
+        try:
+            self.preprocess(scenario)
+            self.execute(path=self.output_path)
+            self.postprocess(scenario)
+        finally:
+            del self.database
+            del self.output_path
+            del self.floodmap
+            del self.dem
 
     def execute(
         self,
@@ -289,7 +311,7 @@ class FiatAdapter(IImpactAdapter):
             with FloodAdaptLogging.to_file(file_path=fiat_log):
                 self.logger.info(f"Running FIAT in {path}")
                 process = subprocess.run(
-                    f'"{exe_path.as_posix()}" run settings.toml',
+                    f'"{Path(exe_path).as_posix()}" run settings.toml',
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
@@ -406,14 +428,14 @@ class FiatAdapter(IImpactAdapter):
         mode = scenario.event.attrs.mode
 
         # Define scenario output path
-        scenario_output_path = scenario.impacts.results_path
-        impacts_output_path = scenario.impacts.impacts_path
+        scenario_output_path = self.output_path
+        impacts_output_path = self.output_path.parent
 
         # Add exceedance probabilities if needed (only for risk)
         if mode == Mode.risk:
             # Get config path
             # TODO check where this configs should be read from
-            config_path = scenario.database.static_path.joinpath(
+            config_path = self.database.static_path.joinpath(
                 "templates", "infometrics", "metrics_additional_risk_configs.toml"
             )
             with open(config_path, mode="rb") as fp:
@@ -443,7 +465,7 @@ class FiatAdapter(IImpactAdapter):
             metric_types += ["infographic"]
 
         metric_config_paths = [
-            scenario.database.static_path.joinpath(
+            self.database.static_path.joinpath(
                 "templates", "infometrics", f"{name}_metrics_config{ext}.toml"
             )
             for name in metric_types
@@ -462,7 +484,7 @@ class FiatAdapter(IImpactAdapter):
 
         # Create the infographic files
         if self.config.infographics:
-            config_base_path = scenario.database.static_path.joinpath(
+            config_base_path = self.database.static_path.joinpath(
                 "templates", "Infographics"
             )
             self.create_infographics(
@@ -581,19 +603,13 @@ class FiatAdapter(IImpactAdapter):
                 path=socio_economic_change.attrs.new_development_shapefile,
             )
 
-            # Get DEM location for assigning elevation to new areas
-            dem = (
-                self.database.static_path
-                / "dem"
-                / self.database.site.attrs.sfincs.dem.filename
-            )
             # Call adapter method to add the new areas
             self.apply_population_growth_new(
                 population_growth=socio_economic_change.attrs.population_growth_new,
                 ground_floor_height=socio_economic_change.attrs.new_development_elevation.value,
                 elevation_type=socio_economic_change.attrs.new_development_elevation.type,
                 area_path=area_path,
-                ground_elevation=dem,
+                ground_elevation=self.dem,
             )
 
         # Then apply population growth to existing objects
@@ -606,10 +622,10 @@ class FiatAdapter(IImpactAdapter):
     def set_hazard(
         self,
         map_fn: Union[os.PathLike, list[os.PathLike]],
-        map_type: FloodMapType,
+        map_type: FloodmapType,
         var: str,
         is_risk: bool = False,
-        units: str = us.UnitTypesLength.meters,
+        units: us.UnitTypesLength = us.UnitTypesLength.meters,
     ) -> None:
         """
         Set the hazard map and type for the FIAT model.
@@ -624,7 +640,7 @@ class FiatAdapter(IImpactAdapter):
             The variable name in the hazard map.
         is_risk : bool, optional
             Flag indicating if the map is a risk output. Defaults to False.
-        units : str, optional
+        units : us.UnitTypesLength, optional
             The units of the hazard map. Defaults to us.UnitTypesLength.meters.
         """
         self.logger.info(f"Setting hazard to the {map_type} map {map_fn}")

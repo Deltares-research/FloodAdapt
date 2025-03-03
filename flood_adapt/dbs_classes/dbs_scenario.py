@@ -1,12 +1,20 @@
 import shutil
-from typing import Any
+from typing import Any, Optional
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
+from flood_adapt.object_model.hazard.floodmap import FloodMap
+from flood_adapt.object_model.hazard.interface.events import Mode
+from flood_adapt.object_model.interface.config.sfincs import FloodmapType
 from flood_adapt.object_model.scenario import Scenario
 
 
 class DbsScenario(DbsTemplate[Scenario]):
     _object_class = Scenario
+
+    def get(self, name: str) -> Scenario:
+        scn = super().get(name)
+        scn.load_objects(self._database)
+        return scn
 
     def list_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the events that currently exist in the database.
@@ -17,11 +25,11 @@ class DbsScenario(DbsTemplate[Scenario]):
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         scenarios = super().list_objects()
-        objects = scenarios["objects"]
+        objects: list[Scenario] = scenarios["objects"]
         scenarios["Projection"] = [obj.attrs.projection for obj in objects]
         scenarios["Event"] = [obj.attrs.event for obj in objects]
         scenarios["Strategy"] = [obj.attrs.strategy for obj in objects]
-        scenarios["finished"] = [obj.has_run_check() for obj in objects]
+        scenarios["finished"] = [obj.has_run_check(self._database) for obj in objects]
 
         return scenarios
 
@@ -98,3 +106,50 @@ class DbsScenario(DbsTemplate[Scenario]):
         ]
 
         return used_in_benefit
+
+    def get_floodmap(self, scenario_name: str) -> Optional[FloodMap]:
+        """
+        Return the flood map for the given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            The name of the scenario.
+
+        Returns
+        -------
+        Optional[FloodMap]
+            The flood map for the given scenario or None if it does not exist.
+        """
+        scn = self.get(scenario_name)
+
+        base_dir = self.output_path / scn.attrs.name / "Flooding"
+
+        # TODO check naming of files
+        if scn.event.attrs.mode == Mode.single_event:
+            if (base_dir / "max_water_level_map.nc").exists():
+                type = FloodmapType.water_level
+                path = [base_dir / "max_water_level_map.nc"]
+            elif (base_dir / f"FloodMap_{scenario_name}.tif").exists():
+                type = FloodmapType.water_depth
+                path = [base_dir / f"FloodMap_{scenario_name}.tif"]
+            else:
+                return None
+
+        elif scn.event.attrs.mode == Mode.risk:
+            if path := list(base_dir.glob("RP_*_maps.nc")):
+                type = FloodmapType.water_level
+            elif path := list(base_dir.glob("RP_*_maps.tif")):
+                type = FloodmapType.water_depth
+            else:
+                return None
+
+        else:
+            raise ValueError(f"Invalid mode {scn.event.attrs.mode}")
+
+        return FloodMap(
+            type=type,
+            name=scenario_name,
+            path=path,
+            mode=scn.event.attrs.mode,
+        )

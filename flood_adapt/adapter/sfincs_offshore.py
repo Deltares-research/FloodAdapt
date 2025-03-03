@@ -5,6 +5,7 @@ import pandas as pd
 
 from flood_adapt.adapter.interface.offshore import IOffshoreSfincsHandler
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
@@ -15,7 +16,6 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWind,
 )
-from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
@@ -24,11 +24,12 @@ from flood_adapt.object_model.interface.path_builder import (
 from flood_adapt.object_model.interface.scenarios import IScenario
 
 
-class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
+class OffshoreSfincsHandler(IOffshoreSfincsHandler):
     logger = FloodAdaptLogging.getLogger("OffshoreSfincsAdapter")
     template_path: Path
 
-    def __init__(self) -> None:
+    def __init__(self, database: IDatabase) -> None:
+        self.database = database
         self.template_path = (
             self.database.static.get_offshore_sfincs_model().get_model_root()
         )

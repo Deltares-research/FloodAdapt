@@ -26,10 +26,6 @@ from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.config.site import Site
-from flood_adapt.object_model.interface.path_builder import (
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
@@ -110,11 +106,10 @@ class Database(IDatabase):
         self.database_name = database_name
 
         # Set the paths
-
         self.base_path = Path(database_path) / database_name
-        self.input_path = db_path(TopLevelDir.input)
-        self.static_path = db_path(TopLevelDir.static)
-        self.output_path = db_path(TopLevelDir.output)
+        self.input_path = self.base_path / "input"
+        self.static_path = self.base_path / "static"
+        self.output_path = self.base_path / "output"
 
         self._site = Site.load_file(self.static_path / "config" / "site.toml")
 
@@ -613,9 +608,10 @@ class Database(IDatabase):
             name of the scenario to check if needs to be rerun for hazard
         """
         scenario = self._scenarios.get(scenario_name)
+        floodmap = self.scenarios.get_floodmap(scenario_name)
 
         # Dont do anything if the hazard model has already been run in itself
-        if scenario.impacts.hazard.has_run:
+        if floodmap:
             return
 
         scns_simulated = [
@@ -625,14 +621,15 @@ class Database(IDatabase):
         ]
 
         for scn in scns_simulated:
-            if scn.equal_hazard_components(scenario):
+            if scn.equal_hazard_components(scenario, database=self):
                 existing = self.scenarios.output_path.joinpath(
                     scn.attrs.name, "Flooding"
                 )
                 path_new = self.scenarios.output_path.joinpath(
                     scenario.attrs.name, "Flooding"
                 )
-                if scn.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                # only copy results if the hazard model has actually finished and skip simulation folders
+                if self.scenarios.get_floodmap(scn.attrs.name):
                     shutil.copytree(
                         existing,
                         path_new,

@@ -92,8 +92,8 @@ def test_save_fromTestDict_saveToml(test_db):
 class TestBenefitScenariosNotCreated:
     # Fixture to create a Benefit object
     @pytest.fixture(scope="function")
-    def benefit_obj(self, test_db_class):
-        test_db = test_db_class
+    def benefit_obj(self, test_fa_class):
+        test_db = test_fa_class
         name = "benefit_raise_properties_2050"
         benefit_path = test_db.input_path.joinpath(
             "benefits",
@@ -175,8 +175,8 @@ class TestBenefitScenariosNotCreated:
 class TestBenefitScenariosCreated:
     # Fixture to create a Benefit object and create missing scenarios
     @pytest.fixture(scope="class", autouse=True)
-    def benefit_obj(self, test_db_class):
-        test_db = test_db_class
+    def benefit_obj(self, test_fa_class):
+        test_db = test_fa_class
         name = "benefit_raise_properties_2050"
         benefit_path = test_db.input_path.joinpath(
             "benefits",
@@ -225,9 +225,9 @@ class TestBenefitScenariosCreated:
 class TestBenefitScenariosRun:
     # Fixture to create a Benefit object, missing scenarios and scenarios output
     @pytest.fixture(scope="class")
-    def prepare_outputs(self, test_db_class, benefit_name):
+    def prepare_outputs(self, test_fa_class, benefit_name):
         benefit_name = _TEST_NAMES[benefit_name]
-        test_db = test_db_class
+        test_db = test_fa_class
         benefit_path = test_db.input_path.joinpath(
             "benefits",
             benefit_name,

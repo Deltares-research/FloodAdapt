@@ -11,7 +11,7 @@ from time import sleep
 import pytest
 
 from flood_adapt import __path__
-from flood_adapt.api.static import read_database
+from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from tests.fixtures import *  # noqa
@@ -101,7 +101,7 @@ def session_setup_teardown():
     shutil.rmtree(snapshot_dir, ignore_errors=True)
 
 
-def make_db_fixture(scope):
+def make_fa_fixture(scope):
     """
     Generate a fixture that is used for testing in general.
 
@@ -112,14 +112,14 @@ def make_db_fixture(scope):
 
     Returns
     -------
-    _db_fixture : pytest.fixture
-        The database fixture used for testing
+    _fa_fixture : pytest.fixture
+        The FloodAdapt fixture used for testing
     """
     if scope not in ["function", "class", "module", "package", "session"]:
         raise ValueError(f"Invalid fixture scope: {scope}")
 
     @pytest.fixture(scope=scope)
-    def _db_fixture():
+    def _fa_fixture():
         """
         Fixture for setting up and tearing down the database once per scope.
 
@@ -144,13 +144,12 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        dbs = read_database(Settings().database_root, Settings().database_name)
+        fa = FloodAdapt(Settings().database_path)
 
         # Perform tests
-        yield dbs
+        yield fa
 
         # Teardown
-        dbs.shutdown()
         if clean:
             retries = 5
             for _ in range(retries):
@@ -163,7 +162,7 @@ def make_db_fixture(scope):
                     restore_db_from_snapshot()
                     break
 
-    return _db_fixture
+    return _fa_fixture
 
 
 # NOTE: to access the contents the fixtures in the test functions,
@@ -172,11 +171,11 @@ def make_db_fixture(scope):
 # 'dbs = test_db_...'
 
 
-test_db = make_db_fixture("function")
-test_db_class = make_db_fixture("class")
-test_db_module = make_db_fixture("module")
-test_db_package = make_db_fixture("package")
-test_db_session = make_db_fixture("session")
+test_fa = make_fa_fixture("function")
+test_fa_class = make_fa_fixture("class")
+test_fa_module = make_fa_fixture("module")
+test_fa_package = make_fa_fixture("package")
+test_fa_session = make_fa_fixture("session")
 
 
 @pytest.fixture

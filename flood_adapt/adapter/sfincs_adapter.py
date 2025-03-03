@@ -22,6 +22,7 @@ from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
 
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
@@ -72,6 +73,10 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.interface.config.gui import GuiUnitModel
+from flood_adapt.object_model.interface.config.sfincs import (
+    SfincsModel as SfincsSettings,
+)
 from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.path_builder import (
@@ -98,14 +103,16 @@ class SfincsAdapter(IHazardAdapter):
     ###############
 
     ### HAZARD ADAPTER METHODS ###
-    def __init__(self, model_root: Path):
+    def __init__(
+        self, model_root: Path, settings: SfincsSettings, unit_system: GuiUnitModel
+    ):
         """Load overland sfincs model based on a root directory.
 
         Args:
             model_root (Path): Root directory of overland sfincs model.
         """
-        self.settings = self.database.site.attrs.sfincs
-        self.units = self.database.site.attrs.gui.units
+        self.settings = settings
+        self.units = unit_system
         self.sfincs_logger = self.setup_sfincs_logger(model_root)
         self._model = SfincsModel(
             root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
@@ -171,9 +178,10 @@ class SfincsAdapter(IHazardAdapter):
                 f"{contains_forcings} forcing(s) should not exists in the SFINCS template model. Remove it from the SFINCS model located at: {self.get_model_root()}. For more information on SFINCS and its input files, see the SFINCS documentation at: `https://sfincs.readthedocs.io/en/latest/input.html`"
             )
 
-    def has_run(self, scenario: IScenario) -> bool:
+    def has_run(self, scenario: IScenario, database: IDatabase) -> bool:
         """Check if the model has been run."""
-        return self.sfincs_completed(scenario) and self.run_completed(scenario)
+        self.setup_paths(scenario=scenario, database=database)
+        return self.sfincs_completed(scenario) and self.run_completed()
 
     def execute(self, path: Path, strict: bool = True) -> bool:
         """
@@ -224,34 +232,34 @@ class SfincsAdapter(IHazardAdapter):
 
         return process.returncode == 0
 
-    def run(self, scenario: IScenario):
+    def run(self, scenario: IScenario, database: IDatabase, **kwargs):
         """Run the whole workflow (Preprocess, process and postprocess) for a given scenario."""
         self.ensure_no_existing_forcings()
+        self.setup_paths(scenario=scenario, database=database)
+
         self.preprocess(scenario)
         self.process(scenario)
-
         self.postprocess(scenario)
 
     def preprocess(self, scenario: IScenario):
-        sim_paths = self._get_simulation_paths(scenario)
         self.logger.info(f"Preprocessing Scenario `{scenario.attrs.name}`")
         if isinstance(scenario.event, EventSet):
-            self._preprocess_risk(scenario, sim_paths)
+            self._preprocess_risk(scenario, self.simulation_paths)
         elif isinstance(scenario.event, IEvent):
-            self._preprocess_single_event(scenario, output_path=sim_paths[0])
+            self._preprocess_single_event(
+                scenario, output_path=self.simulation_paths[0]
+            )
 
     def process(self, scenario: IScenario):
-        sim_paths = self._get_simulation_paths(scenario)
-
         if isinstance(scenario.event, IEvent):
             self.logger.info(
                 f"Running SFINCS for single event Scenario `{scenario.attrs.name}`"
             )
-            self.execute(sim_paths[0])
+            self.execute(self.simulation_paths[0])
 
         elif isinstance(scenario.event, EventSet):
-            total = len(sim_paths)
-            for current, sim_path in enumerate(sim_paths):
+            total = len(self.simulation_paths)
+            for current, sim_path in enumerate(self.simulation_paths):
                 self.logger.info(
                     f"Running SFINCS for Eventset Scenario `{scenario.attrs.name}`, Event `{scenario.event.events[current].attrs.name}` ({current + 1}/{total})"
                 )
@@ -265,10 +273,10 @@ class SfincsAdapter(IHazardAdapter):
         if isinstance(scenario.event, IEvent):
             self.write_floodmap_geotiff(scenario)
             self.plot_wl_obs(scenario)
-            self.write_water_level_map(scenario)
+            self.write_water_level_map()
 
         elif isinstance(scenario.event, EventSet):
-            self.calculate_rp_floodmaps(scenario)
+            self.calculate_rp_floodmaps(scenario, self.return_periods)
 
     def set_timing(self, time: TimeModel):
         """Set model reference times."""
@@ -459,7 +467,7 @@ class SfincsAdapter(IHazardAdapter):
             raise ValueError("Unsupported wind forcing in the model.")
 
     ### OUTPUT ###
-    def run_completed(self, scenario: IScenario) -> bool:
+    def run_completed(self) -> bool:
         """Check if the entire model run has been completed successfully by checking if all flood maps exist that are created in postprocess().
 
         Returns
@@ -467,10 +475,8 @@ class SfincsAdapter(IHazardAdapter):
         bool : True if all flood maps exist, False otherwise.
 
         """
-        any_floodmap = len(self._get_flood_map_paths(scenario)) > 0
-        all_exist = all(
-            floodmap.exists() for floodmap in self._get_flood_map_paths(scenario)
-        )
+        any_floodmap = len(self.flood_map_paths) > 0
+        all_exist = all(floodmap.exists() for floodmap in self.flood_map_paths)
         return any_floodmap and all_exist
 
     def sfincs_completed(self, scenario: IScenario) -> bool:
@@ -481,17 +487,18 @@ class SfincsAdapter(IHazardAdapter):
         bool: True if the sfincs executable has been run successfully, False otherwise.
 
         """
-        sim_paths = self._get_simulation_paths(scenario)
         SFINCS_OUTPUT_FILES = ["sfincs_his.nc", "sfincs_map.nc"]
 
         if isinstance(scenario.event, EventSet):
-            for sim_path in sim_paths:
+            for sim_path in self.simulation_paths:
                 to_check = [Path(sim_path) / file for file in SFINCS_OUTPUT_FILES]
                 if not all(output.exists() for output in to_check):
                     return False
             return True
         elif isinstance(scenario.event, IEvent):
-            to_check = [Path(sim_paths[0]) / file for file in SFINCS_OUTPUT_FILES]
+            to_check = [
+                Path(self.simulation_paths[0]) / file for file in SFINCS_OUTPUT_FILES
+            ]
             # Add logfile check as well from old hazard.py?
             return all(output.exists() for output in to_check)
         else:
@@ -513,21 +520,22 @@ class SfincsAdapter(IHazardAdapter):
             Path to the simulation folder, by default None.
         """
         self.logger.info("Writing flood maps to geotiff")
-        results_path = self._get_result_path(scenario)
-        sim_path = sim_path or self._get_simulation_paths(scenario)[0]
-        demfile = self.database.static_path / "dem" / self.settings.dem.filename
 
-        with SfincsAdapter(model_root=sim_path) as model:
+        sim_path = sim_path or self.simulation_paths[0]
+
+        with SfincsAdapter(
+            model_root=sim_path, settings=self.settings, unit_system=self.units
+        ) as model:
             zsmax = model._get_zsmax()
 
-            dem = model._model.data_catalog.get_rasterdataset(demfile)
+            dem = model._model.data_catalog.get_rasterdataset(self.dem_file)
 
             # convert dem from dem units to floodmap units
             dem_conversion = us.UnitfulLength(
                 value=1.0, units=self.settings.dem.units
             ).convert(self.settings.config.floodmap_units)
 
-            floodmap_fn = results_path / f"FloodMap_{scenario.attrs.name}.tif"
+            floodmap_fn = self.results_path / f"FloodMap_{scenario.attrs.name}.tif"
 
             # convert zsmax from meters to floodmap units
             floodmap_conversion = us.UnitfulLength(
@@ -541,15 +549,15 @@ class SfincsAdapter(IHazardAdapter):
                 floodmap_fn=str(floodmap_fn),
             )
 
-    def write_water_level_map(
-        self, scenario: IScenario, sim_path: Optional[Path] = None
-    ):
+    def write_water_level_map(self, sim_path: Optional[Path] = None):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
         self.logger.info("Writing water level map to netcdf")
-        results_path = self._get_result_path(scenario)
-        sim_path = sim_path or self._get_simulation_paths(scenario)[0]
+        results_path = self.results_path
+        sim_path = sim_path or self.simulation_paths[0]
 
-        with SfincsAdapter(model_root=sim_path) as model:
+        with SfincsAdapter(
+            model_root=sim_path, settings=self.settings, unit_system=self.units
+        ) as model:
             zsmax = model._get_zsmax()
             zsmax.to_netcdf(results_path / "max_water_level_map.nc")
 
@@ -564,16 +572,16 @@ class SfincsAdapter(IHazardAdapter):
         Only for single event scenarios, or for a specific simulation path containing the written and processed sfincs model.
         """
         self.logger.info("Plotting water levels at observation points")
-        sim_path = sim_path or self._get_simulation_paths(scenario)[0]
+        sim_path = sim_path or self.simulation_paths[0]
         event = event or scenario.event
 
         # read SFINCS model
-        with SfincsAdapter(model_root=sim_path) as model:
+        with SfincsAdapter(
+            model_root=sim_path, settings=self.settings, unit_system=self.units
+        ) as model:
             df, gdf = model._get_zs_points()
 
-        gui_units = us.UnitTypesLength(
-            self.database.site.attrs.gui.units.default_length_units
-        )
+        gui_units = us.UnitTypesLength(self.units.default_length_units)
         conversion_factor = us.UnitfulLength(
             value=1.0, units=us.UnitTypesLength("meters")
         ).convert(gui_units)
@@ -657,8 +665,7 @@ class SfincsAdapter(IHazardAdapter):
 
             # write html to results folder
             station_name = gdf.iloc[ii]["Name"]
-            results_path = self._get_result_path(scenario)
-            fig.write_html(results_path / f"{station_name}_timeseries.html")
+            fig.write_html(self.results_path / f"{station_name}_timeseries.html")
 
     def add_obs_points(self):
         """Add observation points provided in the site toml to SFINCS model."""
@@ -704,7 +711,7 @@ class SfincsAdapter(IHazardAdapter):
         return wl_df
 
     ## RISK EVENTS ##
-    def calculate_rp_floodmaps(self, scenario: IScenario):
+    def calculate_rp_floodmaps(self, scenario: IScenario, return_periods: List[int]):
         """Calculate flood risk maps from a set of (currently) SFINCS water level outputs using linear interpolation.
 
         It would be nice to make it more widely applicable and move the loading of the SFINCS results to self.postprocess_sfincs().
@@ -716,12 +723,8 @@ class SfincsAdapter(IHazardAdapter):
         """
         if not isinstance(scenario.event, EventSet):
             raise ValueError("This function is only available for risk scenarios.")
-        result_path = self._get_result_path(scenario)
-        sim_paths = self._get_simulation_paths(scenario)
 
         phys_proj = scenario.projection.get_physical_projection()
-
-        floodmap_rp = self.database.site.attrs.fiat.risk.return_periods
         frequencies = scenario.event.attrs.frequency
 
         # adjust storm frequency for hurricane events
@@ -731,15 +734,23 @@ class SfincsAdapter(IHazardAdapter):
                 if event.attrs.template == Template.Hurricane:
                     frequencies[ii] = frequencies[ii] * (1 + storminess_increase)
 
-        with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
+        with SfincsAdapter(
+            model_root=self.simulation_paths[0],
+            settings=self.settings,
+            unit_system=self.units,
+        ) as dummymodel:
             # read mask and bed level
             mask = dummymodel.get_mask().stack(z=("x", "y"))
             zb = dummymodel.get_bedlevel().stack(z=("x", "y")).to_numpy()
 
         zs_maps = []
-        for simulation_path in sim_paths:
+        for simulation_path in self.simulation_paths:
             # read zsmax data from overland sfincs model
-            with SfincsAdapter(model_root=simulation_path) as sim:
+            with SfincsAdapter(
+                model_root=simulation_path,
+                settings=self.settings,
+                unit_system=self.units,
+            ) as sim:
                 zsmax = sim._get_zsmax().load()
                 zs_stacked = zsmax.stack(z=("x", "y"))
                 zs_maps.append(zs_stacked)
@@ -784,14 +795,14 @@ class SfincsAdapter(IHazardAdapter):
             0
         ]  # only loop over cells where model is not masked
         h = matlib.repmat(
-            np.copy(zb), len(floodmap_rp), 1
+            np.copy(zb), len(return_periods), 1
         )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
 
         self.logger.info("Calculating flood risk maps, this may take some time")
         for jj in valid_cells:  # looping over all non-masked cells.
             # linear interpolation for all return periods to evaluate
             h[:, jj] = np.interp(
-                np.log10(floodmap_rp),
+                np.log10(return_periods),
                 np.log10(rp_da[::-1, jj]),
                 sorted_zs[::-1, jj],
                 left=0,
@@ -807,7 +818,7 @@ class SfincsAdapter(IHazardAdapter):
         )  # here we use a small number instead of zero for rounding errors
         h[dry] = np.nan
 
-        for ii, rp in enumerate(floodmap_rp):
+        for ii, rp in enumerate(return_periods):
             # #create single nc
             zs_rp_single = xr.DataArray(
                 data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
@@ -816,16 +827,16 @@ class SfincsAdapter(IHazardAdapter):
                 zsmax.raster.crs
             )  # , inplace=True)
             zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
-            fn_rp = result_path / f"RP_{rp:04d}_maps.nc"
+            fn_rp = self.results_path / f"RP_{rp:04d}_maps.nc"
             zs_rp_single.to_netcdf(fn_rp)
 
-            # write geotiff
-            # dem file for high resolution flood depth map
-            demfile = self.database.static_path / "dem" / self.settings.dem.filename
-
             # writing the geotiff to the scenario results folder
-            with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
-                dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
+            with SfincsAdapter(
+                model_root=self.simulation_paths[0],
+                settings=self.settings,
+                unit_system=self.units,
+            ) as dummymodel:
+                dem = dummymodel._model.data_catalog.get_rasterdataset(self.dem_file)
                 zsmax = zs_rp_single.to_array().squeeze().transpose()
                 floodmap_fn = fn_rp.with_suffix(".tif")
 
@@ -1147,7 +1158,7 @@ class SfincsAdapter(IHazardAdapter):
                 float(
                     us.UnitfulLength(
                         value=float(height),
-                        units=self.database.site.attrs.gui.units.default_length_units,
+                        units=self.units.default_length_units,
                     ).convert(us.UnitTypesLength("meters"))
                 )
                 for height in gdf_floodwall["z"]
@@ -1420,56 +1431,43 @@ class SfincsAdapter(IHazardAdapter):
         self._model.set_config("spwfile", output_spw_path.name)
 
     ### PRIVATE GETTERS ###
-    def _get_result_path(self, scenario: IScenario) -> Path:
-        """Return the path to store the results."""
-        return self.database.scenarios.output_path / scenario.attrs.name / "Flooding"
-
-    def _get_simulation_paths(self, scenario: IScenario) -> List[Path]:
+    def setup_paths(self, scenario: IScenario, database: IDatabase):
+        """Set up the paths for a given scenario and a database."""
+        self.results_path = (
+            database.scenarios.output_path / scenario.attrs.name / "Flooding"
+        )
         base_path = (
-            self._get_result_path(scenario)
-            / "simulations"
-            / self.settings.config.overland_model
+            self.results_path / "simulations" / self.settings.config.overland_model
         )
 
         if isinstance(scenario.event, EventSet):
-            return [
+            self.simulation_paths = [
                 base_path.parent / sub_event.attrs.name / base_path.name
                 for sub_event in scenario.event.events
             ]
         elif isinstance(scenario.event, IEvent):
-            return [base_path]
+            self.simulation_paths = [base_path]
         else:
             raise ValueError(f"Unsupported mode: {scenario.event.attrs.mode}")
 
-    def _get_simulation_path_offshore(self, scenario: IScenario) -> List[Path]:
-        # Get the path to the offshore model (will not be used if offshore model is not created)
-        if self.settings.offshore_model is None:
-            raise ValueError("No offshore model found in site.toml.")
-        base_path = (
-            self._get_result_path(scenario)
-            / "simulations"
-            / self.settings.config.offshore_model
-        )
-        if isinstance(scenario.event, EventSet):
-            return [
-                base_path.parent / sub_event.attrs.name / base_path.name
-                for sub_event in scenario.event.events
-            ]
-        elif isinstance(scenario.event, IEvent):
-            return [base_path]
-        else:
-            raise ValueError(f"Unsupported mode: {scenario.event.attrs.mode}")
+        self.dem_file = database.static_path / "dem" / self.settings.dem.filename
+        self.return_periods = database.site.attrs.fiat.risk.return_periods
+        self.flood_map_paths = self._get_flood_map_paths(scenario, self.return_periods)
 
-    def _get_flood_map_paths(self, scenario: IScenario) -> list[Path]:
+    def _get_flood_map_paths(
+        self, scenario: IScenario, return_periods: Optional[List[int]] = None
+    ) -> list[Path]:
         """Return the paths to the flood maps that running this scenario should produce."""
-        results_path = self._get_result_path(scenario)
-
         if isinstance(scenario.event, EventSet):
+            if return_periods is None:
+                raise ValueError(
+                    "Return periods must be provided for an event set scenario."
+                )
             map_fn = []
-            for rp in self.database.site.attrs.fiat.risk.return_periods:
-                map_fn.append(results_path / f"RP_{rp:04d}_maps.nc")
+            for rp in return_periods:
+                map_fn.append(self.results_path / f"RP_{rp:04d}_maps.nc")
         elif isinstance(scenario.event, IEvent):
-            map_fn = [results_path / "max_water_level_map.nc"]
+            map_fn = [self.results_path / "max_water_level_map.nc"]
         else:
             raise ValueError(f"Unsupported mode: {scenario.event.attrs.mode}")
 

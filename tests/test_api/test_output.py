@@ -8,7 +8,7 @@ from flood_adapt.api import scenarios as api_scenarios
 
 class TestAPI_Output:
     @pytest.fixture(scope="class")
-    def scenario(self, test_db_class):
+    def scenario(self, test_fa_class):
         scenario_name = "current_extreme12ft_no_measures"
         api_scenarios.run_scenario(scenario_name)
         yield scenario_name

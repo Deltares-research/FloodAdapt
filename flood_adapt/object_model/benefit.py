@@ -10,8 +10,9 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.database_user import DatabaseUser
+from flood_adapt.object_model.interface.config.fiat import AggregationModel
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
@@ -19,7 +20,7 @@ from flood_adapt.object_model.interface.path_builder import (
 )
 
 
-class Benefit(IBenefit, DatabaseUser):
+class Benefit(IBenefit):
     """Object holding all attributes and methods related to a benefit analysis."""
 
     scenarios: pd.DataFrame
@@ -29,9 +30,6 @@ class Benefit(IBenefit, DatabaseUser):
         super().__init__(data)
         # Get output path based on database path
         self.check_scenarios()
-        self.results_path = self.database.benefits.output_path.joinpath(self.attrs.name)
-        self.site_info = self.database.site
-        self.unit = self.site_info.attrs.fiat.config.damage_unit
 
     @property
     def has_run(self):
@@ -76,7 +74,7 @@ class Benefit(IBenefit, DatabaseUser):
         )
         return check
 
-    def check_scenarios(self) -> pd.DataFrame:
+    def check_scenarios(self, database: IDatabase) -> pd.DataFrame:
         """Check which scenarios are needed for this benefit calculation and if they have already been created.
 
         The scenarios attribute of the object is updated accordingly and the table of the scenarios is returned.
@@ -111,19 +109,20 @@ class Benefit(IBenefit, DatabaseUser):
                 scenarios_calc[scenario]["strategy"] = self.attrs.strategy
 
         # Get the available scenarios
-        scenarios_avail = self.database.scenarios.list_objects()["objects"]
+        scenarios_avail = database.scenarios.list_objects()["objects"]
 
         # Check if any of the needed scenarios are already there
         for scenario in scenarios_calc.keys():
             scn_dict = scenarios_calc[scenario].copy()
             scn_dict["name"] = scenario
-            scenario_obj = self.database.scenarios._object_class.load_dict(scn_dict)
+            scenario_obj = database.scenarios._object_class.load_dict(scn_dict)
             created = [
                 scn_avl for scn_avl in scenarios_avail if scenario_obj == scn_avl
             ]
             if len(created) > 0:
+                flood_map = database.scenarios.get_floodmap(created[0].attrs.name)
                 scenarios_calc[scenario]["scenario created"] = created[0].attrs.name
-                scenarios_calc[scenario]["scenario run"] = created[0].impacts.has_run
+                scenarios_calc[scenario]["scenario run"] = flood_map
             else:
                 scenarios_calc[scenario]["scenario created"] = "No"
                 scenarios_calc[scenario]["scenario run"] = False
@@ -153,7 +152,7 @@ class Benefit(IBenefit, DatabaseUser):
 
         return check
 
-    def run_cost_benefit(self):
+    def run_cost_benefit(self, aggregations: list[AggregationModel]):
         """Run the cost-benefit calculation for the total study area and the different aggregation levels."""
         # Throw an error if not all runs are finished
         if not self.ready_to_run():
@@ -175,7 +174,7 @@ class Benefit(IBenefit, DatabaseUser):
         # Run the cost-benefit analysis
         self.cba()
         # Run aggregation benefits
-        self.cba_aggregation()
+        self.cba_aggregation(aggregations=aggregations)
         # Updates results
         self.has_run_check()
 
@@ -264,7 +263,7 @@ class Benefit(IBenefit, DatabaseUser):
         # Make html
         self._make_html(cba)
 
-    def cba_aggregation(self):
+    def cba_aggregation(self, aggregations: list[AggregationModel]):
         """Zonal Benefits analysis for the different aggregation areas."""
         results_path = db_path(TopLevelDir.output, ObjectDir.scenario)
         # Get years of interest
@@ -275,14 +274,12 @@ class Benefit(IBenefit, DatabaseUser):
         scenarios = self.scenarios.copy(deep=True)
 
         # Read in the names of the aggregation area types
-        aggregations = [
-            aggr.name for aggr in self.site_info.attrs.fiat.config.aggregation
-        ]
+        aggregation_names = [aggr.name for aggr in aggregations]
 
         # Check if equity information is available to define variables to use
         vars = []
-        for i, aggr_name in enumerate(aggregations):
-            if self.site_info.attrs.fiat.config.aggregation[i].equity is not None:
+        for i, aggr_name in enumerate(aggregation_names):
+            if aggregations[i].equity is not None:
                 vars.append(["EAD", "EWEAD"])
             else:
                 vars.append(["EAD"])
@@ -294,7 +291,7 @@ class Benefit(IBenefit, DatabaseUser):
         risk = {}
 
         # Fill in the dictionary
-        for i, aggr_name in enumerate(aggregations):
+        for i, aggr_name in enumerate(aggregation_names):
             risk[aggr_name] = {}
             values = {}
             for var in vars[i]:
@@ -324,7 +321,7 @@ class Benefit(IBenefit, DatabaseUser):
 
         # Calculate benefits
         benefits = {}
-        for i, aggr_name in enumerate(aggregations):
+        for i, aggr_name in enumerate(aggregation_names):
             benefits[aggr_name] = pd.DataFrame()
             benefits[aggr_name].index = risk[aggr_name]["EAD"].index
             for var in vars[i]:
@@ -355,22 +352,15 @@ class Benefit(IBenefit, DatabaseUser):
             benefits[aggr_name].to_csv(csv_filename, index=True)
 
             # Load aggregation areas
-            ind = [
-                i
-                for i, n in enumerate(self.site_info.attrs.fiat.config.aggregation)
-                if n.name == aggr_name
-            ][0]
-            aggr_areas_path = (
-                db_path(TopLevelDir.static)
-                / self.site_info.attrs.fiat.config.aggregation[ind].file
-            )
+            ind = [i for i, n in enumerate(aggregations) if n.name == aggr_name][0]
+            aggr_areas_path = db_path(TopLevelDir.static) / aggregations[ind].file
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
             # Define output path
             outpath = self.results_path.joinpath(f"benefits_{aggr_name}.gpkg")
             # Save file
             aggr_areas = aggr_areas.join(
                 benefits[aggr_name],
-                on=self.site_info.attrs.fiat.config.aggregation[ind].field_name,
+                on=aggregations[ind].field_name,
             )
             aggr_areas.to_file(outpath, driver="GPKG")
 
@@ -468,7 +458,7 @@ class Benefit(IBenefit, DatabaseUser):
 
         return benefits
 
-    def _make_html(self, cba):
+    def _make_html(self, cba, damage_unit: str):
         """Make an html with the time-series of the benefits and discounted benefits."""
         # Save a plotly graph in an html
         fig = go.Figure()
@@ -521,7 +511,7 @@ class Benefit(IBenefit, DatabaseUser):
         # Update xaxis properties
         fig.update_xaxes(title_text="Year")
         # Update yaxis properties
-        fig.update_yaxes(title_text=f"Annual Benefits ({self.unit})")
+        fig.update_yaxes(title_text=f"Annual Benefits ({damage_unit})")
 
         fig.update_layout(
             autosize=False,
