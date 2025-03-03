@@ -44,7 +44,8 @@ class MeteoHandler(IMeteoHandler):
         ds = self.dataset.collect(time_range=time_range)
 
         if ds is None:
-            self.download(time_range)
+            self.download(time)
+            ds = self.dataset.collect(time_range=time_range)
 
         if ds is None:
             raise FileNotFoundError(
