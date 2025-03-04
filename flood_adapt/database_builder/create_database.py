@@ -507,7 +507,7 @@ class DatabaseBuilder:
 
     def _join_building_footprints(
         self, building_footprints: gpd.GeoDataFrame, field_name: str
-    ):
+    ) -> Path:
         """
         Join building footprints with existing building data and updates the exposure CSV.
 
@@ -517,8 +517,6 @@ class DatabaseBuilder:
 
         Returns
         -------
-            None
-
         This method performs the following steps:
         1. Reads the exposure CSV file.
         2. Performs a spatial join between the buildings and building footprints.
@@ -560,12 +558,14 @@ class DatabaseBuilder:
         # Set model building footprints
         self.fiat_model.building_footprint = building_footprints
         self.fiat_model.exposure.exposure_db = exposure_csv
+
         # Save site attributes
-        buildings_path = Path(geo_path.relative_to(self.static_path)).as_posix()
+        buildings_path = geo_path.relative_to(self.static_path)
         self.logger.info(
             f"Building footprints saved at {self.static_path.joinpath(buildings_path).resolve().as_posix()}"
         )
-        return buildings_path
+
+        return geo_path
 
     def read_fiat(self):
         """
@@ -606,6 +606,7 @@ class DatabaseBuilder:
         ind = self.fiat_model.exposure.geom_names.index(self.config.fiat_buildings_name)
         self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
         self.exposure_csv_path = fiat_path.joinpath("exposure", "exposure.csv")
+        footprints_path = None
 
         # Get center of area of interest
         center = self.buildings.dissolve().centroid.to_crs(4326)[0]
@@ -977,6 +978,11 @@ class DatabaseBuilder:
                 "Delft-FIAT model was missing damage units so '$' was assumed."
             )
 
+        if footprints_path is not None:
+            footprints_path = (
+                Path(footprints_path).relative_to(self.static_path).as_posix()
+            )
+
         # Store FIAT configuration
         self.site_attrs["fiat"] = {}
         self.site_attrs["fiat"]["config"] = FiatConfigModel(
@@ -986,9 +992,7 @@ class DatabaseBuilder:
             floodmap_type="water_level",  # TODO allow for water depth
             non_building_names=["road"],  # TODO check names from exposure
             damage_unit=dmg_unit,
-            building_footprints=str(
-                footprints_path.relative_to(self.static_path).as_posix()
-            ),
+            building_footprints=footprints_path,
             roads_file_name=f"{self.config.fiat_roads_name}.gpkg"
             if self.roads
             else None,
