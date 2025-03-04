@@ -474,6 +474,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>ImpactAdapter for Delft-FIAT.</p>
 <p>It includes: - preprocessing methods for adding measures, projections and hazards - executing method for running a Delft-FIAT simulation - postprocessing methods for saving impact results</p>
+<section id="attributes" class="level4">
+<h4 class="anchored" data-anchor-id="attributes">Attributes</h4>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.fiat_adapter.FiatAdapter.damage_types">damage_types</a></td>
+<td>Get the damage types that are present in the exposure.</td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="methods" class="level4">
 <h4 class="anchored" data-anchor-id="methods">Methods</h4>
 <table class="table">
@@ -1820,8 +1837,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h5 class="anchored" data-anchor-id="flood_adapt.adapter.fiat_adapter.FiatAdapter.read_outputs">read_outputs</h5>
 <div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>adapter.fiat_adapter.FiatAdapter.read_outputs()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Read the output FIAT CSV file specified in the model configuration and stores the data in the <code>outputs</code> attribute.</p>
-<section id="attributes" class="level6 doc-section doc-section-attributes">
-<h6 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h6>
+<section id="attributes-1" class="level6 doc-section doc-section-attributes">
+<h6 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes-1">Attributes</h6>
 <table class="table">
 <colgroup>
 <col style="width: 5%">
