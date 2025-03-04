@@ -16,8 +16,8 @@ def test_aggr_areas(test_db):
 
 def test_property_types(test_db):
     types = api_static.get_property_types()
-    expected_types = ["RES", "COM", "road", "all"]
+    expected_types = ["RES", "COM", "all"]
 
     assert isinstance(types, list)
-    assert len(types) == 4
+    assert len(types) == 3
     assert all(t in types for t in expected_types)

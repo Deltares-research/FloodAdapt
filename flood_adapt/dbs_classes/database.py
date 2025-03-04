@@ -670,7 +670,7 @@ class Database(IDatabase):
 
         if errors:
             raise RuntimeError(
-                "SFincs model failed to run for the following scenarios: "
+                "FloodAdapt failed to run for the following scenarios: "
                 + ", ".join(errors)
                 + ". Check the logs for more information."
             )

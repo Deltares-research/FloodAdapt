@@ -19,7 +19,7 @@ class EventSetModel(IObjectModel):
     mode: Mode = Mode.risk
 
     sub_events: List[EventModel]
-    frequency: List[Annotated[float, Field(strict=True, ge=0, le=1)]]
+    frequency: List[Annotated[float, Field(strict=True, ge=0)]]
 
     @model_validator(mode="before")
     def load_sub_events(self):
