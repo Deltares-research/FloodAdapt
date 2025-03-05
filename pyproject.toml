@@ -30,13 +30,13 @@ dependencies = [
     "cht-observations",
     "cht-tide",
     "dask<2024.7.0",  # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
-    "fiat-toolbox==0.1.16",
+    "fiat-toolbox",
     "fiona",
     "geojson",
     "geopandas",
     "jellyfish<1.0",  # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
     # jellyfish v1.0 starts requiring rust as a dependency, which is fine if there are built .whl files. BUT THERE ARE NO BUILDS FOR WINDOWS YET.
-    "hydromt-fiat==0.5.2",
+    "hydromt-fiat==0.5.3",
     "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git",
     "numpy < 2.0",
     "numpy-financial",
