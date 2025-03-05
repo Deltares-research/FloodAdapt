@@ -9,6 +9,7 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import pandas as pd
 import tomli
+from fiat_toolbox import FiatColumns, get_fiat_columns
 from fiat_toolbox.equity.equity import Equity
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_write_metrics_file import MetricsFileWriter
@@ -17,6 +18,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 )
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.footprints import Footprints
+from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt import unit_system as us
@@ -40,24 +42,34 @@ from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.utils import cd, resolve_filepath
 
+# Define naming structure for saved files
+_IMPACT_COLUMNS = FiatColumns(
+    object_id="Object ID",
+    object_name="Object Name",
+    primary_object_type="Primary Object Type",
+    secondary_object_type="Secondary Object Type",
+    extraction_method="Extraction Method",
+    ground_floor_height="Ground Floor Height",
+    ground_elevation="Ground Elevation",
+    damage_function="Damage Function: {name}",
+    max_potential_damage="Max Potential Damage: {name}",
+    aggregation_label="Aggregation Label: {name}",
+    inundation_depth="Inundation Depth",
+    inundation_depth_rp="Inundation Depth ({years}Y)",
+    reduction_factor="Reduction Factor",
+    reduction_factor_rp="Reduction Factor ({years}Y)",
+    damage="Damage: {name}",
+    damage_rp="Damage: {name} ({years}Y)",
+    total_damage="Total Damage",
+    total_damage_rp="Total Damage ({years}Y)",
+    risk_ead="Risk (EAD)",
+    segment_length="Segment Length",
+)
 
-class FiatColumns:
-    """Object with mapping of FIAT attributes to columns names."""
-
-    object_id = "Object ID"
-    object_name = "Object Name"
-    primary_object_type = "Primary Object Type"
-    secondary_object_type = "Secondary Object Type"
-    extraction_method = "Extraction Method"
-    ground_floor_height = "Ground Floor Height"
-    ground_elevation = "Ground Elevation"
-    damage_function = "Damage Function: "
-    max_potential_damage = "Max Potential Damage: "
-    aggregation_label = "Aggregation Label: "
-    inundation_depth = "Inundation Depth"
-    damage = "Damage: "
-    total_damage = "Total Damage"
-    risk_ead = "Risk (EAD)"
+# Define column naming of FIAT model
+_FIAT_COLUMNS: FiatColumns = get_fiat_columns(
+    fiat_version="0.2.1"
+)  # columns of FIAT # TODO add version from config
 
 
 class FiatAdapter(IImpactAdapter):
@@ -76,6 +88,8 @@ class FiatAdapter(IImpactAdapter):
     _model: FiatModel  # hydroMT-FIAT model
     config: Optional[FiatConfigModel] = None
     exe_path: Optional[os.PathLike] = None
+    fiat_columns: FiatColumns
+    impact_columns: FiatColumns
 
     def __init__(
         self,
@@ -94,10 +108,22 @@ class FiatAdapter(IImpactAdapter):
         self.delete_crashed_runs = delete_crashed_runs
         self._model = FiatModel(root=str(model_root.resolve()), mode="r")
         self._model.read()
+        self.fiat_columns = _FIAT_COLUMNS
+        self.impact_columns = _IMPACT_COLUMNS  # columns of FA impact output
 
     @property
     def model_root(self):
         return Path(self._model.root)
+
+    @property
+    def damage_types(self):
+        """Get the damage types that are present in the exposure."""
+        types = []
+        for col in self._model.exposure.exposure_db.columns:
+            if matches_pattern(col, self.fiat_columns.damage_function):
+                name = extract_variables(col, self.fiat_columns.damage_function)["name"]
+                types.append(name)
+        return types
 
     def read(self, path: Path) -> None:
         """Read the fiat model from the current model root."""
@@ -352,14 +378,23 @@ class FiatAdapter(IImpactAdapter):
             - "table" : DataFrame
                 The contents of the output CSV file.
         """
-        # Get output csv
+        # Get output path
         outputs_path = self.model_root.joinpath(self._model.config["output"]["path"])
-        output_csv_path = outputs_path.joinpath(
-            self._model.config["output"]["csv"]["name"]
-        )
+
+        # Get all csvs and concatenate them in a single table
+        csv_outputs_df = []
+        for output_csv in self._model.config["output"]["csv"]:
+            csv_path = outputs_path.joinpath(
+                self._model.config["output"]["csv"][output_csv]
+            )
+            output_csv_df = pd.read_csv(csv_path)
+            csv_outputs_df.append(output_csv_df)
+        output_csv = pd.concat(csv_outputs_df)
+
+        # Store them
         self.outputs = {}
         self.outputs["path"] = outputs_path
-        self.outputs["table"] = pd.read_csv(output_csv_path)
+        self.outputs["table"] = output_csv
 
     def _get_aggr_ind(self, aggr_label: str):
         """
@@ -423,13 +458,38 @@ class FiatAdapter(IImpactAdapter):
 
         self.logger.info("Post-processing Delft-FIAT results")
 
-        self.read_outputs()
+        if not self.outputs:
+            self.read_outputs()
 
         mode = scenario.event.attrs.mode
 
         # Define scenario output path
         scenario_output_path = self.output_path
         impacts_output_path = self.output_path.parent
+
+        # Create column mapping to update column names
+        name_translation = {}
+        for col in self.outputs["table"].columns:  # iterate through output columns
+            for field in list(self.impact_columns.model_fields):  # check for each field
+                fiat_col = getattr(self.fiat_columns, field)
+                if matches_pattern(col, fiat_col):
+                    impact_col = getattr(self.impact_columns, field)
+                    new_col = replace_pattern(col, fiat_col, impact_col)
+                    if (
+                        ".0Y" in new_col
+                    ):  # TODO for now quick fix to account for float RP years, while metrics have integers
+                        new_col = new_col.replace(".0Y", "Y")
+                    name_translation[col] = new_col  # save mapping
+        self.name_mapping = name_translation
+
+        # Rename save outputs
+        self.outputs["table"] = self.outputs["table"].rename(columns=self.name_mapping)
+
+        # Save impacts per object
+        fiat_results_path = impacts_output_path.joinpath(
+            f"Impacts_detailed_{scenario.attrs.name}.csv"
+        )
+        self.outputs["table"].to_csv(fiat_results_path, index=False)
 
         # Add exceedance probabilities if needed (only for risk)
         if mode == Mode.risk:
@@ -441,16 +501,12 @@ class FiatAdapter(IImpactAdapter):
             with open(config_path, mode="rb") as fp:
                 config = tomli.load(fp)["flood_exceedance"]
             self.add_exceedance_probability(
-                column=config["column"],
+                column=config[
+                    "column"
+                ],  # TODO check how to the correct version of column
                 threshold=config["threshold"],
                 period=config["period"],
             )
-
-        # Save impacts per object
-        fiat_results_path = impacts_output_path.joinpath(
-            f"Impacts_detailed_{scenario.attrs.name}.csv"
-        )
-        self.outputs["table"].to_csv(fiat_results_path)
 
         # Create the infometrics files
         if mode == Mode.risk:
@@ -684,18 +740,18 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if FiatColumns.max_potential_damage in c
+            if matches_pattern(c, self.fiat_columns.max_potential_damage)
         ]
 
         # Get objects that are buildings (using site info)
         buildings_rows = ~self._model.exposure.exposure_db[
-            FiatColumns.primary_object_type
+            self.fiat_columns.primary_object_type
         ].isin(self.config.non_building_names)
 
         # If ids are given use that as an additional filter
         if ids:
             buildings_rows = buildings_rows & self._model.exposure.exposure_db[
-                FiatColumns.object_id
+                self.fiat_columns.object_id
             ].isin(ids)
 
         # Update columns using economic growth value
@@ -731,18 +787,18 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if FiatColumns.max_potential_damage in c
+            if matches_pattern(c, self.fiat_columns.max_potential_damage)
         ]
 
         # Get objects that are buildings (using site info)
         buildings_rows = ~self._model.exposure.exposure_db[
-            FiatColumns.primary_object_type
+            self.fiat_columns.primary_object_type
         ].isin(self.config.non_building_names)
 
         # If ids are given use that as an additional filter
         if ids:
             buildings_rows = buildings_rows & self._model.exposure.exposure_db[
-                FiatColumns.object_id
+                self.fiat_columns.object_id
             ].isin(ids)
 
         # Update columns using economic growth value
@@ -811,20 +867,22 @@ class FiatAdapter(IImpactAdapter):
         ]
         attribute_names = [aggr.field_name for aggr in self.config.aggregation]
         label_names = [
-            f"{FiatColumns.aggregation_label}{aggr.name}"
+            self.fiat_columns.aggregation_label.format(name=aggr.name)
             for aggr in self.config.aggregation
         ]
+        new_dev_geom_name = Path(self.config.new_development_file_name).stem
         # Use hydromt function
         self._model.exposure.setup_new_composite_areas(
             percent_growth=population_growth,
             geom_file=Path(area_path),
             ground_floor_height=ground_floor_height,
-            damage_types=["Structure", "Content"],
+            damage_types=self.damage_types,
             vulnerability=self._model.vulnerability,
             ground_elevation=ground_elevation,
             aggregation_area_fn=aggregation_areas,
             attribute_names=attribute_names,
             label_names=label_names,
+            geom_name=new_dev_geom_name,
             **kwargs,
         )
 
@@ -924,18 +982,20 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if FiatColumns.max_potential_damage in c
+            if matches_pattern(c, self.fiat_columns.max_potential_damage)
         ]
 
         # Get objects that are buildings (using site info)
         buildings_rows = ~self._model.exposure.exposure_db[
-            FiatColumns.primary_object_type
+            self.fiat_columns.primary_object_type
         ].isin(self.config.non_building_names)
 
         # Get rows that are affected
         objectids = self.get_object_ids(buyout)
         rows = (
-            self._model.exposure.exposure_db[FiatColumns.object_id].isin(objectids)
+            self._model.exposure.exposure_db[self.fiat_columns.object_id].isin(
+                objectids
+            )
             & buildings_rows
         )
 
@@ -968,7 +1028,7 @@ class FiatAdapter(IImpactAdapter):
         self._model.exposure.truncate_damage_function(
             objectids=objectids,
             floodproof_to=floodproof.attrs.elevation.value,
-            damage_function_types=["Structure", "Content"],
+            damage_function_types=self.damage_types,
             vulnerability=self._model.vulnerability,
         )
 
@@ -992,11 +1052,22 @@ class FiatAdapter(IImpactAdapter):
             raise ValueError(
                 "FIAT model does not have exposure, make sure your model has been initialized."
             )
-        return self._model.exposure.select_objects(
+        gdf_0 = self._model.exposure.select_objects(
             primary_object_type="ALL",
             non_building_names=self.config.non_building_names,
             return_gdf=True,
         )
+        # Rename columns
+        name_translation = {}
+        for col in gdf_0.columns:  # iterate through output columns
+            for field in list(self.impact_columns.model_fields):  # check for each field
+                fiat_col = getattr(self.fiat_columns, field)
+                if matches_pattern(col, fiat_col):
+                    impact_col = getattr(self.impact_columns, field)
+                    new_col = replace_pattern(col, fiat_col, impact_col)
+                    name_translation[col] = new_col  # save mapping
+        gdf = gdf_0.rename(columns=name_translation)
+        return gdf
 
     def get_property_types(self) -> list:
         """
@@ -1140,7 +1211,10 @@ class FiatAdapter(IImpactAdapter):
         # Check if type of metric configuration is available
         for metric_file in metric_config_paths:
             if metric_file.exists():
-                metrics_writer = MetricsFileWriter(metric_file)
+                metrics_writer = MetricsFileWriter(
+                    metric_file,
+                    aggregation_label_fmt=self.impact_columns.aggregation_label,
+                )
 
                 metrics_writer.parse_metrics_to_file(
                     df_results=self.outputs["table"],
@@ -1346,7 +1420,9 @@ class FiatAdapter(IImpactAdapter):
         )
         # Read building footprints
         footprints_gdf = gpd.read_file(footprints_path, engine="pyogrio")
-        footprints = Footprints(footprints_gdf)
+        footprints = Footprints(
+            footprints=footprints_gdf, fiat_columns=self.impact_columns
+        )
 
         # Read files
         # TODO Will it save time if we load this footprints once when the database is initialized?
@@ -1358,11 +1434,17 @@ class FiatAdapter(IImpactAdapter):
             return_gdf=True,
         )
 
+        # Change names
+        buildings = buildings[[self.fiat_columns.object_id, "geometry"]]
+        buildings = buildings.rename(
+            columns={self.fiat_columns.object_id: self.impact_columns.object_id}
+        )
+
         fiat_results_df = gpd.GeoDataFrame(
             self.outputs["table"].merge(
-                buildings[[FiatColumns.object_id, "geometry"]],
-                on=FiatColumns.object_id,
-                how="left",
+                buildings,
+                on=self.impact_columns.object_id,
+                how="inner",
             )
         )
 
@@ -1386,21 +1468,25 @@ class FiatAdapter(IImpactAdapter):
         roads = gpd.read_file(
             self.outputs["path"].joinpath(self.config.roads_file_name)
         )
+        roads = roads.rename(columns=self.name_mapping)
         # Get columns to use
         aggr_cols = [
             name
             for name in self.outputs["table"].columns
-            if FiatColumns.aggregation_label in name
+            if self.impact_columns.aggregation_label in name
         ]
         inun_cols = [
-            name for name in roads.columns if FiatColumns.inundation_depth in name
+            name
+            for name in roads.columns
+            if self.impact_columns.inundation_depth in name
         ]
         # Merge data
-        roads = roads[[FiatColumns.object_id, "geometry"] + inun_cols].merge(
+        roads = roads[[self.impact_columns.object_id, "geometry"] + inun_cols].merge(
             self.outputs["table"][
-                [FiatColumns.object_id, FiatColumns.primary_object_type] + aggr_cols
+                [self.impact_columns.object_id, self.impact_columns.primary_object_type]
+                + aggr_cols
             ],
-            on=FiatColumns.object_id,
+            on=self.impact_columns.object_id,
         )
         # Save as geopackage
         roads.to_file(output_path, driver="GPKG")

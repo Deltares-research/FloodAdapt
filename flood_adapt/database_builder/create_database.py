@@ -21,7 +21,7 @@ from pydantic import BaseModel, Field
 from shapely.geometry import Polygon
 
 from flood_adapt import FloodAdaptLogging, Settings
-from flood_adapt.adapter.fiat_adapter import FiatColumns
+from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
@@ -331,7 +331,7 @@ def spatial_join(
     if filter:
         layer_inds = objects_joined["index_right"].dropna().unique()
         layer = layer.iloc[np.sort(layer_inds)].reset_index(drop=True)
-    objects_joined = objects_joined[[FiatColumns.object_id, field_name]]
+    objects_joined = objects_joined[[_FIAT_COLUMNS.object_id, field_name]]
     # rename field if provided
     if rename:
         objects_joined = objects_joined.rename(columns={field_name: rename})
@@ -507,7 +507,7 @@ class DatabaseBuilder:
 
     def _join_building_footprints(
         self, building_footprints: gpd.GeoDataFrame, field_name: str
-    ):
+    ) -> Path:
         """
         Join building footprints with existing building data and updates the exposure CSV.
 
@@ -517,8 +517,6 @@ class DatabaseBuilder:
 
         Returns
         -------
-            None
-
         This method performs the following steps:
         1. Reads the exposure CSV file.
         2. Performs a spatial join between the buildings and building footprints.
@@ -540,9 +538,9 @@ class DatabaseBuilder:
         )
         # Make sure in case of multiple values that the first is kept
         buildings_joined = (
-            buildings_joined.groupby(FiatColumns.object_id)
+            buildings_joined.groupby(_FIAT_COLUMNS.object_id)
             .first()
-            .sort_values(by=[FiatColumns.object_id])
+            .sort_values(by=[_FIAT_COLUMNS.object_id])
         )
         # Create folder
         bf_folder = Path(self.fiat_model.root).joinpath(
@@ -554,18 +552,20 @@ class DatabaseBuilder:
         building_footprints.to_file(geo_path)
         # Save to exposure csv
         exposure_csv = exposure_csv.merge(
-            buildings_joined, on=FiatColumns.object_id, how="left"
+            buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
         )
         exposure_csv.to_csv(self.exposure_csv_path, index=False)
         # Set model building footprints
         self.fiat_model.building_footprint = building_footprints
         self.fiat_model.exposure.exposure_db = exposure_csv
+
         # Save site attributes
-        buildings_path = Path(geo_path.relative_to(self.static_path)).as_posix()
+        buildings_path = geo_path.relative_to(self.static_path)
         self.logger.info(
             f"Building footprints saved at {self.static_path.joinpath(buildings_path).resolve().as_posix()}"
         )
-        return buildings_path
+
+        return geo_path
 
     def read_fiat(self):
         """
@@ -594,10 +594,19 @@ class DatabaseBuilder:
         self.fiat_model = HydroMtFiatModel(root=fiat_path, mode="w+")
         self.fiat_model.read()
 
+        # Make sure only csv objects have geometries
+        for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
+            keep = geoms[_FIAT_COLUMNS.object_id].isin(
+                self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.object_id]
+            )
+            geoms = geoms[keep].reset_index(drop=True)
+            self.fiat_model.exposure.exposure_geoms[i] = geoms
+
         # Read in geometries of buildings
         ind = self.fiat_model.exposure.geom_names.index(self.config.fiat_buildings_name)
         self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
         self.exposure_csv_path = fiat_path.joinpath("exposure", "exposure.csv")
+        footprints_path = None
 
         # Get center of area of interest
         center = self.buildings.dissolve().centroid.to_crs(4326)[0]
@@ -658,14 +667,14 @@ class DatabaseBuilder:
                 # add column for connection
                 if not footprints_found:
                     exposure = self.fiat_model.exposure.exposure_db.set_index(
-                        FiatColumns.object_id
+                        _FIAT_COLUMNS.object_id
                     )
-                    build_geoms["BF_FID"] = build_geoms[FiatColumns.object_id]
-                    build_geoms = build_geoms.set_index(FiatColumns.object_id)
-                    build_geoms[FiatColumns.extraction_method] = "centroid"
+                    build_geoms["BF_FID"] = build_geoms[_FIAT_COLUMNS.object_id]
+                    build_geoms = build_geoms.set_index(_FIAT_COLUMNS.object_id)
+                    build_geoms[_FIAT_COLUMNS.extraction_method] = "centroid"
                     exposure["BF_FID"] = build_geoms["BF_FID"]
-                    exposure[FiatColumns.extraction_method] = build_geoms[
-                        FiatColumns.extraction_method
+                    exposure[_FIAT_COLUMNS.extraction_method] = build_geoms[
+                        _FIAT_COLUMNS.extraction_method
                     ]
                     exposure.reset_index().to_csv(self.exposure_csv_path, index=False)
                     footprints_found = True
@@ -691,10 +700,9 @@ class DatabaseBuilder:
                     )
                     footprints_found = True
             if not footprints_found:
-                self.logger.error(
-                    "No building footprints are available. These are needed in FloodAdapt."
-                )
-                raise ValueError
+                msg = "No building footprints are available. These are needed in FloodAdapt."
+                self.logger.error(msg)
+                raise ValueError(msg)
         else:
             self.config.building_footprints.file = self._check_path(
                 self.config.building_footprints.file
@@ -727,9 +735,9 @@ class DatabaseBuilder:
             )
             # Make sure in case of multiple values that the max is kept
             buildings_joined = (
-                buildings_joined.groupby(FiatColumns.object_id)
+                buildings_joined.groupby(_FIAT_COLUMNS.object_id)
                 .max(self.config.bfe.field_name)
-                .sort_values(by=[FiatColumns.object_id])
+                .sort_values(by=[_FIAT_COLUMNS.object_id])
                 .reset_index()
             )
             # Create folder
@@ -767,20 +775,22 @@ class DatabaseBuilder:
                     self.buildings,
                     self._check_path(aggr.file),
                     aggr.field_name,
-                    rename=f"{FiatColumns.aggregation_label}{aggr_name}",
+                    rename=_FIAT_COLUMNS.aggregation_label.format(name=aggr_name),
                 )
                 aggr_path = Path(self.fiat_model.root).joinpath(
                     "exposure", "aggregation_areas", f"{Path(aggr.file).stem}.gpkg"
                 )
                 aggr_areas.to_file(aggr_path)
                 exposure_csv = exposure_csv.merge(
-                    buildings_joined, on=FiatColumns.object_id, how="left"
+                    buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
                 )
                 self.fiat_model.spatial_joins["aggregation_areas"].append(
                     {
                         "name": aggr_name,
                         "file": aggr_path.relative_to(self.fiat_model.root),
-                        "field_name": f"{FiatColumns.aggregation_label}{aggr_name}",
+                        "field_name": _FIAT_COLUMNS.aggregation_label.format(
+                            name=aggr_name
+                        ),
                         "equity": None,
                     }
                 )
@@ -813,20 +823,20 @@ class DatabaseBuilder:
                 buildings_joined, _ = spatial_join(
                     self.buildings,
                     region,
-                    "id",
-                    rename=f"{FiatColumns.aggregation_label}region",
+                    "aggr_id",
+                    rename=_FIAT_COLUMNS.aggregation_label.format(name="region"),
                 )
                 exposure_csv = exposure_csv.merge(
-                    buildings_joined, on=FiatColumns.object_id, how="left"
+                    buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
                 )
                 exposure_csv.to_csv(self.exposure_csv_path, index=False)
                 self.logger.warning(
                     "No aggregation areas were available in the FIAT model. The region file will be used as a mock aggregation area."
                 )
             else:
-                self.logger.error(
-                    "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
-                )
+                msg = "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
+                self.logger.error(msg)
+                raise ValueError(msg)
         else:
             for aggr_0 in self.fiat_model.spatial_joins["aggregation_areas"]:
                 if aggr_0["equity"] is not None:
@@ -882,7 +892,7 @@ class DatabaseBuilder:
                     f"'SVI' column in the FIAT exposure csv will be filled by {Path(self.config.svi.file).as_posix()}."
                 )
             exposure_csv = exposure_csv.merge(
-                buildings_joined, on=FiatColumns.object_id, how="left"
+                buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
             exposure_csv.to_csv(self.exposure_csv_path, index=False)
             # Create folder
@@ -930,14 +940,15 @@ class DatabaseBuilder:
                 self.config.fiat_roads_name
             )
             roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
-            roads_path = Path(self.fiat_model.root).joinpath(
-                self.fiat_model.config["exposure"]["geom"]["file2"]
-            )
+            roads_geom = self.fiat_model.config["exposure"]["geom"][
+                f"file{roads_ind+1}"
+            ]
+            roads_path = Path(self.fiat_model.root).joinpath(roads_geom)
 
             # TODO do we need the lanes column?
-            if "Segment Length" not in exposure_csv.columns:
+            if _FIAT_COLUMNS.segment_length not in exposure_csv.columns:
                 self.logger.warning(
-                    "'Segment Length' column not present in the FIAT exposure csv. Road impact infometrics cannot be produced."
+                    f"'{_FIAT_COLUMNS.segment_length}' column not present in the FIAT exposure csv. Road impact infometrics cannot be produced."
                 )
 
             # TODO should this should be performed through hydromt-FIAT?
@@ -967,6 +978,11 @@ class DatabaseBuilder:
                 "Delft-FIAT model was missing damage units so '$' was assumed."
             )
 
+        if footprints_path is not None:
+            footprints_path = (
+                Path(footprints_path).relative_to(self.static_path).as_posix()
+            )
+
         # Store FIAT configuration
         self.site_attrs["fiat"] = {}
         self.site_attrs["fiat"]["config"] = FiatConfigModel(
@@ -976,11 +992,11 @@ class DatabaseBuilder:
             floodmap_type="water_level",  # TODO allow for water depth
             non_building_names=["road"],  # TODO check names from exposure
             damage_unit=dmg_unit,
-            building_footprints=str(
-                footprints_path.relative_to(self.static_path).as_posix()
-            ),
-            roads_file_name="spatial2.gpkg" if self.roads else None,
-            new_development_file_name="spatial3.gpkg",  # TODO allow for different naming
+            building_footprints=footprints_path,
+            roads_file_name=f"{self.config.fiat_roads_name}.gpkg"
+            if self.roads
+            else None,
+            new_development_file_name="new_development_area.gpkg",  # TODO allow for different naming
             save_simulation=False,  # default is not to save simulations
             svi=svi_config,
             infographics=True if self.config.infographics else False,
@@ -1089,7 +1105,9 @@ class DatabaseBuilder:
 
         for i, row in river_locs.iterrows():
             if dis_values:
-                val = self.sfincs.forcing["dis"].sel(index=i).to_numpy().mean()
+                val = (
+                    self.sfincs.forcing["dis"].sel(index=i + 1).to_numpy().mean()
+                )  # sfincs has 1 based-indexing
             else:
                 val = 0.0
             mean_dis = us.UnitfulDischarge(
@@ -1133,12 +1151,11 @@ class DatabaseBuilder:
         if subgrid_sfincs.exists():
             fa_path2 = self.root.joinpath("static", "dem", fn)
         else:
-            self.logger.error(
+            msg = (
                 f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
             )
-            raise ValueError(
-                f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
-            )
+            self.logger.error(msg)
+            raise ValueError(msg)
 
         # Check if tiles already exist in the SFINCS model
         if tiles_sfincs.exists():
@@ -1219,19 +1236,19 @@ class DatabaseBuilder:
             )
 
             exposure.loc[
-                exposure[FiatColumns.primary_object_type] == "road",
-                FiatColumns.ground_floor_height,
+                exposure[_FIAT_COLUMNS.primary_object_type] == "road",
+                _FIAT_COLUMNS.ground_floor_height,
             ] = 0
             exposure = exposure.merge(
-                roads[[FiatColumns.object_id, "elev"]],
-                on=FiatColumns.object_id,
+                roads[[_FIAT_COLUMNS.object_id, "elev"]],
+                on=_FIAT_COLUMNS.object_id,
                 how="left",
             )
             exposure.loc[
-                exposure[FiatColumns.primary_object_type] == "road",
-                FiatColumns.ground_elevation,
+                exposure[_FIAT_COLUMNS.primary_object_type] == "road",
+                _FIAT_COLUMNS.ground_elevation,
             ] = exposure.loc[
-                exposure[FiatColumns.primary_object_type] == "road", "elev"
+                exposure[_FIAT_COLUMNS.primary_object_type] == "road", "elev"
             ]
             del exposure["elev"]
 
@@ -1248,14 +1265,14 @@ class DatabaseBuilder:
             * conversion_factor
         )
         exposure = exposure.merge(
-            points[[FiatColumns.object_id, "elev"]],
-            on=FiatColumns.object_id,
+            points[[_FIAT_COLUMNS.object_id, "elev"]],
+            on=_FIAT_COLUMNS.object_id,
             how="left",
         )
         exposure.loc[
-            exposure[FiatColumns.primary_object_type] != "road",
-            FiatColumns.ground_elevation,
-        ] = exposure.loc[exposure[FiatColumns.primary_object_type] != "road", "elev"]
+            exposure[_FIAT_COLUMNS.primary_object_type] != "road",
+            _FIAT_COLUMNS.ground_elevation,
+        ] = exposure.loc[exposure[_FIAT_COLUMNS.primary_object_type] != "road", "elev"]
         del exposure["elev"]
 
         exposure.to_csv(exposure_csv_path, index=False)
@@ -1699,7 +1716,7 @@ class DatabaseBuilder:
                     "Default OSM infometrics and infographics will be created."
                 )
 
-            if hasattr(self.site_attrs["fiat"]["config"], "svi"):
+            if self.site_attrs["fiat"]["config"].svi is not None:
                 svi_folder_name = "with_SVI"
             else:
                 svi_folder_name = "without_SVI"
@@ -1863,7 +1880,10 @@ class DatabaseBuilder:
 
         # Clip the exposure geometries
         # Filter buildings and roads
-        road_inds = gdf[FiatColumns.primary_object_type].str.contains("road")
+        road_inds = gdf[_FIAT_COLUMNS.primary_object_type].str.contains("road")
+        # Ensure road_inds is a boolean Series
+        if not road_inds.dtype == bool:
+            road_inds = road_inds.astype(bool)
         # Clip buildings
         gdf_buildings = gdf[~road_inds]
         gdf_buildings = self._clip_gdf(
@@ -1882,16 +1902,16 @@ class DatabaseBuilder:
                 self.config.fiat_roads_name
             )
             self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
-                [FiatColumns.object_id, "geometry"]
+                [_FIAT_COLUMNS.object_id, "geometry"]
             ]
             self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
-                [FiatColumns.object_id, "geometry"]
+                [_FIAT_COLUMNS.object_id, "geometry"]
             ]
             gdf = pd.concat([gdf_buildings, gdf_roads])
         else:
             gdf = gdf_buildings
             self.fiat_model.exposure.exposure_geoms[0] = gdf[
-                [FiatColumns.object_id, "geometry"]
+                [_FIAT_COLUMNS.object_id, "geometry"]
             ]
 
         # Save exposure dataframe
