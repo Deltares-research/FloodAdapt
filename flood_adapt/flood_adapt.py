@@ -49,9 +49,7 @@ class FloodAdapt:
     logger: logging.Logger = FloodAdaptLogging.getLogger()
 
     def __init__(self, database_path: Path) -> None:
-        self.database = Database(
-            database_path=database_path.parent, database_name=database_path.name
-        )
+        self.database = Database(database_path=database_path)
         self.site = self.database.site
 
     # General database functions
@@ -837,7 +835,6 @@ class FloodAdapt:
 
                 # write finished file to indicate that the scenario has been run
                 write_finished_file(results_path)
-
             except RuntimeError as e:
                 if "SFINCS model failed to run." in str(e):
                     errors.append(str(scn))

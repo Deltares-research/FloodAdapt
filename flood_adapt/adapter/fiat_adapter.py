@@ -240,7 +240,7 @@ class FiatAdapter(IImpactAdapter):
             self.add_measure(measure)
 
         # Hazard
-        var = "risk_maps" if self.floodmap.mode == Mode.risk else "zsmax"
+        var = "zsmax" if self.floodmap.mode == Mode.risk else "risk_maps"
         is_risk = self.floodmap.mode == Mode.risk
         self.set_hazard(
             map_fn=self.floodmap.path,
