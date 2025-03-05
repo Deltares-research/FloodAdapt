@@ -29,7 +29,7 @@ dependencies = [
     "cht-meteo",
     "cht-observations",
     "cht-tide",
-    "dask<2024.7.0",  # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
+    "dask==2024.11.2,",  # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
     "fiat-toolbox",
     "fiona",
     "geojson",
