@@ -206,7 +206,7 @@ class SfincsAdapter(IHazardAdapter):
         with cd(path):
             self.logger.info(f"Running SFINCS in {path}")
             process = subprocess.run(
-                str(Settings().sfincs_path),
+                self.bin_path.as_posix(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -1433,6 +1433,7 @@ class SfincsAdapter(IHazardAdapter):
     ### PRIVATE GETTERS ###
     def setup_paths(self, scenario: IScenario, database: IDatabase):
         """Set up the paths for a given scenario and a database."""
+        self.bin_path = database.static_path / self.settings.config.bin_path
         self.results_path = (
             database.scenarios.output_path / scenario.attrs.name / "Flooding"
         )

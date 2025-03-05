@@ -131,6 +131,7 @@ class SfincsConfigModel(BaseModel):
     overland_model: str
     floodmap_units: us.UnitTypesLength
     save_simulation: Optional[bool] = False
+    bin_path: str
 
 
 class SfincsModel(BaseModel):

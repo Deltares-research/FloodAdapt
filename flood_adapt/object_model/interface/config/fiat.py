@@ -82,6 +82,7 @@ class FiatConfigModel(BaseModel):
     svi: Optional[SVIModel] = None
     infographics: Optional[bool] = False
     no_footprints: Optional[NoFootprintsModel] = NoFootprintsModel()
+    bin_path: str
 
     @staticmethod
     def read_toml(path: Path) -> "FiatConfigModel":

@@ -16,6 +16,10 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWind,
 )
+from flood_adapt.object_model.interface.config.gui import GuiUnitModel
+from flood_adapt.object_model.interface.config.sfincs import (
+    SfincsModel as SfincsSettings,
+)
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
@@ -28,7 +32,11 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler):
     logger = FloodAdaptLogging.getLogger("OffshoreSfincsAdapter")
     template_path: Path
 
-    def __init__(self, database: IDatabase) -> None:
+    def __init__(
+        self, database: IDatabase, settings: SfincsSettings, unit_system: GuiUnitModel
+    ) -> None:
+        self.settings = settings
+        self.units = unit_system
         self.database = database
         self.template_path = (
             self.database.static.get_offshore_sfincs_model().get_model_root()
@@ -42,7 +50,11 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler):
 
         self.run_offshore(scenario)
 
-        with SfincsAdapter(model_root=path) as offshore_model:
+        with SfincsAdapter(
+            model_root=path,
+            settings=self.settings,
+            unit_system=self.units,
+        ) as offshore_model:
             waterlevels = offshore_model.get_wl_df_from_offshore_his_results()
 
         return waterlevels
@@ -80,7 +92,11 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler):
         )
         input_dir = self.database.events.input_path / scenario.event.attrs.name
         sim_path = self._get_simulation_path(scenario)
-        with SfincsAdapter(model_root=self.template_path) as _offshore_model:
+        with SfincsAdapter(
+            model_root=self.template_path,
+            settings=self.settings,
+            unit_system=self.units,
+        ) as _offshore_model:
             if _offshore_model.sfincs_completed(scenario):
                 self.logger.info(
                     f"Skip preprocessing offshore model as it has already been run for `{scenario.attrs.name}`."
@@ -137,7 +153,11 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler):
     def _execute_sfincs_offshore(self, sim_path: Path, scenario: IScenario):
         self.logger.info(f"Running offshore model in {sim_path}")
 
-        with SfincsAdapter(model_root=sim_path) as _offshore_model:
+        with SfincsAdapter(
+            model_root=sim_path,
+            settings=self.settings,
+            unit_system=self.units,
+        ) as _offshore_model:
             if _offshore_model.sfincs_completed(scenario):
                 self.logger.info(
                     "Skip running offshore model as it has already been run."
