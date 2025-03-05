@@ -1105,7 +1105,9 @@ class DatabaseBuilder:
 
         for i, row in river_locs.iterrows():
             if dis_values:
-                val = self.sfincs.forcing["dis"].sel(index=i).to_numpy().mean()
+                val = (
+                    self.sfincs.forcing["dis"].sel(index=i + 1).to_numpy().mean()
+                )  # sfincs has 1 based-indexing
             else:
                 val = 0.0
             mean_dis = us.UnitfulDischarge(
