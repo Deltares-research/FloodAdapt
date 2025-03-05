@@ -93,6 +93,7 @@ class FiatAdapter(IImpactAdapter):
     def __init__(
         self,
         model_root: Path,
+        config_fn: Optional[str] = None,
         config: Optional[FiatConfigModel] = None,
         exe_path: Optional[os.PathLike] = None,
         delete_crashed_runs: bool = True,
@@ -105,7 +106,11 @@ class FiatAdapter(IImpactAdapter):
         self.config_base_path = config_base_path
         self.exe_path = exe_path
         self.delete_crashed_runs = delete_crashed_runs
-        self._model = FiatModel(root=str(model_root.resolve()), mode="r")
+        self._model = FiatModel(
+            root=model_root.as_posix(),
+            config_fn=config_fn,
+            mode="r",
+        )
         self._model.read()
         self.fiat_columns = _FIAT_COLUMNS
         self.impact_columns = _IMPACT_COLUMNS  # columns of FA impact output

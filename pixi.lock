@@ -59,7 +59,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/aa/804c1cf5077b6f17d752b23637d9ef53eaad77ea73ee43d4c12bff480e36/duckdb-1.1.3-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/11/9c/f2477aaecda2dff726e51e4e9bea7ce1e807a9b3326f7eed829532f3d38c/fiat_toolbox-0.1.15-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/07/6c/0c9e803b83d077c4273a1cd8bcf2a11bd10f8d472c14b092e0e2b6626434/fiat_toolbox-0.1.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/32/c1d53b4d77926414ffdf5bd38344e900e378ae9ccb2a65754cdb6d5344c2/fiona-1.10.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -71,7 +71,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d3/26/80c465432563e7f9485ac0a230a8810a8a9417b9507dc96e341613a1c33f/hydromt-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/fdc237745fd05f7f8f6dcca93f81205bf8bde19e5e0e00007c76d6a8a646/hydromt_fiat-0.5.2-py3-none-any.whl
-      - pypi: git+https://github.com/deltares/hydromt_sfincs#94b514e7355fc94b3a787eff4f27e278b61b7cdd
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#94b514e7355fc94b3a787eff4f27e278b61b7cdd
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -231,7 +231,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/aa/804c1cf5077b6f17d752b23637d9ef53eaad77ea73ee43d4c12bff480e36/duckdb-1.1.3-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/11/9c/f2477aaecda2dff726e51e4e9bea7ce1e807a9b3326f7eed829532f3d38c/fiat_toolbox-0.1.15-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/07/6c/0c9e803b83d077c4273a1cd8bcf2a11bd10f8d472c14b092e0e2b6626434/fiat_toolbox-0.1.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/32/c1d53b4d77926414ffdf5bd38344e900e378ae9ccb2a65754cdb6d5344c2/fiona-1.10.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -243,7 +243,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d3/26/80c465432563e7f9485ac0a230a8810a8a9417b9507dc96e341613a1c33f/hydromt-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/fdc237745fd05f7f8f6dcca93f81205bf8bde19e5e0e00007c76d6a8a646/hydromt_fiat-0.5.2-py3-none-any.whl
-      - pypi: git+https://github.com/deltares/hydromt_sfincs#94b514e7355fc94b3a787eff4f27e278b61b7cdd
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#94b514e7355fc94b3a787eff4f27e278b61b7cdd
       - pypi: https://files.pythonhosted.org/packages/9f/cb/18326d2d89ad3b0dd143da971e77afd1e6ca6674f1b1c3df4b6bec6279fc/id-1.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -416,7 +416,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f2/eb/58d4e0eccdc7b3523c062d008ad9eef28edccf88591d1a78659c809fe6e8/duckdb-1.1.3-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/11/9c/f2477aaecda2dff726e51e4e9bea7ce1e807a9b3326f7eed829532f3d38c/fiat_toolbox-0.1.15-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/07/6c/0c9e803b83d077c4273a1cd8bcf2a11bd10f8d472c14b092e0e2b6626434/fiat_toolbox-0.1.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/0d/914fd3c4c32043c2c512fa5021e83b2348e1b7a79365d75a0a37cb545362/fiona-1.10.1-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -428,7 +428,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d3/26/80c465432563e7f9485ac0a230a8810a8a9417b9507dc96e341613a1c33f/hydromt-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/fdc237745fd05f7f8f6dcca93f81205bf8bde19e5e0e00007c76d6a8a646/hydromt_fiat-0.5.2-py3-none-any.whl
-      - pypi: git+https://github.com/deltares/hydromt_sfincs#94b514e7355fc94b3a787eff4f27e278b61b7cdd
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#94b514e7355fc94b3a787eff4f27e278b61b7cdd
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -587,7 +587,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/aa/804c1cf5077b6f17d752b23637d9ef53eaad77ea73ee43d4c12bff480e36/duckdb-1.1.3-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/11/9c/f2477aaecda2dff726e51e4e9bea7ce1e807a9b3326f7eed829532f3d38c/fiat_toolbox-0.1.15-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/07/6c/0c9e803b83d077c4273a1cd8bcf2a11bd10f8d472c14b092e0e2b6626434/fiat_toolbox-0.1.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/ec/00d68c4ddfedfe64159999e5f8a98fb8442729a63e2077eb9dcd89623d27/filelock-3.17.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/32/c1d53b4d77926414ffdf5bd38344e900e378ae9ccb2a65754cdb6d5344c2/fiona-1.10.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
@@ -600,7 +600,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d3/26/80c465432563e7f9485ac0a230a8810a8a9417b9507dc96e341613a1c33f/hydromt-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/fdc237745fd05f7f8f6dcca93f81205bf8bde19e5e0e00007c76d6a8a646/hydromt_fiat-0.5.2-py3-none-any.whl
-      - pypi: git+https://github.com/deltares/hydromt_sfincs#94b514e7355fc94b3a787eff4f27e278b61b7cdd
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#94b514e7355fc94b3a787eff4f27e278b61b7cdd
       - pypi: https://files.pythonhosted.org/packages/74/a1/68a395c17eeefb04917034bd0a1bfa765e7654fa150cca473d669aa3afb5/identify-2.6.6-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -779,7 +779,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7b/8f/c4d9bafc34ad7ad5d8dc16dd1347ee0e507a52c3adb6bfa8887e1c6a26ba/executing-2.2.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/90/2b/0817a2b257fe88725c25589d89aec060581aabf668707a8d03b2e9e0cb2a/fastjsonschema-2.21.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/11/9c/f2477aaecda2dff726e51e4e9bea7ce1e807a9b3326f7eed829532f3d38c/fiat_toolbox-0.1.15-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/07/6c/0c9e803b83d077c4273a1cd8bcf2a11bd10f8d472c14b092e0e2b6626434/fiat_toolbox-0.1.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/32/c1d53b4d77926414ffdf5bd38344e900e378ae9ccb2a65754cdb6d5344c2/fiona-1.10.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -797,7 +797,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d3/26/80c465432563e7f9485ac0a230a8810a8a9417b9507dc96e341613a1c33f/hydromt-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/fdc237745fd05f7f8f6dcca93f81205bf8bde19e5e0e00007c76d6a8a646/hydromt_fiat-0.5.2-py3-none-any.whl
-      - pypi: git+https://github.com/deltares/hydromt_sfincs#94b514e7355fc94b3a787eff4f27e278b61b7cdd
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#94b514e7355fc94b3a787eff4f27e278b61b7cdd
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
@@ -1026,7 +1026,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/02/cc/b7e31358aac6ed1ef2bb790a9746ac2c69bcb3c8588b41616914eb106eaf/exceptiongroup-1.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/bf/fd60001b3abc5222d8eaa4a204cd8c0ae78e75adc688f33ce4bf25b7fafa/fasteners-0.19-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/11/9c/f2477aaecda2dff726e51e4e9bea7ce1e807a9b3326f7eed829532f3d38c/fiat_toolbox-0.1.15-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/07/6c/0c9e803b83d077c4273a1cd8bcf2a11bd10f8d472c14b092e0e2b6626434/fiat_toolbox-0.1.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ca/a3/57d33c2f16a2a6b27911d83301a697ed1491dca48d2f1dd2ed3b58a66244/fiona-1.10.1-cp310-cp310-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -1038,7 +1038,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d3/26/80c465432563e7f9485ac0a230a8810a8a9417b9507dc96e341613a1c33f/hydromt-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/fdc237745fd05f7f8f6dcca93f81205bf8bde19e5e0e00007c76d6a8a646/hydromt_fiat-0.5.2-py3-none-any.whl
-      - pypi: git+https://github.com/deltares/hydromt_sfincs#94b514e7355fc94b3a787eff4f27e278b61b7cdd
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#94b514e7355fc94b3a787eff4f27e278b61b7cdd
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -1194,7 +1194,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/aa/804c1cf5077b6f17d752b23637d9ef53eaad77ea73ee43d4c12bff480e36/duckdb-1.1.3-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/11/9c/f2477aaecda2dff726e51e4e9bea7ce1e807a9b3326f7eed829532f3d38c/fiat_toolbox-0.1.15-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/07/6c/0c9e803b83d077c4273a1cd8bcf2a11bd10f8d472c14b092e0e2b6626434/fiat_toolbox-0.1.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/32/c1d53b4d77926414ffdf5bd38344e900e378ae9ccb2a65754cdb6d5344c2/fiona-1.10.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -1206,7 +1206,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d3/26/80c465432563e7f9485ac0a230a8810a8a9417b9507dc96e341613a1c33f/hydromt-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/fdc237745fd05f7f8f6dcca93f81205bf8bde19e5e0e00007c76d6a8a646/hydromt_fiat-0.5.2-py3-none-any.whl
-      - pypi: git+https://github.com/deltares/hydromt_sfincs#94b514e7355fc94b3a787eff4f27e278b61b7cdd
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#94b514e7355fc94b3a787eff4f27e278b61b7cdd
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -1363,7 +1363,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f2/eb/58d4e0eccdc7b3523c062d008ad9eef28edccf88591d1a78659c809fe6e8/duckdb-1.1.3-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/11/9c/f2477aaecda2dff726e51e4e9bea7ce1e807a9b3326f7eed829532f3d38c/fiat_toolbox-0.1.15-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/07/6c/0c9e803b83d077c4273a1cd8bcf2a11bd10f8d472c14b092e0e2b6626434/fiat_toolbox-0.1.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/0d/914fd3c4c32043c2c512fa5021e83b2348e1b7a79365d75a0a37cb545362/fiona-1.10.1-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -1375,7 +1375,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d3/26/80c465432563e7f9485ac0a230a8810a8a9417b9507dc96e341613a1c33f/hydromt-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/fdc237745fd05f7f8f6dcca93f81205bf8bde19e5e0e00007c76d6a8a646/hydromt_fiat-0.5.2-py3-none-any.whl
-      - pypi: git+https://github.com/deltares/hydromt_sfincs#94b514e7355fc94b3a787eff4f27e278b61b7cdd
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#94b514e7355fc94b3a787eff4f27e278b61b7cdd
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -1510,7 +1510,7 @@ packages:
   - pytest>=7.0 ; extra == 'test'
   - trustme ; extra == 'test'
   - truststore>=0.9.1 ; python_full_version >= '3.10' and extra == 'test'
-  - uvloop>=0.21 ; python_full_version < '3.14' and platform_python_implementation == 'CPython' and platform_system != 'Windows' and extra == 'test'
+  - uvloop>=0.21 ; python_full_version < '3.14' and platform_python_implementation == 'CPython' and sys_platform != 'win32' and extra == 'test'
   - packaging ; extra == 'doc'
   - sphinx~=7.4 ; extra == 'doc'
   - sphinx-rtd-theme ; extra == 'doc'
@@ -2042,7 +2042,7 @@ packages:
   version: 8.1.8
   sha256: 63c132bbbed01578a06712a2d1f497bb62d9c1c0d329b7903a866228027263b2
   requires_dist:
-  - colorama ; platform_system == 'Windows'
+  - colorama ; sys_platform == 'win32'
   - importlib-metadata ; python_full_version < '3.8'
   requires_python: '>=3.7'
 - pypi: https://files.pythonhosted.org/packages/e9/da/824b92d9942f4e472702488857914bdd50f73021efea15b4cad9aca8ecef/click_plugins-1.1.1-py2.py3-none-any.whl
@@ -2414,10 +2414,10 @@ packages:
   - pytest-benchmark ; extra == 'devel'
   - pytest-cache ; extra == 'devel'
   - validictory ; extra == 'devel'
-- pypi: https://files.pythonhosted.org/packages/11/9c/f2477aaecda2dff726e51e4e9bea7ce1e807a9b3326f7eed829532f3d38c/fiat_toolbox-0.1.15-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/07/6c/0c9e803b83d077c4273a1cd8bcf2a11bd10f8d472c14b092e0e2b6626434/fiat_toolbox-0.1.16-py3-none-any.whl
   name: fiat-toolbox
-  version: 0.1.15
-  sha256: 64c5055c48a029adbe1df4cc553ef22d449e7f3302cab4b9b3921c9a114a91d4
+  version: 0.1.16
+  sha256: a19be3ee44ddc1132ed1bc24dc5293dac236dd63fce4706105dfe6b952e3c714
   requires_dist:
   - numpy
   - pandas
@@ -2539,14 +2539,14 @@ packages:
 - pypi: .
   name: flood-adapt
   version: 0.2.0
-  sha256: 71ee777a7e09e525d534cb842699e3bf1aaebeb59aaba69703fecf4d79804484
+  sha256: 4592266c9e937b65282efd279bf720a6b817ded0b9158c490734622cfae3e2c9
   requires_dist:
   - cht-cyclones
   - cht-meteo
   - cht-observations
   - cht-tide
   - dask<2024.7.0
-  - fiat-toolbox==0.1.15
+  - fiat-toolbox==0.1.16
   - fiona
   - geojson
   - geopandas
@@ -3023,7 +3023,7 @@ packages:
   - sphinx-rtd-theme ; extra == 'doc'
   - ruff==0.6.8 ; extra == 'doc'
   requires_python: '>=3.8'
-- pypi: git+https://github.com/deltares/hydromt_sfincs#94b514e7355fc94b3a787eff4f27e278b61b7cdd
+- pypi: git+https://github.com/Deltares/hydromt_sfincs.git#94b514e7355fc94b3a787eff4f27e278b61b7cdd
   name: hydromt-sfincs
   version: 1.1.0
   requires_dist:
@@ -3152,7 +3152,7 @@ packages:
   version: 6.29.5
   sha256: afdb66ba5aa354b09b91379bac28ae4afebbb30e8b39510c9690afb7a10421b5
   requires_dist:
-  - appnope ; platform_system == 'Darwin'
+  - appnope ; sys_platform == 'darwin'
   - comm>=0.1.1
   - debugpy>=1.6.5
   - ipython>=7.23.1
@@ -4916,12 +4916,12 @@ packages:
   - cryptography>=3.3
   - pynacl>=1.5
   - pyasn1>=0.1.7 ; extra == 'gssapi'
-  - gssapi>=1.4.1 ; platform_system != 'Windows' and extra == 'gssapi'
-  - pywin32>=2.1.8 ; platform_system == 'Windows' and extra == 'gssapi'
+  - gssapi>=1.4.1 ; sys_platform != 'win32' and extra == 'gssapi'
+  - pywin32>=2.1.8 ; sys_platform == 'win32' and extra == 'gssapi'
   - invoke>=2.0 ; extra == 'invoke'
   - pyasn1>=0.1.7 ; extra == 'all'
-  - gssapi>=1.4.1 ; platform_system != 'Windows' and extra == 'all'
-  - pywin32>=2.1.8 ; platform_system == 'Windows' and extra == 'all'
+  - gssapi>=1.4.1 ; sys_platform != 'win32' and extra == 'all'
+  - pywin32>=2.1.8 ; sys_platform == 'win32' and extra == 'all'
   - invoke>=2.0 ; extra == 'all'
   requires_python: '>=3.6'
 - pypi: https://files.pythonhosted.org/packages/d0/31/ba45bf0b2aa7898d81cbbfac0e88c267befb59ad91a19e36e1bc5578ddb1/parse-1.20.2-py2.py3-none-any.whl
@@ -5291,7 +5291,7 @@ packages:
   - pydantic-core==2.27.2
   - typing-extensions>=4.12.2
   - email-validator>=2.0.0 ; extra == 'email'
-  - tzdata ; python_full_version >= '3.9' and platform_system == 'Windows' and extra == 'timezone'
+  - tzdata ; python_full_version >= '3.9' and sys_platform == 'win32' and extra == 'timezone'
   requires_python: '>=3.8'
 - pypi: https://files.pythonhosted.org/packages/1f/ea/cd7209a889163b8dcca139fe32b9687dd05249161a3edda62860430457a5/pydantic_core-2.27.2-cp312-cp312-win_amd64.whl
   name: pydantic-core
@@ -6342,7 +6342,7 @@ packages:
   version: 4.67.1
   sha256: 26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2
   requires_dist:
-  - colorama ; platform_system == 'Windows'
+  - colorama ; sys_platform == 'win32'
   - pytest>=6 ; extra == 'dev'
   - pytest-cov ; extra == 'dev'
   - pytest-timeout ; extra == 'dev'
