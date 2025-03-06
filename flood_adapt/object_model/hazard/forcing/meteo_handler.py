@@ -1,7 +1,6 @@
 import glob
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -12,19 +11,16 @@ from cht_meteo.meteo import (
 )
 from pyproj import CRS
 
-from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.interface.meteo_handler import IMeteoHandler
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.config.site import Site
 
 
 class MeteoHandler(IMeteoHandler):
-    def __init__(self, dir: Optional[Path] = None, site: Optional[Site] = None) -> None:
-        self.dir: Path = dir or Settings().database_path / "static" / "meteo"
+    def __init__(self, dir: Path, site: Site) -> None:
+        self.dir: Path = dir
         self.dir.mkdir(parents=True, exist_ok=True)
-        self.site: Site = site or Site.load_file(
-            Settings().database_path / "static" / "config" / "site.toml"
-        )
+        self.site: Site = site
 
     def download(self, time: TimeModel):
         params = ["wind", "barometric_pressure", "precipitation"]

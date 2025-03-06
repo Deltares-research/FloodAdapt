@@ -7,8 +7,10 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
 from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
+from flood_adapt.object_model.interface.config.site import Site
 
 
 def write_mock_nc_file(
@@ -56,7 +58,10 @@ class TestMeteoHandler:
 
     @pytest.fixture()
     def setup_meteo_test(self, tmp_path):
-        handler = MeteoHandler(dir=tmp_path)
+        site = Site.load_file(
+            Settings().database_path / "static" / "config" / "site.toml"
+        )
+        handler = MeteoHandler(dir=tmp_path, site=site)
         time = TimeModel(
             start_time=REFERENCE_TIME,
             end_time=REFERENCE_TIME + timedelta(hours=3),

@@ -953,7 +953,10 @@ class SfincsAdapter(IHazardAdapter):
                 timeseries=tmp_path, magnitude=None, direction=None
             )
         elif isinstance(wind, WindMeteo):
-            ds = MeteoHandler().read(time_frame)
+            ds = MeteoHandler(
+                dir=self.meteo_dir,
+                site=self.site,
+            ).read(time_frame)
             # data already in metric units so no conversion needed
 
             # HydroMT function: set wind forcing from grid
@@ -1033,7 +1036,7 @@ class SfincsAdapter(IHazardAdapter):
 
             self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(rainfall, RainfallMeteo):
-            ds = MeteoHandler().read(time_frame)
+            ds = MeteoHandler(dir=self.meteo_dir, site=self.site).read(time_frame)
             # MeteoHandler always return metric so no conversion needed
             ds["precip"] *= self._current_scenario.event.attrs.rainfall_multiplier
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
@@ -1437,6 +1440,8 @@ class SfincsAdapter(IHazardAdapter):
         self.results_path = (
             database.scenarios.output_path / scenario.attrs.name / "Flooding"
         )
+        self.meteo_dir = database.input_path / "meteo"
+        self.site = database.site
         base_path = (
             self.results_path / "simulations" / self.settings.config.overland_model
         )
