@@ -617,7 +617,6 @@ class DatabaseBuilder:
             self.config.fiat_buildings_name
         )
         self.build_ind = build_ind
-        footprints_path = None
 
         # Get center of area of interest
         if not self.fiat_model.region.empty:
