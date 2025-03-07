@@ -114,8 +114,8 @@ def test_sub_event() -> SyntheticEvent:
 def test_eventset(test_sub_event: SyntheticEvent) -> EventSet:
     sub_event_models: list[SubEventModel] = []
     sub_events = []
-    for i in [1, 39, 78]:
-        sub_event_model = SubEventModel(name=f"subevent_{i:04d}", frequency=i)
+    for i, freq in [(1, 0.5), (39, 0.2), (78, 0.02)]:
+        sub_event_model = SubEventModel(name=f"subevent_{i:04d}", frequency=freq)
         sub_event = deepcopy(test_sub_event)
         sub_event.attrs.name = sub_event_model.name
 
