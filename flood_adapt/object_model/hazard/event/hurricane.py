@@ -75,7 +75,7 @@ class HurricaneEvent(Event[HurricaneEventModel]):
         )
 
     def preprocess(self, output_dir: Path):
-        spw_file = self.make_spw_file(output_dir=output_dir, recreate=True)
+        spw_file = self.make_spw_file(output_dir=output_dir, recreate=False)
         for forcing in self.get_forcings():
             if isinstance(forcing, (RainfallTrack, WindTrack)):
                 forcing.path = spw_file
