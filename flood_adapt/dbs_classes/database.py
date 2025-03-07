@@ -276,9 +276,7 @@ class Database(IDatabase):
         df = df.rename(
             columns={
                 "variable": "Scenario",
-                "value": "Sea level rise [{}]".format(
-                    self.site.attrs.gui.units.default_length_units
-                ),
+                "value": f"Sea level rise [{self.site.attrs.gui.units.default_length_units.value}]",
             }
         )
 
@@ -288,7 +286,7 @@ class Database(IDatabase):
         fig = line(
             df,
             x="Year",
-            y=f"Sea level rise [{self.site.attrs.gui.units.default_length_units}]",
+            y=f"Sea level rise [{self.site.attrs.gui.units.default_length_units.value}]",
             color="Scenario",
             color_discrete_sequence=colors,
         )
