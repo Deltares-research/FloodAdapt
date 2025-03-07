@@ -1,3 +1,4 @@
+from copy import deepcopy
 from pathlib import Path
 from tempfile import gettempdir
 from unittest.mock import patch
@@ -5,7 +6,11 @@ from unittest.mock import patch
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.event_set import EventSet, EventSetModel
+from flood_adapt.object_model.hazard.event.event_set import (
+    EventSet,
+    EventSetModel,
+    SubEventModel,
+)
 from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
     SyntheticEventModel,
@@ -107,18 +112,22 @@ def test_sub_event() -> SyntheticEvent:
 
 @pytest.fixture()
 def test_eventset(test_sub_event: SyntheticEvent) -> EventSet:
-    sub_event_models = []
-    for i in [1, 39, 78]:
-        sub_event_models.append(
-            test_sub_event.attrs.model_copy(update={"name": f"subevent_{i:04d}"})
-        )
+    sub_event_models: list[SubEventModel] = []
+    sub_events = []
+    for i, freq in [(1, 0.5), (39, 0.2), (78, 0.02)]:
+        sub_event_model = SubEventModel(name=f"subevent_{i:04d}", frequency=freq)
+        sub_event = deepcopy(test_sub_event)
+        sub_event.attrs.name = sub_event_model.name
+
+        sub_event_models.append(sub_event_model)
+        sub_events.append(sub_event)
 
     event_set = EventSet(
         EventSetModel(
             name="test_eventset",
             sub_events=sub_event_models,
-            frequency=[0.5, 0.2, 0.02],
-        )
+        ),
+        sub_events=sub_events,
     )
     return event_set
 
