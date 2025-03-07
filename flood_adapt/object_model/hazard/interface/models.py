@@ -8,6 +8,8 @@ from pydantic import (
     model_validator,
 )
 
+from flood_adapt.object_model.io import unit_system as us
+
 REFERENCE_TIME = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
 
 
@@ -64,6 +66,18 @@ class TimeModel(BaseModel):
     @classmethod
     def serialize_time_step(cls, value: timedelta) -> float:
         return value.total_seconds()
+
+    @property
+    def duration(self) -> timedelta:
+        return self.end_time - self.start_time
+
+    def duration_as_unitfultime(
+        self, unit: us.UnitTypesTime = us.UnitTypesTime.hours
+    ) -> us.UnitfulTime:
+        return us.UnitfulTime(
+            value=(self.duration).total_seconds(),
+            units=us.UnitTypesTime.seconds,
+        ).transform(unit)
 
     def __str__(self) -> str:
         return f"{self.start_time} - {self.end_time}"
