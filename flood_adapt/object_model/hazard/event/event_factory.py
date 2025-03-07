@@ -130,7 +130,7 @@ class EventFactory:
         return event_type.load_file(toml_file)
 
     @staticmethod
-    def load_dict(attrs: dict[str, Any] | IEventModel) -> IEvent | EventSet:
+    def load_dict(attrs: dict[str, Any] | IEventModel) -> IEvent:
         """Return event object based on attrs dict.
 
         Parameters

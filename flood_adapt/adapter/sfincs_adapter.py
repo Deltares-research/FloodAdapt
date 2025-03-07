@@ -722,7 +722,9 @@ class SfincsAdapter(IHazardAdapter):
         phys_proj = scenario.projection.get_physical_projection()
 
         floodmap_rp = self.database.site.attrs.fiat.risk.return_periods
-        frequencies = scenario.event.attrs.frequency
+        frequencies = [
+            sub_event.frequency for sub_event in scenario.event.attrs.sub_events
+        ]
 
         # adjust storm frequency for hurricane events
         if not math.isclose(phys_proj.attrs.storm_frequency_increase, 0):
