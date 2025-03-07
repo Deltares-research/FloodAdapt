@@ -1405,7 +1405,9 @@ class FiatAdapter(IImpactAdapter):
         # Read building footprints
         footprints_gdf = gpd.read_file(footprints_path, engine="pyogrio")
         footprints = Footprints(
-            footprints=footprints_gdf, fiat_columns=self.impact_columns
+            footprints=footprints_gdf,
+            field_name="BF_FID",
+            fiat_columns=self.impact_columns,
         )
 
         # Read files
