@@ -33,7 +33,7 @@ class EventSet(IObject[EventSetModel], DatabaseUser):
         self, data: dict[str, Any] | EventSetModel, sub_events: list[IEvent]
     ) -> None:
         super().__init__(data)
-        self.load_sub_events(sub_events=sub_events)
+        self.events = sub_events
 
     def load_sub_events(
         self,
@@ -41,11 +41,11 @@ class EventSet(IObject[EventSetModel], DatabaseUser):
         file_path: Optional[Path] = None,
     ) -> None:
         """Load sub events from a list or from a file path."""
-        from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-
         if sub_events is not None:
             self.events = sub_events
         elif file_path is not None:
+            from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+
             sub_events = []
             for sub_event in self.attrs.sub_events:
                 sub_event_toml = (

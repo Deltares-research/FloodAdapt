@@ -165,6 +165,8 @@ def create_event_set(
     ----------
     attrs : EventSetModel [str, Any]
         Dictionary of attributes
+    sub_events : list[IEvent]
+        List of events in the event set
 
     Returns
     -------

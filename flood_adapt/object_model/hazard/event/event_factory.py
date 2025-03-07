@@ -130,7 +130,7 @@ class EventFactory:
         return event_type.load_file(toml_file)
 
     @staticmethod
-    def load_dict(attrs: dict[str, Any] | IEventModel) -> IEvent:
+    def load_dict(attrs: dict[str, Any] | IEventModel) -> IEvent | EventSet:
         """Return event object based on attrs dict.
 
         Parameters
@@ -151,7 +151,8 @@ class EventFactory:
             template = Template(attrs.get("template"))
 
         if mode == Mode.risk:
-            return EventSet.load_dict(attrs)
+            # TODO Load events
+            return EventSet.load_dict(attrs, sub_events=[])
         elif mode == Mode.single_event:
             return EventFactory.get_event_from_template(template).load_dict(attrs)
         else:
