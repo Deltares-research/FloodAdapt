@@ -88,8 +88,8 @@ def update_database_input(database_path: Path):
 
     Parameters
     ----------
-    database : IDatabase
-        The database object to be updated
+    database_path : Path
+        The path to the database directory. This is the directory that contains the `input`, `static` and `output` directories.
 
     """
     database = read_database(database_path.parent, database_path.name)
@@ -108,30 +108,27 @@ def update_database_input(database_path: Path):
     ]:
         (input_dir / obj_dir).mkdir()
 
-    events = create_events()
-    for event in events:
+    for event in create_events():
         database.events.save(event)
 
-    projections = create_projections()
-    for projection in projections:
+    for projection in create_projections():
         database.projections.save(projection)
 
-    measures = create_measures()
-    for measure in measures:
+    for measure in create_measures():
         database.measures.save(measure)
 
-    strategies = create_strategies()
-    for strategy in strategies:
+    for strategy in create_strategies():
         database.strategies.save(strategy)
 
-    scenarios = create_scenarios()
-    for scenario in scenarios:
+    for scenario in create_scenarios():
         database.scenarios.save(scenario)
 
-    benefits = create_benefits()
-    for benefit in benefits:
-        missing = benefit.check_scenarios()
-        to_create = missing[missing["scenario created"].str.contains("No")]
+    for benefit in create_benefits():
+        # There are some tests that require the scenarios to not be created yet
+        # However, the db only allows saving benefits if the scenarios are created
+        # So we save the benefit, then delete the scenarios
+        scenarios = benefit.check_scenarios()
+        to_create = scenarios[scenarios["scenario created"].str.contains("No")]
         database.create_benefit_scenarios(benefit)
 
         database.benefits.save(benefit)
@@ -142,6 +139,7 @@ def update_database_input(database_path: Path):
             )
             shutil.rmtree(input_dir / "scenarios" / scn_name)
 
+    # Cleanup singleton
     database.shutdown()
 
 
@@ -829,77 +827,76 @@ def _create_single_events():
     return EXTREME_12FT, EXTREME_12FT_RIVERSHAPE_WINDCONST, FLORENCE, KINGTIDE_NOV2021
 
 
-def _create_synthetic_event(name: str) -> SyntheticEvent:
-    return SyntheticEvent(
-        SyntheticEventModel(
-            name=name,
-            time=TimeModel(),
-            forcings={
-                ForcingType.WIND: [
-                    WindConstant(
-                        speed=us.UnitfulVelocity(
-                            value=5, units=us.UnitTypesVelocity.mps
-                        ),
-                        direction=us.UnitfulDirection(
-                            value=60, units=us.UnitTypesDirection.degrees
-                        ),
-                    )
-                ],
-                ForcingType.RAINFALL: [
-                    RainfallConstant(
-                        intensity=us.UnitfulIntensity(
-                            value=2, units=us.UnitTypesIntensity.mm_hr
+def _create_event_set(name: str) -> EventSet:
+    def _create_synthetic_event(name: str) -> SyntheticEvent:
+        return SyntheticEvent(
+            SyntheticEventModel(
+                name=name,
+                time=TimeModel(),
+                forcings={
+                    ForcingType.WIND: [
+                        WindConstant(
+                            speed=us.UnitfulVelocity(
+                                value=5, units=us.UnitTypesVelocity.mps
+                            ),
+                            direction=us.UnitfulDirection(
+                                value=60, units=us.UnitTypesDirection.degrees
+                            ),
                         )
-                    )
-                ],
-                ForcingType.DISCHARGE: [
-                    DischargeConstant(
-                        river=RiverModel(
-                            name="cooper",
-                            description="Cooper River",
-                            x_coordinate=595546.3,
-                            y_coordinate=3675590.6,
-                            mean_discharge=us.UnitfulDischarge(
+                    ],
+                    ForcingType.RAINFALL: [
+                        RainfallConstant(
+                            intensity=us.UnitfulIntensity(
+                                value=2, units=us.UnitTypesIntensity.mm_hr
+                            )
+                        )
+                    ],
+                    ForcingType.DISCHARGE: [
+                        DischargeConstant(
+                            river=RiverModel(
+                                name="cooper",
+                                description="Cooper River",
+                                x_coordinate=595546.3,
+                                y_coordinate=3675590.6,
+                                mean_discharge=us.UnitfulDischarge(
+                                    value=5000, units=us.UnitTypesDischarge.cfs
+                                ),
+                            ),
+                            discharge=us.UnitfulDischarge(
                                 value=5000, units=us.UnitTypesDischarge.cfs
                             ),
-                        ),
-                        discharge=us.UnitfulDischarge(
-                            value=5000, units=us.UnitTypesDischarge.cfs
-                        ),
-                    )
-                ],
-                ForcingType.WATERLEVEL: [
-                    WaterlevelSynthetic(
-                        surge=SurgeModel(
-                            timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
-                                shape_type=ShapeType.triangle,
-                                duration=us.UnitfulTime(
-                                    value=1, units=us.UnitTypesTime.days
-                                ),
-                                peak_time=us.UnitfulTime(
-                                    value=8, units=us.UnitTypesTime.hours
-                                ),
-                                peak_value=us.UnitfulLength(
+                        )
+                    ],
+                    ForcingType.WATERLEVEL: [
+                        WaterlevelSynthetic(
+                            surge=SurgeModel(
+                                timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                                    shape_type=ShapeType.triangle,
+                                    duration=us.UnitfulTime(
+                                        value=1, units=us.UnitTypesTime.days
+                                    ),
+                                    peak_time=us.UnitfulTime(
+                                        value=8, units=us.UnitTypesTime.hours
+                                    ),
+                                    peak_value=us.UnitfulLength(
+                                        value=1, units=us.UnitTypesLength.meters
+                                    ),
+                                )
+                            ),
+                            tide=TideModel(
+                                harmonic_amplitude=us.UnitfulLength(
                                     value=1, units=us.UnitTypesLength.meters
                                 ),
-                            )
-                        ),
-                        tide=TideModel(
-                            harmonic_amplitude=us.UnitfulLength(
-                                value=1, units=us.UnitTypesLength.meters
+                                harmonic_phase=us.UnitfulTime(
+                                    value=0, units=us.UnitTypesTime.hours
+                                ),
                             ),
-                            harmonic_phase=us.UnitfulTime(
-                                value=0, units=us.UnitTypesTime.hours
-                            ),
-                        ),
-                    )
-                ],
-            },
+                        )
+                    ],
+                },
+            )
         )
-    )
 
-
-def _create_event_set(name: str) -> EventSet:
     sub_events: List[EventModel] = []
     for i in [1, 39, 78]:
         sub_events.append(_create_synthetic_event(name=f"subevent_{i:04d}").attrs)
