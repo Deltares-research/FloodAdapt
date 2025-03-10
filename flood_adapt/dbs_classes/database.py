@@ -133,27 +133,15 @@ class Database(IDatabase):
         self._init_done = True
 
     def shutdown(self):
-        """Explicitly shut down the database controller singleton and clear all data stored in its memory."""
-        self.__class__._instance = None
+        """Explicitly shut down the singleton and clear all references."""
+        import gc
+
         self._instance = None
         self._init_done = False
-        self.database_path = None
-        self.database_name = None
 
-        self.base_path = None
-        self.input_path = None
-        self.static_path = None
-        self.output_path = None
-        self._site = None
-
-        self.logger = None
-        self._static = None
-        self._events = None
-        self._scenarios = None
-        self._strategies = None
-        self._measures = None
-        self._projections = None
-        self._benefits = None
+        self.__class__._instance = None
+        self.__dict__.clear()
+        gc.collect()
 
     # Property methods
     @property
@@ -276,9 +264,7 @@ class Database(IDatabase):
         df = df.rename(
             columns={
                 "variable": "Scenario",
-                "value": "Sea level rise [{}]".format(
-                    self.site.attrs.gui.units.default_length_units
-                ),
+                "value": f"Sea level rise [{self.site.attrs.gui.units.default_length_units.value}]",
             }
         )
 
@@ -288,7 +274,7 @@ class Database(IDatabase):
         fig = line(
             df,
             x="Year",
-            y=f"Sea level rise [{self.site.attrs.gui.units.default_length_units}]",
+            y=f"Sea level rise [{self.site.attrs.gui.units.default_length_units.value}]",
             color="Scenario",
             color_discrete_sequence=colors,
         )
