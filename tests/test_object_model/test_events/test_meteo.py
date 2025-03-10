@@ -15,7 +15,7 @@ def write_mock_nc_file(meteo_dir: Path, time: TimeModel) -> xr.Dataset:
     time_range = MeteoHandler.get_time_range(time)
     METEO_DATETIME_FORMAT = "%Y%m%d_%H%M"
     duration = time_range[1] - time_range[0]
-    intervals = int(duration.total_seconds() // timedelta(hours=3).total_seconds())
+    intervals = int(duration.total_seconds() // timedelta(hours=3).total_seconds()) + 1
     gen = np.random.default_rng(42)
 
     for i in range(intervals):
@@ -106,7 +106,8 @@ class TestMeteoHandler:
     ):
         # Arrange
         handler, time = setup_meteo_test
-
+        time.start_time = REFERENCE_TIME
+        time.end_time = REFERENCE_TIME + timedelta(hours=1)
         # patch MeteoHandler
         with patch(
             "flood_adapt.object_model.hazard.forcing.meteo_handler.MeteoHandler.download",
