@@ -14,6 +14,7 @@ from flood_adapt import __path__
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
+from tests.data.create_test_database import update_database_input
 from tests.fixtures import *  # noqa
 
 session_tmp_dir = Path(tempfile.mkdtemp())
@@ -76,7 +77,7 @@ def restore_db_from_snapshot():
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
-    Settings(
+    settings = Settings(
         DATABASE_ROOT=src_dir.parents[1] / "Database",
         DATABASE_NAME="charleston_test",
         DELETE_CRASHED_RUNS=clean,
@@ -92,6 +93,7 @@ def session_setup_teardown():
         ignore_warnings=[DeprecationWarning],
     )
 
+    update_database_input(settings.database_path)
     create_snapshot()
 
     yield

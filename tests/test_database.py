@@ -113,21 +113,7 @@ def test_shutdown_AfterShutdown_VarsAreNone():
     assert dbs.__class__._instance is None
     assert dbs._instance is None
     assert dbs._init_done is False
-    assert dbs.database_path is None
-    assert dbs.database_name is None
-    assert dbs.base_path is None
-    assert dbs.input_path is None
-    assert dbs.static_path is None
-    assert dbs.output_path is None
-    assert dbs._site is None
-    assert dbs.logger is None
-    assert dbs._static is None
-    assert dbs._events is None
-    assert dbs._scenarios is None
-    assert dbs._strategies is None
-    assert dbs._measures is None
-    assert dbs._projections is None
-    assert dbs._benefits is None
+    assert dbs.__dict__ == {}
 
 
 def test_shutdown_AfterShutdown_CanReadNewDatabase():
