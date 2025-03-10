@@ -84,11 +84,11 @@ class MeteoHandler(IMeteoHandler):
             if np.abs(grid.lon_range[0]) > np.abs(grid.lon_range[1]):
                 grid.lon_range = [
                     grid.lon_range[0] - grid.lon_range[1] - 1,
-                    grid.lon_range[1] - grid.lon_range[1] - 1,
+                    -1,
                 ]
             else:
                 grid.lon_range = [
-                    grid.lon_range[0] - grid.lon_range[0] + 1,
+                    1,
                     grid.lon_range[1] - grid.lon_range[0] + 1,
                 ]
         return grid.lon_range
