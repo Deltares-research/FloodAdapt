@@ -79,7 +79,7 @@ def plot_discharge(
         return "", None
     logger.debug("Plotting discharge data")
 
-    units = site.attrs.gui.units.default_discharge_units.value
+    units = site.attrs.gui.units.default_discharge_units
 
     data = pd.DataFrame()
     errors = []
@@ -141,7 +141,7 @@ def plot_discharge(
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title={"text": "Time"},
-        yaxis_title={"text": f"River discharge [{units}]"},
+        yaxis_title={"text": f"River discharge [{units.value}]"},
         xaxis={"range": [event.attrs.time.start_time, event.attrs.time.end_time]},
     )
 
