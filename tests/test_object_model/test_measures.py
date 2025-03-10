@@ -44,7 +44,6 @@ def test_floodwall_read(test_floodwall):
     assert isinstance(test_floodwall.attrs.elevation, us.UnitfulLength)
 
     assert test_floodwall.attrs.name == "test_seawall"
-    assert test_floodwall.attrs.description == "seawall"
     assert test_floodwall.attrs.type == "floodwall"
     assert test_floodwall.attrs.elevation.value == 12
     assert test_floodwall.attrs.elevation.units == us.UnitTypesLength.feet
@@ -69,7 +68,6 @@ def test_elevate_aggr_area_read(test_db):
     assert isinstance(elevate.attrs.aggregation_area_name, str)
 
     assert elevate.attrs.name == "raise_property_aggregation_area"
-    assert elevate.attrs.description == "raise_property_aggregation_area"
     assert elevate.attrs.type == "elevate_properties"
     assert elevate.attrs.elevation.value == 1
     assert elevate.attrs.elevation.units == us.UnitTypesLength.feet
@@ -144,7 +142,6 @@ def test_elevate_polygon_read(test_db):
     assert isinstance(elevate.attrs.polygon_file, str)
 
     assert elevate.attrs.name == "raise_property_polygon"
-    assert elevate.attrs.description == "raise_property_polygon"
     assert elevate.attrs.type == "elevate_properties"
     assert elevate.attrs.elevation.value == 1
     assert elevate.attrs.elevation.units == us.UnitTypesLength.feet

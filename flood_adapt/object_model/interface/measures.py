@@ -86,7 +86,7 @@ class HazardMeasureModel(MeasureModel):
 
     selection_type: SelectionType
     polygon_file: Optional[str] = Field(
-        None,
+        default=None,
         min_length=1,
         description="Path to a polygon file, either absolute or relative to the measure path.",
     )
@@ -195,7 +195,7 @@ class GreenInfrastructureModel(HazardMeasureModel):
     height: Optional[us.UnitfulHeight] = None
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
-    percent_area: Optional[float] = Field(None, ge=0, le=100)
+    percent_area: Optional[float] = Field(default=None, ge=0, le=100)
 
     @field_validator("height", mode="before", check_fields=False)
     def height_from_length(value: Any) -> Any:
