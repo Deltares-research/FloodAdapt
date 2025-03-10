@@ -39,13 +39,9 @@ class MeteoHandler(IMeteoHandler):
         self.dataset.download(time_range=time_range)
 
     def read(self, time: TimeModel) -> xr.Dataset:
+        self.download(time)
         time_range = self.get_time_range(time)
-
         ds = self.dataset.collect(time_range=time_range)
-
-        if ds is None:
-            self.download(time)
-            ds = self.dataset.collect(time_range=time_range)
 
         if ds is None:
             raise FileNotFoundError(
