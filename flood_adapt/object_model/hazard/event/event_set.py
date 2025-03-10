@@ -20,7 +20,6 @@ class EventSetModel(IObjectModel):
 
     mode: Mode = Mode.risk
 
-    rainfall_multiplier: float = 1.0
     sub_events: List[SubEventModel]
 
 
