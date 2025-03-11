@@ -93,13 +93,35 @@ class VerticalReferenceModel(BaseModel):
 
 
 class WaterLevelReferenceModel(BaseModel):
-    """The accepted input for the variable water_level in Site."""
+    """The accepted input for the variable water_level in Site.
 
+    Waterlevels timeseries are calculated from user input, assumed to be relative to the `user` vertical reference model.
+
+    For Sfincs-offshore models, the height of `msl` is added to the water levels.
+    For Sfincs-overland models, the height of `localdatum` is added to the water levels.
+
+    For plotting in the GUI, the `user` vertical reference model is used as the main zero-reference, all values are relative to this.
+    All other vertical reference models are plotted as dashed lines.
+
+    Attributes
+    ----------
+    user : VerticalReferenceModel
+        Used as the main zero-reference, all values in the GUI are relative to this. Must have a height of 0.
+    localdatum : VerticalReferenceModel
+        Sfincs-overland uses local datum.
+    msl : VerticalReferenceModel
+        Sfincs-offshore uses MSL.
+    other : list[VerticalReferenceModel]
+        Only used for plotting dashed lines in the GUI.
+    """
+
+    user: VerticalReferenceModel
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
+
     other: list[VerticalReferenceModel] = Field(
         default_factory=list
-    )  # only for plotting
+    )  # only used for plotting dashed lines in the GUI
 
     @model_validator(mode="after")
     def ensure_msl_or_localdatum_eq_zero(self):
@@ -120,16 +142,6 @@ class WaterLevelReferenceModel(BaseModel):
                 other.height -= self.localdatum.height
             self.localdatum.height.value = 0.0
         return self
-
-    def get_main_vertical_reference(self) -> VerticalReferenceModel:
-        if math.isclose(self.msl.height.value, 0):
-            return self.msl
-        elif math.isclose(self.localdatum.height.value, 0):
-            return self.localdatum
-        else:
-            raise ValueError(
-                "Neither MSL nor local datum are zero, cannot determine zero reference."
-            )
 
 
 class CycloneTrackDatabaseModel(BaseModel):
