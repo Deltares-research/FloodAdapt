@@ -7,5 +7,6 @@
         "github.copilot",
         "tamasfe.even-better-toml",
         "aaron-bond.better-comments",
+        "sonarsource.sonarlint-vscode",
     ]
 }
