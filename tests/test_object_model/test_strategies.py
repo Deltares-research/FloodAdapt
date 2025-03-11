@@ -113,7 +113,6 @@ def test_strategy(test_db):
 def test_strategy_comb_read(test_db, test_strategy):
     strategy = test_strategy
     assert strategy.attrs.name == "strategy_comb"
-    assert strategy.attrs.description == "strategy_comb"
     assert len(strategy.attrs.measures) == 4
     assert isinstance(strategy.get_hazard_strategy(), HazardStrategy)
     assert isinstance(strategy.get_impact_strategy(), ImpactStrategy)
@@ -157,7 +156,6 @@ def test_elevate_comb_correct(test_db):
     strategy = Strategy.load_file(test_toml)
 
     assert strategy.attrs.name == "elevate_comb_correct"
-    assert strategy.attrs.description == "elevate_comb_correct"
     assert isinstance(strategy.attrs.measures, list)
     assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
     assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)

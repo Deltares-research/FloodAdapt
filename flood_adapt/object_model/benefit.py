@@ -10,7 +10,7 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
-from flood_adapt.object_model.interface.benefits import IBenefit
+from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
@@ -24,7 +24,7 @@ class Benefit(IBenefit, DatabaseUser):
 
     scenarios: pd.DataFrame
 
-    def __init__(self, data: dict[str, Any]):
+    def __init__(self, data: dict[str, Any] | BenefitModel):
         """Initialize function called when object is created through the load_file or load_dict methods."""
         super().__init__(data)
         # Get output path based on database path

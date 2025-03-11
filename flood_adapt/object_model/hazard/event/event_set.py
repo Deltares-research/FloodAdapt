@@ -1,16 +1,18 @@
 import os
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Optional
 
-from pydantic import Field, model_validator
-from typing_extensions import Annotated
+import tomli
+from pydantic import BaseModel
 
-from flood_adapt.object_model.hazard.event.template_event import (
-    EventModel,
-)
 from flood_adapt.object_model.hazard.interface.events import IEvent, Mode
 from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
+
+
+class SubEventModel(BaseModel):
+    name: str
+    frequency: float
 
 
 class EventSetModel(IObjectModel):
@@ -18,31 +20,7 @@ class EventSetModel(IObjectModel):
 
     mode: Mode = Mode.risk
 
-    sub_events: List[EventModel]
-    frequency: List[Annotated[float, Field(strict=True, ge=0)]]
-
-    @model_validator(mode="before")
-    def load_sub_events(self):
-        """Load the sub events from the dictionary."""
-        from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-
-        sub_events = []
-        for sub_event in self["sub_events"]:
-            if not isinstance(sub_event, EventModel):
-                if isinstance(sub_event, dict):
-                    sub_event = EventFactory.get_eventmodel_from_template(
-                        sub_event["template"]
-                    ).model_validate(sub_event)
-                else:
-                    raise ValueError("Sub event must be a dictionary or an EventModel.")
-            sub_events.append(sub_event)
-
-        names = [sub_event.name for sub_event in sub_events]
-        if len(names) != len(set(names)):
-            raise ValueError("Sub event names must be unique.")
-
-        self["sub_events"] = sub_events
-        return self
+    sub_events: List[SubEventModel]
 
 
 class EventSet(IObject[EventSetModel], DatabaseUser):
@@ -50,13 +28,57 @@ class EventSet(IObject[EventSetModel], DatabaseUser):
 
     events: List[IEvent]
 
-    def __init__(self, data: dict[str, Any] | EventSetModel) -> None:
+    def __init__(
+        self, data: dict[str, Any] | EventSetModel, sub_events: list[IEvent]
+    ) -> None:
+        super().__init__(data)
+        self.events = sub_events
+
+    def load_sub_events(
+        self,
+        sub_events: Optional[List[IEvent]] = None,
+        file_path: Optional[Path] = None,
+    ) -> None:
+        """Load sub events from a list or from a file path."""
+        if sub_events is not None:
+            self.events = sub_events
+        elif file_path is not None:
+            from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+
+            sub_events = []
+            for sub_event in self.attrs.sub_events:
+                sub_event_toml = (
+                    Path(file_path).parent / sub_event.name / f"{sub_event.name}.toml"
+                )
+                sub_events.append(EventFactory.load_file(sub_event_toml))
+
+            self.events = sub_events
+        else:
+            raise ValueError("Either `sub_events` or `file_path` must be provided.")
+
+    @classmethod
+    def load_file(cls, file_path: Path | str | os.PathLike):
+        """Load object from file."""
         from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 
-        super().__init__(data)
-        self.events = [
-            EventFactory.load_dict(sub_event) for sub_event in self.attrs.sub_events
-        ]
+        with open(file_path, mode="rb") as fp:
+            event_set = tomli.load(fp)
+
+        sub_events = []
+        for event_dict in event_set["sub_events"]:
+            sub_toml = (
+                Path(file_path).parent
+                / event_dict["name"]
+                / f"{event_dict['name']}.toml"
+            )
+            sub_events.append(EventFactory.load_file(sub_toml))
+
+        return EventSet(event_set, sub_events)
+
+    @classmethod
+    def load_dict(cls, data: dict[str, Any] | EventSetModel, sub_events: list[IEvent]):
+        """Load object from dictionary."""
+        return EventSet(data, sub_events)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         for sub_event in self.events:
@@ -70,15 +92,10 @@ class EventSet(IObject[EventSetModel], DatabaseUser):
         Which is to say, prepare the forcings of the subevents of the event set.
 
         If the forcings require it, this function will:
-        - download meteo data: download the meteo data from the meteo source and store it in the output directory.
         - preprocess and run offshore model: prepare and run the offshore model to obtain water levels for the boundary condition of the nearshore model.
 
         Then, it will call the process function of the subevents.
 
         """
-        # @gundula, run offshore only once and then copy results?
-        # Same for downloading meteo data
-        # I dont think I've seen any code that changes the forcings of the subevents wrt eachother, is that correct?
-        # So, just run the first subevent and then copy the results to the other subevents ?
         for sub_event in self.events:
             sub_event.preprocess(output_dir / sub_event.attrs.name)

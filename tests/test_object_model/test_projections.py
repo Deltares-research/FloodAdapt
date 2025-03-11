@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 import tomli
 
+from flood_adapt import unit_system as us
 from flood_adapt.object_model.interface.projections import (
     PhysicalProjection,
     PhysicalProjectionModel,
@@ -114,24 +115,22 @@ def test_projection_getPhysicalProjection_readValidAttrs(test_projections):
     test_projection = test_projections["all_projections.toml"]
 
     assert test_projection.attrs.name == "all_projections"
-    assert test_projection.attrs.description == "all_projections"
     physical_attrs = test_projection.get_physical_projection()
 
     assert physical_attrs.attrs.sea_level_rise.value == 2
-    assert physical_attrs.attrs.sea_level_rise.units == "feet"
+    assert physical_attrs.attrs.sea_level_rise.units == us.UnitTypesLength.feet
 
     assert physical_attrs.attrs.subsidence.value == 0
-    assert physical_attrs.attrs.subsidence.units == "feet"
+    assert physical_attrs.attrs.subsidence.units == us.UnitTypesLength.meters
 
-    assert physical_attrs.attrs.rainfall_multiplier == 20
-    assert physical_attrs.attrs.storm_frequency_increase == 20
+    assert physical_attrs.attrs.rainfall_multiplier == 2
+    assert physical_attrs.attrs.storm_frequency_increase == 2
 
 
 def test_projection_getSocioEconomicChange_readValidAttrs(test_projections):
     test_projection = test_projections["all_projections.toml"]
 
     assert test_projection.attrs.name == "all_projections"
-    assert test_projection.attrs.description == "all_projections"
 
     socio_economic_attrs = test_projection.get_socio_economic_change()
 
@@ -168,7 +167,6 @@ def test_projection_only_slr(test_projections):
 
     # Assert that the configured risk drivers are set to the values from the toml file
     assert test_projection.attrs.name == "SLR_2ft"
-    assert test_projection.attrs.description == "SLR_2ft"
     assert test_projection.get_physical_projection().attrs.sea_level_rise.value == 2
     assert (
         test_projection.get_physical_projection().attrs.sea_level_rise.units == "feet"

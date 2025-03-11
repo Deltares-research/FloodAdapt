@@ -26,7 +26,7 @@ requires-python = ">=3.8,<3.13"
 # These are ignored if any packages is also defined in the section: [tool.pixi.dependencies]
 dependencies = [
     "cht-cyclones",
-    "cht-meteo",
+    "cht-meteo==0.3.1",
     "cht-observations",
     "cht-tide",
     "dask==2024.11.2,",  # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
