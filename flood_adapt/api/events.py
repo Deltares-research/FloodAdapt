@@ -139,7 +139,7 @@ def get_event_mode(name: str) -> Mode:
     return EventFactory.read_mode(filename)
 
 
-def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent | EventSet:
+def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
     """Create a event object from a dictionary of attributes.
 
     Parameters
@@ -154,6 +154,26 @@ def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent | EventSet:
         Can be of type: Synthetic, Historical, Hurricane.
     """
     return EventFactory.load_dict(attrs)
+
+
+def create_event_set(
+    attrs: dict[str, Any] | EventSetModel, sub_events: list[IEvent]
+) -> EventSet:
+    """Create a event set object from a dictionary of attributes.
+
+    Parameters
+    ----------
+    attrs : EventSetModel [str, Any]
+        Dictionary of attributes
+    sub_events : list[IEvent]
+        List of events in the event set
+
+    Returns
+    -------
+    EventSet
+        EventSet object
+    """
+    return EventSet.load_dict(attrs, sub_events)
 
 
 def list_forcings() -> list[Type[IForcing]]:

@@ -122,7 +122,7 @@ class IObject(ABC, Generic[T_OBJECTMODEL]):
 
     @classmethod
     def load_dict(
-        cls: Type[T_OBJECT], data: dict[str, Any] | T_OBJECTMODEL
+        cls: Type[T_OBJECT], data: dict[str, Any] | T_OBJECTMODEL, *args, **kwargs
     ) -> T_OBJECT:
         """Load object from dictionary."""
         return cls(data)

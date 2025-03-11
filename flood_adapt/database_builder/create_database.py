@@ -1565,7 +1565,7 @@ class DatabaseBuilder:
                 - self.site_attrs["sfincs"]["water_level"].msl.height.value
             )
             self.logger.info(
-                f"The default tidal amplitude in the GUI will be {amplitude} {units.default_length_units}, calculated as the difference between MHHW and MSL from the tide gauge data."
+                f"The default tidal amplitude in the GUI will be {amplitude} {units.default_length_units.value}, calculated as the difference between MHHW and MSL from the tide gauge data."
             )
         else:
             amplitude = 0.0

@@ -722,7 +722,9 @@ class SfincsAdapter(IHazardAdapter):
         phys_proj = scenario.projection.get_physical_projection()
 
         floodmap_rp = self.database.site.attrs.fiat.risk.return_periods
-        frequencies = scenario.event.attrs.frequency
+        frequencies = [
+            sub_event.frequency for sub_event in scenario.event.attrs.sub_events
+        ]
 
         # adjust storm frequency for hurricane events
         if not math.isclose(phys_proj.attrs.storm_frequency_increase, 0):
@@ -1004,7 +1006,7 @@ class SfincsAdapter(IHazardAdapter):
             conversion = us.UnitfulIntensity(value=1.0, units=rainfall.units).convert(
                 us.UnitTypesIntensity.mm_hr
             )
-            df *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
+            df *= conversion
 
             tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
             df.to_csv(tmp_path)
@@ -1015,7 +1017,7 @@ class SfincsAdapter(IHazardAdapter):
             conversion = us.UnitfulIntensity(
                 value=1.0, units=rainfall.timeseries.peak_value.units
             ).convert(us.UnitTypesIntensity.mm_hr)
-            df *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
+            df *= conversion
 
             tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
             df.to_csv(tmp_path)
@@ -1024,7 +1026,6 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(rainfall, RainfallMeteo):
             ds = MeteoHandler().read(time_frame)
             # MeteoHandler always return metric so no conversion needed
-            ds["precip"] *= self._current_scenario.event.attrs.rainfall_multiplier
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         elif isinstance(rainfall, RainfallTrack):
             if rainfall.path is None:
@@ -1037,7 +1038,7 @@ class SfincsAdapter(IHazardAdapter):
             conversion = us.UnitfulIntensity(value=1.0, units=rainfall.units).convert(
                 us.UnitTypesIntensity.mm_hr
             )
-            ds *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
+            ds *= conversion
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         else:
             self.logger.warning(
