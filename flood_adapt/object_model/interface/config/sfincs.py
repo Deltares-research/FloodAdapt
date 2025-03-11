@@ -1,8 +1,9 @@
+import math
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Union
 
-from pydantic import AfterValidator, BaseModel, Field
+from pydantic import AfterValidator, BaseModel, Field, model_validator
 from tomli import load as load_toml
 from typing_extensions import Annotated
 
@@ -99,6 +100,36 @@ class WaterLevelReferenceModel(BaseModel):
     other: list[VerticalReferenceModel] = Field(
         default_factory=list
     )  # only for plotting
+
+    @model_validator(mode="after")
+    def ensure_msl_or_localdatum_eq_zero(self):
+        if math.isclose(self.msl.height.value, 0) or math.isclose(
+            self.localdatum.height.value, 0
+        ):
+            return self
+
+        # Set smaller height to zero and update the other heights
+        if self.msl.height < self.localdatum.height:
+            self.localdatum.height -= self.msl.height
+            for other in self.other:
+                other.height -= self.msl.height
+            self.msl.height.value = 0.0
+        else:
+            self.msl.height -= self.localdatum.height
+            for other in self.other:
+                other.height -= self.localdatum.height
+            self.localdatum.height.value = 0.0
+        return self
+
+    def get_main_vertical_reference(self) -> VerticalReferenceModel:
+        if math.isclose(self.msl.height.value, 0):
+            return self.msl
+        elif math.isclose(self.localdatum.height.value, 0):
+            return self.localdatum
+        else:
+            raise ValueError(
+                "Neither MSL nor local datum are zero, cannot determine zero reference."
+            )
 
 
 class CycloneTrackDatabaseModel(BaseModel):
