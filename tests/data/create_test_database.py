@@ -7,7 +7,11 @@ from flood_adapt import unit_system as us
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.benefit import Benefit
-from flood_adapt.object_model.hazard.event.event_set import EventSet, EventSetModel
+from flood_adapt.object_model.hazard.event.event_set import (
+    EventSet,
+    EventSetModel,
+    SubEventModel,
+)
 from flood_adapt.object_model.hazard.event.historical import (
     HistoricalEvent,
     HistoricalEventModel,
@@ -20,7 +24,6 @@ from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
     SyntheticEventModel,
 )
-from flood_adapt.object_model.hazard.event.template_event import EventModel
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
@@ -36,6 +39,7 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelSynthetic,
 )
 from flood_adapt.object_model.hazard.forcing.wind import WindConstant, WindMeteo
+from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType, ShapeType
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
@@ -897,16 +901,19 @@ def _create_event_set(name: str) -> EventSet:
             )
         )
 
-    sub_events: List[EventModel] = []
+    sub_event_models: List[SubEventModel] = []
+    sub_events: List[IEvent] = []
+
     for i in [1, 39, 78]:
-        sub_events.append(_create_synthetic_event(name=f"subevent_{i:04d}").attrs)
+        sub_events.append(_create_synthetic_event(name=f"subevent_{i:04d}"))
+        sub_event_models.append(SubEventModel(name=f"subevent_{i:04d}", frequency=i))
 
     return EventSet(
-        EventSetModel(
+        data=EventSetModel(
             name=name,
-            sub_events=sub_events,
-            frequency=[0.5, 0.2, 0.02],
-        )
+            sub_events=sub_event_models,
+        ),
+        sub_events=sub_events,
     )
 
 
