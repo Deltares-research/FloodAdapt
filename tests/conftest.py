@@ -14,7 +14,7 @@ from flood_adapt import __path__
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
-from tests.data.create_test_database import update_database_input
+from tests.data.create_test_input import update_database_input
 from tests.fixtures import *  # noqa
 
 session_tmp_dir = Path(tempfile.mkdtemp())

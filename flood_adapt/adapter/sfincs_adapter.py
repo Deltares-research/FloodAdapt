@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import geopandas as gpd
 import hydromt_sfincs.utils as utils
@@ -127,7 +127,7 @@ class SfincsAdapter(IHazardAdapter):
         if not path_out.exists():
             path_out.mkdir(parents=True)
 
-        if not root == path_out:
+        if root != path_out:
             shutil.copytree(root, path_out, dirs_exist_ok=True)
 
         write_mode = "w+" if overwrite else "w"
@@ -578,32 +578,26 @@ class SfincsAdapter(IHazardAdapter):
             value=1.0, units=us.UnitTypesLength("meters")
         ).convert(gui_units)
 
+        overland_reference_height = self.settings.water_level.datums[
+            self.settings.config.overland_model.reference
+        ].total_height.convert(gui_units)
+
         for ii, col in enumerate(df.columns):
             # Plot actual thing
             fig = px.line(
                 df[col] * conversion_factor
-                + self.settings.water_level.localdatum.height.convert(
-                    gui_units
-                )  # convert to reference datum for plotting
+                + overland_reference_height  # convert to reference datum for plotting
             )
 
             # plot reference water levels
-            fig.add_hline(
-                y=self.settings.water_level.msl.height.convert(gui_units),
-                line_dash="dash",
-                line_color="#000000",
-                annotation_text=self.settings.water_level.msl.name,
-                annotation_position="bottom right",
-            )
-            if self.settings.water_level.other:
-                for wl_ref in self.settings.water_level.other:
-                    fig.add_hline(
-                        y=wl_ref.height.convert(gui_units),
-                        line_dash="dash",
-                        line_color="#3ec97c",
-                        annotation_text=wl_ref.name,
-                        annotation_position="bottom right",
-                    )
+            for wl_ref in self.settings.water_level.datums.values():
+                fig.add_hline(
+                    y=wl_ref.total_height.convert(gui_units),
+                    line_dash="dash",
+                    line_color="#3ec97c",
+                    annotation_text=wl_ref.name,
+                    annotation_position="bottom right",
+                )
 
             fig.update_layout(
                 autosize=False,
@@ -618,7 +612,7 @@ class SfincsAdapter(IHazardAdapter):
                     "xanchor": "center",
                 },
                 xaxis_title="Time",
-                yaxis_title=f"Water level [{gui_units}]",
+                yaxis_title=f"Water level [{gui_units.value}] above {self.settings.water_level.reference}",
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 showlegend=False,
@@ -639,9 +633,11 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
                 if df_gauge is not None:
-                    waterlevel = df_gauge.iloc[
-                        :, 0
-                    ] + self.settings.water_level.msl.height.convert(gui_units)
+                    gauge_reference_height = self.settings.water_level.datums[
+                        self.settings.tide_gauge.reference
+                    ].total_height.convert(gui_units)
+
+                    waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
 
                     # If data is available, add to plot
                     fig.add_trace(
@@ -893,10 +889,10 @@ class SfincsAdapter(IHazardAdapter):
         finally:
             self._current_scenario = None
 
-    def _preprocess_risk(self, scenario: IScenario, sim_paths: List[Path]):
+    def _preprocess_risk(self, scenario: IScenario, sim_paths: list[Path]):
         if not isinstance(scenario.event, EventSet):
             raise ValueError("This function is only available for risk scenarios.")
-        if not len(sim_paths) == len(scenario.event.events):
+        if len(sim_paths) != len(scenario.event.events):
             raise ValueError(
                 "Number of simulation paths should match the number of events."
             )
@@ -1331,12 +1327,18 @@ class SfincsAdapter(IHazardAdapter):
                 df_ts[i + 1] = df_ts[name]
             df_ts.columns = list(range(1, len(gdf_locs) + 1))
 
-        # Add difference between msl and local datum to the water level
-        df_ts += self.settings.water_level.msl.height.convert(
+        # Add difference between FloodAdapt datum and sfincs datum to the water level
+        main_reference_height = self.settings.water_level.datums[
+            self.settings.water_level.reference
+        ].total_height.convert(
             us.UnitTypesLength(us.UnitTypesLength.meters)
-        ) - self.settings.water_level.localdatum.height.convert(
-            us.UnitTypesLength(us.UnitTypesLength.meters)
-        )
+        )  # should this always be 0 ?
+
+        sfincs_overland_reference_height = self.settings.water_level.datums[
+            self.settings.config.overland_model.reference
+        ].total_height.convert(us.UnitTypesLength(us.UnitTypesLength.meters))
+
+        df_ts += main_reference_height - sfincs_overland_reference_height
 
         # HydroMT function: set waterlevel forcing from time series
         self._model.set_forcing_1d(
@@ -1362,6 +1364,9 @@ class SfincsAdapter(IHazardAdapter):
     ):
         # ONLY offshore models
         """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs."""
+        if self.settings.config.offshore_model is None:
+            raise ValueError("No offshore model found in site.toml.")
+
         self.logger.info("Adding water level forcing to the offshore model")
         sb = SfincsBoundary()
         sb.read_flow_boundary_points(self.get_model_root() / "sfincs.bnd")
@@ -1377,10 +1382,15 @@ class SfincsAdapter(IHazardAdapter):
         if not sb.flow_boundary_points:
             raise ValueError("No flow boundary points found.")
 
+        offshore_datum = self.settings.water_level.datums[
+            self.settings.config.offshore_model.reference
+        ]
+
+        datum_height = offshore_datum.total_height.convert(us.UnitTypesLength.meters)
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + event.attrs.water_level_offset.convert(us.UnitTypesLength.meters)
+                + datum_height
                 + physical_projection.sea_level_rise.convert(us.UnitTypesLength.meters)
             )
 
@@ -1425,7 +1435,7 @@ class SfincsAdapter(IHazardAdapter):
         """Return the path to store the results."""
         return self.database.scenarios.output_path / scenario.attrs.name / "Flooding"
 
-    def _get_simulation_paths(self, scenario: IScenario) -> List[Path]:
+    def _get_simulation_paths(self, scenario: IScenario) -> list[Path]:
         base_path = (
             self._get_result_path(scenario)
             / "simulations"
@@ -1442,9 +1452,9 @@ class SfincsAdapter(IHazardAdapter):
         else:
             raise ValueError(f"Unsupported mode: {scenario.event.attrs.mode}")
 
-    def _get_simulation_path_offshore(self, scenario: IScenario) -> List[Path]:
+    def _get_simulation_path_offshore(self, scenario: IScenario) -> list[Path]:
         # Get the path to the offshore model (will not be used if offshore model is not created)
-        if self.settings.offshore_model is None:
+        if self.settings.config.offshore_model is None:
             raise ValueError("No offshore model found in site.toml.")
         base_path = (
             self._get_result_path(scenario)

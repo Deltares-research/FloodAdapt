@@ -48,6 +48,7 @@ from flood_adapt.object_model.interface.config.gui import (
 )
 from flood_adapt.object_model.interface.config.sfincs import (
     CycloneTrackDatabaseModel,
+    DatumModel,
     DemModel,
     FloodFrequencyModel,
     ObsPointModel,
@@ -1355,28 +1356,41 @@ class DatabaseBuilder:
                         name=station["name"],
                         description=f"observations from '{self.config.tide_gauge.source}' api",
                         source=self.config.tide_gauge.source,
+                        reference=ref,
                         ID=int(station["id"]),
                         lon=station["lon"],
                         lat=station["lat"],
                         units=us.UnitTypesLength.meters,
                     )
-                    water_level_config.msl.height.value = us.UnitfulLength(
-                        value=station["msl"], units=station["units"]
-                    ).convert(elv_units)
-                    water_level_config.localdatum.name = station["datum_name"]
-                    water_level_config.localdatum.height.value = us.UnitfulLength(
-                        value=station["datum"], units=station["units"]
-                    ).convert(elv_units)
+
+                    local_datum = DatumModel(
+                        name=station["datum_name"],
+                        height=us.UnitfulLength(
+                            value=station["datum"], units=station["units"]
+                        ).transform(elv_units),
+                    )
+                    msl = DatumModel(
+                        name="MSL",
+                        height=us.UnitfulLength(
+                            value=station["msl"], units=station["units"]
+                        ).transform(elv_units),
+                        # TODO check correction
+                    )
+                    water_level_config.datums = {
+                        local_datum.name: local_datum,
+                        msl.name: msl,
+                    }
 
                     for name in ["MLLW", "MHHW"]:
-                        val = us.UnitfulLength(
+                        height = us.UnitfulLength(
                             value=station[name.lower()], units=station["units"]
-                        ).convert(elv_units)
-                        wl_info = VerticalReferenceModel(
+                        ).transform(elv_units)
+
+                        wl_info = DatumModel(
                             name=name,
-                            height=us.UnitfulLength(value=val, units=elv_units),
+                            height=height,
                         )
-                        water_level_config.other.append(wl_info)
+                        water_level_config.datums[wl_info.name] = wl_info
 
                 else:
                     self.logger.warning(zero_wl_msg)
@@ -1555,13 +1569,10 @@ class DatabaseBuilder:
         units = GuiUnitModel(**self._get_default_units())
 
         # Check if the water level attribute include info on MHHW and MSL
-        other = [attr.name for attr in self.site_attrs["sfincs"]["water_level"].other]
-        if "MHHW" in other:
+        if "MHHW" in self.site_attrs["sfincs"]["water_level"].datums:
             amplitude = (
-                self.site_attrs["sfincs"]["water_level"]
-                .other[other.index("MHHW")]
-                .height.value
-                - self.site_attrs["sfincs"]["water_level"].msl.height.value
+                self.site_attrs["sfincs"]["water_level"]["datums"]["MHHW"].height.value
+                - self.site_attrs["sfincs"]["water_level"]["datums"]["MSL"].height.value
             )
             self.logger.info(
                 f"The default tidal amplitude in the GUI will be {amplitude} {units.default_length_units.value}, calculated as the difference between MHHW and MSL from the tide gauge data."

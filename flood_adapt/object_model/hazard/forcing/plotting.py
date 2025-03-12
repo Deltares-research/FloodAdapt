@@ -207,25 +207,29 @@ def plot_waterlevel(
         x_title = "Time"
 
     # Plot actual thing
-    fig = px.line(data + site.attrs.sfincs.water_level.msl.height.convert(units))
+    overland_datum = site.attrs.sfincs.water_level.datums[
+        site.attrs.sfincs.config.overland_model.reference
+    ]
+    overland_datum_height = overland_datum.total_height.convert(units)
+    fig = px.line(data + overland_datum_height)
 
     # plot reference water levels
     fig.add_hline(
-        y=site.attrs.sfincs.water_level.msl.height.convert(units),
+        y=overland_datum_height,
         line_dash="dash",
         line_color="#000000",
-        annotation_text="MSL",
+        annotation_text=overland_datum.name,
         annotation_position="bottom right",
     )
-    if site.attrs.sfincs.water_level.other:
-        for wl_ref in site.attrs.sfincs.water_level.other:
-            fig.add_hline(
-                y=wl_ref.height.convert(units),
-                line_dash="dash",
-                line_color="#3ec97c",
-                annotation_text=wl_ref.name,
-                annotation_position="bottom right",
-            )
+
+    for wl_ref in site.attrs.sfincs.water_level.datums.values():
+        fig.add_hline(
+            y=wl_ref.total_height.convert(units),
+            line_dash="dash",
+            line_color="#3ec97c",
+            annotation_text=wl_ref.name,
+            annotation_position="bottom right",
+        )
 
     fig.update_layout(
         autosize=False,

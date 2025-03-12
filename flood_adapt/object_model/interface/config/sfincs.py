@@ -85,62 +85,62 @@ class FloodmapType(str, Enum):
     water_depth = "water_depth"
 
 
-class VerticalReferenceModel(BaseModel):
-    """The accepted input for the variable vertical_reference in Site."""
+class DatumModel(BaseModel):
+    """
+    The accepted input for the variable datums in WaterlevelReferenceModel.
+
+    Attributes
+    ----------
+    name : str
+        The name of the vertical reference model.
+    height : us.UnitfulLength
+        The height of the vertical reference model relative to the main reference.
+    correction : Optional[us.UnitfulLength], default = None
+        The correction of the vertical reference model relative to the main reference.
+        Given that the height of the vertical reference model is often determined by external sources,
+        this correction can be used to correct systematic over-/underestimation of a vertical reference model.
+    """
 
     name: str
     height: us.UnitfulLength
 
+    # this used to be water_level_offset from events
+    correction: Optional[us.UnitfulLength] = None
 
-class WaterLevelReferenceModel(BaseModel):
+    @property
+    def total_height(self) -> us.UnitfulLength:
+        """The height of the vertical reference model, including the correction if provided."""
+        if self.correction:
+            return self.height + self.correction
+        return self.height
+
+
+class WaterlevelReferenceModel(BaseModel):
     """The accepted input for the variable water_level in Site.
 
-    Waterlevels timeseries are calculated from user input, assumed to be relative to the `user` vertical reference model.
+    Waterlevels timeseries are calculated from user input, assumed to be relative to the `reference` vertical reference model.
 
-    For Sfincs-offshore models, the height of `msl` is added to the water levels.
-    For Sfincs-overland models, the height of `localdatum` is added to the water levels.
-
-    For plotting in the GUI, the `user` vertical reference model is used as the main zero-reference, all values are relative to this.
+    For plotting in the GUI, the `reference` vertical reference model is used as the main zero-reference, all values are relative to this.
     All other vertical reference models are plotted as dashed lines.
 
     Attributes
     ----------
-    user : VerticalReferenceModel
-        Used as the main zero-reference, all values in the GUI are relative to this. Must have a height of 0.
-    localdatum : VerticalReferenceModel
-        Sfincs-overland uses local datum.
-    msl : VerticalReferenceModel
-        Sfincs-offshore uses MSL.
-    other : list[VerticalReferenceModel]
-        Only used for plotting dashed lines in the GUI.
+    reference : str
+        The name of the vertical reference model that is used as the main zero-reference.
+    datums : dict[str, DatumModel], default = {}
+        The vertical reference models that are used to calculate the waterlevels timeseries.
+        The datums are used to calculate the waterlevels timeseries, which are relative to the `reference` vertical reference model.
     """
 
-    user: VerticalReferenceModel
-    localdatum: VerticalReferenceModel
-    msl: VerticalReferenceModel
-
-    other: list[VerticalReferenceModel] = Field(
-        default_factory=list
-    )  # only used for plotting dashed lines in the GUI
+    reference: str
+    datums: dict[str, DatumModel] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def ensure_msl_or_localdatum_eq_zero(self):
-        if math.isclose(self.msl.height.value, 0) or math.isclose(
-            self.localdatum.height.value, 0
-        ):
-            return self
-
-        # Set smaller height to zero and update the other heights
-        if self.msl.height < self.localdatum.height:
-            self.localdatum.height -= self.msl.height
-            for other in self.other:
-                other.height -= self.msl.height
-            self.msl.height.value = 0.0
-        else:
-            self.msl.height -= self.localdatum.height
-            for other in self.other:
-                other.height -= self.localdatum.height
-            self.localdatum.height.value = 0.0
+    def main_reference_should_be_in_datums_and_eq_zero(self):
+        if self.reference not in self.datums:
+            raise ValueError(f"Reference {self.reference} not in {self.datums}")
+        if not math.isclose(self.datums[self.reference].height.value, 0, abs_tol=1e-6):
+            raise ValueError(f"Reference {self.reference} height is not zero")
         return self
 
 
@@ -160,8 +160,22 @@ class SlrScenariosModel(BaseModel):
 class SlrModel(BaseModel):
     """The accepted input for the variable slr in Site."""
 
-    vertical_offset: us.UnitfulLength
     scenarios: Optional[SlrScenariosModel] = None
+
+
+class FloodModel(BaseModel):
+    """The accepted input for the variable overland_model and offshore_model in Site.
+
+    Attributes
+    ----------
+    name : str
+        The name of the directory in `static/templates/<directory>` that contains the template model files.
+    reference : str
+        The name of the vertical reference model that is used as the reference datum. Should be defined in water_level.datums.
+    """
+
+    name: str
+    reference: str
 
 
 class SfincsConfigModel(BaseModel):
@@ -170,15 +184,15 @@ class SfincsConfigModel(BaseModel):
     csname: str
     cstype: Cstype
     version: Optional[str] = None
-    offshore_model: Optional[str] = None
-    overland_model: str
+    offshore_model: Optional[FloodModel] = None
+    overland_model: FloodModel
     floodmap_units: us.UnitTypesLength
     save_simulation: Optional[bool] = False
 
 
 class SfincsModel(BaseModel):
     config: SfincsConfigModel
-    water_level: WaterLevelReferenceModel
+    water_level: WaterlevelReferenceModel
     cyclone_track_database: Optional[CycloneTrackDatabaseModel] = None
     slr: SlrModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
@@ -197,3 +211,31 @@ class SfincsModel(BaseModel):
             toml_contents = load_toml(fp)
 
         return SfincsModel(**toml_contents)
+
+    @model_validator(mode="after")
+    def ensure_references_exist(self):
+        datum_names = [datum.name for datum in self.water_level.datums]
+
+        if self.water_level.reference not in datum_names:
+            raise ValueError(
+                f"Could not find reference `{self.water_level.reference}` in available datums: {datum_names}."
+            )
+
+        if self.config.overland_model.reference not in datum_names:
+            raise ValueError(
+                f"Could not find reference `{self.config.overland_model.reference}` in available datums: {datum_names}."
+            )
+
+        if self.config.offshore_model is not None:
+            if self.config.offshore_model.reference not in datum_names:
+                raise ValueError(
+                    f"Could not find reference `{self.config.offshore_model.reference}` in available datums: {datum_names}."
+                )
+
+        if self.tide_gauge is not None:
+            if self.tide_gauge.reference not in datum_names:
+                raise ValueError(
+                    f"Could not find reference `{self.tide_gauge.reference}` in available datums: {datum_names}."
+                )
+
+        return self
