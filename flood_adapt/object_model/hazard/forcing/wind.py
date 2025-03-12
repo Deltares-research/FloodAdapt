@@ -99,13 +99,12 @@ class WindCSV(IWind):
         return CSVTimeseries[self.units].load_file(self.path).to_dataframe(time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.path:
-            output_dir = Path(output_dir).resolve()
-            if self.path == output_dir / self.path.name:
-                return
-            output_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(self.path, output_dir)
-            self.path = output_dir / self.path.name
+        output_dir = Path(output_dir).resolve()
+        if self.path == output_dir / self.path.name:
+            return
+        output_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(self.path, output_dir)
+        self.path = output_dir / self.path.name
 
 
 class WindMeteo(IWind):
@@ -126,10 +125,9 @@ class WindNetCDF(IWind):
         return validated_ds
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.path:
-            output_dir = Path(output_dir).resolve()
-            if self.path == output_dir / self.path.name:
-                return
-            output_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(self.path, output_dir)
-            self.path = output_dir / self.path.name
+        output_dir = Path(output_dir).resolve()
+        if self.path == output_dir / self.path.name:
+            return
+        output_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(self.path, output_dir)
+        self.path = output_dir / self.path.name

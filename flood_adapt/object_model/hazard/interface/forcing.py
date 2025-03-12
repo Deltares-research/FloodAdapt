@@ -86,8 +86,8 @@ class IForcing(BaseModel, ABC):
     @field_serializer("path", check_fields=False)
     @classmethod
     def serialize_path(cls, value: Path) -> str:
-        """Serialize filepath-like fields."""
-        return str(value)
+        """Serialize filepath-like fields by saving only the filename. It is assumed that the file will be saved in the same directory."""
+        return value.name
 
 
 class IDischarge(IForcing):
