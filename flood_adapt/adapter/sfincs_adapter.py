@@ -896,12 +896,20 @@ class SfincsAdapter(IHazardAdapter):
     def _preprocess_risk(self, scenario: IScenario, sim_paths: List[Path]):
         if not isinstance(scenario.event, EventSet):
             raise ValueError("This function is only available for risk scenarios.")
-        if not len(sim_paths) == len(scenario.event.events):
+
+        if len(sim_paths) != len(scenario.event.events):
             raise ValueError(
                 "Number of simulation paths should match the number of events."
             )
 
-        for sub_event, sim_path in zip(scenario.event.events, sim_paths):
+        total = len(sim_paths)
+        for i, event_and_path in enumerate(
+            zip(scenario.event.events, sim_paths, strict=True)
+        ):
+            self.logger.info(
+                f"Preprocessing SFINCS for Eventset Scenario `{scenario.attrs.name}`, Event `{scenario.event.events[i].attrs.name}` ({i + 1}/{total})"
+            )
+            sub_event, sim_path = event_and_path
             self._preprocess_single_event(
                 scenario, output_path=sim_path, event=sub_event
             )
