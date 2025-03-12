@@ -127,6 +127,7 @@ def update_database_input(database_path: Path):
     for scenario in create_scenarios():
         database.scenarios.save(scenario)
 
+    to_delete = []
     for benefit in create_benefits():
         # There are some tests that require the scenarios to not be created yet
         # However, the db only allows saving benefits if the scenarios are created
@@ -141,10 +142,13 @@ def update_database_input(database_path: Path):
             scn_name = (
                 f"{scenario['projection']}_{scenario['event']}_{scenario['strategy']}"
             )
-            shutil.rmtree(input_dir / "scenarios" / scn_name)
+            to_delete.append(input_dir / "scenarios" / scn_name)
 
     # Cleanup singleton
     database.shutdown()
+
+    for directory in to_delete:
+        shutil.rmtree(directory)
 
 
 def create_events():
