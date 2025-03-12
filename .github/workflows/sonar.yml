@@ -1,18 +1,25 @@
-name: SonarScan
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      teamcity_build_id:
+        description: "Triggered by TeamCity Build ID"
+        required: false
+      coverage_report:
+        description: "Base64-encoded Coverage Report"
+        required: true
+
 jobs:
-  sonarqube:
-    name: SonarQube
-    runs-on: windows-latest
+  sonarcloud:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Decode and Save Coverage Report
+        run: |
+          echo "${{ github.event.inputs.coverage_report }}" | base64 -d > coverage.xml
+          ls -lh coverage.xml
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
