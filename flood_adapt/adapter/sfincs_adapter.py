@@ -1014,11 +1014,18 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(rainfall, RainfallSynthetic):
             df = rainfall.to_dataframe(time_frame=time_frame)
-            conversion = us.UnitfulIntensity(
-                value=1.0, units=rainfall.timeseries.peak_value.units
-            ).convert(us.UnitTypesIntensity.mm_hr)
-            df *= conversion
 
+            if rainfall.timeseries.cumulative is not None:  # scs
+                conversion = us.UnitfulLength(
+                    value=1.0, units=rainfall.timeseries.cumulative.units
+                ).convert(us.UnitTypesLength.millimeters)
+                # is this the correct conversion?
+            else:
+                conversion = us.UnitfulIntensity(
+                    value=1.0, units=rainfall.timeseries.peak_value.units
+                ).convert(us.UnitTypesIntensity.mm_hr)
+
+            df *= conversion
             tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
             df.to_csv(tmp_path)
 

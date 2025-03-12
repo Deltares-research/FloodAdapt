@@ -9,7 +9,7 @@ rules:
     level: error
     optional: false
     options:
-      - adapters
+      - adapter
       - object-model
       - dbs-controller
       - dbs-builder
