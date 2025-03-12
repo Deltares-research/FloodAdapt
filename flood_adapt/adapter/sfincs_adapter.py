@@ -1019,7 +1019,6 @@ class SfincsAdapter(IHazardAdapter):
                 conversion = us.UnitfulLength(
                     value=1.0, units=rainfall.timeseries.cumulative.units
                 ).convert(us.UnitTypesLength.millimeters)
-                # is this the correct conversion?
             else:
                 conversion = us.UnitfulIntensity(
                     value=1.0, units=rainfall.timeseries.peak_value.units
