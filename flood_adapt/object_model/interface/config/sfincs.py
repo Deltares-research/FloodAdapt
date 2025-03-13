@@ -214,7 +214,7 @@ class SfincsModel(BaseModel):
 
     @model_validator(mode="after")
     def ensure_references_exist(self):
-        datum_names = [datum.name for datum in self.water_level.datums]
+        datum_names = list(self.water_level.datums.keys())
 
         if self.water_level.reference not in datum_names:
             raise ValueError(

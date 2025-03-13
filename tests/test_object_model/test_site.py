@@ -1,3 +1,6 @@
+import tempfile
+from pathlib import Path
+
 import pytest
 from pydantic import BaseModel
 from pydantic_core import ValidationError
@@ -14,6 +17,7 @@ from flood_adapt.object_model.interface.config.site import (
     Site,
     SiteModel,
 )
+from tests.data.create_test_static import create_site_config
 
 
 class AsciiValidatorTest(BaseModel):
@@ -328,3 +332,17 @@ def test_ascii_validator_correct(string):
 def test_ascii_validator_incorrect(string):
     with pytest.raises(ValidationError):
         AsciiValidatorTest(string=string)
+
+
+def test_site_builder_load_file():
+    file_path: Path = Path(tempfile.gettempdir()) / "site.toml"
+    if file_path.exists():
+        file_path.unlink()
+
+    config = create_site_config()
+    to_save = Site(config)
+    to_save.save(file_path)
+
+    loaded = Site.load_file(file_path)
+
+    assert to_save == loaded

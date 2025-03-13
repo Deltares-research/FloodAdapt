@@ -57,8 +57,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     SfincsModel,
     SlrModel,
     SlrScenariosModel,
-    VerticalReferenceModel,
-    WaterLevelReferenceModel,
+    WaterlevelReferenceModel,
 )
 from flood_adapt.object_model.interface.config.site import (
     Site,
@@ -1322,14 +1321,13 @@ class DatabaseBuilder:
         # Start by defining default values for water levels
         # In case no further information is provided a local datum and msl of 0 will be assumed
         elv_units = self.site_attrs["sfincs"]["config"].floodmap_units
-        water_level_config = WaterLevelReferenceModel(
-            localdatum=VerticalReferenceModel(
-                name="MSL", height=us.UnitfulLength(value=0.0, units=elv_units)
-            ),
-            msl=VerticalReferenceModel(
-                name="MSL", height=us.UnitfulLength(value=0.0, units=elv_units)
-            ),
-            # other=[]
+        water_level_config = WaterlevelReferenceModel(
+            reference="MSL",  # TODO allow users to configure
+            datums={
+                "MSL": DatumModel(
+                    name="MSL", height=us.UnitfulLength(value=0.0, units=elv_units)
+                ),
+            },
         )
 
         zero_wl_msg = "No water level references were found. It is assumed that MSL is equal to the datum used in the SFINCS overland model. You can provide these values with the tide_gauge.msl and tide_gauge.datum attributes in the site.toml."
@@ -1374,12 +1372,14 @@ class DatabaseBuilder:
                         height=us.UnitfulLength(
                             value=station["msl"], units=station["units"]
                         ).transform(elv_units),
-                        # TODO check correction
+                        # TODO check/add correction
                     )
-                    water_level_config.datums = {
-                        local_datum.name: local_datum,
-                        msl.name: msl,
-                    }
+                    water_level_config.datums.update(
+                        {
+                            local_datum.name: local_datum,
+                            msl.name: msl,
+                        }
+                    )
 
                     for name in ["MLLW", "MHHW"]:
                         height = us.UnitfulLength(
@@ -1391,7 +1391,6 @@ class DatabaseBuilder:
                             height=height,
                         )
                         water_level_config.datums[wl_info.name] = wl_info
-
                 else:
                     self.logger.warning(zero_wl_msg)
             if self.config.tide_gauge.source == "file":

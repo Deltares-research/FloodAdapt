@@ -215,7 +215,7 @@ class DbsStatic(IDbsStatic):
         overland_path = (
             self._database.static_path
             / "templates"
-            / self._database.site.attrs.sfincs.config.overland_model
+            / self._database.site.attrs.sfincs.config.overland_model.name
         )
         with SfincsAdapter(model_root=overland_path) as overland_model:
             return overland_model

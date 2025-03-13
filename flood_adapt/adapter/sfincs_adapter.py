@@ -1439,7 +1439,7 @@ class SfincsAdapter(IHazardAdapter):
         base_path = (
             self._get_result_path(scenario)
             / "simulations"
-            / self.settings.config.overland_model
+            / self.settings.config.overland_model.name
         )
 
         if isinstance(scenario.event, EventSet):
