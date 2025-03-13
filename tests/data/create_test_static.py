@@ -1,8 +1,5 @@
 from pathlib import Path
 
-import tomli_w
-from pydantic import BaseModel
-
 from flood_adapt import unit_system as us
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.interface.forcing import Scstype
@@ -40,7 +37,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
-from flood_adapt.object_model.interface.config.site import SiteConfigModel, SiteModel
+from flood_adapt.object_model.interface.config.site import Site, SiteModel
 
 DATA_DIR = Path(__file__).parent
 
@@ -53,24 +50,23 @@ def update_database_static(database_path: Path):
     config_dir = database_path / "static" / "config"
     config_dir.mkdir(parents=True, exist_ok=True)
 
-    write_fiat_config(config_dir)
-    write_gui_config(config_dir)
+    sfincs = create_sfincs_config()
 
-    write_sfincs_config(config_dir)
-    write_sfincs_without_river_config(config_dir)
+    config = create_site_config(sfincs=sfincs)
+    site = Site(config)
+    site.save(config_dir / "site.toml")
 
-    # site = get_site_config()
-    # site_no_river = get_site_without_river_config()
+    sfincs.river = None
+    no_river_config = create_site_config(sfincs=sfincs)
+    no_river = Site(no_river_config)
+    no_river.save(
+        config_dir / "site_without_river.toml", sfincs="sfincs_without_river.toml"
+    )
 
     # update_static_data(database_path)
 
 
-def _write_config(config: BaseModel, file_path: Path):
-    with open(file_path, "wb") as f:
-        tomli_w.dump(config.model_dump(), f)
-
-
-def write_fiat_config(config_dir: Path) -> FiatModel:
+def create_fiat_config() -> FiatModel:
     aggregations = [
         AggregationModel(
             name="aggr_lvl_1",
@@ -92,7 +88,7 @@ def write_fiat_config(config_dir: Path) -> FiatModel:
     config = FiatConfigModel(
         exposure_crs="EPSG:4326",
         floodmap_type=FloodmapType.water_level,
-        non_building_names=["roads"],
+        non_building_names=["road"],
         damage_unit="$",
         building_footprints="templates/fiat/footprints/Buildings.shp",
         roads_file_name="roads.gpkg",
@@ -112,12 +108,10 @@ def write_fiat_config(config_dir: Path) -> FiatModel:
             event_set="test_set",
         ),
     )
-    _write_config(fiat, config_dir / "fiat.toml")
-
     return fiat
 
 
-def write_gui_config(config_dir: Path):
+def create_gui_config() -> GuiModel:
     units = GuiUnitModel(
         default_length_units=us.UnitTypesLength.feet,
         default_distance_units=us.UnitTypesLength.miles,
@@ -186,10 +180,10 @@ def write_gui_config(config_dir: Path):
         visualization_layers=visualization_layers,
     )
 
-    _write_config(gui, config_dir / "gui.toml")
+    return gui
 
 
-def _get_sfincs_config() -> SfincsModel:
+def create_sfincs_config() -> SfincsModel:
     waterlevel_reference = WaterlevelReferenceModel(
         reference="MLLW",
         datums={
@@ -280,35 +274,21 @@ def _get_sfincs_config() -> SfincsModel:
     return sfincs
 
 
-def write_sfincs_config(config_dir: Path):
-    sfincs = _get_sfincs_config()
-    _write_config(sfincs, config_dir / "sfincs.toml")
-
-
-def write_sfincs_without_river_config(config_dir: Path):
-    sfincs = _get_sfincs_config()
-    sfincs.river = None
-    _write_config(sfincs, config_dir / "sfincs.toml")
-
-
-def write_site_config():
-    SiteConfigModel(
+def create_site_config(
+    fiat: FiatModel = create_fiat_config(),
+    gui: GuiModel = create_gui_config(),
+    sfincs: SfincsModel = create_sfincs_config(),
+) -> SiteModel:
+    config = SiteModel(
         name="Charleston",
         description="Charleston, SC",
         lat=32.7765,
         lon=-79.9311,
-        components={
-            "sfincs": {"config_path": "sfincs.toml"},
-            "gui": {"config_path": "gui.toml"},
-            "fiat": {"config_path": "fiat.toml"},
-        },
+        fiat=fiat,
+        gui=gui,
+        sfincs=sfincs,
     )
-
-    SiteModel()
-
-
-def get_site_without_river_config():
-    raise NotImplementedError
+    return config
 
 
 def update_static_data():

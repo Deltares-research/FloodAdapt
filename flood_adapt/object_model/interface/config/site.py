@@ -1,8 +1,7 @@
 import os
 from abc import ABC, abstractmethod
-from os.path import join
 from pathlib import Path
-from typing import Any, Dict, Literal, Union
+from typing import Any, Literal, Union
 
 import tomli
 import tomli_w
@@ -35,27 +34,33 @@ class SiteModel(BaseModel):
     fiat: FiatModel
 
 
-class SiteConfigModel(BaseModel):
+class SiteBuilder(BaseModel):
+    """Pydantic model that reads the site configuration file and builds the site model.
+
+    Note that the components are not required, as the site may not have all of them.
+    Second, note that the components are assumed to be the file names of the component configs, located in the same directory as the site configuration file.
+    """
+
     name: str
     description: str = ""
     lat: float
     lon: float
-    components: Dict[
-        Literal["sfincs", "fiat", "gui"], Dict[Literal["config_path"], Path]
-    ]
+    components: dict[Literal["sfincs", "fiat", "gui"], str]
 
-    def load(self) -> SiteModel:
-        model_dict = {
-            "name": self.name,
-            "description": self.description,
-            "lat": self.lat,
-            "lon": self.lon,
-        }
-        model_dict["sfincs"] = SfincsModel.read_toml(
-            self.components["sfincs"]["config_path"]
-        )
-        model_dict["gui"] = GuiModel.read_toml(self.components["gui"]["config_path"])
-        model_dict["fiat"] = FiatModel.read_toml(self.components["fiat"]["config_path"])
+    @staticmethod
+    def load_file(file_path: Path) -> "SiteModel":
+        with open(file_path, "rb") as f:
+            model_dict = tomli.load(f)
+
+        toml_dir = file_path.parent
+        if (sfincs_config := model_dict["components"].get("sfincs")) is not None:
+            model_dict["sfincs"] = SfincsModel.read_toml(toml_dir / sfincs_config)
+
+        if (gui_config := model_dict["components"].get("gui")) is not None:
+            model_dict["gui"] = GuiModel.read_toml(toml_dir / gui_config)
+
+        if (fiat_config := model_dict["components"].get("fiat")) is not None:
+            model_dict["fiat"] = FiatModel.read_toml(toml_dir / fiat_config)
 
         return SiteModel(**model_dict)
 
@@ -89,13 +94,13 @@ class ISite(ABC):
 
     @staticmethod
     @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
+    def load_file(filepath: Union[str, os.PathLike]) -> "ISite":
         """Get Site attributes from toml file."""
         ...
 
     @staticmethod
     @abstractmethod
-    def load_dict(data: dict[str, Any]):
+    def load_dict(data: dict[str, Any]) -> "ISite":
         """Get Site attributes from an object, e.g. when initialized from GUI."""
         ...
 
@@ -110,6 +115,14 @@ class Site(ISite):
 
     _attrs: SiteModel
 
+    def __init__(self, site_config: dict[str, Any] | SiteModel):
+        if isinstance(site_config, dict):
+            self.attrs = SiteModel(**site_config)
+        elif isinstance(site_config, SiteModel):
+            self.attrs = site_config
+        else:
+            raise TypeError("site_config must be a dict or SiteModel")
+
     @property
     def attrs(self) -> SiteModel:
         return self._attrs
@@ -119,58 +132,51 @@ class Site(ISite):
         self._attrs = value
 
     @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]):
+    def load_file(filepath: Union[str, os.PathLike]) -> "Site":
         """Create Site from toml file."""
-        obj = Site()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-
-        parent_folder = Path(filepath).parent
-        for component in toml["components"].values():
-            p = Path(component["config_path"])
-            if p.is_absolute():
-                component["config_path"] = p
-            else:
-                component["config_path"] = join(parent_folder, p)
-
-        obj.attrs = SiteConfigModel(
-            **toml,
-        ).load()
-        return obj
+        return Site(SiteBuilder.load_file(Path(filepath)))
 
     @staticmethod
-    def load_dict(data: dict[str, Any]):
+    def load_dict(data: dict[str, Any]) -> "Site":
         """Create Synthetic from object, e.g. when initialized from GUI."""
-        obj = Site()
-        obj.attrs = SiteModel.model_validate(data)
-        return obj
+        return Site(data)
 
-    def save(self, filepath: Union[str, os.PathLike]) -> None:
+    def save(
+        self,
+        filepath: Union[str, os.PathLike],
+        sfincs: str = "sfincs.toml",
+        fiat: str = "fiat.toml",
+        gui: str = "gui.toml",
+    ) -> None:
         """Write toml file from model object."""
         parent_folder = Path(filepath).parent
         config_dict = {
-            "name": self._attrs.name,
-            "description": self._attrs.description,
-            "lat": self._attrs.lat,
-            "lon": self._attrs.lon,
-            "components": {
-                "sfincs": {"config_path": "sfincs.toml"},
-                "fiat": {"config_path": "fiat.toml"},
-                "gui": {"config_path": "gui.toml"},
-            },
+            "name": self.attrs.name,
+            "description": self.attrs.description,
+            "lat": self.attrs.lat,
+            "lon": self.attrs.lon,
+            "components": {},
         }
+
+        if self.attrs.sfincs is not None:
+            config_dict["components"]["sfincs"] = sfincs
+            with open(parent_folder / sfincs, "wb") as f:
+                tomli_w.dump(self.attrs.sfincs.model_dump(exclude_none=True), f)
+
+        if self.attrs.fiat is not None:
+            config_dict["components"]["fiat"] = fiat
+            with open(parent_folder / fiat, "wb") as f:
+                tomli_w.dump(self.attrs.fiat.model_dump(exclude_none=True), f)
+
+        if self.attrs.gui is not None:
+            config_dict["components"]["gui"] = gui
+            with open(parent_folder / gui, "wb") as f:
+                tomli_w.dump(self.attrs.gui.model_dump(exclude_none=True), f)
 
         with open(filepath, "wb") as f:
             tomli_w.dump(config_dict, f)
-        with open(
-            parent_folder / config_dict["components"]["sfincs"]["config_path"], "wb"
-        ) as f:
-            tomli_w.dump(self._attrs.sfincs.model_dump(exclude_none=True), f)
-        with open(
-            parent_folder / config_dict["components"]["fiat"]["config_path"], "wb"
-        ) as f:
-            tomli_w.dump(self._attrs.fiat.model_dump(exclude_none=True), f)
-        with open(
-            parent_folder / config_dict["components"]["gui"]["config_path"], "wb"
-        ) as f:
-            tomli_w.dump(self._attrs.gui.model_dump(exclude_none=True), f)
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Site):
+            return False
+        return self.attrs == other.attrs
