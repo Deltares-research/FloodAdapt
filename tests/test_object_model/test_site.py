@@ -56,7 +56,6 @@ def test_dict():
         "cyclone_track_database": {"file": "IBTrACS.NA.v04r00.nc"},
         "slr": {
             "relative_to_year": 2020,
-            "vertical_offset": {"value": 0.6, "units": "feet"},
         },
         "gui": {
             "default_length_units": "feet",
@@ -239,11 +238,10 @@ def test_loadFile_validFile_returnSiteModel(test_sites):
 def test_loadFile_tomlFile_setAttrs(test_sites, test_dict):
     test_site = test_sites["site.toml"]
     assert isinstance(
-        test_site.attrs.sfincs.water_level.other[0].height, us.UnitfulLength
+        test_site.attrs.sfincs.water_level.datums[0].height, us.UnitfulLength
     )
 
-    assert test_site.attrs.lat == 32.77
-    assert test_site.attrs.sfincs.slr.vertical_offset.value == 0.6
+    assert test_site.attrs.lat == 32.7765
     assert test_site.attrs.fiat.config.exposure_crs == "EPSG:4326"
     assert test_site.attrs.sfincs.river[0].mean_discharge.value == 5000
 
@@ -254,8 +252,7 @@ def test_loadFile_tomlFile_no_river(test_sites):
     assert isinstance(test_site.attrs.sfincs, SfincsModel)
     assert isinstance(test_site.attrs.sfincs.dem, DemModel)
     assert isinstance(test_site.attrs.sfincs.tide_gauge, TideGaugeModel)
-    assert test_site.attrs.lat == 32.77
-    assert test_site.attrs.sfincs.slr.vertical_offset.value == 0.6
+    assert test_site.attrs.lat == 32.7765
     assert test_site.attrs.fiat.config.exposure_crs == "EPSG:4326"
 
 

@@ -10,6 +10,7 @@ from flood_adapt.object_model.hazard.interface.tide_gauge import (
 from flood_adapt.object_model.interface.config.fiat import (
     AggregationModel,
     BenefitsModel,
+    BFEModel,
     EquityModel,
     FiatConfigModel,
     FiatModel,
@@ -85,9 +86,16 @@ def create_fiat_config() -> FiatModel:
         ),
     ]
 
+    bfe = BFEModel(
+        geom="bfe/bfe.geojson",
+        table="bfe/bfe.csv",
+        field_name="bfe",
+    )
+
     config = FiatConfigModel(
         exposure_crs="EPSG:4326",
         floodmap_type=FloodmapType.water_level,
+        bfe=bfe,
         non_building_names=["road"],
         damage_unit="$",
         building_footprints="templates/fiat/footprints/Buildings.shp",
@@ -186,24 +194,24 @@ def create_gui_config() -> GuiModel:
 def create_sfincs_config() -> SfincsModel:
     waterlevel_reference = WaterlevelReferenceModel(
         reference="MLLW",
-        datums={
-            "MLLW": DatumModel(
+        datums=[
+            DatumModel(
                 name="MLLW",
                 height=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters),
             ),
-            "MSL": DatumModel(
+            DatumModel(
                 name="MSL",
                 height=us.UnitfulLength(value=0.89, units=us.UnitTypesLength.meters),
             ),
-            "NAVD88": DatumModel(
+            DatumModel(
                 name="NAVD88",
                 height=us.UnitfulLength(value=0.957, units=us.UnitTypesLength.meters),
             ),
-            "MHHW": DatumModel(
+            DatumModel(
                 name="MHHW",
                 height=us.UnitfulLength(value=1.757, units=us.UnitTypesLength.meters),
             ),
-        },
+        ],
     )
 
     config = SfincsConfigModel(

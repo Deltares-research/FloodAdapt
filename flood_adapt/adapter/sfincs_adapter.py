@@ -482,7 +482,10 @@ class SfincsAdapter(IHazardAdapter):
 
         """
         sim_paths = self._get_simulation_paths(scenario)
-        SFINCS_OUTPUT_FILES = ["sfincs_his.nc", "sfincs_map.nc"]
+        SFINCS_OUTPUT_FILES = ["sfincs_map.nc"]
+
+        if self.settings.obs_point is not None:
+            SFINCS_OUTPUT_FILES.append("sfincs_his.nc")
 
         if isinstance(scenario.event, EventSet):
             for sim_path in sim_paths:
@@ -578,9 +581,9 @@ class SfincsAdapter(IHazardAdapter):
             value=1.0, units=us.UnitTypesLength("meters")
         ).convert(gui_units)
 
-        overland_reference_height = self.settings.water_level.datums[
+        overland_reference_height = self.settings.water_level.get_datum(
             self.settings.config.overland_model.reference
-        ].total_height.convert(gui_units)
+        ).total_height.convert(gui_units)
 
         for ii, col in enumerate(df.columns):
             # Plot actual thing
@@ -590,7 +593,7 @@ class SfincsAdapter(IHazardAdapter):
             )
 
             # plot reference water levels
-            for wl_ref in self.settings.water_level.datums.values():
+            for wl_ref in self.settings.water_level.datums:
                 fig.add_hline(
                     y=wl_ref.total_height.convert(gui_units),
                     line_dash="dash",
@@ -633,9 +636,9 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
                 if df_gauge is not None:
-                    gauge_reference_height = self.settings.water_level.datums[
+                    gauge_reference_height = self.settings.water_level.get_datum(
                         self.settings.tide_gauge.reference
-                    ].total_height.convert(gui_units)
+                    ).total_height.convert(gui_units)
 
                     waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
 
@@ -1328,15 +1331,15 @@ class SfincsAdapter(IHazardAdapter):
             df_ts.columns = list(range(1, len(gdf_locs) + 1))
 
         # Add difference between FloodAdapt datum and sfincs datum to the water level
-        main_reference_height = self.settings.water_level.datums[
+        main_reference_height = self.settings.water_level.get_datum(
             self.settings.water_level.reference
-        ].total_height.convert(
+        ).total_height.convert(
             us.UnitTypesLength(us.UnitTypesLength.meters)
         )  # should this always be 0 ?
 
-        sfincs_overland_reference_height = self.settings.water_level.datums[
+        sfincs_overland_reference_height = self.settings.water_level.get_datum(
             self.settings.config.overland_model.reference
-        ].total_height.convert(us.UnitTypesLength(us.UnitTypesLength.meters))
+        ).total_height.convert(us.UnitTypesLength(us.UnitTypesLength.meters))
 
         df_ts += main_reference_height - sfincs_overland_reference_height
 
@@ -1382,9 +1385,9 @@ class SfincsAdapter(IHazardAdapter):
         if not sb.flow_boundary_points:
             raise ValueError("No flow boundary points found.")
 
-        offshore_datum = self.settings.water_level.datums[
+        offshore_datum = self.settings.water_level.get_datum(
             self.settings.config.offshore_model.reference
-        ]
+        )
 
         datum_height = offshore_datum.total_height.convert(us.UnitTypesLength.meters)
         for bnd_ii in range(len(sb.flow_boundary_points)):
@@ -1459,7 +1462,7 @@ class SfincsAdapter(IHazardAdapter):
         base_path = (
             self._get_result_path(scenario)
             / "simulations"
-            / self.settings.config.offshore_model
+            / self.settings.config.offshore_model.name
         )
         if isinstance(scenario.event, EventSet):
             return [

@@ -127,20 +127,35 @@ class WaterlevelReferenceModel(BaseModel):
     ----------
     reference : str
         The name of the vertical reference model that is used as the main zero-reference.
-    datums : dict[str, DatumModel], default = {}
+    datums : list[DatumModel]
         The vertical reference models that are used to calculate the waterlevels timeseries.
         The datums are used to calculate the waterlevels timeseries, which are relative to the `reference` vertical reference model.
     """
 
     reference: str
-    datums: dict[str, DatumModel] = Field(default_factory=dict)
+    datums: list[DatumModel] = Field(default_factory=list)
+
+    def get_datum(self, name: str) -> DatumModel:
+        for datum in self.datums:
+            if datum.name == name:
+                return datum
+        raise ValueError(f"Could not find datum with name {name}")
 
     @model_validator(mode="after")
     def main_reference_should_be_in_datums_and_eq_zero(self):
-        if self.reference not in self.datums:
+        if self.reference not in [datum.name for datum in self.datums]:
             raise ValueError(f"Reference {self.reference} not in {self.datums}")
-        if not math.isclose(self.datums[self.reference].height.value, 0, abs_tol=1e-6):
+        if not math.isclose(
+            self.get_datum(self.reference).height.value, 0, abs_tol=1e-6
+        ):
             raise ValueError(f"Reference {self.reference} height is not zero")
+        return self
+
+    @model_validator(mode="after")
+    def all_datums_should_have_unique_names(self):
+        datum_names = [datum.name for datum in self.datums]
+        if len(set(datum_names)) != len(datum_names):
+            raise ValueError(f"Duplicate datum names found: {datum_names}")
         return self
 
 
@@ -214,7 +229,7 @@ class SfincsModel(BaseModel):
 
     @model_validator(mode="after")
     def ensure_references_exist(self):
-        datum_names = list(self.water_level.datums.keys())
+        datum_names = [d.name for d in self.water_level.datums]
 
         if self.water_level.reference not in datum_names:
             raise ValueError(

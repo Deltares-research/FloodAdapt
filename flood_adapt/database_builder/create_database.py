@@ -1323,11 +1323,11 @@ class DatabaseBuilder:
         elv_units = self.site_attrs["sfincs"]["config"].floodmap_units
         water_level_config = WaterlevelReferenceModel(
             reference="MSL",  # TODO allow users to configure
-            datums={
-                "MSL": DatumModel(
+            datums=[
+                DatumModel(
                     name="MSL", height=us.UnitfulLength(value=0.0, units=elv_units)
                 ),
-            },
+            ],
         )
 
         zero_wl_msg = "No water level references were found. It is assumed that MSL is equal to the datum used in the SFINCS overland model. You can provide these values with the tide_gauge.msl and tide_gauge.datum attributes in the site.toml."
@@ -1367,6 +1367,8 @@ class DatabaseBuilder:
                             value=station["datum"], units=station["units"]
                         ).transform(elv_units),
                     )
+                    water_level_config.datums.append(local_datum)
+
                     msl = DatumModel(
                         name="MSL",
                         height=us.UnitfulLength(
@@ -1374,12 +1376,7 @@ class DatabaseBuilder:
                         ).transform(elv_units),
                         # TODO check/add correction
                     )
-                    water_level_config.datums.update(
-                        {
-                            local_datum.name: local_datum,
-                            msl.name: msl,
-                        }
-                    )
+                    water_level_config.datums.append(msl)
 
                     for name in ["MLLW", "MHHW"]:
                         height = us.UnitfulLength(
@@ -1390,7 +1387,7 @@ class DatabaseBuilder:
                             name=name,
                             height=height,
                         )
-                        water_level_config.datums[wl_info.name] = wl_info
+                        water_level_config.datums.append(wl_info)
                 else:
                     self.logger.warning(zero_wl_msg)
             if self.config.tide_gauge.source == "file":
@@ -1410,8 +1407,11 @@ class DatabaseBuilder:
                     units=us.UnitTypesLength.meters,
                 )
                 self.logger.warning(zero_wl_msg)
+
         # store config
-        self.site_attrs["sfincs"]["water_level"] = water_level_config
+        self.site_attrs["sfincs"]["water_level"] = (
+            WaterlevelReferenceModel.model_validate(water_level_config)
+        )
 
     def _get_closest_station(self, ref: str = "MLLW"):
         """
@@ -1568,7 +1568,11 @@ class DatabaseBuilder:
         units = GuiUnitModel(**self._get_default_units())
 
         # Check if the water level attribute include info on MHHW and MSL
-        if "MHHW" in self.site_attrs["sfincs"]["water_level"].datums:
+        datums = [
+            DatumModel(**d) for d in self.site_attrs["sfincs"]["water_level"].datums
+        ]
+
+        if "MHHW" in [d.name for d in datums]:
             amplitude = (
                 self.site_attrs["sfincs"]["water_level"]["datums"]["MHHW"].height.value
                 - self.site_attrs["sfincs"]["water_level"]["datums"]["MSL"].height.value

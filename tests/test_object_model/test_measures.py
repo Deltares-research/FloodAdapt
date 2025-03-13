@@ -104,7 +104,7 @@ def test_elevate_aggr_area_save():
             elevation=us.UnitfulLengthRefValue(
                 value=1,
                 units=us.UnitTypesLength.feet,
-                type=us.VerticalReference.floodmap,
+                type=us.VerticalReference.datum,
             ),
             selection_type=SelectionType.aggregation_area,
             aggregation_area_type="aggr_lvl_2",
@@ -249,7 +249,7 @@ def test_elevate(test_db, test_data_dir):
             elevation=us.UnitfulLengthRefValue(
                 value=1,
                 units=us.UnitTypesLength.feet,
-                type=us.VerticalReference.floodmap,
+                type=us.VerticalReference.datum,
             ),
             selection_type=SelectionType.polygon,
             property_type="RES",
@@ -283,7 +283,7 @@ def test_floodproof(test_db, test_data_dir):
             elevation=us.UnitfulLengthRefValue(
                 value=1,
                 units=us.UnitTypesLength.feet,
-                type=us.VerticalReference.floodmap,
+                type=us.VerticalReference.datum,
             ),
             property_type="RES",
             polygon_file=str(test_data_dir / "polygon.geojson"),
