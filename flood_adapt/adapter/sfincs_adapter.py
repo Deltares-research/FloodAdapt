@@ -482,7 +482,10 @@ class SfincsAdapter(IHazardAdapter):
 
         """
         sim_paths = self._get_simulation_paths(scenario)
-        SFINCS_OUTPUT_FILES = ["sfincs_his.nc", "sfincs_map.nc"]
+        SFINCS_OUTPUT_FILES = ["sfincs_map.nc"]
+
+        if self.settings.obs_point is not None:
+            SFINCS_OUTPUT_FILES.append("sfincs_his.nc")
 
         if isinstance(scenario.event, EventSet):
             for sim_path in sim_paths:
