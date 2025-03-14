@@ -188,7 +188,7 @@ def plot_waterlevel(
             datum_correction = site.attrs.sfincs.water_level.get_datum(
                 site.attrs.sfincs.tide_gauge.reference
             ).total_height.convert(units)
-            data += datum_correction
+            data -= datum_correction
         elif isinstance(waterlevel, (WaterlevelCSV, WaterlevelSynthetic)):
             data = waterlevel.to_dataframe(event.attrs.time)
         else:
@@ -211,22 +211,22 @@ def plot_waterlevel(
         x_title = "Time"
 
     # Plot actual thing
-    overland_datum = site.attrs.sfincs.water_level.get_datum(
-        site.attrs.sfincs.config.overland_model.reference
-    )
-    overland_datum_height = overland_datum.total_height.convert(units)
-    fig = px.line(data + overland_datum_height)
+    fig = px.line(data)
 
-    # plot reference water levels
+    # plot main reference
     fig.add_hline(
-        y=overland_datum_height,
+        y=0,
         line_dash="dash",
         line_color="#000000",
-        annotation_text=overland_datum.name,
+        annotation_text=site.attrs.sfincs.water_level.reference,
         annotation_position="bottom right",
     )
 
+    # plot other references
     for wl_ref in site.attrs.sfincs.water_level.datums:
+        if wl_ref.name == site.attrs.sfincs.water_level.reference:
+            continue
+
         fig.add_hline(
             y=wl_ref.total_height.convert(units),
             line_dash="dash",
