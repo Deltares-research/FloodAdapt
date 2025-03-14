@@ -726,7 +726,7 @@ class SfincsAdapter(IHazardAdapter):
         ]
 
         # adjust storm frequency for hurricane events
-        if not math.isclose(phys_proj.attrs.storm_frequency_increase, 0):
+        if not math.isclose(phys_proj.attrs.storm_frequency_increase, 0, abs_tol=1e-9):
             storminess_increase = phys_proj.attrs.storm_frequency_increase / 100.0
             for ii, event in enumerate(scenario.event.events):
                 if event.attrs.template == Template.Hurricane:
@@ -1085,7 +1085,7 @@ class SfincsAdapter(IHazardAdapter):
                 self.settings.tide_gauge.reference
             ).total_height.convert(us.UnitTypesLength.meters)
 
-            df_ts *= conversion - datum_height
+            df_ts *= conversion + datum_height
 
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelCSV):
@@ -1120,7 +1120,7 @@ class SfincsAdapter(IHazardAdapter):
             datum_correction = self.settings.water_level.get_datum(
                 self.settings.config.offshore_model.reference
             ).total_height.convert(us.UnitTypesLength.meters)
-            df_ts -= datum_correction
+            df_ts += datum_correction
 
             # Already in meters since it was produced by SFINCS so no conversion needed
             self._set_waterlevel_forcing(df_ts)

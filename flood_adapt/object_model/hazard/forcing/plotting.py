@@ -185,10 +185,13 @@ def plot_waterlevel(
             data = TideGauge(
                 site.attrs.sfincs.tide_gauge
             ).get_waterlevels_in_time_frame(event.attrs.time, units=units)
+
+            # Convert to main reference
             datum_correction = site.attrs.sfincs.water_level.get_datum(
                 site.attrs.sfincs.tide_gauge.reference
             ).total_height.convert(units)
-            data -= datum_correction
+            data += datum_correction
+
         elif isinstance(waterlevel, (WaterlevelCSV, WaterlevelSynthetic)):
             data = waterlevel.to_dataframe(event.attrs.time)
         else:
