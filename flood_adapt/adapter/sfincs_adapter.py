@@ -1080,7 +1080,13 @@ class SfincsAdapter(IHazardAdapter):
             conversion = us.UnitfulLength(
                 value=1.0, units=self.settings.tide_gauge.units
             ).convert(us.UnitTypesLength.meters)
-            df_ts *= conversion
+
+            datum_height = self.settings.water_level.get_datum(
+                self.settings.tide_gauge.reference
+            ).total_height.convert(us.UnitTypesLength.meters)
+
+            df_ts *= conversion - datum_height
+
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelCSV):
             df_ts = (
@@ -1099,6 +1105,8 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(forcing, WaterlevelModel):
             from flood_adapt.adapter.sfincs_offshore import OffshoreSfincsHandler
 
+            if self.settings.config.offshore_model is None:
+                raise ValueError("Offshore model configuration is missing.")
             if self._current_scenario is None:
                 raise ValueError("Scenario must be provided to run the offshore model.")
 
@@ -1107,6 +1115,12 @@ class SfincsAdapter(IHazardAdapter):
             )
             if df_ts is None:
                 raise ValueError("Failed to get waterlevel data.")
+
+            # Datum
+            datum_correction = self.settings.water_level.get_datum(
+                self.settings.config.offshore_model.reference
+            ).total_height.convert(us.UnitTypesLength.meters)
+            df_ts -= datum_correction
 
             # Already in meters since it was produced by SFINCS so no conversion needed
             self._set_waterlevel_forcing(df_ts)
@@ -1320,6 +1334,19 @@ class SfincsAdapter(IHazardAdapter):
         self._model.set_config("pavbnd", -9999)
 
     def _set_waterlevel_forcing(self, df_ts: pd.DataFrame):
+        """
+        Add water level forcing to sfincs model.
+
+        Values in the timeseries are expected to be relative to the main reference datum: `self.settings.water_level.reference`.
+        The overland model reference: `self.settings.config.overland_model.reference` is used to convert the water levels to the reference of the overland model.
+
+        Parameters
+        ----------
+        df_ts : pd.DataFrame
+            Time series of water levels with the first column as the time index.
+
+
+        """
         # Determine bnd points from reference overland model
         gdf_locs = self._read_waterlevel_boundary_locations()
 
@@ -1330,18 +1357,12 @@ class SfincsAdapter(IHazardAdapter):
                 df_ts[i + 1] = df_ts[name]
             df_ts.columns = list(range(1, len(gdf_locs) + 1))
 
-        # Add difference between FloodAdapt datum and sfincs datum to the water level
-        main_reference_height = self.settings.water_level.get_datum(
-            self.settings.water_level.reference
-        ).total_height.convert(
-            us.UnitTypesLength(us.UnitTypesLength.meters)
-        )  # should this always be 0 ?
-
+        # Datum
         sfincs_overland_reference_height = self.settings.water_level.get_datum(
             self.settings.config.overland_model.reference
-        ).total_height.convert(us.UnitTypesLength(us.UnitTypesLength.meters))
+        ).total_height.convert(us.UnitTypesLength.meters)
 
-        df_ts += main_reference_height - sfincs_overland_reference_height
+        df_ts -= sfincs_overland_reference_height
 
         # HydroMT function: set waterlevel forcing from time series
         self._model.set_forcing_1d(
@@ -1368,7 +1389,7 @@ class SfincsAdapter(IHazardAdapter):
         # ONLY offshore models
         """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs."""
         if self.settings.config.offshore_model is None:
-            raise ValueError("No offshore model found in site.toml.")
+            raise ValueError("No offshore model found in sfincs config.")
 
         self.logger.info("Adding water level forcing to the offshore model")
         sb = SfincsBoundary()
@@ -1458,7 +1479,7 @@ class SfincsAdapter(IHazardAdapter):
     def _get_simulation_path_offshore(self, scenario: IScenario) -> list[Path]:
         # Get the path to the offshore model (will not be used if offshore model is not created)
         if self.settings.config.offshore_model is None:
-            raise ValueError("No offshore model found in site.toml.")
+            raise ValueError("No offshore model found in sfincs config.")
         base_path = (
             self._get_result_path(scenario)
             / "simulations"
