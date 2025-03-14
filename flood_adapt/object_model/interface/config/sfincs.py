@@ -231,11 +231,6 @@ class SfincsModel(BaseModel):
     def ensure_references_exist(self):
         datum_names = [d.name for d in self.water_level.datums]
 
-        if self.water_level.reference not in datum_names:
-            raise ValueError(
-                f"Could not find reference `{self.water_level.reference}` in available datums: {datum_names}."
-            )
-
         if self.config.overland_model.reference not in datum_names:
             raise ValueError(
                 f"Could not find reference `{self.config.overland_model.reference}` in available datums: {datum_names}."
