@@ -1,4 +1,5 @@
 import tempfile
+from datetime import timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -27,6 +28,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
 )
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.hazard.interface.models import (
+    REFERENCE_TIME,
     TimeModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
@@ -42,10 +44,14 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
         dummy_1d_timeseries_df.to_csv(tmp_csv)
         return Path(tmp_csv)
 
+    time = TimeModel(
+        start_time=REFERENCE_TIME, end_time=REFERENCE_TIME + timedelta(hours=2)
+    )
+
     return HistoricalEvent(
         HistoricalEventModel(
             name="nearshore_gauged",
-            time=TimeModel(),
+            time=time,
             forcings={
                 ForcingType.WATERLEVEL: [
                     WaterlevelCSV(path=_tmp_timeseries_csv("waterlevel.csv"))
@@ -88,10 +94,13 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
 
 @pytest.fixture()
 def setup_offshore_meteo_event():
+    time = TimeModel(
+        start_time=REFERENCE_TIME, end_time=REFERENCE_TIME + timedelta(hours=2)
+    )
     return HistoricalEvent(
         HistoricalEventModel(
             name="offshore_meteo",
-            time=TimeModel(),
+            time=time,
             forcings={
                 ForcingType.WATERLEVEL: [
                     WaterlevelModel(),

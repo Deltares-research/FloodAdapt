@@ -993,7 +993,7 @@ class TestAddObsPoint:
         path_in = (
             test_db.static_path
             / "templates"
-            / test_db.site.attrs.sfincs.config.overland_model
+            / test_db.site.attrs.sfincs.config.overland_model.name
         )
 
         # Act

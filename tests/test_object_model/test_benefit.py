@@ -1,9 +1,12 @@
+import shutil
+
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
 import tomli
 
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.interface.benefits import IBenefit
 
@@ -102,18 +105,20 @@ class TestBenefitScenariosNotCreated:
         )
 
         benefit = Benefit.load_file(benefit_path)
-        yield benefit
+        yield benefit, test_db
 
     # When benefit analysis is not run yet the has_run_check method should return False
     def test_hasRunCheck_notCreated_false(self, benefit_obj):
+        benefit_obj, _ = benefit_obj
         assert not benefit_obj.has_run_check()
 
     # The check_scenarios methods should always return a table with the scenarios that are needed to run the benefit analysis
     def test_checkScenarios_notCreated_scenariosTable(self, benefit_obj):
+        benefit_obj, _ = benefit_obj
         scenarios = benefit_obj.check_scenarios()
         assert isinstance(scenarios, pd.DataFrame)
         assert len(scenarios) == 4
-        assert "No" in scenarios["scenario created"].to_list()
+        assert "No" not in scenarios["scenario created"].to_list()
         assert all(
             scenarios["event"] == benefit_obj.site_info.attrs.fiat.benefits.event_set
         )
@@ -152,12 +157,22 @@ class TestBenefitScenariosNotCreated:
 
     # When the needed scenarios are not run yet, the ready_to_run method should return false
     def test_readyToRun_notCreated_false(self, benefit_obj):
+        benefit_obj, _ = benefit_obj
         assert not benefit_obj.ready_to_run()
 
     # When the needed scenarios are not run yet, the run_cost_benefit method should return a RunTimeError
-    def test_runCostBenefit_notCreated_raiseRunTimeError(self, benefit_obj):
+    def test_runCostBenefit_notCreated_raiseRunTimeError(
+        self, benefit_obj: tuple[Benefit, IDatabase]
+    ):
+        benefit, test_db = benefit_obj
+
+        scenarios = benefit.scenarios["scenario created"].to_numpy()
+        for scenario in scenarios:
+            shutil.rmtree(test_db.input_path.joinpath("scenarios", scenario))
+        benefit.check_scenarios()
+
         with pytest.raises(RuntimeError) as exception_info:
-            benefit_obj.run_cost_benefit()
+            benefit.run_cost_benefit()
 
         assert (
             str(exception_info.value)
@@ -166,8 +181,9 @@ class TestBenefitScenariosNotCreated:
 
     # When the benefit analysis not run yet, the get_output method should return a RunTimeError
     def test_getOutput_notRun_raiseRunTimeError(self, benefit_obj):
+        benefit, _ = benefit_obj
         with pytest.raises(RuntimeError) as exception_info:
-            benefit_obj.results
+            benefit.results
         assert "Cannot read output since benefit analysis" in str(exception_info.value)
 
 
