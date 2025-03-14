@@ -68,23 +68,23 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: timedelta
     ) -> np.ndarray:
-        _start = attrs.start_time.convert(us.UnitTypesTime.seconds)
-        _end = attrs.end_time.convert(us.UnitTypesTime.seconds)
+        _start = attrs.start_time.convert(us.UnitTypesTime.hours)
+        _end = attrs.end_time.convert(us.UnitTypesTime.hours)
 
         tt = pd.date_range(
             start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
             end=(REFERENCE_TIME + attrs.end_time.to_timedelta()),
             freq=timestep,
         )
-        tt_seconds = (tt - REFERENCE_TIME).total_seconds()
+        tt_hours = (tt - REFERENCE_TIME).total_seconds() / 3600
 
         mean = (_start + _end) / 2
         sigma = (_end - _start) / 6
-        gaussian_curve = np.exp(-0.5 * ((tt_seconds - mean) / sigma) ** 2)
+        gaussian_curve = np.exp(-0.5 * ((tt_hours - mean) / sigma) ** 2)
 
         if attrs.cumulative:
             # Normalize to ensure the integral sums to 1 over the time steps
-            integral_approx = np.trapz(gaussian_curve, tt_seconds)
+            integral_approx = np.trapz(gaussian_curve, tt_hours)
             normalized_gaussian = gaussian_curve / integral_approx
             ts = attrs.cumulative.value * normalized_gaussian.to_numpy()
         elif attrs.peak_value:

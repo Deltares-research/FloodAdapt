@@ -482,7 +482,11 @@ class TestGaussianCalculator:
 
         assert data.shape[0] > 0, "Time series should have data points"
         assert np.isclose(
-            np.trapz(data, dx=time_step), model.cumulative.value, atol=1e-3
+            np.trapz(
+                data, dx=time_step / 3600
+            ),  # divide by 3600 to convert seconds to hours, rainfall units are in [inch | mm | ...] / hr
+            model.cumulative.value,
+            atol=1e-3,
         ), f"Integral should be close to cumulative value. {np.trapz(data, time_step)} != {model.cumulative.value}"
         assert np.all(data >= 0), "All values should be non-negative"
 
