@@ -1414,7 +1414,7 @@ class SfincsAdapter(IHazardAdapter):
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + datum_height
+                - datum_height
                 + physical_projection.sea_level_rise.convert(us.UnitTypesLength.meters)
             )
 
