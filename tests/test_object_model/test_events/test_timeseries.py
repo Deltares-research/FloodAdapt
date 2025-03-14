@@ -2,6 +2,7 @@ import math
 import os
 import tempfile
 from datetime import timedelta
+from itertools import permutations
 from pathlib import Path
 
 import numpy as np
@@ -10,6 +11,7 @@ import pytest
 from pydantic import ValidationError
 
 from flood_adapt.object_model.hazard.forcing.timeseries import (
+    GaussianTimeseriesCalculator,
     ShapeType,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
@@ -28,6 +30,12 @@ class TestTimeseriesModel:
             "peak_time": {"value": 0, "units": us.UnitTypesTime.hours},
             "peak_value": {"value": 1, "units": us.UnitTypesIntensity.mm_hr},
         }
+        _TIMESERIES_MODEL_GAUSSIAN = {
+            "shape_type": ShapeType.gaussian.value,
+            "duration": {"value": 1, "units": us.UnitTypesTime.hours},
+            "peak_time": {"value": 0, "units": us.UnitTypesTime.hours},
+            "cumulative": {"value": 1, "units": us.UnitTypesLength.millimeters},
+        }
         _TIMESERIES_MODEL_SCS = {
             "shape_type": ShapeType.scs.value,
             "peak_time": {"value": 0, "units": us.UnitTypesTime.hours},
@@ -39,7 +47,7 @@ class TestTimeseriesModel:
 
         models = {
             ShapeType.block: _TIMESERIES_MODEL_SIMPLE,
-            ShapeType.gaussian: _TIMESERIES_MODEL_SIMPLE,
+            ShapeType.gaussian: _TIMESERIES_MODEL_GAUSSIAN,
             ShapeType.triangle: _TIMESERIES_MODEL_SIMPLE,
             ShapeType.scs: _TIMESERIES_MODEL_SCS,
         }
@@ -49,11 +57,10 @@ class TestTimeseriesModel:
         "shape_type",
         [
             ShapeType.block,
-            ShapeType.gaussian,
             ShapeType.triangle,
         ],
     )
-    def test_TimeseriesModel_valid_input_simple_shapetypes(self, shape_type):
+    def test_timeseriesmodel_valid_input_simple_shapetypes(self, shape_type):
         # Arrange
         model = self.get_test_model(shape_type)
 
@@ -72,7 +79,27 @@ class TestTimeseriesModel:
             value=1, units=us.UnitTypesIntensity.mm_hr
         )
 
-    def test_TimeseriesModel_valid_input_scs_shapetype(self):
+    def test_timeseriesmodel_valid_input_gaussian_shapetype(self):
+        # Arrange
+        model = self.get_test_model(ShapeType.gaussian)
+
+        # Act
+        timeseries_model = SyntheticTimeseriesModel[us.UnitfulLength](**model)
+
+        # Assert
+        assert timeseries_model.shape_type == ShapeType.gaussian
+        assert timeseries_model.peak_time == us.UnitfulTime(
+            value=0, units=us.UnitTypesTime.hours
+        )
+        assert timeseries_model.duration == us.UnitfulTime(
+            value=1, units=us.UnitTypesTime.hours
+        )
+        assert timeseries_model.peak_value is None
+        assert timeseries_model.cumulative == us.UnitfulLength(
+            value=1, units=us.UnitTypesLength.millimeters
+        )
+
+    def test_timeseriesmodel_valid_input_scs_shapetype(self):
         # Arrange
         model = self.get_test_model(ShapeType.scs)
 
@@ -92,7 +119,7 @@ class TestTimeseriesModel:
             value=1, units=us.UnitTypesLength.millimeters
         )
 
-    def test_SyntheticTimeseries_save_load(self, tmp_path):
+    def test_synthetictimeseries_save_load(self, tmp_path):
         # Arrange
         model = self.get_test_model(ShapeType.block)
         model_path = tmp_path / "test.toml"
@@ -106,7 +133,7 @@ class TestTimeseriesModel:
         assert timeseries == loaded_model
 
     @pytest.mark.parametrize("to_remove", ["scs_type", "scs_file_name"])
-    def test_TimeseriesModel_invalid_input_shapetype_scs(self, to_remove):
+    def test_timeseriesmodel_invalid_input_shapetype_scs(self, to_remove):
         # Arrange
         model = self.get_test_model(ShapeType.scs)
         model.pop(to_remove)
@@ -119,7 +146,7 @@ class TestTimeseriesModel:
         errors = e.value.errors()
         assert len(errors) == 1
         assert (
-            "SCS timeseries must have scs_file_name, scs_type and cumulative specified."
+            "SCS timeseries must have `scs_file_name`, `scs_type` and `cumulative` specified."
             in errors[0]["ctx"]["error"].args[0]
         )
 
@@ -127,11 +154,10 @@ class TestTimeseriesModel:
         "shape_type",
         [
             ShapeType.block,
-            ShapeType.gaussian,
             ShapeType.triangle,
         ],
     )
-    def test_TimeseriesModel_invalid_input_simple_shapetypes_both_peak_and_cumulative(
+    def test_timeseriesmodel_invalid_input_simple_shapetypes_both_peak_and_cumulative(
         self, shape_type
     ):
         # Arrange
@@ -155,11 +181,10 @@ class TestTimeseriesModel:
         "shape_type",
         [
             ShapeType.block,
-            ShapeType.gaussian,
             ShapeType.triangle,
         ],
     )
-    def test_TimeseriesModel_invalid_input_simple_shapetypes_neither_peak_nor_cumulative(
+    def test_timeseriesmodel_invalid_input_simple_shapetypes_neither_peak_nor_cumulative(
         self, shape_type
     ):
         # Arrange
@@ -202,32 +227,52 @@ class TestSyntheticTimeseries:
         peak_time: float = 0,
         cumulative: float = 1,
     ):
-        if shape_type == ShapeType.scs:
-            attrs = SyntheticTimeseriesModel[us.UnitfulLength](
-                shape_type=ShapeType.scs,
-                peak_time=us.UnitfulTime(value=peak_time, units=us.UnitTypesTime.hours),
-                duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
-                cumulative=us.UnitfulLength(
-                    value=cumulative, units=us.UnitTypesLength.inch
-                ),
-                scs_file_name="scs_rainfall.csv",
-                scs_type=Scstype.type3,
-            )
-        else:
-            attrs = SyntheticTimeseriesModel[us.UnitfulIntensity](
-                shape_type=shape_type,
-                peak_time=us.UnitfulTime(value=peak_time, units=us.UnitTypesTime.hours),
-                duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
-                peak_value=us.UnitfulIntensity(
-                    value=peak_value, units=us.UnitTypesIntensity.mm_hr
-                ),
-            )
+        match shape_type:
+            case ShapeType.scs:
+                attrs = SyntheticTimeseriesModel[us.UnitfulLength](
+                    shape_type=ShapeType.scs,
+                    peak_time=us.UnitfulTime(
+                        value=peak_time, units=us.UnitTypesTime.hours
+                    ),
+                    duration=us.UnitfulTime(
+                        value=duration, units=us.UnitTypesTime.hours
+                    ),
+                    cumulative=us.UnitfulLength(
+                        value=cumulative, units=us.UnitTypesLength.inch
+                    ),
+                    scs_file_name="scs_rainfall.csv",
+                    scs_type=Scstype.type3,
+                )
+            case ShapeType.gaussian:
+                attrs = SyntheticTimeseriesModel[us.UnitfulLength](
+                    shape_type=ShapeType.gaussian,
+                    peak_time=us.UnitfulTime(
+                        value=peak_time, units=us.UnitTypesTime.hours
+                    ),
+                    duration=us.UnitfulTime(
+                        value=duration, units=us.UnitTypesTime.hours
+                    ),
+                    cumulative=us.UnitfulLength(
+                        value=cumulative, units=us.UnitTypesLength.inch
+                    ),
+                )
+            case _:
+                attrs = SyntheticTimeseriesModel[us.UnitfulIntensity](
+                    shape_type=shape_type,
+                    peak_time=us.UnitfulTime(
+                        value=peak_time, units=us.UnitTypesTime.hours
+                    ),
+                    duration=us.UnitfulTime(
+                        value=duration, units=us.UnitTypesTime.hours
+                    ),
+                    peak_value=us.UnitfulIntensity(
+                        value=peak_value, units=us.UnitTypesIntensity.mm_hr
+                    ),
+                )
         ts = SyntheticTimeseries(data=attrs)
         return ts
 
-    @pytest.mark.parametrize(
-        "shape_type", [ShapeType.block, ShapeType.gaussian, ShapeType.triangle]
-    )
+    @pytest.mark.parametrize("shape_type", [ShapeType.block, ShapeType.triangle])
     @pytest.mark.parametrize("duration, peak_time, peak_value, cumulative", TEST_ATTRS)
     def test_calculate_data_correct_peak_value(
         self, shape_type, duration, peak_time, peak_value, cumulative
@@ -412,3 +457,55 @@ class TestSyntheticTimeseries:
         assert df.index.equals(
             expected_time_range
         ), f"{df.index} == {expected_time_range}"
+
+
+class TestGaussianCalculator:
+    _TEST_ATTRS = permutations([1, 10, 100, 1000], r=3)
+
+    @pytest.mark.parametrize(
+        "cumulative, duration, time_step",
+        _TEST_ATTRS,
+    )
+    def test_cumulative_is_correct(self, cumulative, duration, time_step):
+        # Act
+        calc = GaussianTimeseriesCalculator()
+        model = SyntheticTimeseriesModel[us.UnitfulLength](
+            shape_type=ShapeType.gaussian,
+            duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
+            peak_time=us.UnitfulTime(value=duration / 2, units=us.UnitTypesTime.hours),
+            cumulative=us.UnitfulLength(
+                value=cumulative, units=us.UnitTypesLength.millimeters
+            ),
+        )
+
+        data = calc.calculate(attrs=model, timestep=timedelta(seconds=time_step))
+
+        assert data.shape[0] > 0, "Time series should have data points"
+        assert np.isclose(
+            np.trapz(data, dx=time_step), model.cumulative.value, atol=1e-3
+        ), f"Integral should be close to cumulative value. {np.trapz(data, time_step)} != {model.cumulative.value}"
+        assert np.all(data >= 0), "All values should be non-negative"
+
+    @pytest.mark.parametrize(
+        "peak_value, duration, time_step",
+        _TEST_ATTRS,
+    )
+    def test_peak_value_is_correct(self, peak_value, duration, time_step):
+        # Act
+        calc = GaussianTimeseriesCalculator()
+        model = SyntheticTimeseriesModel[us.UnitfulIntensity](
+            shape_type=ShapeType.gaussian,
+            duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
+            peak_time=us.UnitfulTime(value=duration / 2, units=us.UnitTypesTime.hours),
+            peak_value=us.UnitfulIntensity(
+                value=peak_value, units=us.UnitTypesIntensity.mm_hr
+            ),
+        )
+
+        data = calc.calculate(attrs=model, timestep=timedelta(seconds=time_step))
+
+        assert data.shape[0] > 0, "Time series should have data points"
+        assert np.isclose(
+            np.amax(data), model.peak_value.value, atol=1e-3
+        ), f"Integral should be close to cumulative value. {np.trapz(data, time_step)} != {model.peak_value.value}"
+        assert np.all(data >= 0), "All values should be non-negative"

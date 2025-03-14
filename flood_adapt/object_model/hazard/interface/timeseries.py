@@ -54,15 +54,24 @@ class SyntheticTimeseriesModel(BaseModel, Generic[TValueUnitPair]):
         return self
 
     @model_validator(mode="after")
-    def validate_scs_timeseries(self):
-        if self.shape_type == ShapeType.scs:
-            if not all(
-                attr is not None
-                for attr in [self.scs_file_name, self.scs_type, self.cumulative]
-            ):
-                raise ValueError(
-                    f"SCS timeseries must have scs_file_name, scs_type and cumulative specified. {self.scs_file_name, self.scs_type, self.cumulative}"
-                )
+    def validate_attrs(self):
+        match self.shape_type:
+            case ShapeType.scs:
+                if not all(
+                    attr is not None
+                    for attr in [self.scs_file_name, self.scs_type, self.cumulative]
+                ):
+                    raise ValueError(
+                        f"SCS timeseries must have `scs_file_name`, `scs_type` and `cumulative` specified. {self.scs_file_name, self.scs_type, self.cumulative}"
+                    )
+            case ShapeType.gaussian:
+                # Gaussian shape allows for peak_value or cumulative to be set
+                pass
+            case _:
+                if not self.peak_value:
+                    raise ValueError(
+                        f"Timeseries must have `peak_value` specified. {self.peak_time, self.duration, self.cumulative}"
+                    )
         return self
 
     @property

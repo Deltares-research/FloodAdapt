@@ -80,9 +80,18 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
         mean = (_start + _end) / 2
         sigma = (_end - _start) / 6
+        gaussian_curve = np.exp(-0.5 * ((tt_seconds - mean) / sigma) ** 2)
 
-        # 99.7% of the rain will fall within a duration of 6 sigma
-        ts = attrs.peak_value.value * np.exp(-0.5 * ((tt_seconds - mean) / sigma) ** 2)
+        if attrs.cumulative:
+            # Normalize to ensure the integral sums to 1 over the time steps
+            integral_approx = np.trapz(gaussian_curve, tt_seconds)
+            normalized_gaussian = gaussian_curve / integral_approx
+            ts = attrs.cumulative.value * normalized_gaussian.to_numpy()
+        elif attrs.peak_value:
+            ts = attrs.peak_value.value * gaussian_curve
+        else:
+            raise ValueError("Either peak_value or cumulative must be specified.")
+
         return ts
 
 
