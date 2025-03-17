@@ -114,3 +114,12 @@ def save_file_to_database(
         shutil.copy2(src_file, dst_file)
 
     return dst_file
+
+
+def copy_file_to_output_dir(file_path: Path, output_dir: Path) -> Path:
+    output_dir = output_dir.resolve()
+    if file_path == output_dir / file_path.name:
+        return file_path
+    output_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(file_path, output_dir)
+    return output_dir / file_path.name

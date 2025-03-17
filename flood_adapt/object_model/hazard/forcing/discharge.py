@@ -1,5 +1,4 @@
 import os
-import shutil
 from pathlib import Path
 
 import pandas as pd
@@ -15,6 +14,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
 )
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.utils import copy_file_to_output_dir
 
 
 class DischargeConstant(IDischarge):
@@ -59,9 +59,4 @@ class DischargeCSV(IDischarge):
         )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        output_dir = Path(output_dir).resolve()
-        if self.path == output_dir / self.path.name:
-            return
-        output_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(self.path, output_dir)
-        self.path = output_dir / self.path.name
+        self.path = copy_file_to_output_dir(self.path, Path(output_dir))
