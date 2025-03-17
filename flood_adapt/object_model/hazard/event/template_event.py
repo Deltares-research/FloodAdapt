@@ -126,7 +126,11 @@ class Event(IEvent[T_EVENT_MODEL]):
         event = cls.load_dict(toml)
 
         for forcing in event.get_forcings():
-            if hasattr(forcing, "path"):
+            if hasattr(forcing, "path") and forcing.path is not None:
+                if not (file_path.parent / forcing.path).exists():
+                    raise FileNotFoundError(
+                        f"File {forcing.path} not found in {file_path.parent}."
+                    )
                 forcing.path = file_path.parent / forcing.path
 
         return event
