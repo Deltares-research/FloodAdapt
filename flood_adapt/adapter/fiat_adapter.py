@@ -1392,27 +1392,6 @@ class FiatAdapter(IImpactAdapter):
         """
         self.logger.info("Calculating impacts at a building footprint scale")
 
-        # Get footprints file paths from site.toml
-        # TODO ensure that if this does not happen we get same file name output from FIAT?
-        # Check if there is a footprint file given
-        if not self.config.building_footprints:
-            raise ValueError("No building footprints are provided.")
-
-        # Get footprints file
-        footprints_path = self.config_base_path.joinpath(
-            self.config.building_footprints
-        )
-        # Read building footprints
-        footprints_gdf = gpd.read_file(footprints_path, engine="pyogrio")
-        footprints = Footprints(
-            footprints=footprints_gdf,
-            field_name="BF_FID",
-            fiat_columns=self.impact_columns,
-        )
-
-        # Read files
-        # TODO Will it save time if we load this footprints once when the database is initialized?
-
         # Read the existing building points
         buildings = self._model.exposure.select_objects(
             primary_object_type="ALL",
@@ -1426,6 +1405,7 @@ class FiatAdapter(IImpactAdapter):
             columns={self.fiat_columns.object_id: self.impact_columns.object_id}
         )
 
+        # Get all results per building
         fiat_results_df = gpd.GeoDataFrame(
             self.outputs["table"].merge(
                 buildings,
@@ -1434,7 +1414,39 @@ class FiatAdapter(IImpactAdapter):
             )
         )
 
-        footprints.aggregate(fiat_results_df)
+        # Check which footprint case we have
+        # If FIAT has points and external footprints are provided
+        if self.config.building_footprints:
+            method = "external_footprints"
+            # Get footprints file
+            footprints_path = self.config_base_path.joinpath(
+                self.config.building_footprints
+            )
+            # Read building footprints
+            footprints_gdf = gpd.read_file(footprints_path, engine="pyogrio")
+            field_name = "BF_FID"
+        # If FIAT has footprints already
+        elif all(buildings.geometry.geom_type.isin(["Polygon", "MultiPolygon"])):
+            method = "internal_footprints"
+            footprints_gdf = buildings[[self.impact_columns.object_id, "geometry"]]
+            field_name = self.impact_columns.object_id
+        # If FIAT has points and no external footprints are available
+        else:
+            method = "no_footprints"
+
+        # Based on case follow different workflow
+        if method in ["external_footprints", "internal_footprints"]:
+            footprints = Footprints(
+                footprints=footprints_gdf,
+                fiat_columns=self.impact_columns,
+                field_name=field_name,
+            )
+            footprints.aggregate(fiat_results_df)
+        elif method == "no_footprints":
+            footprints = Footprints(fiat_columns=self.impact_columns)
+            footprints.set_point_data(fiat_results_df)
+
+        # Normalize damages
         footprints.calc_normalized_damages()
 
         # Save footprint
