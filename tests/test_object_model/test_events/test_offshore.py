@@ -27,6 +27,9 @@ from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
+from tests.test_adapter.test_sfincs_adapter import mock_meteohandler_read
+
+__all__ = ["mock_meteohandler_read"]
 
 
 @pytest.fixture()
@@ -75,7 +78,9 @@ def setup_offshore_scenario(test_db: IDatabase):
 
 class TestOffshoreSfincsHandler:
     def test_process_sfincs_offshore(
-        self, setup_offshore_scenario: tuple[IDatabase, Scenario, HistoricalEvent]
+        self,
+        setup_offshore_scenario: tuple[IDatabase, Scenario, HistoricalEvent],
+        mock_meteohandler_read,
     ):
         # Arrange
         _, scenario, _ = setup_offshore_scenario
