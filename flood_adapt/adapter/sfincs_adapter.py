@@ -1085,7 +1085,7 @@ class SfincsAdapter(IHazardAdapter):
                 self.settings.tide_gauge.reference
             ).total_height.convert(us.UnitTypesLength.meters)
 
-            df_ts *= conversion + datum_height
+            df_ts = conversion * df_ts + datum_height
 
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelCSV):
