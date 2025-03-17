@@ -592,8 +592,21 @@ class SfincsAdapter(IHazardAdapter):
                 + overland_reference_height  # convert to reference datum for plotting
             )
 
+            fig.add_hline(
+                y=0,
+                line_dash="dash",
+                line_color="#000000",
+                annotation_text=self.settings.water_level.reference,
+                annotation_position="bottom right",
+            )
+
             # plot reference water levels
             for wl_ref in self.settings.water_level.datums:
+                if (
+                    wl_ref.name == self.settings.config.overland_model.reference
+                    or wl_ref.name in self._site.attrs.gui.plotting.excluded_datums
+                ):
+                    continue
                 fig.add_hline(
                     y=wl_ref.total_height.convert(gui_units),
                     line_dash="dash",
@@ -1066,10 +1079,16 @@ class SfincsAdapter(IHazardAdapter):
         time_frame = self.get_model_time()
         if isinstance(forcing, WaterlevelSynthetic):
             df_ts = forcing.to_dataframe(time_frame=time_frame)
+
             conversion = us.UnitfulLength(
                 value=1.0, units=forcing.surge.timeseries.peak_value.units
             ).convert(us.UnitTypesLength.meters)
-            df_ts *= conversion
+            datum_correction = self.settings.water_level.get_datum(
+                self._site.attrs.gui.plotting.synthetic_tide.datum
+            ).total_height.convert(us.UnitTypesLength.meters)
+
+            df_ts = df_ts * conversion + datum_correction
+
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelGauged):
             if self.settings.tide_gauge is None:
@@ -1410,11 +1429,15 @@ class SfincsAdapter(IHazardAdapter):
             self.settings.config.offshore_model.reference
         )
 
-        datum_height = offshore_datum.total_height.convert(us.UnitTypesLength.meters)
+        if (datum_correction := offshore_datum.correction) is not None:
+            correction = datum_correction.convert(us.UnitTypesLength.meters)
+        else:
+            correction = 0
+
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                - datum_height
+                + correction
                 + physical_projection.sea_level_rise.convert(us.UnitTypesLength.meters)
             )
 

@@ -44,6 +44,8 @@ from flood_adapt.object_model.interface.config.gui import (
     GuiModel,
     GuiUnitModel,
     MapboxLayersModel,
+    PlottingModel,
+    SyntheticTideModel,
     VisualizationLayersModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import (
@@ -1629,10 +1631,18 @@ class DatabaseBuilder:
             default_colors=["#FFFFFF", "#FEE9CE", "#E03720", "#860000"],
         )
 
+        plotting = PlottingModel(
+            excluded_datums=["NAVD88"],
+            synthetic_tide=SyntheticTideModel(
+                harmonic_amplitude=default_tide_harmonic_amplitude,
+                datum="MSL",
+            ),
+        )
+
         # Store config
         self.site_attrs["gui"] = GuiModel(
             units=units,
-            default_tide_harmonic_amplitude=default_tide_harmonic_amplitude,
+            plotting=plotting,
             mapbox_layers=mapbox_layers,
             visualization_layers=visualization_layers,
         )

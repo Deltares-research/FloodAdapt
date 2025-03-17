@@ -20,6 +20,8 @@ from flood_adapt.object_model.interface.config.gui import (
     GuiModel,
     GuiUnitModel,
     MapboxLayersModel,
+    PlottingModel,
+    SyntheticTideModel,
     VisualizationLayersModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import (
@@ -179,11 +181,19 @@ def create_gui_config() -> GuiModel:
         colors=[],
     )
 
+    plotting = PlottingModel(
+        synthetic_tide=SyntheticTideModel(
+            harmonic_amplitude=us.UnitfulLength(
+                value=3.0, units=us.UnitTypesLength.feet
+            ),
+            datum="MSL",
+        ),
+        excluded_datums=["NAVD88"],
+    )
+
     gui = GuiModel(
         units=units,
-        default_tide_harmonic_amplitude=us.UnitfulLength(
-            value=3.0, units=us.UnitTypesLength.feet
-        ),
+        plotting=plotting,
         mapbox_layers=mapbox_layers,
         visualization_layers=visualization_layers,
     )

@@ -192,8 +192,14 @@ def plot_waterlevel(
             ).total_height.convert(units)
             data += datum_correction
 
-        elif isinstance(waterlevel, (WaterlevelCSV, WaterlevelSynthetic)):
+        elif isinstance(waterlevel, WaterlevelCSV):
             data = waterlevel.to_dataframe(event.attrs.time)
+        elif isinstance(waterlevel, WaterlevelSynthetic):
+            data = waterlevel.to_dataframe(time_frame=event.attrs.time)
+            datum_correction = site.attrs.sfincs.water_level.get_datum(
+                site.attrs.gui.plotting.synthetic_tide.datum
+            ).total_height.convert(units)
+            data += datum_correction
         else:
             raise ValueError(f"Unknown waterlevel type: {waterlevel}")
 
@@ -227,7 +233,10 @@ def plot_waterlevel(
 
     # plot other references
     for wl_ref in site.attrs.sfincs.water_level.datums:
-        if wl_ref.name == site.attrs.sfincs.water_level.reference:
+        if (
+            wl_ref.name == site.attrs.sfincs.config.overland_model.reference
+            or wl_ref.name in site.attrs.gui.plotting.excluded_datums
+        ):
             continue
 
         fig.add_hline(
