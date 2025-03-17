@@ -604,7 +604,8 @@ class SfincsAdapter(IHazardAdapter):
             for wl_ref in self.settings.water_level.datums:
                 if (
                     wl_ref.name == self.settings.config.overland_model.reference
-                    or wl_ref.name in self._site.attrs.gui.plotting.excluded_datums
+                    or wl_ref.name
+                    in self.database.site.attrs.gui.plotting.excluded_datums
                 ):
                     continue
                 fig.add_hline(
@@ -1084,7 +1085,7 @@ class SfincsAdapter(IHazardAdapter):
                 value=1.0, units=forcing.surge.timeseries.peak_value.units
             ).convert(us.UnitTypesLength.meters)
             datum_correction = self.settings.water_level.get_datum(
-                self._site.attrs.gui.plotting.synthetic_tide.datum
+                self.database.site.attrs.gui.plotting.synthetic_tide.datum
             ).total_height.convert(us.UnitTypesLength.meters)
 
             df_ts = df_ts * conversion + datum_correction
