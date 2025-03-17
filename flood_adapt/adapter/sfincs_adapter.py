@@ -2,7 +2,6 @@ import logging
 import math
 import os
 import shutil
-import subprocess
 import tempfile
 from pathlib import Path
 from typing import List, Optional, Union
@@ -22,6 +21,7 @@ from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
 
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
+from flood_adapt.adapter.run_sfincs import execute_sfincs
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
@@ -195,18 +195,8 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
-        with cd(path):
-            self.logger.info(f"Running SFINCS in {path}")
-            process = subprocess.run(
-                str(Settings().sfincs_path),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-            self.sfincs_logger.info(process.stdout)
-            self.logger.debug(process.stdout)
-
-        if process.returncode != 0:
+        run_success = execute_sfincs(path)
+        if not run_success:
             if Settings().delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
                 for subdir, dirs, files in os.walk(path, topdown=False):
@@ -222,7 +212,7 @@ class SfincsAdapter(IHazardAdapter):
             else:
                 self.logger.error(f"SFINCS model failed to run in {path}.")
 
-        return process.returncode == 0
+        return run_success
 
     def run(self, scenario: IScenario):
         """Run the whole workflow (Preprocess, process and postprocess) for a given scenario."""
