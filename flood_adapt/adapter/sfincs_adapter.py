@@ -909,12 +909,20 @@ class SfincsAdapter(IHazardAdapter):
     def _preprocess_risk(self, scenario: IScenario, sim_paths: list[Path]):
         if not isinstance(scenario.event, EventSet):
             raise ValueError("This function is only available for risk scenarios.")
+
         if len(sim_paths) != len(scenario.event.events):
             raise ValueError(
                 "Number of simulation paths should match the number of events."
             )
 
-        for sub_event, sim_path in zip(scenario.event.events, sim_paths):
+        total = len(sim_paths)
+        for i, event_and_path in enumerate(
+            zip(scenario.event.events, sim_paths, strict=True)
+        ):
+            self.logger.info(
+                f"Preprocessing SFINCS for Eventset Scenario `{scenario.attrs.name}`, Event `{scenario.event.events[i].attrs.name}` ({i + 1}/{total})"
+            )
+            sub_event, sim_path = event_and_path
             self._preprocess_single_event(
                 scenario, output_path=sim_path, event=sub_event
             )
@@ -1027,11 +1035,17 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(rainfall, RainfallSynthetic):
             df = rainfall.to_dataframe(time_frame=time_frame)
-            conversion = us.UnitfulIntensity(
-                value=1.0, units=rainfall.timeseries.peak_value.units
-            ).convert(us.UnitTypesIntensity.mm_hr)
-            df *= conversion
 
+            if rainfall.timeseries.cumulative is not None:  # scs
+                conversion = us.UnitfulLength(
+                    value=1.0, units=rainfall.timeseries.cumulative.units
+                ).convert(us.UnitTypesLength.millimeters)
+            else:
+                conversion = us.UnitfulIntensity(
+                    value=1.0, units=rainfall.timeseries.peak_value.units
+                ).convert(us.UnitTypesIntensity.mm_hr)
+
+            df *= conversion
             tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
             df.to_csv(tmp_path)
 
