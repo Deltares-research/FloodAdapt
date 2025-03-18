@@ -57,7 +57,6 @@ quartodoc:
         - name: object_model.strategy.Strategy
         - name: misc.log.FloodAdaptLogging
         - name: misc.config.Settings
-        - name: misc.config.UnitSystem
 
   package: flood_adapt
 

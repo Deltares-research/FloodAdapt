@@ -8,7 +8,6 @@ from pydantic import (
     Field,
 )
 
-import flood_adapt.object_model.io.unit_system as us
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -55,9 +54,6 @@ class IEventModel(IObjectModel):
     template: Template
     mode: Mode = Mode.single_event
 
-    water_level_offset: us.UnitfulLength = us.UnitfulLength(
-        value=0, units=us.UnitTypesLength.meters
-    )
     forcings: dict[ForcingType, list[IForcing]] = Field(default_factory=dict)
     rainfall_multiplier: float = Field(default=1.0, ge=0)
 
