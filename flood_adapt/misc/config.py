@@ -1,4 +1,3 @@
-from enum import Enum
 from os import environ, listdir
 from pathlib import Path
 from platform import system
@@ -13,56 +12,6 @@ from pydantic import (
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-from flood_adapt.object_model.io import unit_system as us
-
-
-class UnitSystemType(str, Enum):
-    IMPERIAL = "imperial"
-    METRIC = "metric"
-
-
-class UnitSystem:
-    length: us.UnitTypesLength
-    distance: us.UnitTypesLength
-    area: us.UnitTypesArea
-    volume: us.UnitTypesVolume
-    velocity: us.UnitTypesVelocity
-    direction: us.UnitTypesDirection
-    discharge: us.UnitTypesDischarge
-    intensity: us.UnitTypesIntensity
-    cumulative: us.UnitTypesLength
-
-    def __init__(self, system: UnitSystemType = UnitSystemType.IMPERIAL):
-        match system:
-            case UnitSystemType.IMPERIAL:
-                self.set_imperial()
-            case UnitSystemType.METRIC:
-                self.set_metric()
-            case _:
-                raise ValueError("Invalid unit system. Must be 'imperial' or 'metric'.")
-
-    def set_imperial(self):
-        self.length = us.UnitTypesLength.feet
-        self.distance = us.UnitTypesLength.miles
-        self.area = us.UnitTypesArea.sf
-        self.volume = us.UnitTypesVolume.cf
-        self.velocity = us.UnitTypesVelocity.mph
-        self.direction = us.UnitTypesDirection.degrees
-        self.discharge = us.UnitTypesDischarge.cfs
-        self.intensity = us.UnitTypesIntensity.inch_hr
-        self.cumulative = us.UnitTypesLength.inch
-
-    def set_metric(self):
-        self.length = us.UnitTypesLength.meters
-        self.distance = us.UnitTypesLength.meters
-        self.area = us.UnitTypesArea.m2
-        self.volume = us.UnitTypesVolume.m3
-        self.velocity = us.UnitTypesVelocity.mps
-        self.direction = us.UnitTypesDirection.degrees
-        self.discharge = us.UnitTypesDischarge.cms
-        self.intensity = us.UnitTypesIntensity.mm_hr
-        self.cumulative = us.UnitTypesLength.millimeters
 
 
 class Settings(BaseSettings):
@@ -99,8 +48,6 @@ class Settings(BaseSettings):
         The root directory of the system folder containing the kernels.
     delete_crashed_runs : bool
         Whether to delete crashed/corrupted runs immediately after they are detected.
-    unit_system : UnitSystem
-        The unit system to use for the calculations. Must be 'imperial' or 'metric'.
 
     Properties
     ----------
@@ -151,11 +98,6 @@ class Settings(BaseSettings):
         alias="VALIDATE_ALLOWED_FORCINGS",  # environment variable: VALIDATE_ALLOWED_FORCINGS
         default=True,
         description="Whether to validate the forcing types and sources against the allowed forcings in the event model.",
-        exclude=True,
-    )
-    unit_system: UnitSystem = Field(
-        default=UnitSystem(),
-        description="The unit system to use for the calculations. Must be 'imperial' or 'metric'.",
         exclude=True,
     )
 

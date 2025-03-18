@@ -9,6 +9,7 @@ from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
+from tests.test_adapter.test_sfincs_adapter import mock_meteohandler_read
 from tests.test_object_model.test_events.test_eventset import (
     test_eventset,
     test_sub_event,
@@ -30,6 +31,7 @@ __all__ = [
     "setup_offshore_meteo_event",
     "setup_offshore_scenario",
     "setup_hurricane_event",
+    "mock_meteohandler_read",
 ]
 
 
@@ -50,7 +52,11 @@ def setup_nearshore_scenario(test_db, setup_nearshore_event):
 
 
 @pytest.fixture()
-def setup_offshore_meteo_scenario(test_db, setup_offshore_meteo_event):
+def setup_offshore_meteo_scenario(
+    test_db,
+    setup_offshore_meteo_event,
+    mock_meteohandler_read,
+):
     test_db.events.save(setup_offshore_meteo_event)
 
     scn = Scenario(
@@ -67,7 +73,9 @@ def setup_offshore_meteo_scenario(test_db, setup_offshore_meteo_event):
 
 @pytest.fixture()
 def setup_hurricane_scenario(
-    test_db: IDatabase, setup_hurricane_event: tuple[HurricaneEvent, Path]
+    test_db: IDatabase,
+    setup_hurricane_event: tuple[HurricaneEvent, Path],
+    mock_meteohandler_read,
 ) -> tuple[Scenario, HurricaneEvent]:
     event, cyc_file = setup_hurricane_event
     scn = Scenario(
@@ -122,6 +130,7 @@ def setup_eventset_scenario(
     return test_db, scn, test_eventset
 
 
+@pytest.mark.slow
 def test_run_offshore_scenario(test_db, setup_offshore_meteo_scenario):
     api_scenarios.save_scenario(setup_offshore_meteo_scenario)
     api_scenarios.run_scenario(setup_offshore_meteo_scenario.attrs.name)
@@ -149,6 +158,7 @@ def test_run_synthetic_scenario(test_db, setup_synthetic_scenario):
     )
 
 
+@pytest.mark.slow
 def test_run_hurricane_scenario(test_db, setup_hurricane_scenario):
     scn, event = setup_hurricane_scenario
     api_scenarios.save_scenario(scn)
@@ -157,6 +167,7 @@ def test_run_hurricane_scenario(test_db, setup_hurricane_scenario):
     assert finished_file_exists(test_db.scenarios.output_path / scn.attrs.name)
 
 
+@pytest.mark.slow
 def test_run_eventset_scenario(setup_eventset_scenario):
     test_db, scn, event_set = setup_eventset_scenario
     api_scenarios.save_scenario(scn)

@@ -44,10 +44,13 @@ from flood_adapt.object_model.interface.config.gui import (
     GuiModel,
     GuiUnitModel,
     MapboxLayersModel,
+    PlottingModel,
+    SyntheticTideModel,
     VisualizationLayersModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import (
     CycloneTrackDatabaseModel,
+    DatumModel,
     DemModel,
     FloodFrequencyModel,
     ObsPointModel,
@@ -56,8 +59,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     SfincsModel,
     SlrModel,
     SlrScenariosModel,
-    VerticalReferenceModel,
-    WaterLevelReferenceModel,
+    WaterlevelReferenceModel,
 )
 from flood_adapt.object_model.interface.config.site import (
     Site,
@@ -1322,14 +1324,13 @@ class DatabaseBuilder:
         # Start by defining default values for water levels
         # In case no further information is provided a local datum and msl of 0 will be assumed
         elv_units = self.site_attrs["sfincs"]["config"].floodmap_units
-        water_level_config = WaterLevelReferenceModel(
-            localdatum=VerticalReferenceModel(
-                name="MSL", height=us.UnitfulLength(value=0.0, units=elv_units)
-            ),
-            msl=VerticalReferenceModel(
-                name="MSL", height=us.UnitfulLength(value=0.0, units=elv_units)
-            ),
-            # other=[]
+        water_level_config = WaterlevelReferenceModel(
+            reference="MSL",  # TODO allow users to configure
+            datums=[
+                DatumModel(
+                    name="MSL", height=us.UnitfulLength(value=0.0, units=elv_units)
+                ),
+            ],
         )
 
         zero_wl_msg = "No water level references were found. It is assumed that MSL is equal to the datum used in the SFINCS overland model. You can provide these values with the tide_gauge.msl and tide_gauge.datum attributes in the site.toml."
@@ -1356,29 +1357,40 @@ class DatabaseBuilder:
                         name=station["name"],
                         description=f"observations from '{self.config.tide_gauge.source}' api",
                         source=self.config.tide_gauge.source,
+                        reference=ref,
                         ID=int(station["id"]),
                         lon=station["lon"],
                         lat=station["lat"],
                         units=us.UnitTypesLength.meters,
                     )
-                    water_level_config.msl.height.value = us.UnitfulLength(
-                        value=station["msl"], units=station["units"]
-                    ).convert(elv_units)
-                    water_level_config.localdatum.name = station["datum_name"]
-                    water_level_config.localdatum.height.value = us.UnitfulLength(
-                        value=station["datum"], units=station["units"]
-                    ).convert(elv_units)
+
+                    local_datum = DatumModel(
+                        name=station["datum_name"],
+                        height=us.UnitfulLength(
+                            value=station["datum"], units=station["units"]
+                        ).transform(elv_units),
+                    )
+                    water_level_config.datums.append(local_datum)
+
+                    msl = DatumModel(
+                        name="MSL",
+                        height=us.UnitfulLength(
+                            value=station["msl"], units=station["units"]
+                        ).transform(elv_units),
+                        # TODO check/add correction
+                    )
+                    water_level_config.datums.append(msl)
 
                     for name in ["MLLW", "MHHW"]:
-                        val = us.UnitfulLength(
+                        height = us.UnitfulLength(
                             value=station[name.lower()], units=station["units"]
-                        ).convert(elv_units)
-                        wl_info = VerticalReferenceModel(
-                            name=name,
-                            height=us.UnitfulLength(value=val, units=elv_units),
-                        )
-                        water_level_config.other.append(wl_info)
+                        ).transform(elv_units)
 
+                        wl_info = DatumModel(
+                            name=name,
+                            height=height,
+                        )
+                        water_level_config.datums.append(wl_info)
                 else:
                     self.logger.warning(zero_wl_msg)
             if self.config.tide_gauge.source == "file":
@@ -1398,8 +1410,11 @@ class DatabaseBuilder:
                     units=us.UnitTypesLength.meters,
                 )
                 self.logger.warning(zero_wl_msg)
+
         # store config
-        self.site_attrs["sfincs"]["water_level"] = water_level_config
+        self.site_attrs["sfincs"]["water_level"] = (
+            WaterlevelReferenceModel.model_validate(water_level_config)
+        )
 
     def _get_closest_station(self, ref: str = "MLLW"):
         """
@@ -1556,13 +1571,14 @@ class DatabaseBuilder:
         units = GuiUnitModel(**self._get_default_units())
 
         # Check if the water level attribute include info on MHHW and MSL
-        other = [attr.name for attr in self.site_attrs["sfincs"]["water_level"].other]
-        if "MHHW" in other:
+        datums = [
+            DatumModel(**d) for d in self.site_attrs["sfincs"]["water_level"].datums
+        ]
+
+        if "MHHW" in [d.name for d in datums]:
             amplitude = (
-                self.site_attrs["sfincs"]["water_level"]
-                .other[other.index("MHHW")]
-                .height.value
-                - self.site_attrs["sfincs"]["water_level"].msl.height.value
+                self.site_attrs["sfincs"]["water_level"]["datums"]["MHHW"].height.value
+                - self.site_attrs["sfincs"]["water_level"]["datums"]["MSL"].height.value
             )
             self.logger.info(
                 f"The default tidal amplitude in the GUI will be {amplitude} {units.default_length_units.value}, calculated as the difference between MHHW and MSL from the tide gauge data."
@@ -1615,10 +1631,18 @@ class DatabaseBuilder:
             default_colors=["#FFFFFF", "#FEE9CE", "#E03720", "#860000"],
         )
 
+        plotting = PlottingModel(
+            excluded_datums=["NAVD88"],
+            synthetic_tide=SyntheticTideModel(
+                harmonic_amplitude=default_tide_harmonic_amplitude,
+                datum="MSL",
+            ),
+        )
+
         # Store config
         self.site_attrs["gui"] = GuiModel(
             units=units,
-            default_tide_harmonic_amplitude=default_tide_harmonic_amplitude,
+            plotting=plotting,
             mapbox_layers=mapbox_layers,
             visualization_layers=visualization_layers,
         )

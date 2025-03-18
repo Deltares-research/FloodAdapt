@@ -1,12 +1,10 @@
 import filecmp
-import gc
 import logging
 import os
 import shutil
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from time import sleep
 
 import pytest
 
@@ -14,7 +12,8 @@ from flood_adapt import __path__
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
-from tests.data.create_test_database import update_database_input
+from tests.data.create_test_input import update_database_input
+from tests.data.create_test_static import update_database_static
 from tests.fixtures import *  # noqa
 
 session_tmp_dir = Path(tempfile.mkdtemp())
@@ -43,31 +42,31 @@ def restore_db_from_snapshot():
         raise FileNotFoundError(
             "Snapshot path does not exist. Create a snapshot first."
         )
+    seen_files = set()
+    db_path = Settings().database_path
 
-    # Copy deleted/changed files from snapshot to database
     for root, _, files in os.walk(snapshot_dir):
+        # Copy deleted/changed files from snapshot to database
         for file in files:
             snapshot_file = Path(root) / file
             relative_path = snapshot_file.relative_to(snapshot_dir)
-            database_file = Settings().database_path / relative_path
+            database_file = db_path / relative_path
+            seen_files.add(database_file)
+
             if not database_file.exists():
                 os.makedirs(os.path.dirname(database_file), exist_ok=True)
                 shutil.copy2(snapshot_file, database_file)
             elif not filecmp.cmp(snapshot_file, database_file):
                 shutil.copy2(snapshot_file, database_file)
 
-    # Remove created files from database
-    for root, _, files in os.walk(Settings().database_path):
+    for root, dirs, files in os.walk(db_path, topdown=False):
+        # Remove created files from database
         for file in files:
             database_file = Path(root) / file
-            relative_path = database_file.relative_to(Settings().database_path)
-            snapshot_file = snapshot_dir / relative_path
-
-            if not snapshot_file.exists():
+            if database_file not in seen_files:
                 os.remove(database_file)
 
-    # Remove empty directories from the database
-    for root, dirs, _ in os.walk(Settings().database_path, topdown=False):
+        # Remove empty directories from the database
         for directory in dirs:
             dir_path = os.path.join(root, directory)
             if not os.listdir(dir_path):
@@ -93,6 +92,7 @@ def session_setup_teardown():
         ignore_warnings=[DeprecationWarning],
     )
 
+    update_database_static(settings.database_path)
     update_database_input(settings.database_path)
     create_snapshot()
 
@@ -154,16 +154,7 @@ def make_db_fixture(scope):
         # Teardown
         dbs.shutdown()
         if clean:
-            retries = 5
-            for _ in range(retries):
-                try:
-                    restore_db_from_snapshot()
-                    break
-                except Exception:
-                    sleep(0.5)
-                    gc.collect()
-                    restore_db_from_snapshot()
-                    break
+            restore_db_from_snapshot()
 
     return _db_fixture
 
