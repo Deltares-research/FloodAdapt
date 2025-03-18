@@ -1,5 +1,3 @@
-import shutil
-
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -158,11 +156,6 @@ class TestBenefitScenariosNotCreated:
 
     # When the needed scenarios are not run yet, the run_cost_benefit method should return a RunTimeError
     def test_runcostbenefit_notcreated_raiseruntimeerror(self, benefit_obj):
-        # Delete a scenario
-        to_delete = benefit_obj.check_scenarios()["scenario created"][0]
-        shutil.rmtree(benefit_obj.database.scenarios.input_path / to_delete)
-        benefit_obj.check_scenarios()
-
         with pytest.raises(RuntimeError) as exception_info:
             benefit_obj.run_cost_benefit()
 

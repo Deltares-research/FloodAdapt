@@ -34,6 +34,22 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         )
 
     def get_resulting_waterlevels(self, scenario: IScenario) -> pd.DataFrame:
+        """Get the water levels from the offshore model.
+
+        Note that the returned water levels are relative to the reference datum of the offshore model.
+        To convert to a different datum, add the offshore reference datum height and subtract the desired reference datum height.
+
+        Parameters
+        ----------
+        scenario : IScenario
+            The scenario for which to obtain the water levels.
+
+        Returns
+        -------
+        pd.DataFrame
+            A DataFrame with the water levels for each boundary condition point. Relative to the reference datum of the offshore model.
+
+        """
         path = self._get_simulation_path(scenario)
 
         if not self.requires_offshore_run(scenario):

@@ -55,13 +55,45 @@ class GuiUnitModel(BaseModel):
     default_cumulative_units: us.UnitTypesLength
 
 
+class SyntheticTideModel(BaseModel):
+    """Configuration for the synthetic tide.
+
+    Parameters
+    ----------
+    harmonic_amplitude : us.UnitfulLength
+        The amplitude of the tide harmonic relative to the datum.
+    datum : str
+        The datum to which the harmonic amplitude is relative.
+        Should be a datum defined in `site.sfincs.waterlevels.datums`
+    """
+
+    harmonic_amplitude: us.UnitfulLength
+    datum: str
+
+
+class PlottingModel(BaseModel):
+    """
+    The configuration of the plotting in the gui.
+
+    Parameters
+    ----------
+    excluded_datums : list[str]
+        A list of datums that will be excluded from the forcing plot in event windows.
+    synthetic_tide : SyntheticTideModel
+        The configuration of the synthetic tide.
+    """
+
+    synthetic_tide: SyntheticTideModel
+    excluded_datums: list[str] = Field(default_factory=list)
+
+
 class GuiModel(BaseModel):
     """The accepted input for the variable gui in Site."""
 
     units: GuiUnitModel
-    default_tide_harmonic_amplitude: us.UnitfulLength
     mapbox_layers: MapboxLayersModel
     visualization_layers: VisualizationLayersModel
+    plotting: PlottingModel
 
     @staticmethod
     def read_toml(path: Path) -> "GuiModel":

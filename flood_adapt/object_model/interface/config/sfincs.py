@@ -85,51 +85,78 @@ class FloodmapType(str, Enum):
     water_depth = "water_depth"
 
 
-class VerticalReferenceModel(BaseModel):
-    """The accepted input for the variable vertical_reference in Site."""
+class DatumModel(BaseModel):
+    """
+    The accepted input for the variable datums in WaterlevelReferenceModel.
+
+    Attributes
+    ----------
+    name : str
+        The name of the vertical reference model.
+    height : us.UnitfulLength
+        The height of the vertical reference model relative to the main reference.
+    correction : Optional[us.UnitfulLength], default = None
+        The correction of the vertical reference model relative to the main reference.
+        Given that the height of the vertical reference model is often determined by external sources,
+        this correction can be used to correct systematic over-/underestimation of a vertical reference model.
+    """
 
     name: str
     height: us.UnitfulLength
 
+    # this used to be water_level_offset from events
+    correction: Optional[us.UnitfulLength] = None
 
-class WaterLevelReferenceModel(BaseModel):
-    """The accepted input for the variable water_level in Site."""
+    @property
+    def total_height(self) -> us.UnitfulLength:
+        """The height of the vertical reference model, including the correction if provided."""
+        if self.correction:
+            return self.height + self.correction
+        return self.height
 
-    localdatum: VerticalReferenceModel
-    msl: VerticalReferenceModel
-    other: list[VerticalReferenceModel] = Field(
-        default_factory=list
-    )  # only for plotting
+
+class WaterlevelReferenceModel(BaseModel):
+    """The accepted input for the variable water_level in Site.
+
+    Waterlevels timeseries are calculated from user input, assumed to be relative to the `reference` vertical reference model.
+
+    For plotting in the GUI, the `reference` vertical reference model is used as the main zero-reference, all values are relative to this.
+    All other vertical reference models are plotted as dashed lines.
+
+    Attributes
+    ----------
+    reference : str
+        The name of the vertical reference model that is used as the main zero-reference.
+    datums : list[DatumModel]
+        The vertical reference models that are used to calculate the waterlevels timeseries.
+        The datums are used to calculate the waterlevels timeseries, which are relative to the `reference` vertical reference model.
+    """
+
+    reference: str
+    datums: list[DatumModel] = Field(default_factory=list)
+
+    def get_datum(self, name: str) -> DatumModel:
+        for datum in self.datums:
+            if datum.name == name:
+                return datum
+        raise ValueError(f"Could not find datum with name {name}")
 
     @model_validator(mode="after")
-    def ensure_msl_or_localdatum_eq_zero(self):
-        if math.isclose(self.msl.height.value, 0) or math.isclose(
-            self.localdatum.height.value, 0
+    def main_reference_should_be_in_datums_and_eq_zero(self):
+        if self.reference not in [datum.name for datum in self.datums]:
+            raise ValueError(f"Reference {self.reference} not in {self.datums}")
+        if not math.isclose(
+            self.get_datum(self.reference).height.value, 0, abs_tol=1e-6
         ):
-            return self
-
-        # Set smaller height to zero and update the other heights
-        if self.msl.height < self.localdatum.height:
-            self.localdatum.height -= self.msl.height
-            for other in self.other:
-                other.height -= self.msl.height
-            self.msl.height.value = 0.0
-        else:
-            self.msl.height -= self.localdatum.height
-            for other in self.other:
-                other.height -= self.localdatum.height
-            self.localdatum.height.value = 0.0
+            raise ValueError(f"Reference {self.reference} height is not zero")
         return self
 
-    def get_main_vertical_reference(self) -> VerticalReferenceModel:
-        if math.isclose(self.msl.height.value, 0):
-            return self.msl
-        elif math.isclose(self.localdatum.height.value, 0):
-            return self.localdatum
-        else:
-            raise ValueError(
-                "Neither MSL nor local datum are zero, cannot determine zero reference."
-            )
+    @model_validator(mode="after")
+    def all_datums_should_have_unique_names(self):
+        datum_names = [datum.name for datum in self.datums]
+        if len(set(datum_names)) != len(datum_names):
+            raise ValueError(f"Duplicate datum names found: {datum_names}")
+        return self
 
 
 class CycloneTrackDatabaseModel(BaseModel):
@@ -148,8 +175,22 @@ class SlrScenariosModel(BaseModel):
 class SlrModel(BaseModel):
     """The accepted input for the variable slr in Site."""
 
-    vertical_offset: us.UnitfulLength
     scenarios: Optional[SlrScenariosModel] = None
+
+
+class FloodModel(BaseModel):
+    """The accepted input for the variable overland_model and offshore_model in Site.
+
+    Attributes
+    ----------
+    name : str
+        The name of the directory in `static/templates/<directory>` that contains the template model files.
+    reference : str
+        The name of the vertical reference model that is used as the reference datum. Should be defined in water_level.datums.
+    """
+
+    name: str
+    reference: str
 
 
 class SfincsConfigModel(BaseModel):
@@ -158,15 +199,15 @@ class SfincsConfigModel(BaseModel):
     csname: str
     cstype: Cstype
     version: Optional[str] = None
-    offshore_model: Optional[str] = None
-    overland_model: str
+    offshore_model: Optional[FloodModel] = None
+    overland_model: FloodModel
     floodmap_units: us.UnitTypesLength
     save_simulation: Optional[bool] = False
 
 
 class SfincsModel(BaseModel):
     config: SfincsConfigModel
-    water_level: WaterLevelReferenceModel
+    water_level: WaterlevelReferenceModel
     cyclone_track_database: Optional[CycloneTrackDatabaseModel] = None
     slr: SlrModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
@@ -185,3 +226,26 @@ class SfincsModel(BaseModel):
             toml_contents = load_toml(fp)
 
         return SfincsModel(**toml_contents)
+
+    @model_validator(mode="after")
+    def ensure_references_exist(self):
+        datum_names = [d.name for d in self.water_level.datums]
+
+        if self.config.overland_model.reference not in datum_names:
+            raise ValueError(
+                f"Could not find reference `{self.config.overland_model.reference}` in available datums: {datum_names}."
+            )
+
+        if self.config.offshore_model is not None:
+            if self.config.offshore_model.reference not in datum_names:
+                raise ValueError(
+                    f"Could not find reference `{self.config.offshore_model.reference}` in available datums: {datum_names}."
+                )
+
+        if self.tide_gauge is not None:
+            if self.tide_gauge.reference not in datum_names:
+                raise ValueError(
+                    f"Could not find reference `{self.tide_gauge.reference}` in available datums: {datum_names}."
+                )
+
+        return self

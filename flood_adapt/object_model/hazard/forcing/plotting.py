@@ -185,8 +185,21 @@ def plot_waterlevel(
             data = TideGauge(
                 site.attrs.sfincs.tide_gauge
             ).get_waterlevels_in_time_frame(event.attrs.time, units=units)
-        elif isinstance(waterlevel, (WaterlevelCSV, WaterlevelSynthetic)):
+
+            # Convert to main reference
+            datum_correction = site.attrs.sfincs.water_level.get_datum(
+                site.attrs.sfincs.tide_gauge.reference
+            ).total_height.convert(units)
+            data += datum_correction
+
+        elif isinstance(waterlevel, WaterlevelCSV):
             data = waterlevel.to_dataframe(event.attrs.time)
+        elif isinstance(waterlevel, WaterlevelSynthetic):
+            data = waterlevel.to_dataframe(time_frame=event.attrs.time)
+            datum_correction = site.attrs.sfincs.water_level.get_datum(
+                site.attrs.gui.plotting.synthetic_tide.datum
+            ).total_height.convert(units)
+            data += datum_correction
         else:
             raise ValueError(f"Unknown waterlevel type: {waterlevel}")
 
@@ -207,25 +220,32 @@ def plot_waterlevel(
         x_title = "Time"
 
     # Plot actual thing
-    fig = px.line(data + site.attrs.sfincs.water_level.msl.height.convert(units))
+    fig = px.line(data)
 
-    # plot reference water levels
+    # plot main reference
     fig.add_hline(
-        y=site.attrs.sfincs.water_level.msl.height.convert(units),
+        y=0,
         line_dash="dash",
         line_color="#000000",
-        annotation_text="MSL",
+        annotation_text=site.attrs.sfincs.water_level.reference,
         annotation_position="bottom right",
     )
-    if site.attrs.sfincs.water_level.other:
-        for wl_ref in site.attrs.sfincs.water_level.other:
-            fig.add_hline(
-                y=wl_ref.height.convert(units),
-                line_dash="dash",
-                line_color="#3ec97c",
-                annotation_text=wl_ref.name,
-                annotation_position="bottom right",
-            )
+
+    # plot other references
+    for wl_ref in site.attrs.sfincs.water_level.datums:
+        if (
+            wl_ref.name == site.attrs.sfincs.config.overland_model.reference
+            or wl_ref.name in site.attrs.gui.plotting.excluded_datums
+        ):
+            continue
+
+        fig.add_hline(
+            y=wl_ref.total_height.convert(units),
+            line_dash="dash",
+            line_color="#3ec97c",
+            annotation_text=wl_ref.name,
+            annotation_position="bottom right",
+        )
 
     fig.update_layout(
         autosize=False,
