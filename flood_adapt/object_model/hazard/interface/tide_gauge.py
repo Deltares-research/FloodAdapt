@@ -26,6 +26,7 @@ class TideGaugeModel(BaseModel):
     name: Optional[int | str] = None
     description: Optional[str] = ""
     source: TideGaugeSource
+    reference: str
     ID: Optional[int] = None  # Attribute used to download from correct gauge
     file: Optional[Path] = None  # for locally stored data
     lat: Optional[float] = None
