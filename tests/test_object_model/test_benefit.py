@@ -6,7 +6,6 @@ import pandas as pd
 import pytest
 import tomli
 
-from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.interface.benefits import IBenefit
 
@@ -32,7 +31,7 @@ _TEST_DICT = {
 
 
 # Create Benefit object using example benefit toml in test database
-def test_loadFile_fromTestBenefitToml_createBenefit(test_db):
+def test_loadfile_fromtestbenefittoml_createbenefit(test_db):
     name = "benefit_raise_properties_2050"
     benefit_path = test_db.input_path.joinpath(
         "benefits",
@@ -46,7 +45,7 @@ def test_loadFile_fromTestBenefitToml_createBenefit(test_db):
 
 
 # Create Benefit object using using example benefit toml in test database to see if test with no costs is load normally
-def test_loadFile_fromTestBenefitNoCostsToml_createBenefit(test_db):
+def test_loadfile_fromtestbenefitnocoststoml_createbenefit(test_db):
     name = "benefit_raise_properties_2050_no_costs"
     benefit_path = test_db.input_path.joinpath(
         "benefits",
@@ -60,7 +59,7 @@ def test_loadFile_fromTestBenefitNoCostsToml_createBenefit(test_db):
 
 
 # Get FileNotFoundError when the path to the benefit toml does not exist
-def test_loadFile_nonExistingFile_FileNotFoundError(test_db):
+def test_loadfile_nonexistingfile_filenotfounderror(test_db):
     name = "benefit_raise_properties_2050_random"
     benefit_path = test_db.input_path.joinpath(
         "benefits",
@@ -73,13 +72,13 @@ def test_loadFile_nonExistingFile_FileNotFoundError(test_db):
 
 
 # Create Benefit object using using a dictionary
-def test_loadDict_fromTestDict_createBenefit(test_db):
+def test_loaddict_fromtestdict_createbenefit(test_db):
     benefit = Benefit.load_dict(_TEST_DICT)
     assert isinstance(benefit, IBenefit)
 
 
 # Save a toml from a test benefit dictionary
-def test_save_fromTestDict_saveToml(test_db):
+def test_save_fromtestdict_savetoml(test_db):
     benefit = Benefit.load_dict(_TEST_DICT)
     output_path = test_db.input_path.joinpath(
         "benefits", "test_benefit", "test_benefit.toml"
@@ -105,16 +104,14 @@ class TestBenefitScenariosNotCreated:
         )
 
         benefit = Benefit.load_file(benefit_path)
-        yield benefit, test_db
+        yield benefit
 
     # When benefit analysis is not run yet the has_run_check method should return False
-    def test_hasRunCheck_notCreated_false(self, benefit_obj):
-        benefit_obj, _ = benefit_obj
+    def test_hasruncheck_notcreated_false(self, benefit_obj):
         assert not benefit_obj.has_run_check()
 
     # The check_scenarios methods should always return a table with the scenarios that are needed to run the benefit analysis
-    def test_checkScenarios_notCreated_scenariosTable(self, benefit_obj):
-        benefit_obj, _ = benefit_obj
+    def test_checkscenarios_notcreated_scenariostable(self, benefit_obj):
         scenarios = benefit_obj.check_scenarios()
         assert isinstance(scenarios, pd.DataFrame)
         assert len(scenarios) == 4
@@ -156,23 +153,21 @@ class TestBenefitScenariosNotCreated:
         )
 
     # When the needed scenarios are not run yet, the ready_to_run method should return false
-    def test_readyToRun_notCreated_false(self, benefit_obj):
-        benefit_obj, _ = benefit_obj
+    def test_readytorun_notcreated_false(self, benefit_obj):
         assert not benefit_obj.ready_to_run()
 
     # When the needed scenarios are not run yet, the run_cost_benefit method should return a RunTimeError
-    def test_runCostBenefit_notCreated_raiseRunTimeError(
-        self, benefit_obj: tuple[Benefit, IDatabase]
-    ):
-        benefit, test_db = benefit_obj
-
-        scenarios = benefit.scenarios["scenario created"].to_numpy()
-        for scenario in scenarios:
-            shutil.rmtree(test_db.input_path.joinpath("scenarios", scenario))
-        benefit.check_scenarios()
+    def test_runcostbenefit_notcreated_raiseruntimeerror(self, benefit_obj):
+        # Delete one of the scenarios
+        to_delete = (
+            benefit_obj.database.scenarios.input_path
+            / benefit_obj.check_scenarios()["scenario created"][0]
+        )
+        shutil.rmtree(to_delete)
+        benefit_obj.check_scenarios()
 
         with pytest.raises(RuntimeError) as exception_info:
-            benefit.run_cost_benefit()
+            benefit_obj.run_cost_benefit()
 
         assert (
             str(exception_info.value)
@@ -180,10 +175,9 @@ class TestBenefitScenariosNotCreated:
         )
 
     # When the benefit analysis not run yet, the get_output method should return a RunTimeError
-    def test_getOutput_notRun_raiseRunTimeError(self, benefit_obj):
-        benefit, _ = benefit_obj
+    def test_getoutput_notrun_raiseruntimeerror(self, benefit_obj):
         with pytest.raises(RuntimeError) as exception_info:
-            benefit.results
+            benefit_obj.results
         assert "Cannot read output since benefit analysis" in str(exception_info.value)
 
 
@@ -206,22 +200,22 @@ class TestBenefitScenariosCreated:
         yield benefit
 
     # When benefit analysis is not run yet, the has_run_check method should return False
-    def test_hasRunCheck_notRun_false(self, benefit_obj):
+    def test_hasruncheck_notrun_false(self, benefit_obj):
         assert not benefit_obj.has_run_check()
 
     # The check_scenarios methods should always return a table with the scenarios that are needed to run the benefit analysis
-    def test_checkScenarios_notReadyToRun_scenariosTable(self, benefit_obj):
+    def test_checkscenarios_notreadytorun_scenariostable(self, benefit_obj):
         scenarios = benefit_obj.check_scenarios()
         assert isinstance(scenarios, pd.DataFrame)
         assert len(scenarios) == 4
         assert "No" not in scenarios["scenario created"].to_list()
 
     # When the needed scenarios are not run yet, the ready_to_run method should return false
-    def test_readyToRun_notReadyToRun_raiseRunTimeError(self, benefit_obj):
+    def test_readytorun_notreadytorun_raiseruntimeerror(self, benefit_obj):
         assert not benefit_obj.ready_to_run()
 
     # When the needed scenarios are not run yet, the run_cost_benefit method should return a RunTimeError
-    def test_runCostBenefit_notReadyToRun_raiseRunTimeError(self, benefit_obj):
+    def test_runcostbenefit_notreadytorun_raiseruntimeerror(self, benefit_obj):
         with pytest.raises(RuntimeError) as exception_info:
             benefit_obj.run_cost_benefit()
         assert (
@@ -230,7 +224,7 @@ class TestBenefitScenariosCreated:
         )
 
     # When the benefit analysis not run yet, the get_output method should return a RunTimeError
-    def test_getOutput_notRun_raiseRunTimeError(self, benefit_obj):
+    def test_getoutput_notrun_raiseruntimeerror(self, benefit_obj):
         with pytest.raises(RuntimeError) as exception_info:
             benefit_obj.results
         assert "Cannot read output since benefit analysis" in str(exception_info.value)
@@ -327,12 +321,12 @@ class TestBenefitScenariosRun:
         yield benefit, aggrs
 
     # When benefit analysis is not run yet, the has_run_check method should return False
-    def test_hasRunCheck_notRun_false(self, prepare_outputs):
+    def test_hasruncheck_notrun_false(self, prepare_outputs):
         benefit_obj = prepare_outputs[0]
         assert not benefit_obj.has_run_check()
 
     # The check_scenarios methods should always return a table with the scenarios that are needed to run the benefit analysis
-    def test_checkScenarios_ReadyToRun_scenariosTable(self, prepare_outputs):
+    def test_checkscenarios_readytorun_scenariostable(self, prepare_outputs):
         benefit_obj = prepare_outputs[0]
 
         scenarios = benefit_obj.check_scenarios()
@@ -341,12 +335,12 @@ class TestBenefitScenariosRun:
         assert "No" not in scenarios["scenario created"].to_list()
 
     # When the needed scenarios are run, the ready_to_run method should return true
-    def test_readyToRun_readyToRun_true(self, prepare_outputs):
+    def test_readytorun_readytorun_true(self, prepare_outputs):
         benefit_obj = prepare_outputs[0]
         assert benefit_obj.ready_to_run()
 
     # the cba method should run the cost benefit analysis for the whole region
-    def test_cba_readyToRun_correctOutput(self, prepare_outputs):
+    def test_cba_readytorun_correctoutput(self, prepare_outputs):
         benefit_obj = prepare_outputs[0]
         benefit_obj.cba()
 
@@ -412,7 +406,7 @@ class TestBenefitScenariosRun:
             assert "IRR" not in results
 
     # the cba_aggregation method should run the cost benefit analysis for each individual aggregation type
-    def test_cbaAggregation_ReadyToRun_correctOutput(self, prepare_outputs):
+    def test_cbaaggregation_readytorun_correctoutput(self, prepare_outputs):
         benefit_obj = prepare_outputs[0]
         aggrs = prepare_outputs[1]
         benefit_obj.cba_aggregation()
@@ -440,7 +434,7 @@ class TestBenefitScenariosRun:
             assert len(polygons) == len(aggrs[aggr_type.name])
 
     # When the benefit analysis is run, the get_output method should return correct outputs
-    def test_getOutput_Run_correctOutput(self, prepare_outputs):
+    def test_getoutput_run_correctoutput(self, prepare_outputs):
         benefit_obj = prepare_outputs[0]
         benefit_obj.cba()
         results = benefit_obj.results
@@ -448,7 +442,7 @@ class TestBenefitScenariosRun:
         assert "html" in results
 
     # When the needed scenarios are run, the run_cost_benefit method should run the benefit analysis and save the results
-    def test_runCostBenefit_ReadyToRun_raiseRunTimeError(self, prepare_outputs):
+    def test_runcostbenefit_readytorun_raiseruntimeerror(self, prepare_outputs):
         benefit_obj = prepare_outputs[0]
         benefit_obj.run_cost_benefit()
 
@@ -467,7 +461,7 @@ class TestBenefitScenariosRun:
             assert pytest.approx(tot_benefits_agg, 2) == results["benefits"]
 
     # When benefit analysis is run already, the has_run_check method should return True
-    def test_hasRunCheck_Run_true(self, prepare_outputs):
+    def test_hasruncheck_run_true(self, prepare_outputs):
         benefit_obj = prepare_outputs[0]
         benefit_obj.run_cost_benefit()
         assert benefit_obj.has_run_check()

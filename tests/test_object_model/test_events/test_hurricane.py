@@ -30,6 +30,7 @@ from tests.fixtures import TEST_DATA_DIR
 
 @pytest.fixture()
 def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
+    cyc_file = TEST_DATA_DIR / "IAN.cyc"
     event = HurricaneEvent(
         HurricaneEventModel(
             name="hurricane",
@@ -37,8 +38,8 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
             track_name="IAN",
             forcings={
                 ForcingType.WATERLEVEL: [WaterlevelModel()],
-                ForcingType.WIND: [WindTrack()],
-                ForcingType.RAINFALL: [RainfallTrack()],
+                ForcingType.WIND: [WindTrack(path=cyc_file)],
+                ForcingType.RAINFALL: [RainfallTrack(path=cyc_file)],
                 ForcingType.DISCHARGE: [
                     DischargeConstant(
                         river=RiverModel(
@@ -58,7 +59,7 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
             },
         ),
     )
-    return event, TEST_DATA_DIR / "IAN.cyc"
+    return event, cyc_file
 
 
 @pytest.fixture()
@@ -81,12 +82,11 @@ def setup_hurricane_scenario(
 
 
 class TestHurricaneEvent:
-    def test_save_event_toml(
+    def test_save_event_toml_and_track_file(
         self, setup_hurricane_event: tuple[HurricaneEvent, Path], tmp_path: Path
     ):
         path = tmp_path / "test_event.toml"
         event, cyc_file = setup_hurricane_event
-        event.attrs.forcings.get(ForcingType.WIND)[0].path = cyc_file
 
         event.save(path)
 
@@ -100,17 +100,33 @@ class TestHurricaneEvent:
         saved_event, cyc_file = setup_hurricane_event
         saved_event.save(path)
         assert path.exists()
+        assert (path.parent / cyc_file.name).exists()
 
         loaded_event = HurricaneEvent.load_file(path)
 
         assert loaded_event == saved_event
+
+    def test_load_file_raises_when_files_are_missing(
+        self, setup_hurricane_event: tuple[HurricaneEvent, Path], tmp_path: Path
+    ):
+        path = tmp_path / "test_event.toml"
+        saved_event, cyc_file = setup_hurricane_event
+        saved_event.save(path)
+        assert path.exists()
+
+        (path.parent / cyc_file.name).unlink()
+        assert not (path.parent / cyc_file.name).exists()
+
+        with pytest.raises(FileNotFoundError) as e:
+            HurricaneEvent.load_file(path)
+
+        assert f"File {cyc_file.name} not found in {path.parent}" in str(e.value)
 
     def test_make_spw_file_with_args(
         self,
         setup_hurricane_event: tuple[HurricaneEvent, Path],
     ):
         # Arrange
-        cyc_file = TEST_DATA_DIR / "IAN.cyc"
         spw_file = Path(tempfile.gettempdir()) / "IAN.spw"
         hurricane_event, cyc_file = setup_hurricane_event
         hurricane_event.attrs.track_name = "IAN"

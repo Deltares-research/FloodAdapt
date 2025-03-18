@@ -1,5 +1,4 @@
 import os
-import shutil
 from pathlib import Path
 from typing import Optional
 
@@ -21,6 +20,7 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.utils import copy_file_to_output_dir
 
 
 class RainfallConstant(IRainfall):
@@ -65,12 +65,7 @@ class RainfallTrack(IRainfall):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
-            output_dir = Path(output_dir).resolve()
-            if self.path == output_dir / self.path.name:
-                return
-            output_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(self.path, output_dir)
-            self.path = output_dir / self.path.name
+            self.path = copy_file_to_output_dir(self.path, Path(output_dir))
 
 
 class RainfallCSV(IRainfall):
@@ -87,13 +82,7 @@ class RainfallCSV(IRainfall):
         )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.path:
-            output_dir = Path(output_dir).resolve()
-            if self.path == output_dir / self.path.name:
-                return
-            output_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(self.path, output_dir)
-            self.path = output_dir / self.path.name
+        self.path = copy_file_to_output_dir(self.path, Path(output_dir))
 
 
 class RainfallNetCDF(IRainfall):
@@ -110,10 +99,4 @@ class RainfallNetCDF(IRainfall):
         return validated_ds
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.path:
-            output_dir = Path(output_dir).resolve()
-            if self.path == output_dir / self.path.name:
-                return
-            output_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(self.path, output_dir)
-            self.path = output_dir / self.path.name
+        self.path = copy_file_to_output_dir(self.path, Path(output_dir))
