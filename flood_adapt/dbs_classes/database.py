@@ -1,5 +1,7 @@
+import gc
 import os
 import shutil
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional, Union
@@ -685,10 +687,22 @@ class Database(IDatabase):
             for dir in os.listdir(self.scenarios.output_path)
         ]
 
+        def _call_garbage_collector(func, path, exc_info, retries=5, delay=0.1):
+            """Retry deletion up to 5 times if the file is locked."""
+            for attempt in range(retries):
+                gc.collect()
+                time.sleep(delay)
+                try:
+                    func(path)  # Retry deletion
+                    return  # Exit if successful
+                except Exception as e:
+                    print(f"Attempt {attempt+1}/{retries} failed to delete {path}: {e}")
+
+            print(f"Giving up on deleting {path} after {retries} attempts.")
+
         for dir in output_scenarios:
-            if dir.name not in [path.name for path in input_scenarios]:
-                # input was deleted
-                shutil.rmtree(dir)
-            elif not finished_file_exists(dir):
-                # corrupted output due to unfinished run
-                shutil.rmtree(dir)
+            # Delete if: input was deleted or corrupted output due to unfinished run
+            if dir.name not in [
+                path.name for path in input_scenarios
+            ] or not finished_file_exists(dir):
+                shutil.rmtree(dir, onerror=_call_garbage_collector)
