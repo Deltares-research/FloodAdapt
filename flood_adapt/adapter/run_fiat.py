@@ -2,8 +2,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from flood_adapt.config import Settings
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.config import Settings
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.utils import cd
 
 logger = FloodAdaptLogging.getLogger("FiatAdapter")
