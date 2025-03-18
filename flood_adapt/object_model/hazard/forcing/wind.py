@@ -1,5 +1,4 @@
 import os
-import shutil
 from pathlib import Path
 from typing import Any, Optional
 
@@ -19,6 +18,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWind,
 )
 from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.utils import copy_file_to_output_dir
 
 
 class WindConstant(IWind):
@@ -77,12 +77,7 @@ class WindTrack(IWind):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
-            output_dir = Path(output_dir).resolve()
-            if self.path == output_dir / self.path.name:
-                return
-            output_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(self.path, output_dir)
-            self.path = output_dir / self.path.name
+            self.path = copy_file_to_output_dir(self.path, Path(output_dir))
 
 
 class WindCSV(IWind):
@@ -99,13 +94,7 @@ class WindCSV(IWind):
         return CSVTimeseries[self.units].load_file(self.path).to_dataframe(time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.path:
-            output_dir = Path(output_dir).resolve()
-            if self.path == output_dir / self.path.name:
-                return
-            output_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(self.path, output_dir)
-            self.path = output_dir / self.path.name
+        self.path = copy_file_to_output_dir(self.path, Path(output_dir))
 
 
 class WindMeteo(IWind):
@@ -126,10 +115,4 @@ class WindNetCDF(IWind):
         return validated_ds
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.path:
-            output_dir = Path(output_dir).resolve()
-            if self.path == output_dir / self.path.name:
-                return
-            output_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(self.path, output_dir)
-            self.path = output_dir / self.path.name
+        self.path = copy_file_to_output_dir(self.path, Path(output_dir))

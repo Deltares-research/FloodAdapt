@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import Any, List, Optional, Type, TypeVar
 
+import tomli
 from pydantic import field_serializer, field_validator, model_validator
 
 from flood_adapt.misc.config import Settings
@@ -116,6 +117,23 @@ class Event(IEvent[T_EVENT_MODEL]):
         for forcing_list in self.attrs.forcings.values():
             forcings.extend(forcing_list)
         return forcings
+
+    @classmethod
+    def load_file(cls, file_path: Path | str | os.PathLike) -> "Event":
+        """Load object from file."""
+        with open(file_path, mode="rb") as fp:
+            toml = tomli.load(fp)
+        event = cls.load_dict(toml)
+
+        for forcing in event.get_forcings():
+            if hasattr(forcing, "path") and forcing.path is not None:
+                if not (file_path.parent / forcing.path).exists():
+                    raise FileNotFoundError(
+                        f"File {forcing.path} not found in {file_path.parent}."
+                    )
+                forcing.path = file_path.parent / forcing.path
+
+        return event
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         for forcing in self.get_forcings():
