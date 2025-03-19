@@ -18,6 +18,7 @@ from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_fiat.fiat import FiatModel as HydroMtFiatModel
 from hydromt_sfincs import SfincsModel as HydroMtSfincsModel
 from pydantic import BaseModel, Field
+from shapely import MultiPolygon
 from shapely.geometry import Polygon
 
 from flood_adapt import FloodAdaptLogging, Settings
@@ -53,6 +54,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     DatumModel,
     DemModel,
     FloodFrequencyModel,
+    FloodModel,
     ObsPointModel,
     RiverModel,
     SfincsConfigModel,
@@ -663,7 +665,7 @@ class DatabaseBuilder:
             # Then check if geometries are already footprints
             if isinstance(
                 self.fiat_model.exposure.exposure_geoms[build_ind].geometry.iloc[0],
-                Polygon,
+                (Polygon, MultiPolygon),
             ):
                 footprints_found = True
 
@@ -1028,12 +1030,18 @@ class DatabaseBuilder:
         )
 
         # Store SFINCS config
+        off_model = (
+            FloodModel(name="offshore", reference="MSL")
+            if self.config.sfincs_offshore
+            else None
+        )
+        overland_model = FloodModel(name="overland", reference="MSL")
         self.site_attrs["sfincs"] = {}
         self.site_attrs["sfincs"]["config"] = SfincsConfigModel(
             csname=self.sfincs.crs.name,
             cstype=self.sfincs.crs.type_name.split(" ")[0].lower(),
-            offshore_model="offshore" if self.config.sfincs_offshore else None,
-            overland_model="overland",
+            offshore_model=off_model,
+            overland_model=overland_model,
             floodmap_units=us.UnitTypesLength.feet
             if self.config.unit_system == UnitSystems.imperial
             else us.UnitTypesLength.meters,
@@ -1571,9 +1579,7 @@ class DatabaseBuilder:
         units = GuiUnitModel(**self._get_default_units())
 
         # Check if the water level attribute include info on MHHW and MSL
-        datums = [
-            DatumModel(**d) for d in self.site_attrs["sfincs"]["water_level"].datums
-        ]
+        datums = self.site_attrs["sfincs"]["water_level"].datums
 
         if "MHHW" in [d.name for d in datums]:
             amplitude = (
@@ -1913,12 +1919,14 @@ class DatabaseBuilder:
         gdf_buildings = gdf[~road_inds]
         gdf_buildings = self._clip_gdf(
             gdf_buildings, clipped_region, predicate="within"
-        )
+        ).reset_index(drop=True)
 
         if road_inds.any():
             # Clip roads
             gdf_roads = gdf[road_inds]
-            gdf_roads = self._clip_gdf(gdf_roads, clipped_region, predicate="within")
+            gdf_roads = self._clip_gdf(
+                gdf_roads, clipped_region, predicate="within"
+            ).reset_index(drop=True)
 
             idx_buildings = self.fiat_model.exposure.geom_names.index(
                 self.config.fiat_buildings_name
@@ -1952,9 +1960,6 @@ class DatabaseBuilder:
                     gdf_buildings[fieldname]
                 )
             ]
-
-        # Write fiat model
-        self.fiat_model.write()
 
     def _get_default_units(self):
         """
