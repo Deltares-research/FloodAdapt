@@ -566,6 +566,10 @@ class SfincsAdapter(IHazardAdapter):
 
         Only for single event scenarios, or for a specific simulation path containing the written and processed sfincs model.
         """
+        if not self.settings.obs_point:
+            self.logger.warning("No observation points provided in config.")
+            return
+
         self.logger.info("Plotting water levels at observation points")
         sim_path = sim_path or self._get_simulation_paths(scenario)[0]
         event = event or scenario.event
