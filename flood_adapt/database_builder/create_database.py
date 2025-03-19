@@ -249,6 +249,7 @@ class ConfigModel(BaseModel):
     description: Optional[str] = ""
     database_path: Optional[str] = None
     sfincs: str
+    sfincs_reference: Optional[str] = "MSL"
     sfincs_offshore: Optional[str] = None
     fiat: str
     unit_system: UnitSystems
@@ -626,9 +627,11 @@ class DatabaseBuilder:
         if not self.fiat_model.region.empty:
             center = self.fiat_model.region.dissolve().centroid.to_crs(4326)[0]
         else:
-            self.fiat_model.exposure.exposure_geoms[
-                build_ind
-            ].dissolve().centroid.to_crs(4326)[0]
+            center = (
+                self.fiat_model.exposure.exposure_geoms[build_ind]
+                .dissolve()
+                .centroid.to_crs(4326)[0]
+            )
         self.site_attrs["lat"] = center.y
         self.site_attrs["lon"] = center.x
 
@@ -979,7 +982,16 @@ class DatabaseBuilder:
         else:
             floodmap_type = "water_level"
 
-        # Update model
+        # Update output geoms names
+        output_geom = {}
+        counter = 0
+        for key in self.fiat_model.config["exposure"]["geom"].keys():
+            if "file" in key:
+                counter += 1
+                output_geom[f"name{counter}"] = Path(
+                    self.fiat_model.config["exposure"]["geom"][key]
+                ).name
+        self.fiat_model.config["output"]["geom"] = output_geom
         self.fiat_model.write()
 
         if footprints_path is not None:
@@ -998,6 +1010,8 @@ class DatabaseBuilder:
             damage_unit=dmg_unit,
             building_footprints=footprints_path,
             roads_file_name=f"{self.config.fiat_roads_name}.gpkg"
+            if self.roads
+            else None
             if self.roads
             else None,
             new_development_file_name="new_development_area.gpkg",  # TODO allow for different naming
@@ -1035,7 +1049,9 @@ class DatabaseBuilder:
             if self.config.sfincs_offshore
             else None
         )
-        overland_model = FloodModel(name="overland", reference="MSL")
+        overland_model = FloodModel(
+            name="overland", reference=self.config.sfincs_reference
+        )
         self.site_attrs["sfincs"] = {}
         self.site_attrs["sfincs"]["config"] = SfincsConfigModel(
             csname=self.sfincs.crs.name,
