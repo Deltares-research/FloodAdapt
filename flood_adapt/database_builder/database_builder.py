@@ -6,20 +6,23 @@ from pathlib import Path
 from typing import Optional, Union
 from urllib.request import urlretrieve
 
+import cht_observations.observation_stations as obs
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import rioxarray as rxr
 import tomli
+import tomli_w
+import xarray as xr
 from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from pydantic import BaseModel, Field
 from shapely import Polygon
 
-from flood_adapt import FloodAdaptLogging
+from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
-from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
     TideGaugeSource,
@@ -57,7 +60,18 @@ from flood_adapt.object_model.interface.config.sfincs import (
     SlrModel,
     WaterlevelReferenceModel,
 )
-from flood_adapt.object_model.interface.config.site import Site, SiteModel
+from flood_adapt.object_model.interface.config.site import (
+    Site,
+    SiteModel,
+)
+from flood_adapt.object_model.interface.projections import (
+    PhysicalProjectionModel,
+    ProjectionModel,
+    SocioEconomicChangeModel,
+)
+from flood_adapt.object_model.interface.strategies import StrategyModel
+from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.strategy import Strategy
 
 
 class SpatialJoinModel(BaseModel):
@@ -242,16 +256,23 @@ class ConfigModel(BaseModel):
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SviModel] = None
     road_width: Optional[float] = 5
-    risk: list[int] = Field(default_factory=list)
+    return_periods: list[int] = Field(default_factory=list)
 
     # SFINCS
-    sfincs: str
-    sfincs_offshore: Optional[str] = None
-    main_reference: DatumModel = DatumModel(
-        name="MSL", height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters)
+    references: WaterlevelReferenceModel = WaterlevelReferenceModel(
+        reference="MSL",
+        datums=[
+            DatumModel(
+                name="MSL",
+                height=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters),
+            ),
+        ],
     )
-    sfincs_overland_reference: Optional[DatumModel] = None
-    sfincs_offshore_reference: Optional[DatumModel] = None
+
+    sfincs_overland: FloodModel
+    sfincs_offshore: Optional[FloodModel] = None
+
+    excluded_datums: list[str] = Field(default_factory=list)
 
     slr: Optional[SlrModel] = None
     scs: Optional[SCSModel] = None
@@ -281,6 +302,8 @@ class ConfigModel(BaseModel):
 class DatabaseBuilder:
     logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 
+    has_roads: bool = False
+
     def __init__(self, config_path: Path):
         self.root = config_path.parent
         self.config = ConfigModel.read(config_path)
@@ -294,8 +317,9 @@ class DatabaseBuilder:
         self.unit_system = self.create_default_units()
 
         # Read info that needs to be updated with other model info
-        self.water_level_references = self.create_water_level_references()
+        self.water_level_references = self.config.references
 
+        # Create the models
         self.build()
 
     @property
@@ -308,6 +332,26 @@ class DatabaseBuilder:
 
         site = Site(site_config=site_model)
         site.save(self.static_path / "config" / "site.toml")
+
+    def create_standard_objects(self):
+        NO_MEASURES = Strategy(
+            StrategyModel(
+                name="no_measures",
+                measures=[],
+            )
+        )
+        PROJECTION = Projection(
+            ProjectionModel(
+                name="current",
+                physical_projection=PhysicalProjectionModel(),
+                socio_economic_change=SocioEconomicChangeModel(),
+            )
+        )
+
+        # TODO
+        EVENT_SET = None
+
+        # TODO read db + save objects
 
     ### TEMPLATE READERS ###
     def read_template_fiat_model(self) -> HydromtFiatModel:
@@ -342,7 +386,7 @@ class DatabaseBuilder:
         return fiat
 
     def create_risk_model(self) -> RiskModel:
-        return RiskModel(return_periods=self.config.risk)
+        return RiskModel(return_periods=self.config.return_periods)
 
     def create_benefit_config(self) -> BenefitsModel:
         return BenefitsModel(
@@ -357,6 +401,7 @@ class DatabaseBuilder:
         self.fiat_model = HydromtFiatModel(
             str(self.static_path / "templates" / "fiat"), mode="w+"
         )
+        self.update_fiat_elevation()
 
         # Make sure only csv objects have geometries
         for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
@@ -395,6 +440,95 @@ class DatabaseBuilder:
         )
 
         return config
+
+    def update_fiat_elevation(self):
+        """
+        Update the ground elevations of FIAT objects based on the SFINCS ground elevation map.
+
+        This method reads the DEM file and the exposure CSV file, and updates the ground elevations
+        of the FIAT objects (roads and buildings) based on the nearest elevation values from the DEM.
+        """
+        dem_file = self.static_path.joinpath("dem", "dep_subgrid.tif")
+        # TODO resolve issue with double geometries in hydromt-FIAT and use update_ground_elevation method instead
+        # self.fiat_model.update_ground_elevation(dem_file)
+        self.logger.info(
+            "Updating FIAT objects ground elevations from SFINCS ground elevation map."
+        )
+        SFINCS_units = us.UnitfulLength(
+            value=1.0, units=us.UnitTypesLength.meters
+        )  # SFINCS is always in meters
+        FIAT_units = self.unit_system.default_length_units
+        conversion_factor = SFINCS_units.convert(FIAT_units)
+
+        if conversion_factor != 1:
+            self.logger.info(
+                f"Ground elevation for FIAT objects is in '{FIAT_units}', while SFINCS ground elevation is in 'meters'. Values in the exposure csv will be converted by a factor of {conversion_factor}"
+            )
+
+        exposure_csv_path = Path(self.fiat_model.root).joinpath(
+            "exposure", "exposure.csv"
+        )
+        exposure = pd.read_csv(exposure_csv_path)
+        dem = rxr.open_rasterio(dem_file)
+        # TODO this should be in hydromt FIAT
+        if self.config.fiat_roads_name in self.fiat_model.exposure.geom_names:
+            roads_path = (
+                Path(self.fiat_model.root)
+                / "exposure"
+                / f"{self.config.fiat_roads_name}.gpkg"
+            )
+            roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
+            roads["geometry"] = roads.geometry.centroid  # get centroids
+
+            x_points = xr.DataArray(roads["geometry"].x, dims="points")
+            y_points = xr.DataArray(roads["geometry"].y, dims="points")
+            roads["elev"] = (
+                dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
+                * conversion_factor
+            )
+
+            exposure.loc[
+                exposure[_FIAT_COLUMNS.primary_object_type] == "road",
+                _FIAT_COLUMNS.ground_floor_height,
+            ] = 0
+            exposure = exposure.merge(
+                roads[[_FIAT_COLUMNS.object_id, "elev"]],
+                on=_FIAT_COLUMNS.object_id,
+                how="left",
+            )
+            exposure.loc[
+                exposure[_FIAT_COLUMNS.primary_object_type] == "road",
+                _FIAT_COLUMNS.ground_elevation,
+            ] = exposure.loc[
+                exposure[_FIAT_COLUMNS.primary_object_type] == "road", "elev"
+            ]
+            del exposure["elev"]
+
+        buildings_path = (
+            Path(self.fiat_model.root)
+            / "exposure"
+            / f"{self.config.fiat_buildings_name}.gpkg"
+        )
+        points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
+        points["geometry"] = points.geometry.centroid
+        x_points = xr.DataArray(points["geometry"].x, dims="points")
+        y_points = xr.DataArray(points["geometry"].y, dims="points")
+        points["elev"] = (
+            dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
+            * conversion_factor
+        )
+        exposure = exposure.merge(
+            points[[_FIAT_COLUMNS.object_id, "elev"]],
+            on=_FIAT_COLUMNS.object_id,
+            how="left",
+        )
+        exposure.loc[
+            exposure[_FIAT_COLUMNS.primary_object_type] != "road",
+            _FIAT_COLUMNS.ground_elevation,
+        ] = exposure.loc[exposure[_FIAT_COLUMNS.primary_object_type] != "road", "elev"]
+        del exposure["elev"]
+
+        exposure.to_csv(exposure_csv_path, index=False)
 
     def read_damage_unit(self) -> str:
         if self.fiat_model.exposure is None:
@@ -459,6 +593,7 @@ class DatabaseBuilder:
                 f"FIAT road objects transformed from lines to polygons assuming a road width of {self.config.road_width} meters."
             )
 
+        self._has_roads = True
         return f"{self.config.fiat_roads_name}.gpkg"
 
     def create_new_developments(self) -> Optional[str]:
@@ -967,7 +1102,9 @@ class DatabaseBuilder:
                 file=rel_db_path,
                 units=us.UnitTypesLength.meters,
             )
+
             self.water_level_references.datums.append(self.config.tide_gauge.ref)
+
             return tide_gauge
 
         elif self.config.tide_gauge.source == TideGaugeSource.noaa_coops:
@@ -979,6 +1116,54 @@ class DatabaseBuilder:
                     "Tide gauge ID and/or location not provided. Historical nearshore gauged events will not be available in FloodAdapt!"
                 )
                 return None
+
+            if self.config.tide_gauge.ref is not None:
+                ref = self.config.tide_gauge.ref
+            else:
+                ref = "MLLW"  # If reference is not provided use MLLW
+            station = self._get_closest_station(
+                ref
+            )  # This always return values in meters currently
+            if station is not None:
+                # Add tide_gauge information in site toml
+                tide_gauge = TideGaugeModel(
+                    name=station["name"],
+                    description=f"observations from '{self.config.tide_gauge.source}' api",
+                    source=self.config.tide_gauge.source,
+                    reference=ref,
+                    ID=int(station["id"]),
+                    lon=station["lon"],
+                    lat=station["lat"],
+                    units=us.UnitTypesLength.meters,
+                )
+
+                local_datum = DatumModel(
+                    name=station["datum_name"],
+                    height=us.UnitfulLength(
+                        value=station["datum"], units=station["units"]
+                    ).transform(self.unit_system.default_length_units),
+                )
+                self.water_level_references.datums.append(local_datum)
+
+                msl = DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(
+                        value=station["msl"], units=station["units"]
+                    ).transform(self.unit_system.default_length_units),
+                    # TODO check/add correction
+                )
+                self.water_level_references.datums.append(msl)
+
+                for name in ["MLLW", "MHHW"]:
+                    height = us.UnitfulLength(
+                        value=station[name.lower()], units=station["units"]
+                    ).transform(self.unit_system.default_length_units)
+
+                    wl_info = DatumModel(
+                        name=name,
+                        height=height,
+                    )
+                    self.water_level_references.datums.append(wl_info)
 
             tide_gauge = TideGaugeModel(
                 name=str(self.config.tide_gauge.id),
@@ -996,14 +1181,6 @@ class DatabaseBuilder:
                 f"Tide gauge source not recognized: {self.config.tide_gauge.source}. Historical nearshore gauged events will not be available in FloodAdapt!"
             )
             return None
-
-    def create_water_level_references(self) -> WaterlevelReferenceModel:
-        water_level_config = WaterlevelReferenceModel(
-            reference=self.config.main_reference.name,
-            datums=[self.config.main_reference],
-        )
-
-        return water_level_config
 
     def create_offshore_model(self) -> Optional[FloodModel]:
         if self.sfincs_offshore_model is None:
@@ -1036,37 +1213,29 @@ class DatabaseBuilder:
             "Output points of the offshore SFINCS model were reconfigured to the boundary points of the overland SFINCS model."
         )
 
-        if self.config.sfincs_offshore_reference is None:
-            ref = self.config.main_reference
-        else:
-            ref = self.config.sfincs_offshore_reference
-            self.water_level_references.datums.append(ref)
-
         return FloodModel(
             name="offshore",
-            reference=ref.name,
+            reference=self.config.sfincs_offshore.reference,
         )
 
     def create_overland_model(self) -> FloodModel:
         sfincs_overland_path = self.static_path / "templates" / "overland"
         shutil.copytree(self.sfincs_overland_model.root, sfincs_overland_path)
 
-        if self.config.sfincs_overland_reference is None:
-            ref = self.config.main_reference
-        else:
-            ref = self.config.sfincs_overland_reference
-            self.water_level_references.datums.append(ref)
-
         return FloodModel(
-            name="overland",
-            reference=ref.name,
+            name=self.config.sfincs_overland.name,
+            reference=self.config.sfincs_overland.reference,
         )
 
     ### SITE ###
     def create_site_config(self) -> SiteModel:
-        fiat = self.create_fiat_model()
-        sfincs = self.create_sfincs_config()
+        # call this to update waterlevel references before creating sfincs
         gui = self.create_gui_config()
+
+        # call this before fiat to ensure the dem is where its expected
+        sfincs = self.create_sfincs_config()
+
+        fiat = self.create_fiat_model()
         lat, lon = self.read_location()
 
         config = SiteModel(
@@ -1103,17 +1272,14 @@ class DatabaseBuilder:
         return gui
 
     def create_default_units(self) -> GuiUnitModel:
-        return GuiUnitModel(
-            default_length_units=us.UnitTypesLength.feet,
-            default_distance_units=us.UnitTypesLength.miles,
-            default_area_units=us.UnitTypesArea.sf,
-            default_volume_units=us.UnitTypesVolume.cf,
-            default_velocity_units=us.UnitTypesVelocity.knots,
-            default_direction_units=us.UnitTypesDirection.degrees,
-            default_discharge_units=us.UnitTypesDischarge.cfs,
-            default_intensity_units=us.UnitTypesIntensity.inch_hr,
-            default_cumulative_units=us.UnitTypesLength.inch,
-        )
+        if self.config.unit_system == UnitSystems.imperial:
+            return GuiUnitModel.imperial()
+        elif self.config.unit_system == UnitSystems.metric:
+            return GuiUnitModel.metric()
+        else:
+            raise ValueError(
+                f"Unit system {self.config.unit_system} not recognized. Please choose 'imperial' or 'metric'."
+            )
 
     def create_visualization_layers(self) -> VisualizationLayersModel:
         visualization_layers = VisualizationLayersModel(
@@ -1130,63 +1296,214 @@ class DatabaseBuilder:
         return visualization_layers
 
     def create_mapbox_layers_config(self) -> MapboxLayersModel:
+        # Read default colors from template
+        fd_max = self.config.gui.max_flood_depth
+        ad_max = self.config.gui.max_aggr_dmg
+        ftd_max = self.config.gui.max_footprint_dmg
+        b_max = self.config.gui.max_benefits
+
+        svi_bins = None
+        if self.config.svi is not None:
+            svi_bins = [0.05, 0.2, 0.4, 0.6, 0.8]
+
         mapbox_layers = MapboxLayersModel(
-            flood_map_depth_min=0.328,
-            flood_map_zbmax=3.28,
-            flood_map_bins=[1, 3, 5],
-            flood_map_colors=["#BED2FF", "#B4D79E", "#1F80B8", "#081D58"],
-            aggregation_dmg_bins=[0.00001, 1000000, 2500000, 5000000, 10000000],
-            aggregation_dmg_colors=[
-                "#FFFFFF",
-                "#FEE9CE",
-                "#FDBB84",
-                "#FC844E",
-                "#E03720",
-                "#860000",
+            flood_map_depth_min=0.0,  # mask areas with flood depth lower than this (zero = all depths shown) # TODO How to define this?
+            flood_map_zbmax=-9999,  # mask areas with elevation lower than this (very negative = show all calculated flood depths) # TODO How to define this?,
+            flood_map_bins=[0.2 * fd_max, 0.6 * fd_max, fd_max],
+            damage_decimals=0,
+            footprints_dmg_type="absolute",
+            aggregation_dmg_bins=[
+                0.00001,
+                0.1 * ad_max,
+                0.25 * ad_max,
+                0.5 * ad_max,
+                ad_max,
             ],
-            footprints_dmg_bins=[0.00001, 10, 20, 40, 60],
-            footprints_dmg_colors=[
-                "#FFFFFF",
-                "#FEE9CE",
-                "#FDBB84",
-                "#FC844E",
-                "#E03720",
-                "#860000",
+            footprints_dmg_bins=[
+                0.00001,
+                0.06 * ftd_max,
+                0.2 * ftd_max,
+                0.4 * ftd_max,
+                ftd_max,
             ],
-            svi_bins=[0.05, 0.2, 0.4, 0.6, 0.8],
-            svi_colors=[
-                "#FFFFFF",
-                "#FEE9CE",
-                "#FDBB84",
-                "#FC844E",
-                "#E03720",
-                "#860000",
-            ],
-            benefits_bins=[0, 0.01, 1000000, 10000000, 50000000],
-            benefits_colors=[
-                "#FF7D7D",
-                "#FFFFFF",
-                "#DCEDC8",
-                "#AED581",
-                "#7CB342",
-                "#33691E",
-            ],
+            benefits_bins=[0, 0.01, 0.02 * b_max, 0.2 * b_max, b_max],
+            svi_bins=svi_bins,
+            **self._get_bin_colors(),
         )
 
         return mapbox_layers
 
     def create_hazard_plotting_config(self) -> PlottingModel:
+        datum_names = [datum.name for datum in self.water_level_references.datums]
+        if "MHHW" in datum_names:
+            amplitude = (
+                self.water_level_references.get_datum("MHHW").height
+                - self.water_level_references.get_datum("MSL").height
+            )
+            self.logger.info(
+                f"The default tidal amplitude in the GUI will be {amplitude.transform(self.unit_system.default_length_units)}, calculated as the difference between MHHW and MSL from the tide gauge data."
+            )
+        else:
+            amplitude = us.UnitfulLength(
+                value=0.0, units=self.unit_system.default_length_units
+            )
+            self.logger.warning(
+                "The default tidal amplitude in the GUI will be 0.0, since no tide-gauge water levels are available. You can change this in the site.toml with the 'gui.tide_harmonic_amplitude' attribute."
+            )
+
+        ref = "MSL"
+        if ref not in datum_names:
+            self.logger.warning(
+                f"The Mean Sea Level (MSL) datum is not available in the site.toml. The synthetic tide will be created relative to the main reference: {self.water_level_references.reference}."
+            )
+            ref = self.water_level_references.reference
+
         plotting = PlottingModel(
             synthetic_tide=SyntheticTideModel(
-                harmonic_amplitude=us.UnitfulLength(
-                    value=3.0, units=us.UnitTypesLength.feet
-                ),
-                datum="MSL",
+                harmonic_amplitude=amplitude,
+                datum=ref,
             ),
-            excluded_datums=["NAVD88"],
+            excluded_datums=self.config.excluded_datums,
         )
 
         return plotting
+
+    def create_infometrics(self):
+        """
+        Copy the infometrics and infographics templates to the appropriate location and modifies the metrics_config.toml files.
+
+        This method copies the templates from the 'infometrics' and 'infographics' folders to the 'static/templates' folder in the root directory.
+        It then modifies the 'metrics_config.toml' and 'metrics_config_risk.toml' files by updating the 'aggregateBy' attribute with the names
+        of the aggregations defined in the 'fiat' section of the 'site_attrs' attribute.
+        """
+        # TODO there should be generalized infometric queries with NSI or OSM, and with SVI or without. Then Based on the user input these should be chosen automatically
+        templates_path = Path(__file__).parent.resolve().joinpath("templates")
+
+        # Create template folder
+        path_im = self.root.joinpath("static", "templates", "infometrics")
+        path_im.mkdir()
+
+        # Copy mandatory metric configs
+        path_im_temp = templates_path.joinpath("infometrics")
+        for file in path_im_temp.glob("*.toml"):
+            shutil.copy(file, path_im)
+
+        self._create_optional_infometrics(templates_path, path_im)
+
+        path = self.root.joinpath("static", "templates", "infometrics")
+        files = list(path.glob("*metrics_config*.toml"))
+        # Update aggregation areas in metrics config
+        for file in files:
+            file = path.joinpath(file)
+            with open(file, "rb") as f:
+                attrs = tomli.load(f)
+
+            # add aggration levels
+            attrs["aggregateBy"] = [
+                aggr.name for aggr in self.site_attrs["fiat"]["config"].aggregation
+            ]
+
+            # take out road metrics if needed
+            if not self._has_roads:
+                attrs["queries"] = [
+                    query
+                    for query in attrs["queries"]
+                    if "road" not in query["name"].lower()
+                ]
+
+            # Replace Damage Unit
+            # TODO do this in a better manner
+            for i, query in enumerate(attrs["queries"]):
+                if "$" in query["long_name"]:
+                    query["long_name"] = query["long_name"].replace(
+                        "$", self.site_attrs["fiat"]["config"].damage_unit
+                    )
+
+            # replace the SVI threshold if needed
+            if self.config.svi:
+                for i, query in enumerate(attrs["queries"]):
+                    query["filter"] = query["filter"].replace(
+                        "SVI_threshold", str(self.config.svi.threshold)
+                    )
+
+            with open(file, "wb") as f:
+                tomli_w.dump(attrs, f)
+
+    def _create_optional_infometrics(self, templates_path: Path, path_im: Path):
+        # If infographics are going to be created in FA, get template metric configurations
+        if self.config.infographics is None:
+            return
+
+        # Check what type of infographics should be used
+        if self.config.unit_system == "imperial":
+            metrics_folder_name = "US_NSI"
+            self.logger.info(
+                "Default NSI infometrics and infographics will be created."
+            )
+        elif self.config.unit_system == "metric":
+            metrics_folder_name = "OSM"
+            self.logger.info(
+                "Default OSM infometrics and infographics will be created."
+            )
+        else:
+            raise ValueError(
+                f"Unit system {self.config.unit_system} is not recognized. Please choose 'imperial' or 'metric'."
+            )
+
+        if self.config.svi is not None:
+            svi_folder_name = "with_SVI"
+        else:
+            svi_folder_name = "without_SVI"
+
+        # Copy metrics config for infographics
+        path_0 = templates_path.joinpath(
+            "infometrics", metrics_folder_name, svi_folder_name
+        )
+        for file in path_0.glob("*.toml"):
+            shutil.copy2(file, path_im)
+
+        # Copy additional risk config
+        file = templates_path.joinpath(
+            "infometrics",
+            metrics_folder_name,
+            "metrics_additional_risk_configs.toml",
+        )
+        shutil.copy2(file, path_im)
+
+        # Copy infographics config
+        path_ig_temp = templates_path.joinpath("infographics", metrics_folder_name)
+        path_ig = self.root.joinpath("static", "templates", "infographics")
+        path_ig.mkdir()
+        files_ig = ["styles.css", "config_charts.toml"]
+
+        if self.config.svi is not None:
+            files_ig.append("config_risk_charts.toml")
+            files_ig.append("config_people.toml")
+
+        if self._has_roads:
+            files_ig.append("config_roads.toml")
+
+        for file in files_ig:
+            shutil.copy2(path_ig_temp.joinpath(file), path_ig.joinpath(file))
+
+        # Copy images
+        path_0 = templates_path.joinpath("infographics", "images")
+        path_1 = self.root.joinpath("static", "templates", "infographics", "images")
+        shutil.copytree(path_0, path_1)
+
+    def add_static_files(self):
+        """
+        Copy static files from the 'templates' folder to the 'static' folder.
+
+        This method iterates over a list of folders and copies the contents of each folder from the 'templates' directory
+        to the corresponding folder in the 'static' directory.
+        """
+        templates_path = Path(__file__).parent.resolve().joinpath("templates")
+        folders = ["icons", "green_infra_table"]
+        for folder in folders:
+            path_0 = templates_path.joinpath(folder)
+            path_1 = self.static_path / folder
+            shutil.copytree(path_0, path_1)
 
     ### HELPER FUNCTIONS ###
     def make_folder_structure(self):
@@ -1420,6 +1737,113 @@ class DatabaseBuilder:
         return self.fiat_model.exposure.geom_names.index(
             self.config.fiat_buildings_name
         )
+
+    def _get_closest_station(self, ref: str = "MLLW"):
+        """
+        Find the closest tide gauge station to the SFINCS domain and retrieves its metadata.
+
+        Args:
+            ref (str, optional): The reference level for water level measurements. Defaults to "MLLW".
+
+        Returns
+        -------
+            dict: A dictionary containing the metadata of the closest tide gauge station.
+                The dictionary includes the following keys:
+                - "id": The station ID.
+                - "name": The station name.
+                - "datum": The difference between the station's datum and the reference level.
+                - "datum_name": The name of the datum used by the station.
+                - "msl": The difference between the Mean Sea Level (MSL) and the reference level.
+                - "reference": The reference level used for water level measurements.
+                - "lon": The longitude of the station.
+                - "lat": The latitude of the station.
+        """
+        # Get available stations from source
+        obs_data = obs.source(self.config.tide_gauge.source)
+        obs_data.get_active_stations()
+        obs_stations = obs_data.gdf()
+        # Calculate distance from SFINCS region to all available stations in degrees
+        obs_stations["distance"] = obs_stations.distance(
+            self.sfincs_overland_model.region.to_crs(4326).geometry.item()
+        )
+        # Get the closest station and its distance in meters
+        closest_station = obs_stations[
+            obs_stations["distance"] == obs_stations["distance"].min()
+        ]
+        distance = round(
+            closest_station.to_crs(self.sfincs.region.crs)
+            .distance(self.sfincs_overland_model.region.geometry.item())
+            .item(),
+            0,
+        )
+
+        distance = us.UnitfulLength(value=distance, units=us.UnitTypesLength.meters)
+        self.logger.info(
+            f"The closest tide gauge from {self.config.tide_gauge.source} is located {distance.transform(self.unit_system.default_length_units)} from the SFINCS domain"
+        )
+        # Check if user provided max distance
+        # TODO make sure units are explicit for max_distance
+        if self.config.tide_gauge.max_distance is not None:
+            units_new = self.config.tide_gauge.max_distance.units
+            distance_new = us.UnitfulLength(
+                value=distance.convert(units_new), units=units_new
+            )
+            if distance_new.value > self.config.tide_gauge.max_distance.value:
+                self.logger.warning(
+                    f"This distance is larger than the 'max_distance' value of {self.config.tide_gauge.max_distance.value} {units_new} provided in the config file. The station cannot be used."
+                )
+                return None
+
+        # get station id
+        station_id = closest_station["id"].item()
+        # read station metadata
+        station_metadata = obs_data.get_meta_data(closest_station.id.item())
+        # TODO check if all stations can be used? Tidal attr?
+        # Get water levels by using the ref provided
+        datum_name = station_metadata["datums"]["OrthometricDatum"]
+        datums = station_metadata["datums"]["datums"]
+        names = [datum["name"] for datum in datums]
+
+        ref_value = datums[names.index(ref)]["value"]
+
+        meta = {
+            "id": station_id,
+            "name": station_metadata["name"],
+            "datum": round(datums[names.index(datum_name)]["value"] - ref_value, 3),
+            "datum_name": datum_name,
+            "msl": round(datums[names.index("MSL")]["value"] - ref_value, 3),
+            "mllw": round(datums[names.index("MLLW")]["value"] - ref_value, 3),
+            "mhhw": round(datums[names.index("MHHW")]["value"] - ref_value, 3),
+            "reference": ref,
+            "units": station_metadata["datums"]["units"],
+            "lon": closest_station.geometry.x.item(),
+            "lat": closest_station.geometry.y.item(),
+        }
+
+        self.logger.info(
+            f"The tide gauge station '{station_metadata['name']}' from {self.config.tide_gauge.source} will be used to download nearshore historical water level time-series."
+        )
+
+        self.logger.info(
+            f"The station metadata will be used to fill in the water_level attribute in the site.toml. The reference level will be {ref}."
+        )
+
+        return meta
+
+    def _get_bin_colors(self):
+        """
+        Retrieve the bin colors from the bin_colors.toml file.
+
+        Returns
+        -------
+            dict: A dictionary containing the bin colors.
+        """
+        templates_path = Path(__file__).parent.resolve().joinpath("templates")
+        with open(
+            templates_path.joinpath("mapbox_layers", "bin_colors.toml"), "rb"
+        ) as f:
+            bin_colors = tomli.load(f)
+        return bin_colors
 
 
 if __name__ == "__main__":
