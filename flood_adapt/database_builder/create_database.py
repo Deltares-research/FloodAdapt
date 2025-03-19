@@ -1372,6 +1372,7 @@ class DatabaseBuilder:
                     ref = self.config.tide_gauge.ref
                 else:
                     ref = "MLLW"  # If reference is not provided use MLLW
+                water_level_config.reference = ref
                 station = self._get_closest_station(
                     ref
                 )  # This always return values in meters currently
@@ -1381,7 +1382,7 @@ class DatabaseBuilder:
                         name=station["name"],
                         description=f"observations from '{self.config.tide_gauge.source}' api",
                         source=self.config.tide_gauge.source,
-                        reference=ref,
+                        reference="MSL",
                         ID=int(station["id"]),
                         lon=station["lon"],
                         lat=station["lat"],
@@ -1394,6 +1395,12 @@ class DatabaseBuilder:
                             value=station["datum"], units=station["units"]
                         ).transform(elv_units),
                     )
+                    # Make sure existing MSL datum is overwritten
+                    water_level_config.datums = [
+                        datum
+                        for datum in water_level_config.datums
+                        if datum.name != "MSL"
+                    ]
                     water_level_config.datums.append(local_datum)
 
                     msl = DatumModel(
@@ -1403,6 +1410,7 @@ class DatabaseBuilder:
                         ).transform(elv_units),
                         # TODO check/add correction
                     )
+
                     water_level_config.datums.append(msl)
 
                     for name in ["MLLW", "MHHW"]:
@@ -1599,8 +1607,8 @@ class DatabaseBuilder:
 
         if "MHHW" in [d.name for d in datums]:
             amplitude = (
-                self.site_attrs["sfincs"]["water_level"]["datums"]["MHHW"].height.value
-                - self.site_attrs["sfincs"]["water_level"]["datums"]["MSL"].height.value
+                self.site_attrs["sfincs"]["water_level"].get_datum("MHHW").height.value
+                - self.site_attrs["sfincs"]["water_level"].get_datum("MSL").height.value
             )
             self.logger.info(
                 f"The default tidal amplitude in the GUI will be {amplitude} {units.default_length_units.value}, calculated as the difference between MHHW and MSL from the tide gauge data."
