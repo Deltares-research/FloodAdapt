@@ -439,7 +439,7 @@ ul.task-list li input[type="checkbox"] {
 </ol>
 <div id="fig-syntheticWindow" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><a href="../../_static/images/popup_syntheticEvent.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Event template window for a historic event with gauged water levels."><img src="../../_static/images/popup_syntheticEvent.png" class="img-fluid figure-img"></a></p>
+<p><a href="../../_static/images/popup_syntheticEvent.png" class="lightbox" title="Event template window for a historic event with gauged water levels." data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/popup_syntheticEvent.png" class="img-fluid figure-img"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Event template window for a historic event with gauged water levels.</strong></figcaption>
 </figure>
 </div>
@@ -459,7 +459,7 @@ What is T=0 in a synthetic event
 <p>The time T = 0 is an arbitrary moment when the tide is at its crest. It is essentially a ‘reference time’ to define the duration of an event, and to specify other forcing variables in relation to. <a href="#fig-syntheticDuration">Figure&nbsp;2</a> shows an event with a duration 48 hours before and 12 hours after T=0. You can see the crest of the tide occurs at T=0, and the event runs from 48 hours before until 12 hours after this moment.</p>
 <div id="fig-syntheticDuration" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/syntheticEventDuration.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="T=0 and the duration of a sythetic event"><img src="../../_static/images/syntheticEventDuration.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/syntheticEventDuration.png" class="lightbox" title="T=0 and the duration of a sythetic event" data-gallery="quarto-lightbox-gallery-4"><img src="../../_static/images/syntheticEventDuration.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>T=0 and the duration of a sythetic event</strong></figcaption>
 </figure>
 </div>
@@ -473,7 +473,7 @@ What is T=0 in a synthetic event
 <p>The <strong>surge</strong> timeseries is specified as a Gaussian curve. The user specifies the peak surge, the duration of the surge, and the timing of the peak relative to T=0. <a href="#fig-surgeTiming">Figure&nbsp;3</a> shows an example how a user can adjust the surge timing. The figure shows three panels. The top panel has the tide set to zero, so the timeseries of the surge alone can be viewed. The surge is set as a Gaussian curve with a peak value of 6 ft, and a duration of 12 hours. The second panel shows the timing of the peak surge at -5 hours, with the tide set back to its default value of 3 ft. This is 5 hours before T=0, when the tide was not at its crest. The third panel shows the timing of the peak surge at 0 hours, which is precisely at T=0, when the tide was at its crest. You can s ee that the effect of the surge and high tide coinciding is a much higher total water level than when the peak surge occurs prior to the high tide.</p>
 <div id="fig-surgeTiming" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/PeakSurgeTiming.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="T=0 and the duration of a sythetic event"><img src="../../_static/images/PeakSurgeTiming.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../../_static/images/PeakSurgeTiming.png" class="lightbox" title="T=0 and the duration of a sythetic event" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/PeakSurgeTiming.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>T=0 and the duration of a sythetic event</strong></figcaption>
 </figure>
 </div>
@@ -504,7 +504,7 @@ The zero point and the datums in the water level plots
 </ul>
 <div id="fig-rainfallCurves" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/RainfallCurves.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="The three rainfall curves for a synthetic event. The top shows the Gaussian curve, the middle shows the SCS curve, and the bottom shows the block curve. All three represent three inches of rainfall over 12 hours (note: the vertical axis ranges are different in each plot)"><img src="../../_static/images/RainfallCurves.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
+<p><a href="../../_static/images/RainfallCurves.png" class="lightbox" title="The three rainfall curves for a synthetic event. The top shows the Gaussian curve, the middle shows the SCS curve, and the bottom shows the block curve. All three represent three inches of rainfall over 12 hours (note: the vertical axis ranges are different in each plot)" data-gallery="quarto-lightbox-gallery-3"><img src="../../_static/images/RainfallCurves.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;4: <strong>The three rainfall curves for a synthetic event. The top shows the Gaussian curve, the middle shows the SCS curve, and the bottom shows the block curve. All three represent three inches of rainfall over 12 hours (note: the vertical axis ranges are different in each plot)</strong></figcaption>
 </figure>
 </div>
@@ -896,7 +896,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":true,"selector":".lightbox","openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","openEffect":"zoom","descPosition":"bottom","closeEffect":"zoom","loop":true});</script>
 
 
 
