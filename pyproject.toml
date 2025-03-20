@@ -60,7 +60,12 @@ dev = [
     "typos      == 1.23.6",
 ]
 
-build = ["build", "twine"]
+build = [
+    "build",
+    "twine",
+    "pyinstaller == 6.7.0",
+    "pefile<2024.8.26", # This version introduces a significant slowdown in binary vs data reclassification step of pyinstaller. Pyinstaller is aware. https://github.com/pyinstaller/pyinstaller/issues/8762
+]
 docs = ["jupyter", "jupyter-cache", "matplotlib", "quartodoc", "regex"]
 all = ["flood-adapt[build,dev,docs]"]
 
