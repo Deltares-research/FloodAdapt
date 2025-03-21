@@ -18,6 +18,7 @@ from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_fiat.fiat import FiatModel as HydroMtFiatModel
 from hydromt_sfincs import SfincsModel as HydroMtSfincsModel
 from pydantic import BaseModel, Field
+from shapely import MultiPolygon
 from shapely.geometry import Polygon
 
 from flood_adapt import FloodAdaptLogging, Settings
@@ -53,6 +54,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     DatumModel,
     DemModel,
     FloodFrequencyModel,
+    FloodModel,
     ObsPointModel,
     RiverModel,
     SfincsConfigModel,
@@ -247,6 +249,7 @@ class ConfigModel(BaseModel):
     description: Optional[str] = ""
     database_path: Optional[str] = None
     sfincs: str
+    sfincs_reference: Optional[str] = "MSL"
     sfincs_offshore: Optional[str] = None
     fiat: str
     unit_system: UnitSystems
@@ -624,9 +627,11 @@ class DatabaseBuilder:
         if not self.fiat_model.region.empty:
             center = self.fiat_model.region.dissolve().centroid.to_crs(4326)[0]
         else:
-            self.fiat_model.exposure.exposure_geoms[
-                build_ind
-            ].dissolve().centroid.to_crs(4326)[0]
+            center = (
+                self.fiat_model.exposure.exposure_geoms[build_ind]
+                .dissolve()
+                .centroid.to_crs(4326)[0]
+            )
         self.site_attrs["lat"] = center.y
         self.site_attrs["lon"] = center.x
 
@@ -663,7 +668,7 @@ class DatabaseBuilder:
             # Then check if geometries are already footprints
             if isinstance(
                 self.fiat_model.exposure.exposure_geoms[build_ind].geometry.iloc[0],
-                Polygon,
+                (Polygon, MultiPolygon),
             ):
                 footprints_found = True
 
@@ -977,7 +982,16 @@ class DatabaseBuilder:
         else:
             floodmap_type = "water_level"
 
-        # Update model
+        # Update output geoms names
+        output_geom = {}
+        counter = 0
+        for key in self.fiat_model.config["exposure"]["geom"].keys():
+            if "file" in key:
+                counter += 1
+                output_geom[f"name{counter}"] = Path(
+                    self.fiat_model.config["exposure"]["geom"][key]
+                ).name
+        self.fiat_model.config["output"]["geom"] = output_geom
         self.fiat_model.write()
 
         if footprints_path is not None:
@@ -996,6 +1010,8 @@ class DatabaseBuilder:
             damage_unit=dmg_unit,
             building_footprints=footprints_path,
             roads_file_name=f"{self.config.fiat_roads_name}.gpkg"
+            if self.roads
+            else None
             if self.roads
             else None,
             new_development_file_name="new_development_area.gpkg",  # TODO allow for different naming
@@ -1028,12 +1044,20 @@ class DatabaseBuilder:
         )
 
         # Store SFINCS config
+        off_model = (
+            FloodModel(name="offshore", reference="MSL")
+            if self.config.sfincs_offshore
+            else None
+        )
+        overland_model = FloodModel(
+            name="overland", reference=self.config.sfincs_reference
+        )
         self.site_attrs["sfincs"] = {}
         self.site_attrs["sfincs"]["config"] = SfincsConfigModel(
             csname=self.sfincs.crs.name,
             cstype=self.sfincs.crs.type_name.split(" ")[0].lower(),
-            offshore_model="offshore" if self.config.sfincs_offshore else None,
-            overland_model="overland",
+            offshore_model=off_model,
+            overland_model=overland_model,
             floodmap_units=us.UnitTypesLength.feet
             if self.config.unit_system == UnitSystems.imperial
             else us.UnitTypesLength.meters,
@@ -1348,6 +1372,7 @@ class DatabaseBuilder:
                     ref = self.config.tide_gauge.ref
                 else:
                     ref = "MLLW"  # If reference is not provided use MLLW
+                water_level_config.reference = ref
                 station = self._get_closest_station(
                     ref
                 )  # This always return values in meters currently
@@ -1357,7 +1382,7 @@ class DatabaseBuilder:
                         name=station["name"],
                         description=f"observations from '{self.config.tide_gauge.source}' api",
                         source=self.config.tide_gauge.source,
-                        reference=ref,
+                        reference="MSL",
                         ID=int(station["id"]),
                         lon=station["lon"],
                         lat=station["lat"],
@@ -1370,6 +1395,12 @@ class DatabaseBuilder:
                             value=station["datum"], units=station["units"]
                         ).transform(elv_units),
                     )
+                    # Make sure existing MSL datum is overwritten
+                    water_level_config.datums = [
+                        datum
+                        for datum in water_level_config.datums
+                        if datum.name != "MSL"
+                    ]
                     water_level_config.datums.append(local_datum)
 
                     msl = DatumModel(
@@ -1379,6 +1410,7 @@ class DatabaseBuilder:
                         ).transform(elv_units),
                         # TODO check/add correction
                     )
+
                     water_level_config.datums.append(msl)
 
                     for name in ["MLLW", "MHHW"]:
@@ -1571,14 +1603,12 @@ class DatabaseBuilder:
         units = GuiUnitModel(**self._get_default_units())
 
         # Check if the water level attribute include info on MHHW and MSL
-        datums = [
-            DatumModel(**d) for d in self.site_attrs["sfincs"]["water_level"].datums
-        ]
+        datums = self.site_attrs["sfincs"]["water_level"].datums
 
         if "MHHW" in [d.name for d in datums]:
             amplitude = (
-                self.site_attrs["sfincs"]["water_level"]["datums"]["MHHW"].height.value
-                - self.site_attrs["sfincs"]["water_level"]["datums"]["MSL"].height.value
+                self.site_attrs["sfincs"]["water_level"].get_datum("MHHW").height.value
+                - self.site_attrs["sfincs"]["water_level"].get_datum("MSL").height.value
             )
             self.logger.info(
                 f"The default tidal amplitude in the GUI will be {amplitude} {units.default_length_units.value}, calculated as the difference between MHHW and MSL from the tide gauge data."
@@ -1913,12 +1943,14 @@ class DatabaseBuilder:
         gdf_buildings = gdf[~road_inds]
         gdf_buildings = self._clip_gdf(
             gdf_buildings, clipped_region, predicate="within"
-        )
+        ).reset_index(drop=True)
 
         if road_inds.any():
             # Clip roads
             gdf_roads = gdf[road_inds]
-            gdf_roads = self._clip_gdf(gdf_roads, clipped_region, predicate="within")
+            gdf_roads = self._clip_gdf(
+                gdf_roads, clipped_region, predicate="within"
+            ).reset_index(drop=True)
 
             idx_buildings = self.fiat_model.exposure.geom_names.index(
                 self.config.fiat_buildings_name
@@ -1952,9 +1984,6 @@ class DatabaseBuilder:
                     gdf_buildings[fieldname]
                 )
             ]
-
-        # Write fiat model
-        self.fiat_model.write()
 
     def _get_default_units(self):
         """
