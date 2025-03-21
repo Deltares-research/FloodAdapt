@@ -168,33 +168,12 @@ class TestDataBaseBuilder:
             )
             yield config
 
+    ### Fiat ###
     def test_read_fiat_model(self, config: ConfigModel):
         builder = DatabaseBuilder(config)
         builder.read_template_fiat_model()
 
         assert (builder.static_path / "templates" / "fiat").exists()
-
-    def test_read_template_sfincs_overland_model(self, config: ConfigModel):
-        builder = DatabaseBuilder(config)
-        builder.read_template_sfincs_overland_model()
-
-        assert (builder.static_path / "templates" / "overland").exists()
-
-    def test_read_template_sfincs_offshore_model(self, config: ConfigModel):
-        builder = DatabaseBuilder(config)
-        builder.read_template_sfincs_offshore_model()
-
-        assert (builder.static_path / "templates" / "offshore").exists()
-
-    def test_read_template_sfincs_offshore_model_not_available(
-        self, config: ConfigModel
-    ):
-        config.sfincs_offshore = None
-        builder = DatabaseBuilder(config)
-        model = builder.read_template_sfincs_offshore_model()
-
-        assert not (builder.static_path / "templates" / "offshore").exists()
-        assert model is None
 
     def test_create_risk_model(self, config: ConfigModel):
         builder = DatabaseBuilder(config)
@@ -262,12 +241,12 @@ class TestDataBaseBuilder:
         builder = DatabaseBuilder(config)
         bfe = builder.create_bfe()
 
-        expected_geopackage = builder.static_path / "bfe" / "bfe.gpkg"
-        expected_csv = builder.static_path / "bfe" / "bfe.csv"
+        expected_geopackage = builder.static_path / "bfe/bfe.gpkg"
+        expected_csv = builder.static_path / "bfe/bfe.csv"
 
         expected_bfe = BFEModel(
-            geom=expected_geopackage,
-            table=expected_csv,
+            geom="bfe/bfe.gpkg",
+            table="bfe/bfe.csv",
             field_name=config.bfe.field_name,
         )
         assert bfe is not None
@@ -275,11 +254,42 @@ class TestDataBaseBuilder:
         assert expected_csv.exists()
         assert bfe == expected_bfe
 
+    def test_create_bfe_returns_none(self, config: ConfigModel):
+        config.bfe = None
+        builder = DatabaseBuilder(config)
+        bfe = builder.create_bfe()
+
+        assert bfe is None
+        assert not (builder.static_path / "bfe").exists()
+
     def test_create_svi(self, config: ConfigModel):
         builder = DatabaseBuilder(config)
         svi = builder.create_svi()
 
         assert svi == config.svi
+
+    ### Sfincs ###
+    def test_read_template_sfincs_overland_model(self, config: ConfigModel):
+        builder = DatabaseBuilder(config)
+        builder.read_template_sfincs_overland_model()
+
+        assert (builder.static_path / "templates" / "overland").exists()
+
+    def test_read_template_sfincs_offshore_model(self, config: ConfigModel):
+        builder = DatabaseBuilder(config)
+        builder.read_template_sfincs_offshore_model()
+
+        assert (builder.static_path / "templates" / "offshore").exists()
+
+    def test_read_template_sfincs_offshore_model_not_available(
+        self, config: ConfigModel
+    ):
+        config.sfincs_offshore = None
+        builder = DatabaseBuilder(config)
+        model = builder.read_template_sfincs_offshore_model()
+
+        assert not (builder.static_path / "templates" / "offshore").exists()
+        assert model is None
 
     def test_create_sfincs_overland(self, config: ConfigModel):
         config.sfincs_offshore = None
@@ -377,19 +387,16 @@ class TestDataBaseBuilder:
         assert (builder.static_path / tide_gauge.file).exists()
 
     def test_create_tide_gauge_file_based_file_is_none(self, config: ConfigModel):
-        config.tide_gauge = (
-            TideGaugeConfigModel(
-                id=8665530,
-                ref="MSL",
-                source=TideGaugeSource.file,
-                file=None,
-                description="Charleston Cooper River Entrance",
-                location=Point(lat=32.78, lon=-79.9233),
-                max_distance=us.UnitfulLength(
-                    value=100, units=us.UnitTypesLength.miles
-                ),
-            ),
+        config.tide_gauge = TideGaugeConfigModel(
+            id=8665530,
+            ref="MSL",
+            source=TideGaugeSource.file,
+            file=None,
+            description="Charleston Cooper River Entrance",
+            location=Point(lat=32.78, lon=-79.9233),
+            max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
+
         builder = DatabaseBuilder(config)
         tide_gauge = builder.create_tide_gauge()
 

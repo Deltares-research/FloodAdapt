@@ -1655,7 +1655,7 @@ class DatabaseBuilder:
             self.fiat_model.exposure.exposure_db
         )
         crs = gdf.crs
-        sfincs_extend = self.sfincs.region
+        sfincs_extend = self.sfincs_overland_model.region
         sfincs_extend = sfincs_extend.to_crs(crs)
 
         # Clip the fiat region
@@ -1800,7 +1800,7 @@ class DatabaseBuilder:
             obs_stations["distance"] == obs_stations["distance"].min()
         ]
         distance = round(
-            closest_station.to_crs(self.sfincs.region.crs)
+            closest_station.to_crs(self.sfincs_overland_model.region.crs)
             .distance(self.sfincs_overland_model.region.geometry.item())
             .item(),
             0,
