@@ -1253,7 +1253,7 @@ class DatabaseBuilder:
 
     def create_overland_model(self) -> FloodModel:
         return FloodModel(
-            name=self.config.sfincs_overland.name,
+            name="overland",
             reference=self.config.sfincs_overland.reference,
         )
 

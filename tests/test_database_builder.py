@@ -2,6 +2,7 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from flood_adapt import Settings
@@ -99,7 +100,7 @@ class TestDataBaseBuilder:
                     relative_to_year=2020,
                 ),
                 scs=SCSModel(
-                    file=str(static_path / "scs/scs.csv"),
+                    file=str(static_path / "scs/scs_rainfall.csv"),
                     type=Scstype.type3,
                 ),
                 tide_gauge=TideGaugeConfigModel(
@@ -215,8 +216,8 @@ class TestDataBaseBuilder:
         assert benefits == expected_benefits
 
     def test_create_benefits_without_test_set_returns_none(self, config: ConfigModel):
-        builder = DatabaseBuilder(config)
         config.probabilistic_set = None
+        builder = DatabaseBuilder(config)
         benefits = builder.create_benefit_config()
 
         assert benefits is None
@@ -242,16 +243,20 @@ class TestDataBaseBuilder:
             assert (builder.static_path / expected_file).exists()
 
     def test_create_aggregation_areas_from_region(self, config: ConfigModel):
+        config.aggregation_areas = None
+
         builder = DatabaseBuilder(config)
         areas = builder.create_aggregation_areas()
 
         assert areas == config.aggregation_areas
 
     def test_create_aggregation_areas_from_fiat_model(self, config: ConfigModel):
+        config.aggregation_areas = None
+
         builder = DatabaseBuilder(config)
         areas = builder.create_aggregation_areas()
 
-        assert areas == config.aggregation_areas
+        assert areas is not None
 
     def test_create_bfe(self, config: ConfigModel):
         builder = DatabaseBuilder(config)
@@ -281,13 +286,24 @@ class TestDataBaseBuilder:
         builder = DatabaseBuilder(config)
         sfincs = builder.create_overland_model()
 
-        assert sfincs == config.sfincs_overland
+        expected_floodmodel = FloodModel(
+            name="overland",
+            reference=config.sfincs_overland.reference,
+        )
+        assert sfincs == expected_floodmodel
+        assert (builder.static_path / "templates" / "overland").exists()
 
     def test_create_sfincs_offshore(self, config: ConfigModel):
         builder = DatabaseBuilder(config)
         sfincs = builder.create_offshore_model()
 
-        assert sfincs == config.sfincs_offshore
+        expected_floodmodel = FloodModel(
+            name="offshore",
+            reference=config.sfincs_offshore.reference,
+        )
+
+        assert sfincs == expected_floodmodel
+        assert (builder.static_path / "templates" / "offshore").exists()
 
     def test_create_sfincs_offshore_no_offshore_model(self, config: ConfigModel):
         config.sfincs_offshore = None
@@ -295,21 +311,99 @@ class TestDataBaseBuilder:
         sfincs = builder.create_offshore_model()
 
         assert sfincs is None
+        assert not (builder.static_path / "templates" / "offshore").exists()
 
     def test_create_slr(self, config: ConfigModel):
         builder = DatabaseBuilder(config)
         slr = builder.create_slr()
 
-        assert slr == config.slr
+        expected_file = builder.static_path / "slr" / Path(config.slr.file).name
+        expected_slr = SlrModel(
+            file=expected_file.relative_to(builder.static_path).as_posix(),
+            relative_to_year=config.slr.relative_to_year,
+        )
+
+        assert slr == expected_slr
+        assert expected_file.exists()
+
+    def test_create_slr_returns_none(self, config: ConfigModel):
+        config.slr = None
+        builder = DatabaseBuilder(config)
+        slr = builder.create_slr()
+
+        assert slr is None
+        assert not (builder.static_path / "slr").exists()
 
     def test_create_scs(self, config: ConfigModel):
         builder = DatabaseBuilder(config)
         scs = builder.create_scs_model()
 
-        assert scs == config.scs
+        expected_file = builder.static_path / "scs" / Path(config.scs.file).name
+        expected_scs = SCSModel(
+            file=expected_file.name,
+            type=config.scs.type,
+        )
+        assert scs == expected_scs
+        assert expected_file.exists()
 
-    def test_create_tide_gauge(self, config: ConfigModel):
+    def test_create_scs_returns_none(self, config: ConfigModel):
+        config.scs = None
+        builder = DatabaseBuilder(config)
+        scs = builder.create_scs_model()
+
+        assert scs is None
+        assert not (builder.static_path / "scs").exists()
+
+    def test_create_tide_gauge_file_based(
+        self, config: ConfigModel, dummy_1d_timeseries_df: pd.DataFrame, tmp_path: Path
+    ):
+        tide_gauge_file = tmp_path / "dummy.csv"
+        dummy_1d_timeseries_df.to_csv(tide_gauge_file)
+        config.tide_gauge = TideGaugeConfigModel(
+            id=8665530,
+            ref="MSL",
+            source=TideGaugeSource.file,
+            file=str(tide_gauge_file),
+            description="Charleston Cooper River Entrance",
+            location=Point(lat=32.78, lon=-79.9233),
+            max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
+        )
         builder = DatabaseBuilder(config)
         tide_gauge = builder.create_tide_gauge()
 
         assert tide_gauge is not None
+        assert tide_gauge.source == TideGaugeSource.file
+        assert tide_gauge.file is not None
+        assert (builder.static_path / tide_gauge.file).exists()
+
+    def test_create_tide_gauge_file_based_file_is_none(self, config: ConfigModel):
+        config.tide_gauge = (
+            TideGaugeConfigModel(
+                id=8665530,
+                ref="MSL",
+                source=TideGaugeSource.file,
+                file=None,
+                description="Charleston Cooper River Entrance",
+                location=Point(lat=32.78, lon=-79.9233),
+                max_distance=us.UnitfulLength(
+                    value=100, units=us.UnitTypesLength.miles
+                ),
+            ),
+        )
+        builder = DatabaseBuilder(config)
+        tide_gauge = builder.create_tide_gauge()
+
+        assert tide_gauge is None
+
+    def test_create_tide_gauge_noaa_coops(self, config: ConfigModel):
+        builder = DatabaseBuilder(config)
+        tide_gauge = builder.create_tide_gauge()
+
+        assert tide_gauge is not None
+
+    def test_create_tide_gauge_returns_none(self, config: ConfigModel):
+        config.tide_gauge = None
+        builder = DatabaseBuilder(config)
+        tide_gauge = builder.create_tide_gauge()
+
+        assert tide_gauge is None
