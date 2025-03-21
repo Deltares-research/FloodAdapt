@@ -23,6 +23,7 @@ from shapely import Polygon
 from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
+from flood_adapt.database_builder.create_database import SviConfigModel
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
     TideGaugeSource,
@@ -171,7 +172,7 @@ class TideGaugeConfigModel(BaseModel):
     """
 
     source: TideGaugeSource
-    ref: DatumModel
+    ref: str
     description: str = ""
     id: Optional[int] = None
     file: Optional[str] = None
@@ -254,7 +255,7 @@ class ConfigModel(BaseModel):
     fiat_buildings_name: Optional[str] = "buildings"
     fiat_roads_name: Optional[str] = "roads"
     bfe: Optional[SpatialJoinModel] = None
-    svi: Optional[SviModel] = None
+    svi: Optional[SviConfigModel] = None
     road_width: Optional[float] = 5
     return_periods: list[int] = Field(default_factory=list)
 
@@ -304,11 +305,14 @@ class DatabaseBuilder:
 
     has_roads: bool = False
 
-    def __init__(self, config_path: Path):
-        self.root = config_path.parent
-        self.config = ConfigModel.read(config_path)
+    def __init__(self, config: ConfigModel):
+        self.config = config
+        if config.database_path:
+            self.root = Path(config.database_path)
+        else:
+            self.root = Path(os.getcwd())
 
-        # Read the templates
+        # Read user models and copy to templates
         self.fiat_model = self.read_template_fiat_model()
         self.sfincs_overland_model = self.read_template_sfincs_overland_model()
         self.sfincs_offshore_model = self.read_template_sfincs_offshore_model()
@@ -319,14 +323,17 @@ class DatabaseBuilder:
         # Read info that needs to be updated with other model info
         self.water_level_references = self.config.references
 
-        # Create the models
-        self.build()
+    @staticmethod
+    def from_file(config_path: Path):
+        config = ConfigModel.read(config_path)
+        return DatabaseBuilder(config)
 
     @property
     def static_path(self) -> Path:
         return self.root / "static"
 
     def build(self):
+        # Create the models
         self.make_folder_structure()
         site_model = self.create_site_config()
 
@@ -355,26 +362,52 @@ class DatabaseBuilder:
 
     ### TEMPLATE READERS ###
     def read_template_fiat_model(self) -> HydromtFiatModel:
-        fiat_template = self._check_exists_and_make_absolute(self.config.fiat)
+        user_provided = self._check_exists_and_make_absolute(self.config.fiat)
 
-        fiat_model = HydromtFiatModel(root=str(fiat_template), mode="r+")
-        fiat_model.read()
-        return fiat_model
+        # Read config model
+        HydromtFiatModel(root=str(user_provided), mode="r+").read()
+
+        # Success, so copy to db and read again
+        location_in_db = self.static_path / "templates" / "fiat"
+        shutil.copytree(user_provided, location_in_db)
+        in_db = HydromtFiatModel(root=str(location_in_db), mode="w+")
+        in_db.read()
+
+        return in_db
 
     def read_template_sfincs_overland_model(self) -> HydromtSfincsModel:
-        sfincs_template = self._check_exists_and_make_absolute(self.config.sfincs)
-        model = HydromtSfincsModel(root=str(sfincs_template), mode="r+")
-        model.read()
-
-        if model.crs is None:
+        user_provided = self._check_exists_and_make_absolute(
+            self.config.sfincs_overland.name
+        )
+        user_model = HydromtSfincsModel(root=str(user_provided), mode="r")
+        user_model.read()
+        if user_model.crs is None:
             raise ValueError("CRS is not defined in the SFINCS model.")
+        epsg = user_model.crs.to_epsg()
 
-        return model
+        location_in_db = self.static_path / "templates" / "overland"
+        shutil.copytree(user_provided, location_in_db)
+        in_db = HydromtSfincsModel(root=str(location_in_db), mode="w")
+        in_db.read(epsg=epsg)
+        return in_db
 
     def read_template_sfincs_offshore_model(self) -> Optional[HydromtSfincsModel]:
         if self.config.sfincs_offshore is None:
             return None
-        return HydromtSfincsModel(root=self.config.sfincs_offshore, mode="r+")
+        user_provided = self._check_exists_and_make_absolute(
+            self.config.sfincs_offshore.name
+        )
+        user_model = HydromtSfincsModel(root=str(user_provided), mode="r+")
+        user_model.read()
+        if user_model.crs is None:
+            raise ValueError("CRS is not defined in the SFINCS model.")
+        epsg = user_model.crs.to_epsg()
+
+        location_in_db = self.static_path / "templates" / "offshore"
+        shutil.copytree(user_provided, location_in_db)
+        in_db = HydromtSfincsModel(str(location_in_db), mode="w+")
+        in_db.read(epsg=epsg)
+        return in_db
 
     ### FIAT ###
     def create_fiat_model(self) -> FiatModel:
@@ -388,19 +421,20 @@ class DatabaseBuilder:
     def create_risk_model(self) -> RiskModel:
         return RiskModel(return_periods=self.config.return_periods)
 
-    def create_benefit_config(self) -> BenefitsModel:
+    def create_benefit_config(self) -> Optional[BenefitsModel]:
+        if self.config.probabilistic_set is None:
+            self.logger.warning(
+                "No probabilistic set found in the config, benefits will not be available."
+            )
+            return None
         return BenefitsModel(
             current_year=datetime.datetime.now().year,
             current_projection="current",
             baseline_strategy="no_measures",
-            event_set="test_set",
+            event_set=self.config.probabilistic_set,
         )
 
     def create_fiat_config(self) -> FiatConfigModel:
-        shutil.copytree(self.fiat_model.root, self.static_path / "templates" / "fiat")
-        self.fiat_model = HydromtFiatModel(
-            str(self.static_path / "templates" / "fiat"), mode="w+"
-        )
         self.update_fiat_elevation()
 
         # Make sure only csv objects have geometries
@@ -566,7 +600,7 @@ class DatabaseBuilder:
         )
         roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
         roads_geom_filename = self.fiat_model.config["exposure"]["geom"][
-            f"file{roads_ind+1}"
+            f"file{roads_ind + 1}"
         ]
         roads_path = Path(self.fiat_model.root) / roads_geom_filename
 
@@ -1096,14 +1130,12 @@ class DatabaseBuilder:
 
             rel_db_path = Path(db_file_path.relative_to(self.static_path))
             tide_gauge = TideGaugeModel(
-                reference=self.config.tide_gauge.ref.name,
+                reference=self.config.tide_gauge.ref,
                 description="observations from file stored in database",
                 source=TideGaugeSource.file,
                 file=rel_db_path,
                 units=us.UnitTypesLength.meters,
             )
-
-            self.water_level_references.datums.append(self.config.tide_gauge.ref)
 
             return tide_gauge
 
@@ -1167,14 +1199,13 @@ class DatabaseBuilder:
 
             tide_gauge = TideGaugeModel(
                 name=str(self.config.tide_gauge.id),
-                reference=self.config.tide_gauge.ref.name,
+                reference=self.config.tide_gauge.ref,
                 source=TideGaugeSource.noaa_coops,
                 description=self.config.tide_gauge.description,
                 ID=self.config.tide_gauge.id,
                 lat=self.config.tide_gauge.location.lat,
                 lon=self.config.tide_gauge.location.lon,
             )
-            self.water_level_references.datums.append(self.config.tide_gauge.ref)
             return tide_gauge
         else:
             self.logger.warning(
@@ -1185,10 +1216,6 @@ class DatabaseBuilder:
     def create_offshore_model(self) -> Optional[FloodModel]:
         if self.sfincs_offshore_model is None:
             return None
-
-        sfincs_offshore_path = self.static_path / "templates" / "offshore"
-        shutil.copytree(self.sfincs_offshore_model.root, sfincs_offshore_path)
-
         # Connect boundary points of overland to output points of offshore
         fn = Path(self.sfincs_overland_model.root) / "sfincs.bnd"
         bnd = pd.read_csv(fn, sep=" ", lineterminator="\n", header=None)
@@ -1219,9 +1246,6 @@ class DatabaseBuilder:
         )
 
     def create_overland_model(self) -> FloodModel:
-        sfincs_overland_path = self.static_path / "templates" / "overland"
-        shutil.copytree(self.sfincs_overland_model.root, sfincs_overland_path)
-
         return FloodModel(
             name=self.config.sfincs_overland.name,
             reference=self.config.sfincs_overland.reference,
@@ -1386,15 +1410,14 @@ class DatabaseBuilder:
         # Copy mandatory metric configs
         path_im_temp = templates_path.joinpath("infometrics")
         for file in path_im_temp.glob("*.toml"):
-            shutil.copy(file, path_im)
+            shutil.copy2(file, path_im)
 
         self._create_optional_infometrics(templates_path, path_im)
 
-        path = self.root.joinpath("static", "templates", "infometrics")
-        files = list(path.glob("*metrics_config*.toml"))
+        files = list(path_im.glob("*metrics_config*.toml"))
         # Update aggregation areas in metrics config
         for file in files:
-            file = path.joinpath(file)
+            file = path_im.joinpath(file)
             with open(file, "rb") as f:
                 attrs = tomli.load(f)
 
