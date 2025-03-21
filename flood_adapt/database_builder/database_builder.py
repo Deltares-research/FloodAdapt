@@ -1237,7 +1237,7 @@ class DatabaseBuilder:
         del obs_geo["geometry"]
         obs_geo["name"] = [f"bnd_pt{num:02d}" for num in range(1, len(obs_geo) + 1)]
         obs_geo.to_csv(
-            sfincs_offshore_path / "sfincs.obs",
+            fn.parent / "sfincs.obs",
             sep="\t",
             index=False,
             header=False,
