@@ -369,6 +369,8 @@ class DatabaseBuilder:
 
         # Success, so copy to db and read again
         location_in_db = self.static_path / "templates" / "fiat"
+        if location_in_db.exists():
+            shutil.rmtree(location_in_db)
         shutil.copytree(user_provided, location_in_db)
         in_db = HydromtFiatModel(root=str(location_in_db), mode="w+")
         in_db.read()
@@ -386,6 +388,8 @@ class DatabaseBuilder:
         epsg = user_model.crs.to_epsg()
 
         location_in_db = self.static_path / "templates" / "overland"
+        if location_in_db.exists():
+            shutil.rmtree(location_in_db)
         shutil.copytree(user_provided, location_in_db)
         in_db = HydromtSfincsModel(root=str(location_in_db), mode="w")
         in_db.read(epsg=epsg)
@@ -404,6 +408,8 @@ class DatabaseBuilder:
         epsg = user_model.crs.to_epsg()
 
         location_in_db = self.static_path / "templates" / "offshore"
+        if location_in_db.exists():
+            shutil.rmtree(location_in_db)
         shutil.copytree(user_provided, location_in_db)
         in_db = HydromtSfincsModel(str(location_in_db), mode="w+")
         in_db.read(epsg=epsg)

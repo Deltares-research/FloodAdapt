@@ -167,6 +167,34 @@ class TestDataBaseBuilder:
             )
             yield config
 
+    def test_read_fiat_model(self, config: ConfigModel):
+        builder = DatabaseBuilder(config)
+        builder.read_template_fiat_model()
+
+        assert (builder.static_path / "templates" / "fiat").exists()
+
+    def test_read_template_sfincs_overland_model(self, config: ConfigModel):
+        builder = DatabaseBuilder(config)
+        builder.read_template_sfincs_overland_model()
+
+        assert (builder.static_path / "templates" / "overland").exists()
+
+    def test_read_template_sfincs_offshore_model(self, config: ConfigModel):
+        builder = DatabaseBuilder(config)
+        builder.read_template_sfincs_offshore_model()
+
+        assert (builder.static_path / "templates" / "offshore").exists()
+
+    def test_read_template_sfincs_offshore_model_not_available(
+        self, config: ConfigModel
+    ):
+        config.sfincs_offshore = None
+        builder = DatabaseBuilder(config)
+        model = builder.read_template_sfincs_offshore_model()
+
+        assert not (builder.static_path / "templates" / "offshore").exists()
+        assert model is None
+
     def test_create_risk_model(self, config: ConfigModel):
         builder = DatabaseBuilder(config)
         risk = builder.create_risk_model()
@@ -247,12 +275,6 @@ class TestDataBaseBuilder:
         svi = builder.create_svi()
 
         assert svi == config.svi
-
-    def test_create_sfincs(self, config: ConfigModel):
-        builder = DatabaseBuilder(config)
-        sfincs = builder.create_sfincs()
-
-        assert sfincs == config.sfincs_overland
 
     def test_create_sfincs_overland(self, config: ConfigModel):
         config.sfincs_offshore = None
