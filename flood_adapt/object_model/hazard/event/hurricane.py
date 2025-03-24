@@ -60,18 +60,10 @@ class HurricaneEventModel(EventModel):
 
 class HurricaneEvent(Event[HurricaneEventModel]):
     _attrs_type = HurricaneEventModel
-    # track_file: Path
 
     def __init__(self, data: dict[str, Any] | HurricaneEventModel) -> None:
         super().__init__(data)
-
         self.site = Site.load_file(db_path(TopLevelDir.static) / "config" / "site.toml")
-        # self.track_file = (
-        #     db_path(
-        #         TopLevelDir.input, object_dir=self.dir_name, obj_name=self.attrs.name
-        #     )
-        #     / f"{self.attrs.track_name}.cyc"
-        # )
 
     def preprocess(self, output_dir: Path):
         spw_file = self.make_spw_file(output_dir=output_dir, recreate=False)
@@ -181,19 +173,3 @@ class HurricaneEvent(Event[HurricaneEventModel]):
         tc.track = tc.track.to_crs(epsg=4326)
 
         return tc
-
-    # def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-    #     default = (
-    #         db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
-    #         / f"{self.attrs.track_name}.cyc"
-    #     )
-    #     if self.track_file != default:
-    #         src_path = resolve_filepath(
-    #             self.dir_name,
-    #             self.attrs.name,
-    #             self.track_file,
-    #         )
-    #         path = save_file_to_database(src_path, Path(output_dir))
-    #         self.track_file = path
-
-    #     return super().save_additional(output_dir)
