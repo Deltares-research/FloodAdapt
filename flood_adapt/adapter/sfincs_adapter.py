@@ -587,7 +587,7 @@ class SfincsAdapter(IHazardAdapter):
 
         overland_reference_height = self.settings.water_level.get_datum(
             self.settings.config.overland_model.reference
-        ).total_height.convert(gui_units)
+        ).height.convert(gui_units)
 
         for ii, col in enumerate(df.columns):
             # Plot actual thing
@@ -613,7 +613,7 @@ class SfincsAdapter(IHazardAdapter):
                 ):
                     continue
                 fig.add_hline(
-                    y=wl_ref.total_height.convert(gui_units),
+                    y=wl_ref.height.convert(gui_units),
                     line_dash="dash",
                     line_color="#3ec97c",
                     annotation_text=wl_ref.name,
@@ -656,7 +656,7 @@ class SfincsAdapter(IHazardAdapter):
                 if df_gauge is not None:
                     gauge_reference_height = self.settings.water_level.get_datum(
                         self.settings.tide_gauge.reference
-                    ).total_height.convert(gui_units)
+                    ).height.convert(gui_units)
 
                     waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
 
@@ -1104,7 +1104,7 @@ class SfincsAdapter(IHazardAdapter):
             ).convert(us.UnitTypesLength.meters)
             datum_correction = self.settings.water_level.get_datum(
                 self.database.site.attrs.gui.plotting.synthetic_tide.datum
-            ).total_height.convert(us.UnitTypesLength.meters)
+            ).height.convert(us.UnitTypesLength.meters)
 
             df_ts = df_ts * conversion + datum_correction
 
@@ -1121,7 +1121,7 @@ class SfincsAdapter(IHazardAdapter):
 
             datum_height = self.settings.water_level.get_datum(
                 self.settings.tide_gauge.reference
-            ).total_height.convert(us.UnitTypesLength.meters)
+            ).height.convert(us.UnitTypesLength.meters)
 
             df_ts = conversion * df_ts + datum_height
 
@@ -1157,7 +1157,7 @@ class SfincsAdapter(IHazardAdapter):
             # Datum
             datum_correction = self.settings.water_level.get_datum(
                 self.settings.config.offshore_model.reference
-            ).total_height.convert(us.UnitTypesLength.meters)
+            ).height.convert(us.UnitTypesLength.meters)
             df_ts += datum_correction
 
             # Already in meters since it was produced by SFINCS so no conversion needed
@@ -1398,7 +1398,7 @@ class SfincsAdapter(IHazardAdapter):
         # Datum
         sfincs_overland_reference_height = self.settings.water_level.get_datum(
             self.settings.config.overland_model.reference
-        ).total_height.convert(us.UnitTypesLength.meters)
+        ).height.convert(us.UnitTypesLength.meters)
 
         df_ts -= sfincs_overland_reference_height
 
@@ -1444,14 +1444,12 @@ class SfincsAdapter(IHazardAdapter):
         if not sb.flow_boundary_points:
             raise ValueError("No flow boundary points found.")
 
-        offshore_datum = self.settings.water_level.get_datum(
-            self.settings.config.offshore_model.reference
-        )
-
-        if (datum_correction := offshore_datum.correction) is not None:
-            correction = datum_correction.convert(us.UnitTypesLength.meters)
+        if self.settings.config.offshore_model.vertical_offset:
+            correction = self.settings.config.offshore_model.vertical_offset.convert(
+                us.UnitTypesLength.meters
+            )
         else:
-            correction = 0
+            correction = 0.0
 
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
