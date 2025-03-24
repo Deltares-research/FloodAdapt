@@ -306,7 +306,7 @@ class TestDataBaseBuilder:
 
         # Act
         builder = DatabaseBuilder(config)
-        areas = builder.create_aggregation_areas()
+        _areas = builder.create_aggregation_areas()
 
         # Assert
         # TODO asserts

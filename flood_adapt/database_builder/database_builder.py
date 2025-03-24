@@ -340,7 +340,7 @@ class DatabaseBuilder:
         site = Site(site_config=site_model)
         site.save(self.static_path / "config" / "site.toml")
 
-    def create_standard_objects(self):
+    def create_standard_objects(self) -> list:
         NO_MEASURES = Strategy(
             StrategyModel(
                 name="no_measures",
@@ -359,6 +359,7 @@ class DatabaseBuilder:
         EVENT_SET = None
 
         # TODO read db + save objects
+        return [NO_MEASURES, PROJECTION, EVENT_SET]
 
     ### TEMPLATE READERS ###
     def read_template_fiat_model(self) -> HydromtFiatModel:
