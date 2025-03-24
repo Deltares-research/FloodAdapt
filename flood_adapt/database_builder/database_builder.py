@@ -303,14 +303,14 @@ class ConfigModel(BaseModel):
 class DatabaseBuilder:
     logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 
-    has_roads: bool = False
+    _has_roads: bool = False
 
     def __init__(self, config: ConfigModel):
         self.config = config
         if config.database_path:
             self.root = Path(config.database_path)
         else:
-            self.root = Path(os.getcwd())
+            self.root = Path(os.getcwd() / self.config.name)
 
         # Read user models and copy to templates
         self.fiat_model = self.read_template_fiat_model()
@@ -641,7 +641,9 @@ class DatabaseBuilder:
         return None  # TODO
 
     def create_footprints(self) -> Optional[Path]:
+        # TODO @panos check this function
         if isinstance(self.config.building_footprints, SpatialJoinModel):
+            # Use the provided building footprints
             building_footprints_file = self._check_exists_and_make_absolute(
                 self.config.building_footprints.file
             )
@@ -668,6 +670,7 @@ class DatabaseBuilder:
             footprints_path = fiat_path / footprints["file"]
 
             if footprints_path.exists():
+                # TODO @panos check if we need to do something if this doesnt exist
                 if not check_col:
                     self.logger.error(
                         f"Exposure csv is missing the 'BF_FID' column to connect to the footprints located at {footprints_path}."
@@ -690,7 +693,7 @@ class DatabaseBuilder:
             # TODO @panos what to return here?
 
         # Other methods
-        if self.config.building_footprints == "OSM":
+        if self.config.building_footprints == FootprintsOptions.OSM:
             self.logger.info(
                 "Building footprint data will be downloaded from Open Street Maps."
             )
@@ -755,6 +758,7 @@ class DatabaseBuilder:
         )
 
     def create_aggregation_areas(self) -> list[AggregationModel]:
+        # TODO @panos check this function
         aggregation_areas = []
 
         if self.config.aggregation_areas:
@@ -912,21 +916,22 @@ class DatabaseBuilder:
         elif "SVI" in self.fiat_model.exposure.exposure_db.columns:
             self.logger.info("'SVI' column present in the FIAT exposure csv.")
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-            if "SVI" in [attr["name"] for attr in add_attrs]:
-                ind = [attr["name"] for attr in add_attrs].index("SVI")
-                svi = add_attrs[ind]
-                svi_path = self.static_path / "templates" / "fiat" / svi["file"]
-                self.logger.info(
-                    f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['file']}"
-                )
-                # Save site attributes
-                return SVIModel(
-                    geom=str(Path(svi_path.relative_to(self.static_path)).as_posix()),
-                    field_name=svi["field_name"],
-                )
-            else:
+            if "SVI" not in [attr["name"] for attr in add_attrs]:
                 self.logger.warning("No SVI map found!")
                 return None
+
+            ind = [attr["name"] for attr in add_attrs].index("SVI")
+            svi = add_attrs[ind]
+            svi_path = self.static_path / "templates" / "fiat" / svi["file"]
+            self.logger.info(
+                f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['file']}"
+            )
+            # Save site attributes
+            return SVIModel(
+                geom=str(Path(svi_path.relative_to(self.static_path)).as_posix()),
+                field_name=svi["field_name"],
+            )
+
         else:
             self.logger.warning(
                 "'SVI' column not present in the FIAT exposure csv. Vulnerability type infometrics cannot be produced."
@@ -1182,7 +1187,6 @@ class DatabaseBuilder:
                     height=us.UnitfulLength(
                         value=station["msl"], units=station["units"]
                     ).transform(self.unit_system.default_length_units),
-                    # TODO check/add correction
                 )
                 self.water_level_references.datums.append(msl)
 
@@ -1458,12 +1462,12 @@ class DatabaseBuilder:
             return
 
         # Check what type of infographics should be used
-        if self.config.unit_system == "imperial":
+        if self.config.unit_system == UnitSystems.imperial:
             metrics_folder_name = "US_NSI"
             self.logger.info(
                 "Default NSI infometrics and infographics will be created."
             )
-        elif self.config.unit_system == "metric":
+        elif self.config.unit_system == UnitSystems.metric:
             metrics_folder_name = "OSM"
             self.logger.info(
                 "Default OSM infometrics and infographics will be created."

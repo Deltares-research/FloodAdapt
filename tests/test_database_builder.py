@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 import pandas as pd
 import pytest
+import tomli
 
 from flood_adapt import Settings
 from flood_adapt import unit_system as us
@@ -479,6 +480,99 @@ class TestDataBaseBuilder:
 
         # Assert
         assert tide_gauge is None
+
+    def test_create_infometrics(self, mock_config: ConfigModel):
+        # Arrange
+        mock_config.svi = SviConfigModel(
+            file=str(self.templates_path / "fiat/svi/CDC_svi_2020.gpkg"),
+            field_name="SVI",
+            threshold=0.5,
+        )
+        mock_config.fiat_buildings_name = "buildings"
+
+        # Create dummy template files
+        templates_path = self.templates_path / "infometrics"
+        templates_path.mkdir(parents=True)
+        for file_name in ["metrics_config.toml", "metrics_config_risk.toml"]:
+            with open(templates_path / file_name, "w") as f:
+                f.write(
+                    """
+                    [queries]
+                    long_name = "Damage in $"
+                    filter = "SVI > SVI_threshold"
+                    """
+                )
+
+        # Act
+        builder = DatabaseBuilder(mock_config)
+        builder.create_infometrics()
+
+        # Assert
+        path_im = builder.root / "static" / "templates" / "infometrics"
+        assert path_im.exists()
+        for file_name in ["metrics_config.toml", "metrics_config_risk.toml"]:
+            file_path = path_im / file_name
+            assert file_path.exists()
+            with open(file_path, "rb") as f:
+                attrs = tomli.load(f)
+                assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+                assert all(
+                    "road" not in query["name"].lower() for query in attrs["queries"]
+                )
+                assert all(
+                    query["long_name"] == "Damage in USD" for query in attrs["queries"]
+                )
+                assert all(query["filter"] == "SVI > 0.5" for query in attrs["queries"])
+
+    def test_create_infometrics_no_svi(self, mock_config: ConfigModel):
+        # Arrange
+        mock_config.svi = None
+        mock_config.fiat_buildings_name = "buildings"
+        builder = DatabaseBuilder(mock_config)
+        builder.site_attrs = {
+            "fiat": {
+                "config": Mock(
+                    aggregation=[Mock(name="aggr_lvl_1"), Mock(name="aggr_lvl_2")],
+                    damage_unit="USD",
+                )
+            }
+        }
+        builder._has_roads = False
+
+        # Create dummy template files
+        templates_path = tmp_path / "templates" / "infometrics"
+        templates_path.mkdir(parents=True)
+        for file_name in ["metrics_config.toml", "metrics_config_risk.toml"]:
+            with open(templates_path / file_name, "w") as f:
+                f.write(
+                    """
+                    [queries]
+                    long_name = "Damage in $"
+                    filter = "SVI > SVI_threshold"
+                    """
+                )
+
+        # Act
+        builder.create_infometrics()
+
+        # Assert
+        path_im = builder.root / "static" / "templates" / "infometrics"
+        assert path_im.exists()
+        for file_name in ["metrics_config.toml", "metrics_config_risk.toml"]:
+            file_path = path_im / file_name
+            assert file_path.exists()
+            with open(file_path, "rb") as f:
+                attrs = tomli.load(f)
+                assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+                assert all(
+                    "road" not in query["name"].lower() for query in attrs["queries"]
+                )
+                assert all(
+                    query["long_name"] == "Damage in USD" for query in attrs["queries"]
+                )
+                assert all(
+                    "SVI_threshold" not in query["filter"] for query in attrs["queries"]
+                )
 
     def test_build(self, full_config: ConfigModel):
         # Arrange
