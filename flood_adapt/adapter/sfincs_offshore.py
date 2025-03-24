@@ -36,7 +36,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         self.scenario = scenario
         if isinstance(event, EventSet):
             raise ValueError(
-                "OffshoreSfincsHandler does not support EventSets. Provide the sub events direcly "
+                "OffshoreSfincsHandler does not support EventSets. Provide the sub events directly "
             )
         self.event = event
 
