@@ -83,13 +83,10 @@ class HurricaneEvent(Event[HurricaneEventModel]):
 
         Parameters
         ----------
-        cyc_file : Path, optional
-            Path to the cyc file, if None the .cyc file in the event's input directory is used
+        output_dir : Path
+            The directory where the spiderweb file is saved (or copied to if it already exists and recreate is False)
         recreate : bool, optional
             If True, the spiderweb file is recreated even if it already exists, by default False
-        output_dir : Path, optional
-            The directory where the spiderweb file is saved (or copied to if it already exists and recreate is False)
-            By default it is saved in the same directory as the cyc file
 
         Returns
         -------
