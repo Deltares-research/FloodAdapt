@@ -21,7 +21,11 @@ from flood_adapt.database_builder.database_builder import (
 )
 from flood_adapt.object_model.hazard.interface.forcing import Scstype
 from flood_adapt.object_model.hazard.interface.tide_gauge import TideGaugeSource
-from flood_adapt.object_model.interface.config.fiat import BenefitsModel, BFEModel
+from flood_adapt.object_model.interface.config.fiat import (
+    BenefitsModel,
+    BFEModel,
+    SVIModel,
+)
 from flood_adapt.object_model.interface.config.sfincs import (
     DatumModel,
     FloodModel,
@@ -159,8 +163,8 @@ class TestDataBaseBuilder:
                     field_name="bfe",
                 ),
                 svi=SviConfigModel(
-                    file=str(static_path / "svi/svi.geojson"),
-                    field_name="svi",
+                    file=str(static_path / "templates/fiat/svi/CDC_svi_2020.gpkg"),
+                    field_name="SVI",
                     threshold=0.5,
                 ),
                 road_width=5,
@@ -266,7 +270,16 @@ class TestDataBaseBuilder:
         builder = DatabaseBuilder(config)
         svi = builder.create_svi()
 
-        assert svi == config.svi
+        expected_svi_path = (
+            builder.static_path / "templates" / "fiat" / "svi" / "svi.gpkg"
+        )
+        expected_svi = SVIModel(
+            geom=expected_svi_path.relative_to(builder.static_path).as_posix(),
+            field_name="SVI",
+        )
+        assert svi is not None
+        assert expected_svi_path.exists()
+        assert svi == expected_svi
 
     ### Sfincs ###
     def test_read_template_sfincs_overland_model(self, config: ConfigModel):
