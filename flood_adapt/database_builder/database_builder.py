@@ -755,51 +755,80 @@ class DatabaseBuilder:
         )
 
     def create_aggregation_areas(self) -> list[AggregationModel]:
-        # If there are no aggregation areas make a schematic one from the region file
-        # TODO make aggregation areas not mandatory
-        # TODO can we use Hydromt-FIAT
         aggregation_areas = []
 
-        # read the aggregation areas from the config
         if self.config.aggregation_areas:
-            build_ind = self._get_fiat_building_index()
+            # Use the aggregation areas from the config
             for aggr in self.config.aggregation_areas:
                 # Add column in FIAT
                 aggr_name = Path(aggr.file).stem
                 exposure_csv = self.fiat_model.exposure.exposure_db
                 buildings_joined, aggr_areas = self.spatial_join(
-                    self.fiat_model.exposure.exposure_geoms[build_ind],
-                    self._check_exists_and_make_absolute(aggr.file),
+                    self.fiat_model.exposure.exposure_geoms[
+                        self._get_fiat_building_index()
+                    ],
+                    self._check_path(aggr.file),
                     aggr.field_name,
                     rename=_FIAT_COLUMNS.aggregation_label.format(name=aggr_name),
                 )
-                aggr_path = (
-                    Path(self.fiat_model.root)
-                    / "exposure"
-                    / "aggregation_areas"
-                    / f"{Path(aggr.file).stem}.gpkg"
+                aggr_path = Path(self.fiat_model.root).joinpath(
+                    "exposure", "aggregation_areas", f"{Path(aggr.file).stem}.gpkg"
                 )
                 aggr_areas.to_file(aggr_path)
                 exposure_csv = exposure_csv.merge(
                     buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
                 )
                 self.fiat_model.exposure.exposure_db = exposure_csv
-                aggregation_areas.append(
-                    AggregationModel(
-                        name=aggr_name,
-                        file=aggr_path.relative_to(self.fiat_model.root),
-                        field_name=_FIAT_COLUMNS.aggregation_label.format(
+                self.fiat_model.spatial_joins["aggregation_areas"].append(
+                    {
+                        "name": aggr_name,
+                        "file": aggr_path.relative_to(self.fiat_model.root),
+                        "field_name": _FIAT_COLUMNS.aggregation_label.format(
                             name=aggr_name
                         ),
-                        equity=None,
-                    )
+                        "equity": None,
+                    }
                 )
             return aggregation_areas
 
-        # Use region file as a mock aggregation area
-        if not self.fiat_model.spatial_joins["aggregation_areas"]:
+        elif self.fiat_model.spatial_joins["aggregation_areas"]:
+            # Use the aggregation areas from the FIAT model
+            for aggr_0 in self.fiat_model.spatial_joins["aggregation_areas"]:
+                if aggr_0["equity"] is not None:
+                    equity_config = EquityModel(
+                        census_data=str(
+                            self.static_path.joinpath(
+                                "templates", "fiat", aggr_0["equity"]["census_data"]
+                            )
+                            .relative_to(self.static_path)
+                            .as_posix()
+                        ),
+                        percapitaincome_label=aggr_0["equity"]["percapitaincome_label"],
+                        totalpopulation_label=aggr_0["equity"]["totalpopulation_label"],
+                    )
+                else:
+                    equity_config = None
+
+                aggr = AggregationModel(
+                    name=aggr_0["name"],
+                    file=str(
+                        self.static_path.joinpath("templates", "fiat", aggr_0["file"])
+                        .relative_to(self.static_path)
+                        .as_posix()
+                    ),
+                    field_name=aggr_0["field_name"],
+                    equity=equity_config,
+                )
+                aggregation_areas.append(aggr)
+
+            self.logger.info(
+                f"The aggregation types {[aggr['name'] for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
+            )
+            return aggregation_areas
+        else:
+            # No config provided, no aggr areas in the model -> try to use the region file as a mock aggregation area
             exposure_csv = self.fiat_model.exposure.exposure_db
-            region_path = Path(self.fiat_model.root) / "geoms" / "region.geojson"
+            region_path = Path(self.fiat_model.root).joinpath("geoms", "region.geojson")
             if not region_path.exists():
                 msg = "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
                 self.logger.error(msg)
@@ -808,18 +837,19 @@ class DatabaseBuilder:
             region = gpd.read_file(region_path)
             region = region.explode().reset_index()
             region["aggr_id"] = ["region_" + str(i) for i in np.arange(len(region)) + 1]
-            aggregation_path = (
-                Path(self.fiat_model.root) / "aggregation_areas" / "region.geojson"
+            aggregation_path = Path(self.fiat_model.root).joinpath(
+                "aggregation_areas", "region.geojson"
             )
-            aggregation_path.parent.mkdir(parents=True, exist_ok=True)
+            if not aggregation_path.parent.exists():
+                aggregation_path.parent.mkdir()
+
             region.to_file(aggregation_path)
-            aggregation_areas.append(
-                AggregationModel(
-                    name="region",
-                    file=str(aggregation_path.relative_to(self.static_path).as_posix()),
-                    field_name="aggr_id",
-                )
+            aggr = AggregationModel(
+                name="region",
+                file=str(aggregation_path.relative_to(self.static_path).as_posix()),
+                field_name="aggr_id",
             )
+            aggregation_areas.append(aggr)
 
             # Add column in FIAT
             buildings_joined, _ = self.spatial_join(
@@ -838,43 +868,6 @@ class DatabaseBuilder:
                 "No aggregation areas were available in the FIAT model. The region file will be used as a mock aggregation area."
             )
             return aggregation_areas
-
-        # read the aggregation areas from the FIAT model
-        for aggr_0 in self.fiat_model.spatial_joins["aggregation_areas"]:
-            if aggr_0["equity"] is not None:
-                equity_config = EquityModel(
-                    census_data=str(
-                        (
-                            self.static_path
-                            / "templates"
-                            / "fiat"
-                            / aggr_0["equity"]["census_data"]
-                        )
-                        .relative_to(self.static_path)
-                        .as_posix()
-                    ),
-                    percapitaincome_label=aggr_0["equity"]["percapitaincome_label"],
-                    totalpopulation_label=aggr_0["equity"]["totalpopulation_label"],
-                )
-            else:
-                equity_config = None
-
-            aggr = AggregationModel(
-                name=aggr_0["name"],
-                file=str(
-                    self.static_path
-                    / "templates"
-                    / "fiat"
-                    / aggr_0["file"].relative_to(self.static_path).as_posix()
-                ),
-                field_name=aggr_0["field_name"],
-                equity=equity_config,
-            )
-            aggregation_areas.append(aggr)
-            self.logger.info(
-                f"The aggregation types {[aggr['name'] for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
-            )
-        return aggregation_areas
 
     def create_svi(self) -> Optional[SVIModel]:
         if self.config.svi:
