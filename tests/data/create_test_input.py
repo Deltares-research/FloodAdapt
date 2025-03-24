@@ -31,6 +31,7 @@ from flood_adapt.object_model.hazard.forcing.discharge import (
 from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
+    RainfallTrack,
 )
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     SurgeModel,
@@ -38,7 +39,11 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.wind import WindConstant, WindMeteo
+from flood_adapt.object_model.hazard.forcing.wind import (
+    WindConstant,
+    WindMeteo,
+    WindTrack,
+)
 from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType, ShapeType
 from flood_adapt.object_model.hazard.interface.models import TimeModel
@@ -766,10 +771,15 @@ def _create_single_events():
                     )
                 ],
                 ForcingType.WATERLEVEL: [WaterlevelModel()],
+                ForcingType.WIND: [
+                    WindTrack(path=DATA_DIR / "cyclones" / "FLORENCE.cyc")
+                ],
+                ForcingType.RAINFALL: [
+                    RainfallTrack(path=DATA_DIR / "cyclones" / "FLORENCE.cyc")
+                ],
             },
         )
     )
-    FLORENCE.track_file = DATA_DIR / "cyclones" / "FLORENCE.cyc"
 
     KINGTIDE_NOV2021 = HistoricalEvent(
         HistoricalEventModel(
@@ -820,81 +830,16 @@ def _create_single_events():
 
 
 def _create_event_set(name: str) -> EventSet:
-    def _create_synthetic_event(name: str) -> SyntheticEvent:
-        return SyntheticEvent(
-            SyntheticEventModel(
-                name=name,
-                time=TimeModel(),
-                forcings={
-                    ForcingType.WIND: [
-                        WindConstant(
-                            speed=us.UnitfulVelocity(
-                                value=5, units=us.UnitTypesVelocity.mps
-                            ),
-                            direction=us.UnitfulDirection(
-                                value=60, units=us.UnitTypesDirection.degrees
-                            ),
-                        )
-                    ],
-                    ForcingType.RAINFALL: [
-                        RainfallConstant(
-                            intensity=us.UnitfulIntensity(
-                                value=2, units=us.UnitTypesIntensity.mm_hr
-                            )
-                        )
-                    ],
-                    ForcingType.DISCHARGE: [
-                        DischargeConstant(
-                            river=RiverModel(
-                                name="cooper",
-                                description="Cooper River",
-                                x_coordinate=595546.3,
-                                y_coordinate=3675590.6,
-                                mean_discharge=us.UnitfulDischarge(
-                                    value=5000, units=us.UnitTypesDischarge.cfs
-                                ),
-                            ),
-                            discharge=us.UnitfulDischarge(
-                                value=5000, units=us.UnitTypesDischarge.cfs
-                            ),
-                        )
-                    ],
-                    ForcingType.WATERLEVEL: [
-                        WaterlevelSynthetic(
-                            surge=SurgeModel(
-                                timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
-                                    shape_type=ShapeType.triangle,
-                                    duration=us.UnitfulTime(
-                                        value=1, units=us.UnitTypesTime.days
-                                    ),
-                                    peak_time=us.UnitfulTime(
-                                        value=8, units=us.UnitTypesTime.hours
-                                    ),
-                                    peak_value=us.UnitfulLength(
-                                        value=1, units=us.UnitTypesLength.meters
-                                    ),
-                                )
-                            ),
-                            tide=TideModel(
-                                harmonic_amplitude=us.UnitfulLength(
-                                    value=1, units=us.UnitTypesLength.meters
-                                ),
-                                harmonic_phase=us.UnitfulTime(
-                                    value=0, units=us.UnitTypesTime.hours
-                                ),
-                            ),
-                        )
-                    ],
-                },
-            )
-        )
-
     sub_event_models: List[SubEventModel] = []
     sub_events: List[IEvent] = []
 
-    for i in [1, 39, 78]:
-        sub_events.append(_create_synthetic_event(name=f"subevent_{i:04d}"))
-        sub_event_models.append(SubEventModel(name=f"subevent_{i:04d}", frequency=i))
+    sub_events.append(_create_synthetic_event(name=f"subevent_{1:04d}"))
+    sub_event_models.append(SubEventModel(name=f"subevent_{1:04d}", frequency=1))
+
+    sub_events.append(_create_hurricane_event(name=f"subevent_hurricane{78:04d}"))
+    sub_event_models.append(
+        SubEventModel(name=f"subevent_hurricane{78:04d}", frequency=78)
+    )
 
     return EventSet(
         data=EventSetModel(
@@ -902,6 +847,108 @@ def _create_event_set(name: str) -> EventSet:
             sub_events=sub_event_models,
         ),
         sub_events=sub_events,
+    )
+
+
+def _create_synthetic_event(name: str) -> SyntheticEvent:
+    return SyntheticEvent(
+        SyntheticEventModel(
+            name=name,
+            time=TimeModel(),
+            forcings={
+                ForcingType.WIND: [
+                    WindConstant(
+                        speed=us.UnitfulVelocity(
+                            value=5, units=us.UnitTypesVelocity.mps
+                        ),
+                        direction=us.UnitfulDirection(
+                            value=60, units=us.UnitTypesDirection.degrees
+                        ),
+                    )
+                ],
+                ForcingType.RAINFALL: [
+                    RainfallConstant(
+                        intensity=us.UnitfulIntensity(
+                            value=2, units=us.UnitTypesIntensity.mm_hr
+                        )
+                    )
+                ],
+                ForcingType.DISCHARGE: [
+                    DischargeConstant(
+                        river=RiverModel(
+                            name="cooper",
+                            description="Cooper River",
+                            x_coordinate=595546.3,
+                            y_coordinate=3675590.6,
+                            mean_discharge=us.UnitfulDischarge(
+                                value=5000, units=us.UnitTypesDischarge.cfs
+                            ),
+                        ),
+                        discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
+                        ),
+                    )
+                ],
+                ForcingType.WATERLEVEL: [
+                    WaterlevelSynthetic(
+                        surge=SurgeModel(
+                            timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                                shape_type=ShapeType.triangle,
+                                duration=us.UnitfulTime(
+                                    value=1, units=us.UnitTypesTime.days
+                                ),
+                                peak_time=us.UnitfulTime(
+                                    value=8, units=us.UnitTypesTime.hours
+                                ),
+                                peak_value=us.UnitfulLength(
+                                    value=1, units=us.UnitTypesLength.meters
+                                ),
+                            )
+                        ),
+                        tide=TideModel(
+                            harmonic_amplitude=us.UnitfulLength(
+                                value=1, units=us.UnitTypesLength.meters
+                            ),
+                            harmonic_phase=us.UnitfulTime(
+                                value=0, units=us.UnitTypesTime.hours
+                            ),
+                        ),
+                    )
+                ],
+            },
+        )
+    )
+
+
+def _create_hurricane_event(name: str) -> HurricaneEvent:
+    cyc_file = DATA_DIR / "cyclones" / "IAN.cyc"
+    return HurricaneEvent(
+        data=HurricaneEventModel(
+            name=name,
+            time=TimeModel(),
+            track_name="IAN",
+            forcings={
+                ForcingType.WATERLEVEL: [WaterlevelModel()],
+                ForcingType.WIND: [WindTrack(path=cyc_file)],
+                ForcingType.RAINFALL: [RainfallTrack(path=cyc_file)],
+                ForcingType.DISCHARGE: [
+                    DischargeConstant(
+                        river=RiverModel(
+                            name="cooper",
+                            description="Cooper River",
+                            x_coordinate=595546.3,
+                            y_coordinate=3675590.6,
+                            mean_discharge=us.UnitfulDischarge(
+                                value=5000, units=us.UnitTypesDischarge.cfs
+                            ),
+                        ),
+                        discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
+                        ),
+                    ),
+                ],
+            },
+        )
     )
 
 

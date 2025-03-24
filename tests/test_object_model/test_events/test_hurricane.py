@@ -59,14 +59,14 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
             },
         ),
     )
-    return event, cyc_file
+    return event
 
 
 @pytest.fixture()
 def setup_hurricane_scenario(
     test_db: IDatabase, setup_hurricane_event: tuple[HurricaneEvent, Path]
 ) -> tuple[Scenario, HurricaneEvent]:
-    event, cyc_file = setup_hurricane_event
+    event = setup_hurricane_event
     scn = Scenario(
         ScenarioModel(
             name="test_scenario",
@@ -76,46 +76,46 @@ def setup_hurricane_scenario(
         )
     )
     test_db.events.save(event)
-    shutil.copy2(cyc_file, test_db.events.input_path / event.attrs.name / cyc_file.name)
     test_db.scenarios.save(scn)
     return scn, event
 
 
 class TestHurricaneEvent:
     def test_save_event_toml_and_track_file(
-        self, setup_hurricane_event: tuple[HurricaneEvent, Path], tmp_path: Path
+        self, setup_hurricane_event: HurricaneEvent, tmp_path: Path
     ):
         path = tmp_path / "test_event.toml"
-        event, cyc_file = setup_hurricane_event
+        event = setup_hurricane_event
 
         event.save(path)
 
+        cyc_file = path.parent / f"{event.attrs.track_name}.cyc"
         assert path.exists()
-        assert (path.parent / cyc_file.name).exists()
+        assert cyc_file.exists()
 
-    def test_load_file(
-        self, setup_hurricane_event: tuple[HurricaneEvent, Path], tmp_path: Path
-    ):
+    def test_load_file(self, setup_hurricane_event: HurricaneEvent, tmp_path: Path):
         path = tmp_path / "test_event.toml"
-        saved_event, cyc_file = setup_hurricane_event
+        saved_event = setup_hurricane_event
         saved_event.save(path)
+        cyc_file = path.parent / f"{saved_event.attrs.track_name}.cyc"
         assert path.exists()
-        assert (path.parent / cyc_file.name).exists()
+        assert cyc_file.exists()
 
         loaded_event = HurricaneEvent.load_file(path)
 
         assert loaded_event == saved_event
 
     def test_load_file_raises_when_files_are_missing(
-        self, setup_hurricane_event: tuple[HurricaneEvent, Path], tmp_path: Path
+        self, setup_hurricane_event: HurricaneEvent, tmp_path: Path
     ):
         path = tmp_path / "test_event.toml"
-        saved_event, cyc_file = setup_hurricane_event
+        saved_event = setup_hurricane_event
         saved_event.save(path)
         assert path.exists()
+        cyc_file = path.parent / f"{saved_event.attrs.track_name}.cyc"
 
-        (path.parent / cyc_file.name).unlink()
-        assert not (path.parent / cyc_file.name).exists()
+        cyc_file.unlink()
+        assert not cyc_file.exists()
 
         with pytest.raises(FileNotFoundError) as e:
             HurricaneEvent.load_file(path)
@@ -124,13 +124,12 @@ class TestHurricaneEvent:
 
     def test_make_spw_file_with_args(
         self,
-        setup_hurricane_event: tuple[HurricaneEvent, Path],
+        setup_hurricane_event: HurricaneEvent,
     ):
         # Arrange
         spw_file = Path(tempfile.gettempdir()) / "IAN.spw"
-        hurricane_event, cyc_file = setup_hurricane_event
+        hurricane_event = setup_hurricane_event
         hurricane_event.attrs.track_name = "IAN"
-        hurricane_event.track_file = cyc_file
 
         # Act
         hurricane_event.make_spw_file(recreate=True, output_dir=spw_file.parent)
@@ -139,15 +138,15 @@ class TestHurricaneEvent:
         assert spw_file.exists()
 
     def test_make_spw_file_no_args(
-        self, setup_hurricane_event: tuple[HurricaneEvent, Path], test_db: IDatabase
+        self, setup_hurricane_event: HurricaneEvent, test_db: IDatabase
     ):
         # Arrange
-        hurricane_event, cyc_file = setup_hurricane_event
+        hurricane_event = setup_hurricane_event
         spw_dir = test_db.events.input_path / hurricane_event.attrs.name
         spw_file = spw_dir / "IAN.spw"
         hurricane_event.attrs.track_name = "IAN"
         test_db.events.save(hurricane_event)
-
+        cyc_file = TEST_DATA_DIR / "IAN.cyc"
         shutil.copy2(
             cyc_file,
             test_db.events.input_path / hurricane_event.attrs.name / "IAN.cyc",
@@ -160,15 +159,15 @@ class TestHurricaneEvent:
         assert spw_file.exists()
 
     def test_save_additional_saves_cyc_file(
-        self, setup_hurricane_event: tuple[HurricaneEvent, Path]
+        self, setup_hurricane_event: HurricaneEvent
     ):
         # Arrange
-        event, cyc_file = setup_hurricane_event
-        event.track_file = cyc_file
+        event = setup_hurricane_event
         toml_path = Path(tempfile.gettempdir()) / "test_event.toml"
 
         # Act
         event.save_additional(toml_path.parent)
 
         # Assert
-        assert (toml_path.parent / cyc_file.name).exists()
+        cyc_file = toml_path.parent / f"{event.attrs.track_name}.cyc"
+        assert cyc_file.exists()

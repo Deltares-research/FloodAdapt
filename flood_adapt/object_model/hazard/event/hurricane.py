@@ -22,7 +22,6 @@ from flood_adapt.object_model.interface.path_builder import (
     db_path,
 )
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
 class TranslationModel(BaseModel):
@@ -61,18 +60,18 @@ class HurricaneEventModel(EventModel):
 
 class HurricaneEvent(Event[HurricaneEventModel]):
     _attrs_type = HurricaneEventModel
-    track_file: Path
+    # track_file: Path
 
     def __init__(self, data: dict[str, Any] | HurricaneEventModel) -> None:
         super().__init__(data)
 
         self.site = Site.load_file(db_path(TopLevelDir.static) / "config" / "site.toml")
-        self.track_file = (
-            db_path(
-                TopLevelDir.input, object_dir=self.dir_name, obj_name=self.attrs.name
-            )
-            / f"{self.attrs.track_name}.cyc"
-        )
+        # self.track_file = (
+        #     db_path(
+        #         TopLevelDir.input, object_dir=self.dir_name, obj_name=self.attrs.name
+        #     )
+        #     / f"{self.attrs.track_name}.cyc"
+        # )
 
     def preprocess(self, output_dir: Path):
         spw_file = self.make_spw_file(output_dir=output_dir, recreate=False)
@@ -105,8 +104,24 @@ class HurricaneEvent(Event[HurricaneEventModel]):
         Path
             the path to the created spiderweb file
         """
-        spw_file = output_dir / f"{self.attrs.track_name}.spw"
+        track_forcings = [
+            forcing
+            for forcing in self.get_forcings()
+            if forcing.source == ForcingSource.TRACK
+        ]
+        if not track_forcings:
+            raise ValueError("Cannot create spw file: no track forcing found")
 
+        track_file = None
+        for track_forcing in track_forcings:
+            if track_forcing.path is not None:
+                track_file = track_forcing.path
+                break
+
+        if track_file is None:
+            raise ValueError("Cannot create spw file: track forcing path is None")
+
+        spw_file = output_dir / f"{self.attrs.track_name}.spw"
         if spw_file.exists():
             if recreate:
                 os.remove(spw_file)
@@ -119,7 +134,7 @@ class HurricaneEvent(Event[HurricaneEventModel]):
 
         # Initialize the tropical cyclone
         tc = TropicalCyclone()
-        tc.read_track(filename=self.track_file, fmt="ddb_cyc")
+        tc.read_track(filename=str(track_file), fmt="ddb_cyc")
 
         # Alter the track of the tc if necessary
         if not math.isclose(
@@ -167,18 +182,18 @@ class HurricaneEvent(Event[HurricaneEventModel]):
 
         return tc
 
-    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        default = (
-            db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
-            / f"{self.attrs.track_name}.cyc"
-        )
-        if self.track_file != default:
-            src_path = resolve_filepath(
-                self.dir_name,
-                self.attrs.name,
-                self.track_file,
-            )
-            path = save_file_to_database(src_path, Path(output_dir))
-            self.track_file = path
+    # def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+    #     default = (
+    #         db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+    #         / f"{self.attrs.track_name}.cyc"
+    #     )
+    #     if self.track_file != default:
+    #         src_path = resolve_filepath(
+    #             self.dir_name,
+    #             self.attrs.name,
+    #             self.track_file,
+    #         )
+    #         path = save_file_to_database(src_path, Path(output_dir))
+    #         self.track_file = path
 
-        return super().save_additional(output_dir)
+    #     return super().save_additional(output_dir)

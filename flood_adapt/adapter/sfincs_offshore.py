@@ -11,6 +11,7 @@ from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
 from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
 from flood_adapt.object_model.hazard.forcing.wind import WindMeteo
+from flood_adapt.object_model.hazard.interface.events import IEvent, Mode
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWind,
@@ -28,21 +29,22 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
     logger = FloodAdaptLogging.getLogger("OffshoreSfincsAdapter")
     template_path: Path
 
-    def __init__(self) -> None:
+    def __init__(self, scenario: IScenario, event: IEvent) -> None:
         self.template_path = (
             self.database.static.get_offshore_sfincs_model().get_model_root()
         )
+        self.scenario = scenario
+        if isinstance(event, EventSet):
+            raise ValueError(
+                "OffshoreSfincsHandler does not support EventSets. Provide the sub events direcly "
+            )
+        self.event = event
 
-    def get_resulting_waterlevels(self, scenario: IScenario) -> pd.DataFrame:
+    def get_resulting_waterlevels(self) -> pd.DataFrame:
         """Get the water levels from the offshore model.
 
         Note that the returned water levels are relative to the reference datum of the offshore model.
         To convert to a different datum, add the offshore reference datum height and subtract the desired reference datum height.
-
-        Parameters
-        ----------
-        scenario : IScenario
-            The scenario for which to obtain the water levels.
 
         Returns
         -------
@@ -50,12 +52,11 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             A DataFrame with the water levels for each boundary condition point. Relative to the reference datum of the offshore model.
 
         """
-        path = self._get_simulation_path(scenario)
+        path = self._get_simulation_path()
+        if not self.requires_offshore_run(self.event):
+            raise ValueError("Offshore model is not required for this event")
 
-        if not self.requires_offshore_run(scenario):
-            raise ValueError("Offshore model is not required for this scenario")
-
-        self.run_offshore(scenario)
+        self.run_offshore()
 
         with SfincsAdapter(model_root=path) as offshore_model:
             waterlevels = offshore_model.get_wl_df_from_offshore_his_results()
@@ -63,26 +64,26 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         return waterlevels
 
     @staticmethod
-    def requires_offshore_run(scenario: IScenario) -> bool:
+    def requires_offshore_run(event: IEvent) -> bool:
         return any(
             forcing.source in [ForcingSource.MODEL, ForcingSource.TRACK]
-            for forcing in scenario.event.get_forcings()
+            for forcing in event.get_forcings()
         )
 
-    def run_offshore(self, scenario: IScenario):
+    def run_offshore(self):
         """Prepare the forcings of the historical event.
 
         If the forcings require it, this function will:
         - preprocess and run offshore model: prepare and run the offshore model to obtain water levels for the boundary condition of the nearshore model.
 
         """
-        sim_path = self._get_simulation_path(scenario)
+        sim_path = self._get_simulation_path()
 
         sim_path.mkdir(parents=True, exist_ok=True)
-        self._preprocess_sfincs_offshore(scenario)
-        self._execute_sfincs_offshore(sim_path, scenario)
+        self._preprocess_sfincs_offshore()
+        self._execute_sfincs_offshore(sim_path)
 
-    def _preprocess_sfincs_offshore(self, scenario: IScenario):
+    def _preprocess_sfincs_offshore(self):
         """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model.
 
         This function is reused for ForcingSources: MODEL & TRACK.
@@ -91,14 +92,23 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             sim_path path to the root of the offshore model
         """
         self.logger.info(
-            f"Preparing offshore model to generate waterlevels for `{scenario.attrs.name}`"
+            f"Preparing offshore model to generate waterlevels for `{self.scenario.attrs.name}`"
         )
-        input_dir = self.database.events.input_path / scenario.event.attrs.name
-        sim_path = self._get_simulation_path(scenario)
+        if self.scenario.event.attrs.mode == Mode.risk:
+            input_dir = (
+                self.database.events.input_path
+                / self.scenario.event.attrs.name
+                / self.event.attrs.name
+            )
+        else:
+            input_dir = self.database.events.input_path / self.event.attrs.name
+
+        sim_path = self._get_simulation_path()
+
         with SfincsAdapter(model_root=self.template_path) as _offshore_model:
-            if _offshore_model.sfincs_completed(scenario):
+            if _offshore_model.sfincs_completed(self.scenario):
                 self.logger.info(
-                    f"Skip preprocessing offshore model as it has already been run for `{scenario.attrs.name}`."
+                    f"Skip preprocessing offshore model as it has already been run for `{self.scenario.attrs.name}`."
                 )
                 return
 
@@ -110,27 +120,26 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             # Set root & create dir and write template model
             _offshore_model.write(path_out=sim_path)
 
-            event = scenario.event
-            physical_projection = scenario.projection.get_physical_projection()
+            physical_projection = self.scenario.projection.get_physical_projection()
 
             # Create any event specific files
-            event.preprocess(input_dir)
+            self.event.preprocess(input_dir)
 
             # Edit offshore model
-            _offshore_model.set_timing(event.attrs.time)
+            _offshore_model.set_timing(self.event.attrs.time)
 
             # Add water levels
-            _offshore_model._add_bzs_from_bca(event, physical_projection.attrs)
+            _offshore_model._add_bzs_from_bca(self.event, physical_projection.attrs)
 
             # Add spw if applicable
-            if isinstance(event, HurricaneEvent):
-                spw_path = input_dir / f"{event.attrs.track_name}.spw"
+            if isinstance(self.event, HurricaneEvent):
+                spw_path = input_dir / f"{self.event.attrs.track_name}.spw"
                 _offshore_model._add_forcing_spw(spw_path)
 
             # Add wind and if applicable pressure forcing from meteo data
-            elif isinstance(event, HistoricalEvent):
+            elif isinstance(self.event, HistoricalEvent):
                 wind_forcings = [
-                    f for f in event.get_forcings() if isinstance(f, IWind)
+                    f for f in self.event.get_forcings() if isinstance(f, IWind)
                 ]
 
                 if wind_forcings:
@@ -143,17 +152,17 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
                     # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
                     if isinstance(wind_forcing, WindMeteo):
-                        ds = MeteoHandler().read(event.attrs.time)
+                        ds = MeteoHandler().read(self.event.attrs.time)
                         _offshore_model._add_pressure_forcing_from_grid(ds=ds)
 
             # write sfincs model in output destination
             _offshore_model.write(path_out=sim_path)
 
-    def _execute_sfincs_offshore(self, sim_path: Path, scenario: IScenario):
+    def _execute_sfincs_offshore(self, sim_path: Path):
         self.logger.info(f"Running offshore model in {sim_path}")
 
         with SfincsAdapter(model_root=sim_path) as _offshore_model:
-            if _offshore_model.sfincs_completed(scenario):
+            if _offshore_model.sfincs_completed(self.scenario):
                 self.logger.info(
                     "Skip running offshore model as it has already been run."
                 )
@@ -162,21 +171,20 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
                 _offshore_model.execute(path=sim_path)
             except RuntimeError as e:
                 raise RuntimeError(
-                    f"Failed to run offshore model for {scenario.attrs.name}"
+                    f"Failed to run offshore model for {self.scenario.attrs.name}"
                 ) from e
 
-    def _get_simulation_path(self, scenario: IScenario) -> Path:
-        event = scenario.strategy
-        if isinstance(event, EventSet):
+    def _get_simulation_path(self) -> Path:
+        if self.scenario.event.attrs.mode == Mode.risk:
             return (
                 db_path(
                     TopLevelDir.output,
                     object_dir=ObjectDir.scenario,
-                    obj_name=scenario.attrs.name,
+                    obj_name=self.scenario.attrs.name,
                 )
                 / "Flooding"
                 / "simulations"
-                / event.attrs.name  # ? add sub event name? or do we only run offshore once for the entire event set?
+                / self.event.attrs.name
                 / self.template_path.name
             )
         else:
@@ -184,7 +192,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
                 db_path(
                     TopLevelDir.output,
                     object_dir=ObjectDir.scenario,
-                    obj_name=scenario.attrs.name,
+                    obj_name=self.scenario.attrs.name,
                 )
                 / "Flooding"
                 / "simulations"

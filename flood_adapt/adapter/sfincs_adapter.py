@@ -238,7 +238,9 @@ class SfincsAdapter(IHazardAdapter):
         if isinstance(scenario.event, EventSet):
             self._preprocess_risk(scenario, sim_paths)
         elif isinstance(scenario.event, IEvent):
-            self._preprocess_single_event(scenario, output_path=sim_paths[0])
+            self._preprocess_single_event(
+                scenario=scenario, event=scenario.event, output_path=sim_paths[0]
+            )
 
     def process(self, scenario: IScenario):
         sim_paths = self._get_simulation_paths(scenario)
@@ -869,12 +871,11 @@ class SfincsAdapter(IHazardAdapter):
     ### PRIVATE - use at your own risk ###
     ######################################
     def _preprocess_single_event(
-        self, scenario: IScenario, output_path: Path, event: Optional[IEvent] = None
+        self,
+        scenario: IScenario,
+        event: IEvent,
+        output_path: Path,
     ):
-        # Use the event from the scenario if not provided by event sets
-        if event is None:
-            event = scenario.event
-
         # Write template model to output path and set it as the model root so focings can write to it
         self.set_timing(event.attrs.time)
         self.write(output_path)
@@ -882,6 +883,7 @@ class SfincsAdapter(IHazardAdapter):
         # I dont like this due to it being state based and might break if people use functions in the wrong order
         # Currently only used to pass projection + event stuff to WaterlevelModel
         self._current_scenario = scenario
+        self._current_event = event
         try:
             # Event
             for forcing in event.get_forcings():
@@ -909,6 +911,7 @@ class SfincsAdapter(IHazardAdapter):
 
         finally:
             self._current_scenario = None
+            self._current_event = None
 
     def _preprocess_risk(self, scenario: IScenario, sim_paths: list[Path]):
         if not isinstance(scenario.event, EventSet):
@@ -928,7 +931,9 @@ class SfincsAdapter(IHazardAdapter):
             )
             sub_event, sim_path = event_and_path
             self._preprocess_single_event(
-                scenario, output_path=sim_path, event=sub_event
+                scenario=scenario,
+                event=sub_event,
+                output_path=sim_path,
             )
 
     ### FORCING ###
@@ -1145,12 +1150,14 @@ class SfincsAdapter(IHazardAdapter):
 
             if self.settings.config.offshore_model is None:
                 raise ValueError("Offshore model configuration is missing.")
-            if self._current_scenario is None:
-                raise ValueError("Scenario must be provided to run the offshore model.")
+            if self._current_scenario is None or self._current_event is None:
+                raise ValueError(
+                    "Scenario and event must be provided to run the offshore model."
+                )
 
-            df_ts = OffshoreSfincsHandler().get_resulting_waterlevels(
-                scenario=self._current_scenario
-            )
+            df_ts = OffshoreSfincsHandler(
+                scenario=self._current_scenario, event=self._current_event
+            ).get_resulting_waterlevels()
             if df_ts is None:
                 raise ValueError("Failed to get waterlevel data.")
 

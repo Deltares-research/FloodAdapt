@@ -83,10 +83,30 @@ class TestOffshoreSfincsHandler:
         mock_meteohandler_read,
     ):
         # Arrange
-        _, scenario, _ = setup_offshore_scenario
+        _, scenario, event = setup_offshore_scenario
 
         # Act
-        wl_df = OffshoreSfincsHandler().get_resulting_waterlevels(scenario)
+        wl_df = OffshoreSfincsHandler(
+            scenario=scenario, event=event
+        ).get_resulting_waterlevels()
+
+        # Assert
+        assert isinstance(wl_df, pd.DataFrame)
+
+    def test_process_sfincs_offshore_eventset(
+        self,
+        test_db: IDatabase,
+        mock_meteohandler_read,
+    ):
+        # Arrange
+        scenario = test_db.scenarios.get("current_test_set_no_measures")
+        event_set = test_db.events.get("test_set")
+        event = event_set.events[-1]
+
+        # Act
+        wl_df = OffshoreSfincsHandler(
+            scenario=scenario, event=event
+        ).get_resulting_waterlevels()
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
