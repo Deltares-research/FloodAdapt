@@ -1408,7 +1408,6 @@ class DatabaseBuilder:
                         height=us.UnitfulLength(
                             value=station["msl"], units=station["units"]
                         ).transform(elv_units),
-                        # TODO check/add correction
                     )
 
                     water_level_config.datums.append(msl)

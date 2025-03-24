@@ -189,7 +189,7 @@ def plot_waterlevel(
             # Convert to main reference
             datum_correction = site.attrs.sfincs.water_level.get_datum(
                 site.attrs.sfincs.tide_gauge.reference
-            ).total_height.convert(units)
+            ).height.convert(units)
             data += datum_correction
 
         elif isinstance(waterlevel, WaterlevelCSV):
@@ -198,7 +198,7 @@ def plot_waterlevel(
             data = waterlevel.to_dataframe(time_frame=event.attrs.time)
             datum_correction = site.attrs.sfincs.water_level.get_datum(
                 site.attrs.gui.plotting.synthetic_tide.datum
-            ).total_height.convert(units)
+            ).height.convert(units)
             data += datum_correction
         else:
             raise ValueError(f"Unknown waterlevel type: {waterlevel}")
@@ -240,7 +240,7 @@ def plot_waterlevel(
             continue
 
         fig.add_hline(
-            y=wl_ref.total_height.convert(units),
+            y=wl_ref.height.convert(units),
             line_dash="dash",
             line_color="#3ec97c",
             annotation_text=wl_ref.name,
