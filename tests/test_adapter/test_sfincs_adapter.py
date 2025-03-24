@@ -815,6 +815,7 @@ class TestAddForcing:
             # Arrange
             default_sfincs_adapter._turn_off_bnd_press_correction = mock.Mock()
             default_sfincs_adapter._current_scenario = mock.Mock()
+            default_sfincs_adapter._current_event = mock.Mock()
             forcing = WaterlevelModel()
 
             # Act

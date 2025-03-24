@@ -64,7 +64,7 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
 
 @pytest.fixture()
 def setup_hurricane_scenario(
-    test_db: IDatabase, setup_hurricane_event: tuple[HurricaneEvent, Path]
+    test_db: IDatabase, setup_hurricane_event: HurricaneEvent
 ) -> tuple[Scenario, HurricaneEvent]:
     event = setup_hurricane_event
     scn = Scenario(

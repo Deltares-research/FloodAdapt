@@ -1,6 +1,3 @@
-import shutil
-from pathlib import Path
-
 import pytest
 
 from flood_adapt.api import scenarios as api_scenarios
@@ -74,10 +71,10 @@ def setup_offshore_meteo_scenario(
 @pytest.fixture()
 def setup_hurricane_scenario(
     test_db: IDatabase,
-    setup_hurricane_event: tuple[HurricaneEvent, Path],
+    setup_hurricane_event: HurricaneEvent,
     mock_meteohandler_read,
 ) -> tuple[Scenario, HurricaneEvent]:
-    event, cyc_file = setup_hurricane_event
+    event = setup_hurricane_event
     scn = Scenario(
         ScenarioModel(
             name="hurricane",
@@ -87,7 +84,6 @@ def setup_hurricane_scenario(
         )
     )
     test_db.events.save(event)
-    shutil.copy2(cyc_file, test_db.events.input_path / event.attrs.name / cyc_file.name)
     test_db.scenarios.save(scn)
     return scn, event
 
