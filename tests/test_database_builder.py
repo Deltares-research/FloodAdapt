@@ -131,6 +131,42 @@ class TestDataBaseBuilder:
         # Assert
         assert benefits is None
 
+    def test_create_footprints_returns_none(self, mock_config: ConfigModel):
+        # Arrange
+        # TODO add/mock region
+        mock_config.building_footprints = None
+        builder = DatabaseBuilder(mock_config)
+
+        # Act
+        footprints = builder.create_footprints()
+
+        # Assert
+        assert footprints is None
+
+    def test_create_footprints_from_config(self, mock_config: ConfigModel):
+        # Arrange
+        mock_config.building_footprints = SpatialJoinModel(
+            name="BF_FID",
+            file=str(self.templates_path / "fiat/exposure/buildings.gpkg"),
+            field_name="object_id",
+        )
+        mock_config.fiat_buildings_name = "buildings"
+        builder = DatabaseBuilder(mock_config)
+
+        # Act
+        footprints = builder.create_footprints()
+
+        # Assert
+        expected_file = (
+            Path(builder.fiat_model.root)
+            / "exposure"
+            / "building_footprints"
+            / "building_footprints.gpkg"
+        )
+        assert footprints is not None
+        assert expected_file.exists()
+        assert footprints == expected_file.relative_to(builder.static_path).as_posix()
+
     def test_create_footprints_from_OSM(self, mock_config: ConfigModel):
         # Arrange
         # TODO add/mock region
@@ -142,7 +178,40 @@ class TestDataBaseBuilder:
         footprints = builder.create_footprints()
 
         # Assert
-        assert footprints == mock_config.building_footprints
+        expected_file = Path(
+            "templates/fiat/exposure/building_footprints/building_footprints.gpkg"
+        )
+        assert footprints == expected_file
+        assert (builder.static_path / expected_file).exists()
+
+    def test_create_footprints_already_exists(self, mock_config: ConfigModel):
+        # Arrange
+        mock_config.building_footprints = None
+        mock_config.fiat_buildings_name = "buildings"
+
+        builder = DatabaseBuilder(mock_config)
+        builder.fiat_model = Mock(wraps=builder.fiat_model)
+        builder.fiat_model.exposure.exposure_db = pd.DataFrame(columns=["BF_FID"])
+        builder.fiat_model.spatial_joins = {
+            "additional_attributes": [
+                {
+                    "name": "BF_FID",
+                    "file": "exposure/building_footprints/building_footprints.gpkg",
+                }
+            ]
+        }
+        fiat_path = builder.static_path / "templates" / "fiat"
+        (fiat_path / "exposure/building_footprints").mkdir(parents=True, exist_ok=True)
+        (fiat_path / "exposure/building_footprints/building_footprints.gpkg").touch()
+
+        # Act
+        footprints = builder.create_footprints()
+
+        # Assert
+        expected_path = (
+            fiat_path / "exposure/building_footprints/building_footprints.gpkg"
+        )
+        assert footprints == expected_path.relative_to(builder.static_path)
 
     def test_create_aggregation_areas_from_config(self, mock_config: ConfigModel):
         # Arrange

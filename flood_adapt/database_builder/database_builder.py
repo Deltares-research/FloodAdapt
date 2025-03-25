@@ -664,30 +664,31 @@ class DatabaseBuilder:
             return Path(path).relative_to(self.static_path)
 
         # First check if it is spatially joined and/or exists already
-        check_col = "BF_FID" in self.fiat_model.exposure.exposure_db.columns
-        add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-        fiat_path = self.static_path / "templates" / "fiat"
+        elif "BF_FID" in self.fiat_model.exposure.exposure_db.columns:
+            add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
+            fiat_path = self.static_path / "templates" / "fiat"
 
-        if add_attrs and "BF_FID" in [attr["name"] for attr in add_attrs]:
-            ind = [attr["name"] for attr in add_attrs].index("BF_FID")
-            footprints = add_attrs[ind]
-            footprints_path = fiat_path / footprints["file"]
+            if add_attrs and "BF_FID" in [attr["name"] for attr in add_attrs]:
+                ind = [attr["name"] for attr in add_attrs].index("BF_FID")
+                footprints = add_attrs[ind]
+                footprints_path = fiat_path / footprints["file"]
 
-            if footprints_path.exists():
-                # TODO @panos check if we need to do something if this doesnt exist
-                if not check_col:
-                    self.logger.error(
-                        f"Exposure csv is missing the 'BF_FID' column to connect to the footprints located at {footprints_path}."
+                if footprints_path.exists():
+                    self.logger.info(
+                        f"Using the building footprints located at {footprints_path}."
                     )
-                    raise NotImplementedError
-
-                self.logger.info(
-                    f"Using the building footprints located at {footprints_path}."
+                    return footprints_path.relative_to(self.static_path)
+                else:
+                    raise FileNotFoundError(
+                        f"Building footprints file {footprints_path} not found."
+                    )
+            else:
+                raise KeyError(
+                    "Exposure csv is missing the 'BF_FID' column to connect to the footprints."
                 )
-                return footprints_path.relative_to(self.static_path)
 
         # Then check if geometries are already footprints
-        if isinstance(
+        elif isinstance(
             self.fiat_model.exposure.exposure_geoms[
                 self._get_fiat_building_index()
             ].geometry.iloc[0],
@@ -697,7 +698,7 @@ class DatabaseBuilder:
             # TODO @panos what to return here?
 
         # Other methods
-        if self.config.building_footprints == FootprintsOptions.OSM:
+        elif self.config.building_footprints == FootprintsOptions.OSM:
             self.logger.info(
                 "Building footprint data will be downloaded from Open Street Maps."
             )
@@ -716,12 +717,11 @@ class DatabaseBuilder:
             footprints = footprints[["BF_FID", "geometry"]]
             path = self._join_building_footprints(footprints, "BF_FID")
             return Path(path).relative_to(self.static_path)
-
-        # Getting here means no footprints were found
-        self.logger.warning(
-            "No building footprints are available. Buildings will be plotted with a default shape in FloodAdapt."
-        )
-        return None
+        else:
+            self.logger.warning(
+                "No building footprints are available. Buildings will be plotted with a default shape in FloodAdapt."
+            )
+            return None
 
     def create_bfe(self) -> Optional[BFEModel]:
         if self.config.bfe is None:
