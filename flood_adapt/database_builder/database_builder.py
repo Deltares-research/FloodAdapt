@@ -272,6 +272,7 @@ class ConfigModel(BaseModel):
 
     sfincs_overland: FloodModel
     sfincs_offshore: Optional[FloodModel] = None
+    subgrid: Optional[DemModel] = None
 
     excluded_datums: list[str] = Field(default_factory=list)
 
@@ -304,6 +305,7 @@ class DatabaseBuilder:
     logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 
     _has_roads: bool = False
+    _aggregation_areas: Optional[list] = None
 
     def __init__(self, config: ConfigModel):
         self.config = config
@@ -373,7 +375,7 @@ class DatabaseBuilder:
         if location_in_db.exists():
             shutil.rmtree(location_in_db)
         shutil.copytree(user_provided, location_in_db)
-        in_db = HydromtFiatModel(root=str(location_in_db), mode="w+")
+        in_db = HydromtFiatModel(root=str(location_in_db), mode="r+")
         in_db.read()
 
         return in_db
@@ -386,14 +388,13 @@ class DatabaseBuilder:
         user_model.read()
         if user_model.crs is None:
             raise ValueError("CRS is not defined in the SFINCS model.")
-        epsg = user_model.crs.to_epsg()
 
         location_in_db = self.static_path / "templates" / "overland"
         if location_in_db.exists():
             shutil.rmtree(location_in_db)
         shutil.copytree(user_provided, location_in_db)
-        in_db = HydromtSfincsModel(root=str(location_in_db), mode="w")
-        in_db.read(epsg=epsg)
+        in_db = HydromtSfincsModel(root=str(location_in_db), mode="r+")
+
         return in_db
 
     def read_template_sfincs_offshore_model(self) -> Optional[HydromtSfincsModel]:
@@ -412,7 +413,7 @@ class DatabaseBuilder:
         if location_in_db.exists():
             shutil.rmtree(location_in_db)
         shutil.copytree(user_provided, location_in_db)
-        in_db = HydromtSfincsModel(str(location_in_db), mode="w+")
+        in_db = HydromtSfincsModel(str(location_in_db), mode="r+")
         in_db.read(epsg=epsg)
         return in_db
 
@@ -465,6 +466,9 @@ class DatabaseBuilder:
         if footprints is not None:
             footprints = footprints.as_posix()
 
+        # Store result for possible future use in create_infographics
+        self._aggregation_areas = self.create_aggregation_areas()
+
         config = FiatConfigModel(
             exposure_crs=self.fiat_model.exposure.crs,
             floodmap_type=self.read_floodmap_type(),
@@ -476,7 +480,7 @@ class DatabaseBuilder:
             new_development_file_name=self.create_new_developments(),  # TODO
             save_simulation=True,  # TODO
             infographics=True,  # TODO
-            aggregation=self.create_aggregation_areas(),
+            aggregation=self._aggregation_areas,
             svi=self.create_svi(),
         )
 
@@ -994,17 +998,19 @@ class DatabaseBuilder:
         return SCSModel(file=scs_file.name, type=self.config.scs.type)
 
     def create_dem_model(self) -> DemModel:
-        # check subgrid
-        subgrid_sfincs = (
-            Path(self.sfincs_overland_model.root) / "subgrid" / "dep_subgrid.tif"
-        )
-        if not subgrid_sfincs.exists():
-            raise FileNotFoundError(
-                f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
+        if self.config.subgrid:
+            subgrid_sfincs = self.config.subgrid.filename
+        else:
+            self.logger.warning(
+                "No subgrid depth geotiff file provided in the config file. Using the one from the SFINCS model."
             )
-        fa_subgrid_path = self.static_path / "dem" / subgrid_sfincs.name
+            subgrid_sfincs = (
+                Path(self.sfincs_overland_model.root) / "subgrid" / "dep_subgrid.tif"
+            )
+
+        dem_file = self._check_exists_and_make_absolute(subgrid_sfincs)
+        fa_subgrid_path = self.static_path / "dem" / dem_file.name
         fa_subgrid_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(subgrid_sfincs, fa_subgrid_path)
 
         # Check tiles
         tiles_sfincs = Path(self.sfincs_overland_model.root) / "tiles"
@@ -1021,7 +1027,7 @@ class DatabaseBuilder:
             fa_tiles_path.mkdir(parents=True)
             self.sfincs_overland_model.setup_tiles(
                 path=fa_tiles_path,
-                datasets_dep=[{"elevtn": subgrid_sfincs}],
+                datasets_dep=[{"elevtn": dem_file}],
                 zoom_range=[0, 13],
                 fmt="png",
             )
@@ -1029,8 +1035,9 @@ class DatabaseBuilder:
                 f"Tiles were created using the {subgrid_sfincs} as the elevation map."
             )
 
+        shutil.copy2(dem_file, fa_subgrid_path)
         return DemModel(
-            filename=subgrid_sfincs.name, units=us.UnitTypesLength.meters
+            filename=fa_subgrid_path.name, units=us.UnitTypesLength.meters
         )  # always in meters
 
     def create_sfincs_model_config(self) -> SfincsConfigModel:
@@ -1426,9 +1433,9 @@ class DatabaseBuilder:
                 attrs = tomli.load(f)
 
             # add aggration levels
-            attrs["aggregateBy"] = [
-                aggr.name for aggr in self.site_attrs["fiat"]["config"].aggregation
-            ]
+            if self._aggregation_areas is None:
+                self._aggregation_areas = self.create_aggregation_areas()
+            attrs["aggregateBy"] = [aggr.name for aggr in self._aggregation_areas]
 
             # take out road metrics if needed
             if not self._has_roads:
@@ -1443,7 +1450,7 @@ class DatabaseBuilder:
             for i, query in enumerate(attrs["queries"]):
                 if "$" in query["long_name"]:
                     query["long_name"] = query["long_name"].replace(
-                        "$", self.site_attrs["fiat"]["config"].damage_unit
+                        "$", self.read_damage_unit()
                     )
 
             # replace the SVI threshold if needed
@@ -1556,7 +1563,7 @@ class DatabaseBuilder:
         # Prepare static folder structure
         folders = ["templates"]
         for name in folders:
-            (self.static_path / name).mkdir()
+            (self.static_path / name).mkdir(parents=True, exist_ok=True)
 
     def _check_exists_and_make_absolute(self, path: str) -> Path:
         """Check if the path is absolute or relative and return a Path object. Raises an error if the path is not valid."""
