@@ -133,7 +133,7 @@ class TestDataBaseBuilder:
 
     def test_create_footprints_returns_none(self, mock_config: ConfigModel):
         # Arrange
-        # TODO add/mock region
+        # TODO fix test
         mock_config.building_footprints = None
         builder = DatabaseBuilder(mock_config)
 
@@ -145,6 +145,7 @@ class TestDataBaseBuilder:
 
     def test_create_footprints_from_config(self, mock_config: ConfigModel):
         # Arrange
+        # TODO fix test
         mock_config.building_footprints = SpatialJoinModel(
             name="BF_FID",
             file=str(self.templates_path / "fiat/exposure/buildings.gpkg"),
@@ -169,10 +170,12 @@ class TestDataBaseBuilder:
 
     def test_create_footprints_from_OSM(self, mock_config: ConfigModel):
         # Arrange
-        # TODO add/mock region
+        # TODO fix test
         mock_config.building_footprints = FootprintsOptions.OSM
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
+        builder.fiat_model = Mock(wraps=builder.fiat_model)
+        builder.fiat_model.exposure.exposure_db.columns = ["object_id"]
 
         # Act
         footprints = builder.create_footprints()
@@ -689,6 +692,7 @@ class TestDataBaseBuilder:
         # Assert
         assert tide_gauge is None
 
+    # TODO fix tests below
     def test_create_infometrics_mandatory_only(self, mock_config: ConfigModel):
         # Arrange
         mock_config.svi = SviConfigModel(
