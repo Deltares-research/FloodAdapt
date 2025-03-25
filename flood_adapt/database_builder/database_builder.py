@@ -18,7 +18,7 @@ from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from pydantic import BaseModel, Field
-from shapely import Polygon
+from shapely import MultiLineString, Polygon
 
 from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt import unit_system as us
@@ -705,7 +705,12 @@ class DatabaseBuilder:
             if not region_path.exists():
                 self.logger.error("No region file found in the FIAT model.")
             region = gpd.read_file(region_path).to_crs(4326)
-            polygon = Polygon(region.boundary.to_numpy()[0])
+            if isinstance(region.boundary.to_numpy()[0], MultiLineString):
+                polygon = Polygon(
+                    region.boundary.to_numpy()[0].envelope
+                )  # TODO check if this is correct
+            else:
+                polygon = Polygon(region.boundary.to_numpy()[0])
             footprints = get_buildings_from_osm(polygon)
             footprints["BF_FID"] = np.arange(1, len(footprints) + 1)
             footprints = footprints[["BF_FID", "geometry"]]
@@ -772,21 +777,24 @@ class DatabaseBuilder:
                 aggr_name = Path(aggr.file).stem
                 exposure_csv = self.fiat_model.exposure.exposure_db
                 buildings_joined, aggr_areas = self.spatial_join(
-                    self.fiat_model.exposure.exposure_geoms[
+                    objects=self.fiat_model.exposure.exposure_geoms[
                         self._get_fiat_building_index()
                     ],
-                    self._check_path(aggr.file),
-                    aggr.field_name,
+                    layer=str(self._check_exists_and_make_absolute(aggr.file)),
+                    field_name=aggr.field_name,
                     rename=_FIAT_COLUMNS.aggregation_label.format(name=aggr_name),
                 )
                 aggr_path = Path(self.fiat_model.root).joinpath(
                     "exposure", "aggregation_areas", f"{Path(aggr.file).stem}.gpkg"
                 )
+                aggr_path.parent.mkdir(parents=True, exist_ok=True)
                 aggr_areas.to_file(aggr_path)
                 exposure_csv = exposure_csv.merge(
                     buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
                 )
                 self.fiat_model.exposure.exposure_db = exposure_csv
+                if self.fiat_model.spatial_joins["aggregation_areas"] is None:
+                    self.fiat_model.spatial_joins["aggregation_areas"] = []
                 self.fiat_model.spatial_joins["aggregation_areas"].append(
                     {
                         "name": aggr_name,
@@ -796,6 +804,16 @@ class DatabaseBuilder:
                         ),
                         "equity": None,
                     }
+                )
+
+                aggregation_areas.append(
+                    AggregationModel(
+                        name=aggr_name,
+                        file=aggr_path.relative_to(self.static_path).as_posix(),
+                        field_name=_FIAT_COLUMNS.aggregation_label.format(
+                            name=aggr_name
+                        ),
+                    )
                 )
             return aggregation_areas
 
@@ -861,11 +879,11 @@ class DatabaseBuilder:
 
             # Add column in FIAT
             buildings_joined, _ = self.spatial_join(
-                self.fiat_model.exposure.exposure_geoms[
+                objects=self.fiat_model.exposure.exposure_geoms[
                     self._get_fiat_building_index()
                 ],
-                region,
-                "aggr_id",
+                layer=region,
+                field_name="aggr_id",
                 rename=_FIAT_COLUMNS.aggregation_label.format(name="region"),
             )
             exposure_csv = exposure_csv.merge(

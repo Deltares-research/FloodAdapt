@@ -26,8 +26,10 @@ from flood_adapt.database_builder.database_builder import (
 from flood_adapt.object_model.hazard.interface.forcing import Scstype
 from flood_adapt.object_model.hazard.interface.tide_gauge import TideGaugeSource
 from flood_adapt.object_model.interface.config.fiat import (
+    AggregationModel,
     BenefitsModel,
     BFEModel,
+    EquityModel,
     SVIModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import (
@@ -68,9 +70,9 @@ class TestDataBaseBuilder:
     def test_read_fiat_model(self, mock_config: ConfigModel):
         # Arrange
         mock_config.fiat = str(self.templates_path / "fiat")
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         builder.read_template_fiat_model()
 
         # Assert
@@ -79,9 +81,9 @@ class TestDataBaseBuilder:
     def test_create_risk_model(self, mock_config: ConfigModel):
         # Arrange
         mock_config.return_periods = [1, 2, 5, 10, 25, 50, 100]
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         risk = builder.create_risk_model()
 
         # Assert
@@ -90,9 +92,9 @@ class TestDataBaseBuilder:
     def test_create_risk_model_returns_empty_list(self, mock_config: ConfigModel):
         # Arrange
         mock_config.return_periods = []
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         risk = builder.create_risk_model()
 
         # Assert
@@ -101,9 +103,9 @@ class TestDataBaseBuilder:
     def test_create_benefits_with_test_set(self, mock_config: ConfigModel):
         # Arrange
         mock_config.probabilistic_set = "test_set"
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         benefits = builder.create_benefit_config()
 
         expected_benefits = BenefitsModel(
@@ -121,9 +123,9 @@ class TestDataBaseBuilder:
     ):
         # Arrange
         mock_config.probabilistic_set = None
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         benefits = builder.create_benefit_config()
 
         # Assert
@@ -134,9 +136,9 @@ class TestDataBaseBuilder:
         # TODO add/mock region
         mock_config.building_footprints = FootprintsOptions.OSM
         mock_config.fiat_buildings_name = "buildings"
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         footprints = builder.create_footprints()
 
         # Assert
@@ -161,9 +163,9 @@ class TestDataBaseBuilder:
             ),
         ]
         mock_config.fiat_buildings_name = "buildings"
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         areas = builder.create_aggregation_areas()
 
         # Assert
@@ -171,34 +173,90 @@ class TestDataBaseBuilder:
         assert len(areas) == len(mock_config.aggregation_areas)
 
         for i, area in enumerate(areas):
-            file_name = Path(mock_config.aggregation_areas[i].file).name
-            expected_file = f"templates/fiat/aggregation_areas/{file_name}"
+            file_name = (
+                Path(mock_config.aggregation_areas[i].file).with_suffix(".gpkg").name
+            )
+            expected_file = f"templates/fiat/exposure/aggregation_areas/{file_name}"
             assert area.file == expected_file
             assert (builder.static_path / expected_file).exists()
 
     def test_create_aggregation_areas_from_region(self, mock_config: ConfigModel):
         # Arrange
         # TODO add/mock region
+        mock_config.fiat_buildings_name = "buildings"
         mock_config.aggregation_areas = None
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
-        _areas = builder.create_aggregation_areas()
+        areas = builder.create_aggregation_areas()
 
         # Assert
-        # TODO asserts
+        expected_region = Path(builder.fiat_model.root).joinpath(
+            "aggregation_areas", "region.geojson"
+        )
+        expected_areas = [
+            AggregationModel(
+                name="region",
+                file=str(expected_region.relative_to(builder.static_path).as_posix()),
+                field_name="aggr_id",
+            )
+        ]
+        assert areas is not None
+        assert areas == expected_areas
+        assert expected_region.exists()
 
     def test_create_aggregation_areas_from_fiat_model(self, mock_config: ConfigModel):
         # Arrange
-        # TODO add/mock region file
+        # TODO get a fiat model with aggregation areas
         mock_config.aggregation_areas = None
+        mock_config.fiat_buildings_name = "buildings"
+        builder = DatabaseBuilder(mock_config)
+        builder.fiat_model = Mock(wraps=builder.fiat_model)
+        builder.fiat_model.spatial_joins = {
+            "aggregation_areas": [
+                {
+                    "name": "aggr_lvl_1",
+                    "file": "aggregation_areas/aggr_lvl_1.geojson",
+                    "field_name": "name",
+                    "equity": {
+                        "census_data": "census_data.geojson",
+                        "percapitaincome_label": "income",
+                        "totalpopulation_label": "population",
+                    },
+                },
+                {
+                    "name": "aggr_lvl_2",
+                    "file": "aggregation_areas/aggr_lvl_2.geojson",
+                    "field_name": "name",
+                    "equity": None,
+                },
+            ]
+        }
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         areas = builder.create_aggregation_areas()
 
         # Assert
         assert areas is not None
+        expected_areas = [
+            AggregationModel(
+                name="aggr_lvl_1",
+                file="templates/fiat/aggregation_areas/aggr_lvl_1.geojson",
+                field_name="name",
+                equity=EquityModel(
+                    census_data="templates/fiat/census_data.geojson",
+                    percapitaincome_label="income",
+                    totalpopulation_label="population",
+                ),
+            ),
+            AggregationModel(
+                name="aggr_lvl_2",
+                file="templates/fiat/aggregation_areas/aggr_lvl_2.geojson",
+                field_name="name",
+                equity=None,
+            ),
+        ]
+        assert areas == expected_areas
 
     def test_create_bfe(self, mock_config: ConfigModel):
         # Arrange
@@ -208,9 +266,9 @@ class TestDataBaseBuilder:
             field_name="bfe",
         )
         mock_config.fiat_buildings_name = "buildings"
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         bfe = builder.create_bfe()
 
         # Assert
@@ -229,9 +287,9 @@ class TestDataBaseBuilder:
     def test_create_bfe_returns_none(self, mock_config: ConfigModel):
         # Arrange
         mock_config.bfe = None
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         bfe = builder.create_bfe()
 
         # Assert
@@ -246,9 +304,9 @@ class TestDataBaseBuilder:
             threshold=0.5,
         )
         mock_config.fiat_buildings_name = "buildings"
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         svi = builder.create_svi()
 
         # Assert
@@ -266,9 +324,9 @@ class TestDataBaseBuilder:
     ### Sfincs ###
     def test_read_template_sfincs_overland_model(self, mock_config: ConfigModel):
         # Arrange
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         builder.read_template_sfincs_overland_model()
 
         # Assert
@@ -276,9 +334,9 @@ class TestDataBaseBuilder:
 
     def test_read_template_sfincs_offshore_model(self, mock_config: ConfigModel):
         # Arrange
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         builder.read_template_sfincs_offshore_model()
 
         # Assert
@@ -289,9 +347,9 @@ class TestDataBaseBuilder:
     ):
         # Arrange
         mock_config.sfincs_offshore = None
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         model = builder.read_template_sfincs_offshore_model()
 
         # Assert
@@ -301,9 +359,9 @@ class TestDataBaseBuilder:
     def test_create_sfincs_overland(self, mock_config: ConfigModel):
         # Arrange
         mock_config.sfincs_offshore = None
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         sfincs = builder.create_overland_model()
 
         # Assert
@@ -316,9 +374,9 @@ class TestDataBaseBuilder:
 
     def test_create_sfincs_offshore(self, mock_config: ConfigModel):
         # Arrange
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         sfincs = builder.create_offshore_model()
 
         # Assert
@@ -333,9 +391,9 @@ class TestDataBaseBuilder:
     def test_create_sfincs_offshore_no_offshore_model(self, mock_config: ConfigModel):
         # Arrange
         mock_config.sfincs_offshore = None
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         sfincs = builder.create_offshore_model()
 
         # Assert
@@ -348,9 +406,9 @@ class TestDataBaseBuilder:
             file=str(self.static_path / "slr/slr.csv"),
             relative_to_year=2020,
         )
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         slr = builder.create_slr()
 
         # Assert
@@ -365,9 +423,9 @@ class TestDataBaseBuilder:
     def test_create_slr_returns_none(self, mock_config: ConfigModel):
         # Arrange
         mock_config.slr = None
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         slr = builder.create_slr()
 
         # Assert
@@ -380,9 +438,9 @@ class TestDataBaseBuilder:
             file=str(self.static_path / "scs/scs_rainfall.csv"),
             type=Scstype.type3,
         )
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         scs = builder.create_scs_model()
 
         # Assert
@@ -397,9 +455,9 @@ class TestDataBaseBuilder:
     def test_create_scs_returns_none(self, mock_config: ConfigModel):
         # Arrange
         mock_config.scs = None
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         scs = builder.create_scs_model()
 
         # Assert
@@ -412,8 +470,8 @@ class TestDataBaseBuilder:
             filename=str(self.static_path / "dem/charleston_14m.tif"),
             units=us.UnitTypesLength.meters,
         )
-
         builder = DatabaseBuilder(mock_config)
+
         root = Path(builder.sfincs_overland_model.root)
         assert not (root / "tiles/indices").exists()
         assert not (root / "tiles/topobathy").exists()
@@ -503,9 +561,9 @@ class TestDataBaseBuilder:
             location=Point(lat=32.78, lon=-79.9233),
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         tide_gauge = builder.create_tide_gauge()
 
         # Assert
@@ -525,9 +583,9 @@ class TestDataBaseBuilder:
             location=Point(lat=32.78, lon=-79.9233),
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         tide_gauge = builder.create_tide_gauge()
 
         # Assert
@@ -543,9 +601,9 @@ class TestDataBaseBuilder:
             location=Point(lat=32.78, lon=-79.9233),
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         tide_gauge = builder.create_tide_gauge()
 
         # Assert
@@ -554,9 +612,9 @@ class TestDataBaseBuilder:
     def test_create_tide_gauge_returns_none(self, mock_config: ConfigModel):
         # Arrange
         mock_config.tide_gauge = None
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         tide_gauge = builder.create_tide_gauge()
 
         # Assert
@@ -572,9 +630,9 @@ class TestDataBaseBuilder:
         mock_config.fiat_buildings_name = "buildings"
         mock_config.infographics = None
         # TODO fix create_aggregation_areas()
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         builder.create_infometrics()
 
         # Assert
@@ -602,9 +660,9 @@ class TestDataBaseBuilder:
         mock_config.svi = None
         mock_config.fiat_buildings_name = "buildings"
         # TODO fix create_aggregation_areas()
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         builder.create_infometrics()
 
         # Assert
@@ -631,9 +689,9 @@ class TestDataBaseBuilder:
         mock_config.svi = None
         mock_config.fiat_buildings_name = "buildings"
         # TODO fix create_aggregation_areas()
+        builder = DatabaseBuilder(mock_config)
 
         # Act
-        builder = DatabaseBuilder(mock_config)
         builder.create_infometrics()
 
         # Assert
@@ -657,9 +715,9 @@ class TestDataBaseBuilder:
 
     def test_build(self, full_config: ConfigModel):
         # Arrange
+        builder = DatabaseBuilder(full_config)
 
         # Act
-        builder = DatabaseBuilder(full_config)
         builder.build()
 
         # Assert
