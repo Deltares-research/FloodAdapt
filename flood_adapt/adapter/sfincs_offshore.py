@@ -101,6 +101,8 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
                     f"Skip preprocessing offshore model as it has already been run for `{self.scenario.attrs.name}`."
                 )
                 return
+            _offshore_model._current_event = self.event
+            _offshore_model._current_scenario = self.scenario
 
             # SfincsAdapter.write() doesnt write the bca file apparently so we need to copy the template
             if sim_path.exists():
