@@ -23,8 +23,6 @@ from shapely import MultiLineString, Polygon
 from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
-
-# from flood_adapt.database_builder.create_database import SviConfigModel
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
     TideGaugeSource,
@@ -707,8 +705,10 @@ class DatabaseBuilder:
             ].geometry.iloc[0],
             Polygon,
         ):
-            _footprints_found = True
-            # TODO @panos what to return here?
+            self.logger.info(
+                "Building footprints are already available in the FIAT model."
+            )
+            return None
 
         # Other methods
         elif self.config.building_footprints == FootprintsOptions.OSM:

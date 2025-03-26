@@ -2,11 +2,12 @@ import shutil
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pandas as pd
 import pytest
 import tomli
+from shapely import Polygon
 
 from flood_adapt import Settings
 from flood_adapt import unit_system as us
@@ -133,11 +134,20 @@ class TestDataBaseBuilder:
 
     def test_create_footprints_returns_none(self, mock_config: ConfigModel):
         # Arrange
-        # TODO fix test
         mock_config.building_footprints = None
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
         builder.fiat_model = Mock(wraps=builder.fiat_model)
+
+        mock_df = pd.DataFrame(
+            {"geometry": [Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])]}
+        )
+        mock_exposure_geoms = MagicMock()
+        mock_exposure_geoms.__getitem__.return_value = (
+            mock_df  # Simulate dictionary-like behavior
+        )
+
+        builder.fiat_model.exposure.exposure_geoms = mock_exposure_geoms
         builder.fiat_model.exposure.exposure_db.columns = ["not BF_FID"]
 
         # Act
