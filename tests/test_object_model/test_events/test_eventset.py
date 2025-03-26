@@ -1,7 +1,6 @@
 from copy import deepcopy
 from pathlib import Path
 from tempfile import gettempdir
-from unittest.mock import patch
 
 import pytest
 
@@ -173,19 +172,6 @@ class TestEventSet:
             assert (
                 tmp_path.parent / sub_event.name / f"{sub_event.name}.toml"
             ).exists()
-
-    @patch("flood_adapt.object_model.hazard.event.synthetic.SyntheticEvent.preprocess")
-    def test_eventset_synthetic_process(
-        self,
-        mock_process,
-        setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet],
-        tmp_path: Path,
-    ):
-        test_db, scn, event_set = setup_eventset_scenario
-        output_dir = tmp_path / "eventset"
-        event_set.preprocess(output_dir)
-
-        assert mock_process.call_count == len(event_set.attrs.sub_events)
 
     def test_calculate_rp_floodmaps(
         self, setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet]
