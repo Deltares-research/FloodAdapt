@@ -85,17 +85,3 @@ class EventSet(IObject[EventSetModel], DatabaseUser):
             sub_dir = Path(output_dir) / sub_event.attrs.name
             sub_dir.mkdir(parents=True, exist_ok=True)
             sub_event.save(sub_dir / f"{sub_event.attrs.name}.toml")
-
-    def preprocess(self, output_dir: Path) -> None:
-        """Prepare the forcings of the event set.
-
-        Which is to say, prepare the forcings of the subevents of the event set.
-
-        If the forcings require it, this function will:
-        - preprocess and run offshore model: prepare and run the offshore model to obtain water levels for the boundary condition of the nearshore model.
-
-        Then, it will call the process function of the subevents.
-
-        """
-        for sub_event in self.events:
-            sub_event.preprocess(output_dir / sub_event.attrs.name)

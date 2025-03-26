@@ -13,19 +13,23 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import pyproj
 import shapely
 import xarray as xr
+from cht_cyclones.tropical_cyclone import TropicalCyclone
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
+from shapely.affinity import translate
 
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.event.hurricane import TranslationModel
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -60,6 +64,8 @@ from flood_adapt.object_model.hazard.forcing.wind import (
 )
 from flood_adapt.object_model.hazard.interface.events import IEvent, Template
 from flood_adapt.object_model.hazard.interface.forcing import (
+    ForcingSource,
+    ForcingType,
     IDischarge,
     IForcing,
     IRainfall,
@@ -980,10 +986,8 @@ class SfincsAdapter(IHazardAdapter):
             # HydroMT function: set wind forcing from grid
             self._model.setup_wind_forcing_from_grid(wind=ds)
         elif isinstance(wind, WindTrack):
-            if wind.path is None:
-                raise ValueError("No path to rainfall track file provided.")
             # data already in metric units so no conversion needed
-            self._add_forcing_spw(wind.path)
+            self._add_forcing_spw(wind)
         elif isinstance(wind, WindNetCDF):
             ds = wind.read()
             # time slicing to time_frame not needed, hydromt-sfincs handles it
@@ -1064,10 +1068,8 @@ class SfincsAdapter(IHazardAdapter):
             # MeteoHandler always return metric so no conversion needed
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         elif isinstance(rainfall, RainfallTrack):
-            if rainfall.path is None:
-                raise ValueError("No path to rainfall track file provided.")
             # data already in metric units so no conversion needed
-            self._add_forcing_spw(rainfall.path)
+            self._add_forcing_spw(rainfall)
         elif isinstance(rainfall, RainfallNetCDF):
             ds = rainfall.read()
             # time slicing to time_frame not needed, hydromt-sfincs handles it
@@ -1174,6 +1176,53 @@ class SfincsAdapter(IHazardAdapter):
             self.logger.warning(
                 f"Unsupported waterlevel forcing type: {forcing.__class__.__name__}"
             )
+
+    # SPIDERWEB
+    def _add_forcing_spw(self, forcing: Union[RainfallTrack, WindTrack]):
+        """Add spiderweb forcing."""
+        if forcing.source != ForcingSource.TRACK:
+            raise ValueError("Forcing source should be TRACK.")
+
+        if forcing.path is None:
+            raise ValueError("No path to track file provided.")
+
+        if not forcing.path.exists():
+            raise FileNotFoundError(
+                f"Input file for track forcing not found: {forcing.path}"
+            )
+
+        if forcing.path.suffix == ".cyc":
+            forcing.path = self._create_spw_file_from_track(
+                track_forcing=forcing,
+                hurricane_translation=self._current_event.attrs.hurricane_translation,
+                name=self._current_event.attrs.name,
+                output_dir=forcing.path.parent,
+                include_rainfall=bool(
+                    self._current_event.attrs.forcings.get(ForcingType.RAINFALL)
+                ),
+                recreate=False,
+            )
+
+        if forcing.path.suffix != ".spw":
+            raise ValueError(
+                "Track files should be in one of [spw, ddb_cyc] file format and must have [.spw, .cyc] extension."
+            )
+
+        sim_path = self.get_model_root()
+        self.logger.info(f"Adding spiderweb forcing to Sfincs model: {sim_path.name}")
+
+        # prevent SameFileError
+        output_spw_path = sim_path / forcing.path.name
+        if forcing.path == output_spw_path:
+            raise ValueError(
+                "Add a different SPW file than the one already in the model."
+            )
+
+        if output_spw_path.exists():
+            os.remove(output_spw_path)
+        shutil.copy2(forcing.path, output_spw_path)
+
+        self._model.set_config("spwfile", output_spw_path.name)
 
     ### MEASURES ###
     def _add_measure_floodwall(self, floodwall: FloodWall):
@@ -1478,29 +1527,6 @@ class SfincsAdapter(IHazardAdapter):
             name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
         )
 
-    def _add_forcing_spw(self, input_spw_path: Path):
-        """Add spiderweb forcing."""
-        if input_spw_path is None:
-            raise ValueError("No path to rainfall track file provided.")
-
-        if not input_spw_path.exists():
-            raise FileNotFoundError(f"SPW file not found: {input_spw_path}")
-        sim_path = self.get_model_root()
-        self.logger.info(f"Adding spiderweb forcing to Sfincs model: {sim_path.name}")
-
-        # prevent SameFileError
-        output_spw_path = sim_path / input_spw_path.name
-        if input_spw_path == output_spw_path:
-            raise ValueError(
-                "Add a different SPW file than the one already in the model."
-            )
-
-        if output_spw_path.exists():
-            os.remove(output_spw_path)
-        shutil.copy2(input_spw_path, output_spw_path)
-
-        self._model.set_config("spwfile", output_spw_path.name)
-
     ### PRIVATE GETTERS ###
     def _get_result_path(self, scenario: IScenario) -> Path:
         """Return the path to store the results."""
@@ -1590,6 +1616,120 @@ class SfincsAdapter(IHazardAdapter):
             crs=self._model.crs,
         )
         return df, gdf
+
+    def _create_spw_file_from_track(
+        self,
+        track_forcing: Union[RainfallTrack, WindTrack],
+        hurricane_translation: TranslationModel,
+        name: str,
+        output_dir: Path,
+        include_rainfall: bool = False,
+        recreate: bool = False,
+    ):
+        """
+        Create a spiderweb file from a given TropicalCyclone track and save it to the event's input directory.
+
+        Providing the output_dir argument allows to save the spiderweb file in a different directory.
+
+        Parameters
+        ----------
+        output_dir : Path
+            The directory where the spiderweb file is saved (or copied to if it already exists and recreate is False)
+        recreate : bool, optional
+            If True, the spiderweb file is recreated even if it already exists, by default False
+
+        Returns
+        -------
+        Path
+            the path to the created spiderweb file
+        """
+        if track_forcing.path is None:
+            raise ValueError("No path to track file provided.")
+
+        # Check file format
+        match track_forcing.path.suffix:
+            case ".spw":
+                if recreate:
+                    raise ValueError(
+                        "Recreating spiderweb files from existing spiderweb files is not supported. Provide a track file instead."
+                    )
+
+                if track_forcing.path.exists():
+                    return track_forcing.path
+
+                elif (output_dir / track_forcing.path.name).exists():
+                    return output_dir / track_forcing.path.name
+
+                else:
+                    raise FileNotFoundError(f"SPW file not found: {track_forcing.path}")
+            case ".cyc":
+                pass
+            case _:
+                raise ValueError(
+                    "Track files should be in the DDB_CYC file format and must have .cyc extension, or in the SPW file format and must have .spw extension"
+                )
+
+        # Check if the spiderweb file already exists
+        spw_file = output_dir / track_forcing.path.with_suffix(".spw").name
+        if spw_file.exists():
+            if recreate:
+                os.remove(spw_file)
+            else:
+                return spw_file
+
+        self.logger.info(
+            f"Creating spiderweb file for hurricane event `{name}`. This may take a while."
+        )
+
+        # Initialize the tropical cyclone
+        tc = TropicalCyclone()
+        tc.read_track(filename=str(track_forcing.path), fmt="ddb_cyc")
+
+        # Alter the track of the tc if necessary
+        tc = self._translate_tc_track(
+            tc=tc, hurricane_translation=hurricane_translation
+        )
+
+        # Rainfall
+        start = "Including" if include_rainfall else "Excluding"
+        self.logger.info(f"{start} rainfall in the spiderweb file")
+        tc.include_rainfall = include_rainfall
+
+        # Create spiderweb file from the track
+        tc.to_spiderweb(spw_file)
+
+        return spw_file
+
+    def _translate_tc_track(
+        self, tc: TropicalCyclone, hurricane_translation: TranslationModel
+    ):
+        if math.isclose(
+            hurricane_translation.eastwest_translation.value, 0
+        ) and math.isclose(hurricane_translation.northsouth_translation.value, 0):
+            return tc
+
+        self.logger.info(f"Translating the track of the tropical cyclone `{tc.name}`")
+        # First convert geodataframe to the local coordinate system
+        crs = pyproj.CRS.from_string(self.settings.config.csname)
+        tc.track = tc.track.to_crs(crs)
+
+        # Translate the track in the local coordinate system
+        tc.track["geometry"] = tc.track["geometry"].apply(
+            lambda geom: translate(
+                geom,
+                xoff=hurricane_translation.eastwest_translation.convert(
+                    us.UnitTypesLength.meters
+                ),
+                yoff=hurricane_translation.northsouth_translation.convert(
+                    us.UnitTypesLength.meters
+                ),
+            )
+        )
+
+        # Convert the geodataframe to lat/lon
+        tc.track = tc.track.to_crs(epsg=4326)
+
+        return tc
 
     # @gundula do we keep this func, its not used anywhere?
     def _downscale_hmax(self, zsmax, demfile: Path):
