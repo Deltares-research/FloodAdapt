@@ -23,7 +23,8 @@ from shapely import MultiLineString, Polygon
 from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
-from flood_adapt.database_builder.create_database import SviConfigModel
+
+# from flood_adapt.database_builder.create_database import SviConfigModel
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
     TideGaugeSource,
@@ -152,6 +153,18 @@ class GuiConfigModel(BaseModel):
     max_aggr_dmg: float
     max_footprint_dmg: float
     max_benefits: float
+
+
+class SviConfigModel(SpatialJoinModel):
+    """
+    Represents a model for the Social Vulnerability Index (SVI).
+
+    Attributes
+    ----------
+        threshold (float): The threshold value for the SVI model to specify vulnerability.
+    """
+
+    threshold: float
 
 
 class Point(BaseModel):

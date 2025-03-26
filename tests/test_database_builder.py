@@ -135,7 +135,10 @@ class TestDataBaseBuilder:
         # Arrange
         # TODO fix test
         mock_config.building_footprints = None
+        mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
+        builder.fiat_model = Mock(wraps=builder.fiat_model)
+        builder.fiat_model.exposure.exposure_db.columns = ["not BF_FID"]
 
         # Act
         footprints = builder.create_footprints()
