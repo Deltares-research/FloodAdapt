@@ -8,7 +8,6 @@ from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
 from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
 from flood_adapt.object_model.hazard.forcing.wind import WindMeteo
 from flood_adapt.object_model.hazard.interface.events import IEvent, Mode
@@ -94,15 +93,6 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         self.logger.info(
             f"Preparing offshore model to generate waterlevels for `{self.scenario.attrs.name}`"
         )
-        if self.scenario.event.attrs.mode == Mode.risk:
-            input_dir = (
-                self.database.events.input_path
-                / self.scenario.event.attrs.name
-                / self.event.attrs.name
-            )
-        else:
-            input_dir = self.database.events.input_path / self.event.attrs.name
-
         sim_path = self._get_simulation_path()
 
         with SfincsAdapter(model_root=self.template_path) as _offshore_model:
@@ -122,9 +112,6 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
             physical_projection = self.scenario.projection.get_physical_projection()
 
-            # Create any event specific files
-            self.event.preprocess(input_dir)
-
             # Edit offshore model
             _offshore_model.set_timing(self.event.attrs.time)
 
@@ -132,9 +119,12 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             _offshore_model._add_bzs_from_bca(self.event, physical_projection.attrs)
 
             # Add spw if applicable
-            if isinstance(self.event, HurricaneEvent):
-                spw_path = input_dir / f"{self.event.attrs.track_name}.spw"
-                _offshore_model._add_forcing_spw(spw_path)
+            track_forcings = [
+                f for f in self.event.get_forcings() if f.source == ForcingSource.TRACK
+            ]
+            if track_forcings:
+                for forcing in track_forcings:
+                    _offshore_model.add_forcing(forcing)
 
             # Add wind and if applicable pressure forcing from meteo data
             elif isinstance(self.event, HistoricalEvent):
@@ -148,7 +138,8 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
                     wind_forcing = wind_forcings[0]
 
                     # Add wind forcing
-                    _offshore_model._add_forcing_wind(wind_forcing)
+                    if wind_forcing not in track_forcings:
+                        _offshore_model.add_forcing(wind_forcing)
 
                     # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
                     if isinstance(wind_forcing, WindMeteo):
