@@ -62,7 +62,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindSynthetic,
     WindTrack,
 )
-from flood_adapt.object_model.hazard.interface.events import IEvent, Template
+from flood_adapt.object_model.hazard.interface.events import IEvent, Mode, Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -179,7 +179,17 @@ class SfincsAdapter(IHazardAdapter):
 
     def has_run(self, scenario: IScenario) -> bool:
         """Check if the model has been run."""
-        return self.sfincs_completed(scenario) and self.run_completed(scenario)
+        if scenario.event.attrs.mode == Mode.risk:
+            sim_paths = [
+                self._get_simulation_path(scenario, sub_event=sub_event)
+                for sub_event in scenario.event.events
+            ]
+            # No need to check postprocessing for risk scenarios
+            return all(self.sfincs_completed(sim_path) for sim_path in sim_paths)
+        else:
+            return self.sfincs_completed(
+                self._get_simulation_path(scenario)
+            ) and self.run_completed(scenario)
 
     def execute(self, path: Path, strict: bool = True) -> bool:
         """
@@ -235,50 +245,96 @@ class SfincsAdapter(IHazardAdapter):
     def run(self, scenario: IScenario):
         """Run the whole workflow (Preprocess, process and postprocess) for a given scenario."""
         self.ensure_no_existing_forcings()
-        self.preprocess(scenario)
-        self.process(scenario)
+        if scenario.event.attrs.mode == Mode.risk:
+            self._run_risk_scenario(scenario=scenario)
+        else:
+            self._run_single_event(scenario=scenario, event=scenario.event)
 
-        self.postprocess(scenario)
+    def preprocess(self, scenario: IScenario, event: Optional[IEvent] = None):
+        """
+        Preprocess the SFINCS model for a given scenario.
 
-    def preprocess(self, scenario: IScenario):
-        sim_paths = self._get_simulation_paths(scenario)
-        self.logger.info(f"Preprocessing Scenario `{scenario.attrs.name}`")
-        if isinstance(scenario.event, EventSet):
-            self._preprocess_risk(scenario, sim_paths)
-        elif isinstance(scenario.event, IEvent):
-            self._preprocess_single_event(
-                scenario=scenario, event=scenario.event, output_path=sim_paths[0]
-            )
+        Parameters
+        ----------
+        scenario : IScenario
+            Scenario to preprocess.
+        event : IEvent, optional
+            Event to preprocess, by default None.
+        """
+        # I dont like this due to it being state based and might break if people use functions in the wrong order
+        # Currently only used to pass projection + event stuff to WaterlevelModel
+        self._current_scenario = scenario
+        self._current_event = event or scenario.event
 
-    def process(self, scenario: IScenario):
-        sim_paths = self._get_simulation_paths(scenario)
+        is_risk = "Probabilistic " if scenario.event.attrs.mode == Mode.risk else ""
+        self.logger.info(
+            f"Preprocessing Scenario `{scenario.attrs.name}`: {is_risk}Event `{self._current_event.attrs.name}`, Strategy `{scenario.strategy.attrs.name}`, Projection `{scenario.projection.attrs.name}`"
+        )
+        sim_path = self._get_simulation_path(
+            scenario=scenario, sub_event=self._current_event
+        )
+        sim_path.mkdir(parents=True, exist_ok=True)
+        template_path = (
+            self.database.static.get_overland_sfincs_model().get_model_root()
+        )
+        shutil.copytree(template_path, sim_path, dirs_exist_ok=True)
 
-        if isinstance(scenario.event, IEvent):
-            self.logger.info(
-                f"Running SFINCS for single event Scenario `{scenario.attrs.name}`"
-            )
-            self.execute(sim_paths[0])
+        with SfincsAdapter(model_root=sim_path) as model:
+            # Write template model to output path and set it as the model root so focings can write to it
+            model.set_timing(self._current_event.attrs.time)
+            model.write(sim_path)
+            model._current_event = self._current_event
+            model._current_scenario = self._current_scenario
 
-        elif isinstance(scenario.event, EventSet):
-            total = len(sim_paths)
-            for current, sim_path in enumerate(sim_paths):
-                self.logger.info(
-                    f"Running SFINCS for Eventset Scenario `{scenario.attrs.name}`, Event `{scenario.event.events[current].attrs.name}` ({current + 1}/{total})"
+            # Event
+            for forcing in self._current_event.get_forcings():
+                model.add_forcing(forcing)
+
+            if self.rainfall is not None:
+                model.rainfall *= self._current_event.attrs.rainfall_multiplier
+            else:
+                model.logger.warning(
+                    "Failed to add event rainfall multiplier, no rainfall forcing found in the model."
                 )
-                self.execute(sim_path)
 
-    def postprocess(self, scenario: IScenario):
+            # Measures
+            for measure in scenario.strategy.get_hazard_strategy().measures:
+                model.add_measure(measure)
+
+            # Projection
+            model.add_projection(scenario.projection)
+
+            # Output
+            model.add_obs_points()
+
+            # Save any changes made to disk as well
+            model.write(path_out=sim_path)
+
+    def process(self, scenario: IScenario, event: Optional[IEvent] = None):
+        event = event or scenario.event
+        if not event.attrs.mode == Mode.single_event:
+            raise ValueError(f"Unsupported event mode: {event.attrs.mode}.")
+
+        sim_path = self._get_simulation_path(scenario=scenario, sub_event=event)
+        self.logger.info(
+            f"Running SFINCS for single event Scenario `{scenario.attrs.name}`"
+        )
+        self.execute(sim_path)
+
+    def postprocess(self, scenario: IScenario, event: Optional[IEvent] = None):
+        event = event or scenario.event
+        if not event.attrs.mode == Mode.single_event:
+            raise ValueError(f"Unsupported event mode: {event.attrs.mode}.")
+
         self.logger.info(f"Postprocessing SFINCS for Scenario `{scenario.attrs.name}`")
-        if not self.sfincs_completed(scenario):
+        if not self.sfincs_completed(
+            self._get_simulation_path(scenario, sub_event=event)
+        ):
             raise RuntimeError("SFINCS was not run successfully!")
 
-        if isinstance(scenario.event, IEvent):
-            self.write_floodmap_geotiff(scenario)
-            self.plot_wl_obs(scenario)
-            self.write_water_level_map(scenario)
-
-        elif isinstance(scenario.event, EventSet):
-            self.calculate_rp_floodmaps(scenario)
+        self.write_floodmap_geotiff(scenario)
+        self.plot_wl_obs(scenario)
+        self.write_water_level_map(scenario)
 
     def set_timing(self, time: TimeModel):
         """Set model reference times."""
@@ -483,32 +539,26 @@ class SfincsAdapter(IHazardAdapter):
         )
         return any_floodmap and all_exist
 
-    def sfincs_completed(self, scenario: IScenario) -> bool:
+    def sfincs_completed(self, sim_path: Path) -> bool:
         """Check if the sfincs executable has been run successfully by checking if the output files exist in the simulation folder.
+
+        Parameters
+        ----------
+        sim_path : Path
+            Path to the simulation folder to check.
 
         Returns
         -------
         bool: True if the sfincs executable has been run successfully, False otherwise.
 
         """
-        sim_paths = self._get_simulation_paths(scenario)
         SFINCS_OUTPUT_FILES = ["sfincs_map.nc"]
 
         if self.settings.obs_point is not None:
             SFINCS_OUTPUT_FILES.append("sfincs_his.nc")
 
-        if isinstance(scenario.event, EventSet):
-            for sim_path in sim_paths:
-                to_check = [Path(sim_path) / file for file in SFINCS_OUTPUT_FILES]
-                if not all(output.exists() for output in to_check):
-                    return False
-            return True
-        elif isinstance(scenario.event, IEvent):
-            to_check = [Path(sim_paths[0]) / file for file in SFINCS_OUTPUT_FILES]
-            # Add logfile check as well from old hazard.py?
-            return all(output.exists() for output in to_check)
-        else:
-            raise ValueError(f"Unsupported event type: {type(scenario.event)}.")
+        to_check = [Path(sim_path) / file for file in SFINCS_OUTPUT_FILES]
+        return all(output.exists() for output in to_check)
 
     def write_floodmap_geotiff(
         self, scenario: IScenario, sim_path: Optional[Path] = None
@@ -527,7 +577,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         self.logger.info("Writing flood maps to geotiff")
         results_path = self._get_result_path(scenario)
-        sim_path = sim_path or self._get_simulation_paths(scenario)[0]
+        sim_path = sim_path or self._get_simulation_path(scenario)
         demfile = self.database.static_path / "dem" / self.settings.dem.filename
 
         with SfincsAdapter(model_root=sim_path) as model:
@@ -560,7 +610,7 @@ class SfincsAdapter(IHazardAdapter):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
         self.logger.info("Writing water level map to netcdf")
         results_path = self._get_result_path(scenario)
-        sim_path = sim_path or self._get_simulation_paths(scenario)[0]
+        sim_path = sim_path or self._get_simulation_path(scenario)
 
         with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
@@ -581,8 +631,8 @@ class SfincsAdapter(IHazardAdapter):
             return
 
         self.logger.info("Plotting water levels at observation points")
-        sim_path = sim_path or self._get_simulation_paths(scenario)[0]
         event = event or scenario.event
+        sim_path = sim_path or self._get_simulation_path(scenario, sub_event=event)
 
         # read SFINCS model
         with SfincsAdapter(model_root=sim_path) as model:
@@ -743,9 +793,12 @@ class SfincsAdapter(IHazardAdapter):
         """
         if not isinstance(scenario.event, EventSet):
             raise ValueError("This function is only available for risk scenarios.")
-        result_path = self._get_result_path(scenario)
-        sim_paths = self._get_simulation_paths(scenario)
 
+        result_path = self._get_result_path(scenario)
+        sim_paths = [
+            self._get_simulation_path(scenario, sub_event=sub_event)
+            for sub_event in scenario.event.events
+        ]
         phys_proj = scenario.projection.get_physical_projection()
 
         floodmap_rp = self.database.site.attrs.fiat.risk.return_periods
@@ -878,71 +931,32 @@ class SfincsAdapter(IHazardAdapter):
     ######################################
     ### PRIVATE - use at your own risk ###
     ######################################
-    def _preprocess_single_event(
-        self,
-        scenario: IScenario,
-        event: IEvent,
-        output_path: Path,
-    ):
-        # Write template model to output path and set it as the model root so focings can write to it
-        self.set_timing(event.attrs.time)
-        self.write(output_path)
+    def _run_single_event(self, scenario: IScenario, event: IEvent):
+        self.preprocess(scenario, event)
+        self.process(scenario, event)
+        self.postprocess(scenario, event)
 
-        # I dont like this due to it being state based and might break if people use functions in the wrong order
-        # Currently only used to pass projection + event stuff to WaterlevelModel
-        self._current_scenario = scenario
-        self._current_event = event
-        try:
-            # Event
-            for forcing in event.get_forcings():
-                self.add_forcing(forcing)
+    def _run_risk_scenario(self, scenario: IScenario):
+        """Run the whole workflow for a risk scenario.
 
-            if self.rainfall is not None:
-                self.rainfall *= event.attrs.rainfall_multiplier
-            else:
-                self.logger.warning(
-                    "Failed to add event rainfall multiplier, no rainfall forcing found in the model."
-                )
+        This means preprocessing and running the SFINCS model for each event in the event set, and then postprocessing the results.
+        """
+        total = len(scenario.event.events)
 
-            # Measures
-            for measure in scenario.strategy.get_hazard_strategy().measures:
-                self.add_measure(measure)
+        for i, sub_event in enumerate(scenario.event.events):
+            sim_path = self._get_simulation_path(scenario, sub_event=sub_event)
 
-            # Projection
-            self.add_projection(scenario.projection)
+            # Preprocess
+            self.preprocess(scenario, event=sub_event)
 
-            # Output
-            self.add_obs_points()
-
-            # Save any changes made to disk as well
-            self.write(path_out=output_path)
-
-        finally:
-            self._current_scenario = None
-            self._current_event = None
-
-    def _preprocess_risk(self, scenario: IScenario, sim_paths: list[Path]):
-        if not isinstance(scenario.event, EventSet):
-            raise ValueError("This function is only available for risk scenarios.")
-
-        if len(sim_paths) != len(scenario.event.events):
-            raise ValueError(
-                "Number of simulation paths should match the number of events."
-            )
-
-        total = len(sim_paths)
-        for i, event_and_path in enumerate(
-            zip(scenario.event.events, sim_paths, strict=True)
-        ):
+            # Process
             self.logger.info(
-                f"Preprocessing SFINCS for Eventset Scenario `{scenario.attrs.name}`, Event `{scenario.event.events[i].attrs.name}` ({i + 1}/{total})"
+                f"Running SFINCS for Eventset Scenario `{scenario.attrs.name}`, Event `{sub_event.attrs.name}` ({i + 1}/{total})"
             )
-            sub_event, sim_path = event_and_path
-            self._preprocess_single_event(
-                scenario=scenario,
-                event=sub_event,
-                output_path=sim_path,
-            )
+            self.execute(sim_path)
+
+        # Postprocess
+        self.calculate_rp_floodmaps(scenario)
 
     ### FORCING ###
     def _add_forcing_wind(
@@ -1534,7 +1548,20 @@ class SfincsAdapter(IHazardAdapter):
         """Return the path to store the results."""
         return self.database.scenarios.output_path / scenario.attrs.name / "Flooding"
 
-    def _get_simulation_paths(self, scenario: IScenario) -> list[Path]:
+    def _get_simulation_path(
+        self, scenario: IScenario, sub_event: Optional[IEvent] = None
+    ) -> Path:
+        """
+        Return the path to the simulation results.
+
+        Parameters
+        ----------
+        scenario : IScenario
+            The scenario for which to get the simulation path.
+        sub_event : Optional[IEvent], optional
+            The sub-event for which to get the simulation path, by default None.
+            Is only used when the event associated with the scenario is an EventSet.
+        """
         base_path = (
             self._get_result_path(scenario)
             / "simulations"
@@ -1542,16 +1569,17 @@ class SfincsAdapter(IHazardAdapter):
         )
 
         if isinstance(scenario.event, EventSet):
-            return [
-                base_path.parent / sub_event.attrs.name / base_path.name
-                for sub_event in scenario.event.events
-            ]
+            if sub_event is None:
+                raise ValueError("Event must be provided when scenario is an EventSet.")
+            return base_path.parent / sub_event.attrs.name / base_path.name
         elif isinstance(scenario.event, IEvent):
-            return [base_path]
+            return base_path
         else:
             raise ValueError(f"Unsupported mode: {scenario.event.attrs.mode}")
 
-    def _get_simulation_path_offshore(self, scenario: IScenario) -> list[Path]:
+    def _get_simulation_path_offshore(
+        self, scenario: IScenario, sub_event: Optional[IEvent] = None
+    ) -> Path:
         # Get the path to the offshore model (will not be used if offshore model is not created)
         if self.settings.config.offshore_model is None:
             raise ValueError("No offshore model found in sfincs config.")
@@ -1561,12 +1589,9 @@ class SfincsAdapter(IHazardAdapter):
             / self.settings.config.offshore_model.name
         )
         if isinstance(scenario.event, EventSet):
-            return [
-                base_path.parent / sub_event.attrs.name / base_path.name
-                for sub_event in scenario.event.events
-            ]
+            return base_path.parent / sub_event.attrs.name / base_path.name
         elif isinstance(scenario.event, IEvent):
-            return [base_path]
+            return base_path
         else:
             raise ValueError(f"Unsupported mode: {scenario.event.attrs.mode}")
 

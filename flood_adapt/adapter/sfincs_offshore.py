@@ -96,7 +96,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         sim_path = self._get_simulation_path()
 
         with SfincsAdapter(model_root=self.template_path) as _offshore_model:
-            if _offshore_model.sfincs_completed(self.scenario):
+            if _offshore_model.sfincs_completed(sim_path):
                 self.logger.info(
                     f"Skip preprocessing offshore model as it has already been run for `{self.scenario.attrs.name}`."
                 )
@@ -153,9 +153,9 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
     def _execute_sfincs_offshore(self, sim_path: Path):
         self.logger.info(f"Running offshore model in {sim_path}")
-
+        sim_path = self._get_simulation_path()
         with SfincsAdapter(model_root=sim_path) as _offshore_model:
-            if _offshore_model.sfincs_completed(self.scenario):
+            if _offshore_model.sfincs_completed(sim_path):
                 self.logger.info(
                     "Skip running offshore model as it has already been run."
                 )

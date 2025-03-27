@@ -141,9 +141,10 @@ def update_database_input(database_path: Path):
 
 
 def create_events():
-    events = _create_single_events()
-    event_set = _create_event_set("test_set")
-    return [*events, event_set]
+    return [
+        *_create_single_events(),
+        _create_event_set("test_set"),
+    ]
 
 
 def create_projections():
@@ -844,6 +845,25 @@ def _create_event_set(name: str) -> EventSet:
     return EventSet(
         data=EventSetModel(
             name=name,
+            sub_events=sub_event_models,
+        ),
+        sub_events=sub_events,
+    )
+
+
+def create_event_set_with_hurricanes():
+    sub_event_models: List[SubEventModel] = []
+    sub_events: List[IEvent] = []
+
+    for i in range(1, 5):
+        sub_events.append(_create_hurricane_event(name=f"subevent_hurricane{i:04d}"))
+        sub_event_models.append(
+            SubEventModel(name=f"subevent_hurricane{i:04d}", frequency=i)
+        )
+
+    return EventSet(
+        data=EventSetModel(
+            name="test_event_set_with_hurricanes",
             sub_events=sub_event_models,
         ),
         sub_events=sub_events,
