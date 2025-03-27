@@ -95,24 +95,10 @@ class DatumModel(BaseModel):
         The name of the vertical reference model.
     height : us.UnitfulLength
         The height of the vertical reference model relative to the main reference.
-    correction : Optional[us.UnitfulLength], default = None
-        The correction of the vertical reference model relative to the main reference.
-        Given that the height of the vertical reference model is often determined by external sources,
-        this correction can be used to correct systematic over-/underestimation of a vertical reference model.
     """
 
     name: str
     height: us.UnitfulLength
-
-    # this used to be water_level_offset from events
-    correction: Optional[us.UnitfulLength] = None
-
-    @property
-    def total_height(self) -> us.UnitfulLength:
-        """The height of the vertical reference model, including the correction if provided."""
-        if self.correction:
-            return self.height + self.correction
-        return self.height
 
 
 class WaterlevelReferenceModel(BaseModel):
@@ -181,10 +167,17 @@ class FloodModel(BaseModel):
         The name of the directory in `static/templates/<directory>` that contains the template model files.
     reference : str
         The name of the vertical reference model that is used as the reference datum. Should be defined in water_level.datums.
+    vertical_offset : Optional[us.UnitfulLength], default = None
+        The vertical offset of the vertical reference model relative to the main reference.
+        Given that the height of the vertical reference model is often determined by external sources,
+        this vertical offset can be used to correct systematic over-/underestimation of a vertical reference model.
     """
 
     name: str
     reference: str
+
+    # this used to be water_level_offset from events
+    vertical_offset: Optional[us.UnitfulLength] = None
 
 
 class SfincsConfigModel(BaseModel):

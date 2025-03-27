@@ -36,7 +36,7 @@ dependencies = [
     "geopandas",
     "jellyfish<1.0",  # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
     # jellyfish v1.0 starts requiring rust as a dependency, which is fine if there are built .whl files. BUT THERE ARE NO BUILDS FOR WINDOWS YET.
-    "hydromt-fiat==0.5.3",
+    "hydromt-fiat==0.5.4",
     "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git",
     "numpy < 2.0",
     "numpy-financial",
@@ -60,7 +60,12 @@ dev = [
     "typos      == 1.23.6",
 ]
 
-build = ["build", "twine"]
+build = [
+    "build",
+    "twine",
+    "pyinstaller == 6.7.0",
+    "pefile<2024.8.26", # This version introduces a significant slowdown in binary vs data reclassification step of pyinstaller. Pyinstaller is aware. https://github.com/pyinstaller/pyinstaller/issues/8762
+]
 docs = ["jupyter", "jupyter-cache", "matplotlib", "quartodoc", "regex"]
 all = ["flood-adapt[build,dev,docs]"]
 
