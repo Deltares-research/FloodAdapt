@@ -212,6 +212,8 @@ class SfincsAdapter(IHazardAdapter):
             self.sfincs_logger.info(process.stdout)
             self.logger.debug(process.stdout)
 
+        self._cleanup_simulation_folder(path)
+
         if process.returncode != 0:
             if Settings().delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
@@ -1787,3 +1789,16 @@ class SfincsAdapter(IHazardAdapter):
         sfincs_logger.setLevel(logging.DEBUG)
         sfincs_logger.addHandler(file_handler)
         return sfincs_logger
+
+    def _cleanup_simulation_folder(
+        self,
+        path: Path,
+        extensions: list[str] = [".spw"],
+    ):
+        """Remove all files with the given extensions in the given path."""
+        if not path.exists():
+            return
+
+        for ext in extensions:
+            for file in path.glob(f"*{ext}"):
+                file.unlink()
