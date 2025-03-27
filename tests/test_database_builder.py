@@ -39,7 +39,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     FloodModel,
     ObsPointModel,
     SCSModel,
-    SlrModel,
+    SlrScenariosModel,
     WaterlevelReferenceModel,
 )
 
@@ -487,7 +487,7 @@ class TestDataBaseBuilder:
 
     def test_create_slr(self, mock_config: ConfigModel):
         # Arrange
-        mock_config.slr = SlrModel(
+        mock_config.slr_scenarios = SlrScenariosModel(
             file=str(self.static_path / "slr/slr.csv"),
             relative_to_year=2020,
         )
@@ -497,17 +497,19 @@ class TestDataBaseBuilder:
         slr = builder.create_slr()
 
         # Assert
-        expected_file = builder.static_path / "slr" / Path(mock_config.slr.file).name
-        expected_slr = SlrModel(
+        expected_file = (
+            builder.static_path / "slr" / Path(mock_config.slr_scenarios.file).name
+        )
+        expected_slr = SlrScenariosModel(
             file=expected_file.relative_to(builder.static_path).as_posix(),
-            relative_to_year=mock_config.slr.relative_to_year,
+            relative_to_year=mock_config.slr_scenarios.relative_to_year,
         )
         assert slr == expected_slr
         assert expected_file.exists()
 
     def test_create_slr_returns_none(self, mock_config: ConfigModel):
         # Arrange
-        mock_config.slr = None
+        mock_config.slr_scenarios = None
         builder = DatabaseBuilder(mock_config)
 
         # Act
@@ -876,7 +878,7 @@ class TestDataBaseBuilder:
                     units=us.UnitTypesLength.meters,
                 ),
                 excluded_datums=["NAVD88"],
-                slr=SlrModel(
+                slr=SlrScenariosModel(
                     file=str(static_path / "slr/slr.csv"),
                     relative_to_year=2020,
                 ),

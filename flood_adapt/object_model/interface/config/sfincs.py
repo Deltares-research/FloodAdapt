@@ -165,7 +165,7 @@ class CycloneTrackDatabaseModel(BaseModel):
     file: str
 
 
-class SlrModel(BaseModel):
+class SlrScenariosModel(BaseModel):
     """The accepted input for the variable slr in Site."""
 
     file: str
@@ -203,7 +203,7 @@ class SfincsModel(BaseModel):
     config: SfincsConfigModel
     water_level: WaterlevelReferenceModel
     cyclone_track_database: Optional[CycloneTrackDatabaseModel] = None
-    slr: Optional[SlrModel] = None
+    slr_scenarios: Optional[SlrScenariosModel] = None
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
     dem: DemModel
 

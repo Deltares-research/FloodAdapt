@@ -144,7 +144,7 @@ class DbsStatic(IDbsStatic):
             List of scenario names
         """
         input_file = self._database.static_path.joinpath(
-            self._database.site.attrs.sfincs.slr.scenarios.file
+            self._database.site.attrs.sfincs.slr_scenarios.scenarios.file
         )
         df = pd.read_csv(input_file)
         names = df.columns[2:].to_list()

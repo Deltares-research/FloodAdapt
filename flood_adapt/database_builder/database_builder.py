@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+import warnings
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Union
@@ -20,7 +21,7 @@ from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from pydantic import BaseModel, Field
 from shapely import MultiLineString, Polygon
 
-from flood_adapt import FloodAdaptLogging, Settings
+from flood_adapt import FloodAdaptLogging
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
@@ -57,7 +58,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     SCSModel,
     SfincsConfigModel,
     SfincsModel,
-    SlrModel,
+    SlrScenariosModel,
     WaterlevelReferenceModel,
 )
 from flood_adapt.object_model.interface.config.site import (
@@ -72,6 +73,30 @@ from flood_adapt.object_model.interface.projections import (
 from flood_adapt.object_model.interface.strategies import StrategyModel
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.strategy import Strategy
+
+
+def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
+    """
+    Check if the given path is absolute and return the absolute path.
+
+    Args:
+        path (str): The path to be checked.
+
+    Returns
+    -------
+        str: The absolute path.
+
+    Raises
+    ------
+        ValueError: If the path is not absolute and no config_path is provided.
+    """
+    path = Path(str_path)
+    if not path.is_absolute():
+        if config_path is not None:
+            path = Path(config_path).parent.joinpath(path).resolve()
+        else:
+            raise ValueError(f"Value '{path}' should be an absolute path.")
+    return path.as_posix()
 
 
 class SpatialJoinModel(BaseModel):
@@ -183,11 +208,12 @@ class TideGaugeConfigModel(BaseModel):
     """
 
     source: TideGaugeSource
-    ref: str
     description: str = ""
+    ref: Optional[str] = None
     id: Optional[int] = None
+    lon: Optional[float] = None
+    lat: Optional[float] = None
     file: Optional[str] = None
-    location: Optional[Point] = None
     max_distance: Optional[us.UnitfulLength] = None
 
 
@@ -227,7 +253,7 @@ class ConfigModel(BaseModel):
         The GUI model representing scaling values for the layers.
     building_footprints : Optional[SpatialJoinModel], default None
         The building footprints model.
-    slr : Optional[SlrModelDef], default SlrModelDef()
+    slr_scenarios : Optional[SlrModelDef], default SlrModelDef()
         The sea level rise model.
     tide_gauge : Optional[TideGaugeConfigModel], default None
         The tide gauge model.
@@ -287,7 +313,7 @@ class ConfigModel(BaseModel):
 
     excluded_datums: list[str] = Field(default_factory=list)
 
-    slr: Optional[SlrModel] = None
+    slr_scenarios: Optional[SlrScenariosModel] = None
     scs: Optional[SCSModel] = None
     tide_gauge: Optional[TideGaugeConfigModel] = None
     cyclones: Optional[bool] = True
@@ -318,12 +344,32 @@ class DatabaseBuilder:
     _has_roads: bool = False
     _aggregation_areas: Optional[list] = None
 
-    def __init__(self, config: ConfigModel):
+    def __init__(self, config: ConfigModel, overwrite: bool = True):
         self.config = config
+
+        # Set database root
         if config.database_path:
-            self.root = Path(config.database_path)
+            self.root = Path(config.database_path).joinpath(self.config.name)
         else:
-            self.root = Path(os.getcwd() / self.config.name)
+            raise ValueError(
+                "Database path is not provided. Please provide a path using the 'database_path' attribute."
+            )
+
+        # Check if database already exists
+        if self.root.exists() and not overwrite:
+            raise ValueError(
+                f"There is already a Database folder in '{self.root.as_posix()}'."
+            )
+        if self.root.exists() and overwrite:
+            shutil.rmtree(self.root)
+            warnings.warn(
+                f"There is already a Database folder in '{self.root.as_posix()}, which will be overwritten'."
+            )
+
+        # Create database folder
+        self.root.mkdir(parents=True)
+
+        self.logger.info(f"Creating a FloodAdapt database in '{self.root.as_posix()}'")
 
         # Read user models and copy to templates
         self.fiat_model = self.read_template_fiat_model()
@@ -339,6 +385,41 @@ class DatabaseBuilder:
     @staticmethod
     def from_file(config_path: Path):
         config = ConfigModel.read(config_path)
+        # check if database path is provided and use config_file path if not
+        if config.database_path is None:
+            dbs_path = Path(config_path).parent / "Database"
+            if not dbs_path.exists():
+                dbs_path.mkdir(parents=True)
+            config.database_path = dbs_path.as_posix()
+        # check if paths are relative to the config file and make them absolute
+        config.database_path = path_check(config.database_path, config_path)
+        config.fiat = path_check(config.fiat, config_path)
+        config.sfincs_overland.name = path_check(
+            config.sfincs_overland.name, config_path
+        )
+        if config.sfincs_offshore:
+            config.sfincs_offshore.name = path_check(
+                config.sfincs_offshore.name, config_path
+            )
+        if isinstance(config.building_footprints, SpatialJoinModel):
+            config.building_footprints.file = path_check(
+                config.building_footprints.file, config_path
+            )
+        if config.tide_gauge and config.tide_gauge.file:
+            config.tide_gauge.file = path_check(config.tide_gauge.file, config_path)
+        if config.svi:
+            config.svi.file = path_check(config.svi.file, config_path)
+        if config.bfe:
+            config.bfe.file = path_check(config.bfe.file, config_path)
+        if config.slr_scenarios:
+            config.slr_scenarios.file = path_check(
+                config.slr_scenarios.file, config_path
+            )
+        if config.probabilistic_set:
+            config.probabilistic_set = path_check(config.probabilistic_set, config_path)
+        if config.aggregation_areas:
+            for aggr in config.aggregation_areas:
+                aggr.file = path_check(aggr.file, config_path)
         return DatabaseBuilder(config)
 
     @property
@@ -376,7 +457,7 @@ class DatabaseBuilder:
 
     ### TEMPLATE READERS ###
     def read_template_fiat_model(self) -> HydromtFiatModel:
-        user_provided = self._check_exists_and_make_absolute(self.config.fiat)
+        user_provided = self._check_exists_and_absolute(self.config.fiat)
 
         # Read config model
         HydromtFiatModel(root=str(user_provided), mode="r+").read()
@@ -392,7 +473,7 @@ class DatabaseBuilder:
         return in_db
 
     def read_template_sfincs_overland_model(self) -> HydromtSfincsModel:
-        user_provided = self._check_exists_and_make_absolute(
+        user_provided = self._check_exists_and_absolute(
             self.config.sfincs_overland.name
         )
         user_model = HydromtSfincsModel(root=str(user_provided), mode="r")
@@ -405,13 +486,13 @@ class DatabaseBuilder:
             shutil.rmtree(location_in_db)
         shutil.copytree(user_provided, location_in_db)
         in_db = HydromtSfincsModel(root=str(location_in_db), mode="r+")
-
+        in_db.read()
         return in_db
 
     def read_template_sfincs_offshore_model(self) -> Optional[HydromtSfincsModel]:
         if self.config.sfincs_offshore is None:
             return None
-        user_provided = self._check_exists_and_make_absolute(
+        user_provided = self._check_exists_and_absolute(
             self.config.sfincs_offshore.name
         )
         user_model = HydromtSfincsModel(root=str(user_provided), mode="r+")
@@ -659,7 +740,7 @@ class DatabaseBuilder:
         # TODO @panos check this function
         if isinstance(self.config.building_footprints, SpatialJoinModel):
             # Use the provided building footprints
-            building_footprints_file = self._check_exists_and_make_absolute(
+            building_footprints_file = self._check_exists_and_absolute(
                 self.config.building_footprints.file
             )
 
@@ -744,7 +825,7 @@ class DatabaseBuilder:
             return None
 
         # TODO can we use hydromt-FIAT?
-        bfe_file = self._check_exists_and_make_absolute(self.config.bfe.file)
+        bfe_file = self._check_exists_and_absolute(self.config.bfe.file)
 
         self.logger.info(
             f"Using map from {Path(bfe_file).as_posix()} as base flood elevation."
@@ -793,7 +874,7 @@ class DatabaseBuilder:
                     objects=self.fiat_model.exposure.exposure_geoms[
                         self._get_fiat_building_index()
                     ],
-                    layer=str(self._check_exists_and_make_absolute(aggr.file)),
+                    layer=str(self._check_exists_and_absolute(aggr.file)),
                     field_name=aggr.field_name,
                     rename=_FIAT_COLUMNS.aggregation_label.format(name=aggr_name),
                 )
@@ -910,7 +991,7 @@ class DatabaseBuilder:
 
     def create_svi(self) -> Optional[SVIModel]:
         if self.config.svi:
-            svi_file = self._check_exists_and_make_absolute(self.config.svi.file)
+            svi_file = self._check_exists_and_absolute(self.config.svi.file)
             exposure_csv = self.fiat_model.exposure.exposure_db
             buildings_joined, svi = self.spatial_join(
                 self.fiat_model.exposure.exposure_geoms[
@@ -982,7 +1063,7 @@ class DatabaseBuilder:
         sfincs = SfincsModel(
             config=config,
             water_level=self.water_level_references,
-            slr=self.create_slr(),
+            slr_scenarios=self.create_slr(),
             dem=self.create_dem_model(),
             scs=self.create_scs_model(),
             cyclone_track_database=self.create_cyclone_track_database(),
@@ -1021,7 +1102,7 @@ class DatabaseBuilder:
     def create_scs_model(self) -> Optional[SCSModel]:
         if self.config.scs is None:
             return None
-        scs_file = self._check_exists_and_make_absolute(self.config.scs.file)
+        scs_file = self._check_exists_and_absolute(self.config.scs.file)
         db_scs_file = self.static_path / "scs" / scs_file.name
         db_scs_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(scs_file, db_scs_file)
@@ -1039,7 +1120,7 @@ class DatabaseBuilder:
                 Path(self.sfincs_overland_model.root) / "subgrid" / "dep_subgrid.tif"
             )
 
-        dem_file = self._check_exists_and_make_absolute(subgrid_sfincs)
+        dem_file = self._check_exists_and_absolute(subgrid_sfincs)
         fa_subgrid_path = self.static_path / "dem" / dem_file.name
         fa_subgrid_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -1085,21 +1166,21 @@ class DatabaseBuilder:
 
         return config
 
-    def create_slr(self) -> Optional[SlrModel]:
-        if self.config.slr is None:
+    def create_slr(self) -> Optional[SlrScenariosModel]:
+        if self.config.slr_scenarios is None:
             return None
 
-        self.config.slr.file = str(
-            self._check_exists_and_make_absolute(self.config.slr.file)
+        self.config.slr_scenarios.file = str(
+            self._check_exists_and_absolute(self.config.slr_scenarios.file)
         )
-        slr_path = self.static_path / "slr"
+        slr_path = self.static_path / "slr_scenarios"
         slr_path.mkdir()
-        new_file = slr_path / Path(self.config.slr.file).name
-        shutil.copyfile(self.config.slr.file, new_file)
+        new_file = slr_path / Path(self.config.slr_scenarios.file).name
+        shutil.copyfile(self.config.slr_scenarios.file, new_file)
 
-        return SlrModel(
+        return SlrScenariosModel(
             file=new_file.relative_to(self.static_path).as_posix(),
-            relative_to_year=self.config.slr.relative_to_year,
+            relative_to_year=self.config.slr_scenarios.relative_to_year,
         )
 
     def create_observation_points(self) -> list[ObsPointModel]:
@@ -1148,7 +1229,7 @@ class DatabaseBuilder:
     def create_tide_gauge(self) -> Optional[TideGaugeModel]:
         if self.config.tide_gauge is None:
             self.logger.warning(
-                "Tide gauge information not provided. Historical nearshore gauged events will not be available in FloodAdapt!"
+                "Tide gauge information not provided. Historical events will not have an option to use gauged data in FloodAdapt!"
             )
             self.logger.warning(
                 "No water level references were found. It is assumed that MSL is equal to the datum used in the SFINCS overland model. You can provide these values with the tide_gauge.ref attribute in the site.toml."
@@ -1157,13 +1238,16 @@ class DatabaseBuilder:
 
         if self.config.tide_gauge.source == TideGaugeSource.file:
             if self.config.tide_gauge.file is None:
-                # TODO Should probably raise an error here since it doesnt make sense to have this source without a file?
-                self.logger.warning(
-                    "Tide gauge file not provided. Historical nearshore gauged events will not be available in FloodAdapt!"
+                raise ValueError(
+                    "Tide gauge file needs to be provided when 'file' is selected as the source."
                 )
-                return None
+            if self.config.tide_gauge.ref is None:
+                self.logger.warning(
+                    "Tide gauge reference not provided. MSL is assumed as the reference of the water levels in the file."
+                )
+                self.config.tide_gauge.ref = "MSL"
 
-            tide_gauge_file = self._check_exists_and_make_absolute(
+            tide_gauge_file = self._check_exists_and_absolute(
                 self.config.tide_gauge.file
             )
             db_file_path = Path(self.static_path / "tide_gauges") / tide_gauge_file.name
@@ -1172,33 +1256,37 @@ class DatabaseBuilder:
             shutil.copyfile(self.config.tide_gauge.file, db_file_path)
 
             rel_db_path = Path(db_file_path.relative_to(self.static_path))
+            self.logger.warning(
+                f"Tide gauge from file {rel_db_path} assumed to be in {self.unit_system.default_length_units}!"
+            )
             tide_gauge = TideGaugeModel(
                 reference=self.config.tide_gauge.ref,
-                description="observations from file stored in database",
+                description="Observations from file stored in database",
                 source=TideGaugeSource.file,
                 file=rel_db_path,
-                units=us.UnitTypesLength.meters,
+                lon=self.config.tide_gauge.lon,
+                lat=self.config.tide_gauge.lat,
+                units=self.unit_system.default_length_units,
             )
 
             return tide_gauge
 
         elif self.config.tide_gauge.source == TideGaugeSource.noaa_coops:
-            if (self.config.tide_gauge.id is None) or (
-                self.config.tide_gauge.location is None
-            ):
-                # TODO Should probably raise an error here since it doesnt make sense to have this source without an ID and location?
-                self.logger.warning(
-                    "Tide gauge ID and/or location not provided. Historical nearshore gauged events will not be available in FloodAdapt!"
-                )
-                return None
-
             if self.config.tide_gauge.ref is not None:
                 ref = self.config.tide_gauge.ref
             else:
                 ref = "MLLW"  # If reference is not provided use MLLW
-            station = self._get_closest_station(
-                ref
-            )  # This always return values in meters currently
+            if self.config.tide_gauge.id is None:
+                station_id = self._get_closest_station()
+                self.logger.info(
+                    "The closest NOAA tide gauge station to the site will be searched."
+                )
+            else:
+                station_id = self.config.tide_gauge.id
+                self.logger.info(
+                    f"The NOAA tide gauge station with the provided ID {station_id} will be used."
+                )
+            station = self._get_station_metadata(station_id=station_id, ref=ref)
             if station is not None:
                 # Add tide_gauge information in site toml
                 tide_gauge = TideGaugeModel(
@@ -1238,16 +1326,6 @@ class DatabaseBuilder:
                         height=height,
                     )
                     self.water_level_references.datums.append(wl_info)
-
-            tide_gauge = TideGaugeModel(
-                name=str(self.config.tide_gauge.id),
-                reference=self.config.tide_gauge.ref,
-                source=TideGaugeSource.noaa_coops,
-                description=self.config.tide_gauge.description,
-                ID=self.config.tide_gauge.id,
-                lat=self.config.tide_gauge.location.lat,
-                lon=self.config.tide_gauge.location.lon,
-            )
             return tide_gauge
         else:
             self.logger.warning(
@@ -1596,14 +1674,15 @@ class DatabaseBuilder:
         for name in folders:
             (self.static_path / name).mkdir(parents=True, exist_ok=True)
 
-    def _check_exists_and_make_absolute(self, path: str) -> Path:
+    def _check_exists_and_absolute(self, path: str) -> Path:
         """Check if the path is absolute or relative and return a Path object. Raises an error if the path is not valid."""
         if not Path(path).exists():
             raise FileNotFoundError(f"Path {path} does not exist.")
 
         if Path(path).is_absolute():
             return Path(path)
-        return self.root / path
+        else:
+            raise ValueError(f"Path {path} is not absolute.")
 
     def _join_building_footprints(
         self, building_footprints: gpd.GeoDataFrame, field_name: str
@@ -1803,26 +1882,7 @@ class DatabaseBuilder:
             self.config.fiat_buildings_name
         )
 
-    def _get_closest_station(self, ref: str = "MLLW"):
-        """
-        Find the closest tide gauge station to the SFINCS domain and retrieves its metadata.
-
-        Args:
-            ref (str, optional): The reference level for water level measurements. Defaults to "MLLW".
-
-        Returns
-        -------
-            dict: A dictionary containing the metadata of the closest tide gauge station.
-                The dictionary includes the following keys:
-                - "id": The station ID.
-                - "name": The station name.
-                - "datum": The difference between the station's datum and the reference level.
-                - "datum_name": The name of the datum used by the station.
-                - "msl": The difference between the Mean Sea Level (MSL) and the reference level.
-                - "reference": The reference level used for water level measurements.
-                - "lon": The longitude of the station.
-                - "lat": The latitude of the station.
-        """
+    def _get_closest_station(self):
         # Get available stations from source
         obs_data = obs.source(self.config.tide_gauge.source)
         obs_data.get_active_stations()
@@ -1861,8 +1921,33 @@ class DatabaseBuilder:
 
         # get station id
         station_id = closest_station["id"].item()
+
+        return station_id
+
+    def _get_station_metadata(self, station_id: str, ref: str = "MLLW"):
+        """
+        Find the closest tide gauge station to the SFINCS domain and retrieves its metadata.
+
+        Args:
+            ref (str, optional): The reference level for water level measurements. Defaults to "MLLW".
+
+        Returns
+        -------
+            dict: A dictionary containing the metadata of the closest tide gauge station.
+                The dictionary includes the following keys:
+                - "id": The station ID.
+                - "name": The station name.
+                - "datum": The difference between the station's datum and the reference level.
+                - "datum_name": The name of the datum used by the station.
+                - "msl": The difference between the Mean Sea Level (MSL) and the reference level.
+                - "reference": The reference level used for water level measurements.
+                - "lon": The longitude of the station.
+                - "lat": The latitude of the station.
+        """
+        # Get available stations from source
+        obs_data = obs.source(self.config.tide_gauge.source)
         # read station metadata
-        station_metadata = obs_data.get_meta_data(closest_station.id.item())
+        station_metadata = obs_data.get_meta_data(station_id)
         # TODO check if all stations can be used? Tidal attr?
         # Get water levels by using the ref provided
         datum_name = station_metadata["datums"]["OrthometricDatum"]
@@ -1881,8 +1966,8 @@ class DatabaseBuilder:
             "mhhw": round(datums[names.index("MHHW")]["value"] - ref_value, 3),
             "reference": ref,
             "units": station_metadata["datums"]["units"],
-            "lon": closest_station.geometry.x.item(),
-            "lat": closest_station.geometry.y.item(),
+            "lon": station_metadata["lng"],
+            "lat": station_metadata["lat"],
         }
 
         self.logger.info(
@@ -1912,7 +1997,17 @@ class DatabaseBuilder:
 
 
 if __name__ == "__main__":
-    settings = Settings(
-        DATABASE_ROOT=Path(__file__).parents[3] / "Database",
-        DATABASE_NAME="charleston_test",
-    )
+    while True:
+        config_path = Path(
+            input(
+                "Please provide the path to the database creation configuration toml: \n"
+            )
+        )
+        try:
+            dbs = DatabaseBuilder.from_file(config_path=config_path)
+            dbs.build()
+        except Exception as e:
+            print(e)
+        quit = input("Do you want to quit? (y/n)")
+        if quit == "y":
+            exit()

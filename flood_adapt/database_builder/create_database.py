@@ -57,7 +57,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     RiverModel,
     SfincsConfigModel,
     SfincsModel,
-    SlrModel,
+    SlrScenariosModel,
     WaterlevelReferenceModel,
 )
 from flood_adapt.object_model.interface.config.site import (
@@ -242,7 +242,7 @@ class ConfigModel(BaseModel):
     )
     fiat_buildings_name: Optional[str] = "buildings"
     fiat_roads_name: Optional[str] = "roads"
-    slr: Optional[SlrModel] = None
+    slr: Optional[SlrScenariosModel] = None
     tide_gauge: Optional[TideGaugeConfigModel] = None
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SviConfigModel] = None
@@ -1520,14 +1520,14 @@ class DatabaseBuilder:
             # copy file
             shutil.copyfile(self.config.slr.scenarios.file, new_file)
             # make config
-            slr_scenarios = SlrModel(
+            slr_scenarios = SlrScenariosModel(
                 file=new_file.relative_to(self.static_path).as_posix(),
                 relative_to_year=self.config.slr.scenarios.relative_to_year,
             )
         else:
             slr_scenarios = None
         # store config
-        self.site_attrs["sfincs"]["slr"] = SlrModel(
+        self.site_attrs["sfincs"]["slr"] = SlrScenariosModel(
             vertical_offset=vertical_offset, scenarios=slr_scenarios
         )
 
