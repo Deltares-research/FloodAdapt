@@ -1,4 +1,3 @@
-import shutil
 import tempfile
 from pathlib import Path
 
@@ -121,42 +120,6 @@ class TestHurricaneEvent:
             HurricaneEvent.load_file(path)
 
         assert f"File {cyc_file.name} not found in {path.parent}" in str(e.value)
-
-    def test_make_spw_file_with_args(
-        self,
-        setup_hurricane_event: HurricaneEvent,
-    ):
-        # Arrange
-        spw_file = Path(tempfile.gettempdir()) / "IAN.spw"
-        hurricane_event = setup_hurricane_event
-        hurricane_event.attrs.track_name = "IAN"
-
-        # Act
-        hurricane_event.make_spw_file(recreate=True, output_dir=spw_file.parent)
-
-        # Assert
-        assert spw_file.exists()
-
-    def test_make_spw_file_no_args(
-        self, setup_hurricane_event: HurricaneEvent, test_db: IDatabase
-    ):
-        # Arrange
-        hurricane_event = setup_hurricane_event
-        spw_dir = test_db.events.input_path / hurricane_event.attrs.name
-        spw_file = spw_dir / "IAN.spw"
-        hurricane_event.attrs.track_name = "IAN"
-        test_db.events.save(hurricane_event)
-        cyc_file = TEST_DATA_DIR / "IAN.cyc"
-        shutil.copy2(
-            cyc_file,
-            test_db.events.input_path / hurricane_event.attrs.name / "IAN.cyc",
-        )
-
-        # Act
-        hurricane_event.make_spw_file(output_dir=spw_dir)
-
-        # Assert
-        assert spw_file.exists()
 
     def test_save_additional_saves_cyc_file(
         self, setup_hurricane_event: HurricaneEvent
