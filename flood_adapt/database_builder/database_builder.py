@@ -519,6 +519,11 @@ class DatabaseBuilder:
         return fiat
 
     def create_risk_model(self) -> RiskModel:
+        if not self.config.return_periods:
+            self.config.return_periods = [1, 2, 5, 10, 25, 50, 100]
+            self.logger.warning(
+                f"Return periods for risk calculations not provided. Default values of {self.config.return_periods} will be used."
+            )
         return RiskModel(return_periods=self.config.return_periods)
 
     def create_benefit_config(self) -> Optional[BenefitsModel]:
@@ -587,7 +592,7 @@ class DatabaseBuilder:
         """
         dem_file = self.static_path.joinpath("dem", "dep_subgrid.tif")
         # TODO resolve issue with double geometries in hydromt-FIAT and use update_ground_elevation method instead
-        # self.fiat_model.update_ground_elevation(dem_file)
+        # self.fiat_model.update_ground_elevation(dem_file, grnd_elev_unit="meters")
         self.logger.info(
             "Updating FIAT objects ground elevations from SFINCS ground elevation map."
         )
@@ -1276,6 +1281,11 @@ class DatabaseBuilder:
                 ref = self.config.tide_gauge.ref
             else:
                 ref = "MLLW"  # If reference is not provided use MLLW
+
+            self.water_level_references.reference = (
+                ref  # update the water level reference
+            )
+
             if self.config.tide_gauge.id is None:
                 station_id = self._get_closest_station()
                 self.logger.info(
@@ -1384,11 +1394,11 @@ class DatabaseBuilder:
 
     ### SITE ###
     def create_site_config(self) -> SiteModel:
-        # call this to update waterlevel references before creating sfincs
-        gui = self.create_gui_config()
-
         # call this before fiat to ensure the dem is where its expected
         sfincs = self.create_sfincs_config()
+
+        # call this after sfincs to get waterlevel references
+        gui = self.create_gui_config()
 
         fiat = self.create_fiat_model()
         lat, lon = self.read_location()
