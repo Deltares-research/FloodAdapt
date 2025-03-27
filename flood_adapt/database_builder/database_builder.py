@@ -1297,7 +1297,7 @@ class DatabaseBuilder:
                     ID=int(station["id"]),
                     lon=station["lon"],
                     lat=station["lat"],
-                    units=us.UnitTypesLength.meters,
+                    units=us.UnitTypesLength.meters,  # the api always asks for SI units right now
                 )
 
                 local_datum = DatumModel(
@@ -1314,6 +1314,17 @@ class DatabaseBuilder:
                         value=station["msl"], units=station["units"]
                     ).transform(self.unit_system.default_length_units),
                 )
+                #  Check if MSL is already there and if yes replace it
+                existing_msl = next(
+                    (
+                        datum
+                        for datum in self.water_level_references.datums
+                        if datum.name == "MSL"
+                    ),
+                    None,
+                )
+                if existing_msl:
+                    self.water_level_references.datums.remove(existing_msl)
                 self.water_level_references.datums.append(msl)
 
                 for name in ["MLLW", "MHHW"]:
@@ -1329,7 +1340,7 @@ class DatabaseBuilder:
             return tide_gauge
         else:
             self.logger.warning(
-                f"Tide gauge source not recognized: {self.config.tide_gauge.source}. Historical nearshore gauged events will not be available in FloodAdapt!"
+                f"Tide gauge source not recognized: {self.config.tide_gauge.source}. Historical events will not have an option to use gauged data in FloodAdapt!"
             )
             return None
 
