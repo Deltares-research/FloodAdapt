@@ -1,6 +1,3 @@
-import shutil
-from pathlib import Path
-
 import pytest
 
 from flood_adapt.adapter.impacts_integrator import Impacts
@@ -83,9 +80,9 @@ class Test_scenario_run:
     def setup_hurricane_scenario(
         self,
         test_db: IDatabase,
-        setup_hurricane_event: tuple[HurricaneEvent, Path],
+        setup_hurricane_event: HurricaneEvent,
     ) -> tuple[IDatabase, Scenario, HurricaneEvent]:
-        event, cyc_file = setup_hurricane_event
+        event = setup_hurricane_event
         scn = Scenario(
             ScenarioModel(
                 name="hurricane",
@@ -95,9 +92,6 @@ class Test_scenario_run:
             )
         )
         test_db.events.save(event)
-        shutil.copy2(
-            cyc_file, test_db.events.input_path / event.attrs.name / cyc_file.name
-        )
         test_db.scenarios.save(scn)
         return test_db, scn, event
 

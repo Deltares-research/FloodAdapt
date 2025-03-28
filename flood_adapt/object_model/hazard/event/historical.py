@@ -1,16 +1,10 @@
-from pathlib import Path
-from typing import Any, ClassVar, List
+from typing import ClassVar, List
 
 from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
 from flood_adapt.object_model.hazard.interface.events import Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
-)
-from flood_adapt.object_model.interface.config.site import Site
-from flood_adapt.object_model.interface.path_builder import (
-    TopLevelDir,
-    db_path,
 )
 
 
@@ -46,10 +40,3 @@ class HistoricalEventModel(EventModel):
 
 class HistoricalEvent(Event[HistoricalEventModel]):
     _attrs_type = HistoricalEventModel
-
-    def __init__(self, data: dict[str, Any] | HistoricalEventModel) -> None:
-        super().__init__(data)
-        self.site = Site.load_file(db_path(TopLevelDir.static) / "config" / "site.toml")
-
-    def preprocess(self, output_dir: Path):
-        pass

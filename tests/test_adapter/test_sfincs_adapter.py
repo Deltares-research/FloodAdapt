@@ -11,10 +11,12 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
+from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.object_model.hazard.event.hurricane import TranslationModel
 from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
     SyntheticEventModel,
@@ -370,6 +372,19 @@ def _unsupported_forcing_source(type: ForcingType):
     return unsupported
 
 
+@pytest.fixture()
+def spw_file() -> Path:
+    cyc_file = TEST_DATA_DIR / "IAN.cyc"
+    spw_file = TEST_DATA_DIR / "IAN.spw"
+    if spw_file.exists():
+        return spw_file
+    tc = TropicalCyclone()
+    tc.include_rainfall = True
+    tc.read_track(cyc_file, fmt="ddb_cyc")
+    tc.to_spiderweb(spw_file)
+    return spw_file
+
+
 class TestAddForcing:
     """Class to test the add_forcing method of the SfincsAdapter class."""
 
@@ -443,28 +458,50 @@ class TestAddForcing:
             # Assert
             assert default_sfincs_adapter.wind is not None
 
-        def test_add_forcing_wind_from_track(
+        def test_add_forcing_wind_from_track_cyc(
             self, test_db, tmp_path, default_sfincs_adapter: SfincsAdapter
         ):
-            from cht_cyclones.tropical_cyclone import TropicalCyclone
-
             # Arrange
             track_file = TEST_DATA_DIR / "IAN.cyc"
-            spw_file = tmp_path / "IAN.spw"
-            default_sfincs_adapter._sim_path = tmp_path / "sim_path"
+            default_sfincs_adapter._current_event = mock.Mock()
+            default_sfincs_adapter._current_event.attrs.hurricane_translation = (
+                TranslationModel(
+                    eastwest_translation=us.UnitfulLength(
+                        value=0, units=us.UnitTypesLength.meters
+                    ),
+                    northsouth_translation=us.UnitfulLength(
+                        value=0, units=us.UnitTypesLength.meters
+                    ),
+                )
+            )
 
-            tc = TropicalCyclone()
-            tc.read_track(track_file, fmt="ddb_cyc")
-            tc.to_spiderweb(spw_file)
+            forcing = WindTrack(path=track_file)
 
+            # Act
+            default_sfincs_adapter.add_forcing(forcing)
+
+            # Assert
+            spw_name = track_file.with_suffix(".spw").name
+            assert default_sfincs_adapter.wind is None
+            assert default_sfincs_adapter._model.config.get("spwfile") == spw_name
+            assert (default_sfincs_adapter.get_model_root() / spw_name).exists()
+
+        def test_add_forcing_wind_from_track_spw(
+            self,
+            test_db,
+            tmp_path,
+            default_sfincs_adapter: SfincsAdapter,
+            spw_file: Path,
+        ):
+            # Arrange
             forcing = WindTrack(path=spw_file)
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
 
             # Assert
-            assert default_sfincs_adapter.wind is None
             assert default_sfincs_adapter._model.config.get("spwfile") == spw_file.name
+            assert (default_sfincs_adapter.get_model_root() / spw_file.name).exists()
 
         def test_add_forcing_waterlevels_csv(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_wind: WindSynthetic
@@ -586,20 +623,40 @@ class TestAddForcing:
             # Assert
             assert adapter.rainfall is not None
 
-        def test_add_forcing_rainfall_track(
-            self, test_db, tmp_path, default_sfincs_adapter: SfincsAdapter
+        def test_add_forcing_rainfall_track_cyc(
+            self, test_db, default_sfincs_adapter: SfincsAdapter
         ):
-            from cht_cyclones.tropical_cyclone import TropicalCyclone
-
             # Arrange
             track_file = TEST_DATA_DIR / "IAN.cyc"
-            spw_file = tmp_path / "IAN.spw"
-            default_sfincs_adapter._sim_path = tmp_path / "sim_path"
+            default_sfincs_adapter._current_event = mock.Mock()
+            default_sfincs_adapter._current_event.attrs.hurricane_translation = (
+                TranslationModel(
+                    eastwest_translation=us.UnitfulLength(
+                        value=10, units=us.UnitTypesLength.miles
+                    ),
+                    northsouth_translation=us.UnitfulLength(
+                        value=10, units=us.UnitTypesLength.miles
+                    ),
+                )
+            )
 
-            tc = TropicalCyclone()
-            tc.read_track(track_file, fmt="ddb_cyc")
-            tc.to_spiderweb(spw_file)
+            forcing = RainfallTrack(path=track_file)
 
+            # Act
+            default_sfincs_adapter.add_forcing(forcing)
+
+            # Assert
+            spw_name = track_file.with_suffix(".spw").name
+            assert default_sfincs_adapter._model.config.get("spwfile") == spw_name
+            assert (default_sfincs_adapter.get_model_root() / spw_name).exists()
+
+        def test_add_forcing_rainfall_track_spw(
+            self,
+            test_db,
+            default_sfincs_adapter: SfincsAdapter,
+            spw_file: Path,
+        ):
+            # Arrange
             forcing = RainfallTrack(path=spw_file)
 
             # Act
@@ -607,6 +664,7 @@ class TestAddForcing:
 
             # Assert
             assert default_sfincs_adapter._model.config.get("spwfile") == spw_file.name
+            assert (default_sfincs_adapter.get_model_root() / spw_file.name).exists()
 
         def test_add_forcing_rainfall_unsupported(
             self, sfincs_adapter_with_dummy_scn: SfincsAdapter
@@ -815,6 +873,7 @@ class TestAddForcing:
             # Arrange
             default_sfincs_adapter._turn_off_bnd_press_correction = mock.Mock()
             default_sfincs_adapter._current_scenario = mock.Mock()
+            default_sfincs_adapter._current_event = mock.Mock()
             forcing = WaterlevelModel()
 
             # Act
