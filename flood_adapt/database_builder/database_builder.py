@@ -1,4 +1,5 @@
 import datetime
+import math
 import os
 import shutil
 import warnings
@@ -520,10 +521,11 @@ class DatabaseBuilder:
 
     def create_risk_model(self) -> RiskModel:
         if not self.config.return_periods:
-            self.config.return_periods = [1, 2, 5, 10, 25, 50, 100]
+            risk = RiskModel()
             self.logger.warning(
-                f"Return periods for risk calculations not provided. Default values of {self.config.return_periods} will be used."
+                f"Return periods for risk calculations not provided. Default values of {risk.return_periods} will be used."
             )
+            return risk
         return RiskModel(return_periods=self.config.return_periods)
 
     def create_benefit_config(self) -> Optional[BenefitsModel]:
@@ -602,7 +604,7 @@ class DatabaseBuilder:
         FIAT_units = self.unit_system.default_length_units
         conversion_factor = SFINCS_units.convert(FIAT_units)
 
-        if conversion_factor != 1:
+        if not math.isclose(conversion_factor, 1):
             self.logger.info(
                 f"Ground elevation for FIAT objects is in '{FIAT_units}', while SFINCS ground elevation is in 'meters'. Values in the exposure csv will be converted by a factor of {conversion_factor}"
             )
@@ -1746,7 +1748,7 @@ class DatabaseBuilder:
         )
         # Create folder
         bf_folder = Path(self.fiat_model.root) / "exposure" / "building_footprints"
-        bf_folder.mkdir()
+        bf_folder.mkdir(parents=True, exist_ok=True)
 
         # Save the spatial file for future use
         geo_path = bf_folder / "building_footprints.gpkg"

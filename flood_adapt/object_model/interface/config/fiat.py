@@ -56,7 +56,7 @@ class NoFootprintsModel(BaseModel):
 class RiskModel(BaseModel):
     """The accepted input for the variable risk in Site."""
 
-    return_periods: list
+    return_periods: list = [1, 2, 5, 10, 25, 50, 100]
 
 
 class DamageType(str, Enum):

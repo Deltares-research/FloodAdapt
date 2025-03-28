@@ -4,8 +4,10 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, Mock
 
+import geopandas as gpd
 import pandas as pd
 import pytest
+import shapely
 import tomli
 from shapely import Polygon
 
@@ -31,6 +33,7 @@ from flood_adapt.object_model.interface.config.fiat import (
     BenefitsModel,
     BFEModel,
     EquityModel,
+    RiskModel,
     SVIModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import (
@@ -54,6 +57,7 @@ class TestDataBaseBuilder:
         with tempfile.TemporaryDirectory() as tmpdirname:
             config = Mock()
             config.database_path = tmpdirname
+            config.name = "charleston_db_builder"
             config.fiat = str(self.templates_path / "fiat")
             config.sfincs_overland = FloodModel(
                 name=str(self.templates_path / "overland"),
@@ -90,7 +94,7 @@ class TestDataBaseBuilder:
         # Assert
         assert risk.return_periods == mock_config.return_periods
 
-    def test_create_risk_model_returns_empty_list(self, mock_config: ConfigModel):
+    def test_create_risk_model_returns_default_risk(self, mock_config: ConfigModel):
         # Arrange
         mock_config.return_periods = []
         builder = DatabaseBuilder(mock_config)
@@ -99,7 +103,7 @@ class TestDataBaseBuilder:
         risk = builder.create_risk_model()
 
         # Assert
-        assert risk.return_periods == []
+        assert risk == RiskModel()
 
     def test_create_benefits_with_test_set(self, mock_config: ConfigModel):
         # Arrange
@@ -187,8 +191,25 @@ class TestDataBaseBuilder:
         mock_config.building_footprints = FootprintsOptions.OSM
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
-        builder.fiat_model = Mock(wraps=builder.fiat_model)
-        builder.fiat_model.exposure.exposure_db.columns = ["object_id"]
+        builder._get_fiat_building_index = Mock(return_value=0)
+
+        mock_fiat_model = Mock(wraps=builder.fiat_model)
+        mock_fiat_model.root = builder.fiat_model.root
+        mock_fiat_model.exposure.exposure_db = pd.DataFrame(columns=["BF_FID"])
+        mock_fiat_model.exposure.exposure_db.columns = ["object_id"]
+        mock_fiat_model.exposure.exposure_geoms = MagicMock()
+        mock_fiat_model.exposure.exposure_geoms.__getitem__.return_value = (
+            gpd.GeoDataFrame(
+                {
+                    "geometry": [shapely.Point(0, 0)],
+                    "object_id": [1],
+                },
+                geometry="geometry",
+                crs="EPSG:4326",
+            )
+        )
+
+        builder.fiat_model = mock_fiat_model
 
         # Act
         footprints = builder.create_footprints()
@@ -498,7 +519,9 @@ class TestDataBaseBuilder:
 
         # Assert
         expected_file = (
-            builder.static_path / "slr" / Path(mock_config.slr_scenarios.file).name
+            builder.static_path
+            / "slr_scenarios"
+            / Path(mock_config.slr_scenarios.file).name
         )
         expected_slr = SlrScenariosModel(
             file=expected_file.relative_to(builder.static_path).as_posix(),
@@ -659,7 +682,18 @@ class TestDataBaseBuilder:
         assert tide_gauge.file is not None
         assert (builder.static_path / tide_gauge.file).exists()
 
-    def test_create_tide_gauge_file_based_file_is_none(self, mock_config: ConfigModel):
+    def test_create_tide_gauge_returns_none(self, mock_config: ConfigModel):
+        # Arrange
+        mock_config.tide_gauge = None
+        builder = DatabaseBuilder(mock_config)
+
+        # Act
+        tide_gauge = builder.create_tide_gauge()
+
+        # Assert
+        assert tide_gauge is None
+
+    def test_create_tide_gauge_file_is_none_raises(self, mock_config: ConfigModel):
         # Arrange
         mock_config.tide_gauge = TideGaugeConfigModel(
             id=8665530,
@@ -670,13 +704,44 @@ class TestDataBaseBuilder:
             location=Point(lat=32.78, lon=-79.9233),
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
+
+        builder = DatabaseBuilder(mock_config)
+
+        # Act
+        with pytest.raises(ValueError) as excinfo:
+            builder.create_tide_gauge()
+
+        # Assert
+        assert (
+            "Tide gauge file needs to be provided when 'file' is selected as the source."
+            in str(excinfo.value)
+        )
+
+    def test_create_tide_gauge_file_based_ref_is_none_returns_msl(
+        self,
+        mock_config: ConfigModel,
+        tmp_path: Path,
+        dummy_1d_timeseries_df: pd.DataFrame,
+    ):
+        # Arrange
+        tide_gauge_file = tmp_path / "dummy.csv"
+        dummy_1d_timeseries_df.to_csv(tide_gauge_file)
+        mock_config.tide_gauge = TideGaugeConfigModel(
+            id=8665530,
+            ref=None,
+            source=TideGaugeSource.file,
+            file=str(tide_gauge_file),
+            description="Charleston Cooper River Entrance",
+            location=Point(lat=32.78, lon=-79.9233),
+            max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
+        )
         builder = DatabaseBuilder(mock_config)
 
         # Act
         tide_gauge = builder.create_tide_gauge()
 
         # Assert
-        assert tide_gauge is None
+        assert tide_gauge.reference == "MSL"
 
     def test_create_tide_gauge_noaa_coops(self, mock_config: ConfigModel):
         # Arrange
@@ -688,6 +753,15 @@ class TestDataBaseBuilder:
             location=Point(lat=32.78, lon=-79.9233),
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
+        mock_config.references = WaterlevelReferenceModel(
+            reference="MSL",
+            datums=[
+                DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
+                )
+            ],
+        )
         builder = DatabaseBuilder(mock_config)
 
         # Act
@@ -695,17 +769,6 @@ class TestDataBaseBuilder:
 
         # Assert
         assert tide_gauge is not None
-
-    def test_create_tide_gauge_returns_none(self, mock_config: ConfigModel):
-        # Arrange
-        mock_config.tide_gauge = None
-        builder = DatabaseBuilder(mock_config)
-
-        # Act
-        tide_gauge = builder.create_tide_gauge()
-
-        # Assert
-        assert tide_gauge is None
 
     # TODO fix tests below
     def test_create_infometrics_mandatory_only(self, mock_config: ConfigModel):
