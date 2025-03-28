@@ -20,7 +20,7 @@ from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from pydantic import BaseModel, Field
-from shapely import MultiLineString, Polygon
+from shapely import MultiLineString, MultiPolygon, Polygon
 
 from flood_adapt import FloodAdaptLogging
 from flood_adapt import unit_system as us
@@ -552,11 +552,8 @@ class DatabaseBuilder:
             geoms = geoms[keep].reset_index(drop=True)
             self.fiat_model.exposure.exposure_geoms[i] = geoms
 
-        # Clip hazard and reset buildings # TODO use hydromt-FIAT instead
-        if not self.fiat_model.region.empty:
-            self._clip_hazard_extend()
-
         roads_gpkg = self.create_roads()
+
         non_building_names = []
         if roads_gpkg is not None:
             non_building_names.append("road")
@@ -564,6 +561,10 @@ class DatabaseBuilder:
         footprints = self.create_footprints()
         if footprints is not None:
             footprints = footprints.as_posix()
+
+        # Clip hazard and reset buildings # TODO use hydromt-FIAT instead
+        if not self.fiat_model.region.empty:
+            self._clip_hazard_extend()
 
         # Store result for possible future use in create_infographics
         self._aggregation_areas = self.create_aggregation_areas()
@@ -617,7 +618,7 @@ class DatabaseBuilder:
         )
         exposure = pd.read_csv(exposure_csv_path)
         dem = rxr.open_rasterio(dem_file)
-        # TODO this should be in hydromt FIAT
+        # TODO make sure only fiat_model object changes take place!
         if self.config.fiat_roads_name in self.fiat_model.exposure.geom_names:
             roads_path = (
                 Path(self.fiat_model.root)
@@ -712,10 +713,6 @@ class DatabaseBuilder:
             self.config.fiat_roads_name
         )
         roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
-        roads_geom_filename = self.fiat_model.config["exposure"]["geom"][
-            f"file{roads_ind + 1}"
-        ]
-        roads_path = Path(self.fiat_model.root) / roads_geom_filename
 
         # TODO do we need the lanes column?
         if (
@@ -733,8 +730,6 @@ class DatabaseBuilder:
                 self.config.road_width / 2, cap_style=2
             )
             roads = roads.to_crs(self.fiat_model.exposure.crs)
-            if roads_path.exists():
-                roads_path.unlink()
             self.fiat_model.exposure.exposure_geoms[roads_ind] = roads
             self.logger.info(
                 f"FIAT road objects transformed from lines to polygons assuming a road width of {self.config.road_width} meters."
@@ -763,12 +758,12 @@ class DatabaseBuilder:
                 self.config.building_footprints.file,
                 self.config.building_footprints.field_name,
             )
-            return Path(path).relative_to(self.static_path)
+            return path
 
         # First check if it is spatially joined and/or exists already
         elif "BF_FID" in self.fiat_model.exposure.exposure_db.columns:
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-            fiat_path = self.static_path / "templates" / "fiat"
+            fiat_path = Path(self.fiat_model.root)
 
             if add_attrs and "BF_FID" in [attr["name"] for attr in add_attrs]:
                 ind = [attr["name"] for attr in add_attrs].index("BF_FID")
@@ -782,11 +777,11 @@ class DatabaseBuilder:
                     return footprints_path.relative_to(self.static_path)
                 else:
                     raise FileNotFoundError(
-                        f"Building footprints file {footprints_path} not found."
+                        f"While 'BF_FID' column exists, building footprints file {footprints_path} not found."
                     )
             else:
                 raise KeyError(
-                    "Exposure csv is missing the 'BF_FID' column to connect to the footprints."
+                    "While 'BF_FID' column exists, connection to a spatial footprints file is missing."
                 )
 
         # Then check if geometries are already footprints
@@ -794,10 +789,10 @@ class DatabaseBuilder:
             self.fiat_model.exposure.exposure_geoms[
                 self._get_fiat_building_index()
             ].geometry.iloc[0],
-            Polygon,
+            (Polygon, MultiPolygon),
         ):
             self.logger.info(
-                "Building footprints are already available in the FIAT model."
+                "Building footprints are already available in the FIAT model geometry files."
             )
             return None
 
@@ -806,10 +801,12 @@ class DatabaseBuilder:
             self.logger.info(
                 "Building footprint data will be downloaded from Open Street Maps."
             )
-            region_path = Path(self.fiat_model.root) / "geoms" / "region.geojson"
-            if not region_path.exists():
-                self.logger.error("No region file found in the FIAT model.")
-            region = gpd.read_file(region_path).to_crs(4326)
+            region = self.fiat_model.region
+            if region is None:
+                raise ValueError(
+                    "No region file found in the FIAT model. Building footprints cannot be created."
+                )
+            region = region.to_crs(4326)
             if isinstance(region.boundary.to_numpy()[0], MultiLineString):
                 polygon = Polygon(
                     region.boundary.to_numpy()[0].envelope
@@ -820,7 +817,7 @@ class DatabaseBuilder:
             footprints["BF_FID"] = np.arange(1, len(footprints) + 1)
             footprints = footprints[["BF_FID", "geometry"]]
             path = self._join_building_footprints(footprints, "BF_FID")
-            return Path(path).relative_to(self.static_path)
+            return path
         else:
             self.logger.warning(
                 "No building footprints are available. Buildings will be plotted with a default shape in FloodAdapt."
@@ -1791,7 +1788,7 @@ class DatabaseBuilder:
             f"Building footprints saved at {(self.static_path / buildings_path).resolve().as_posix()}"
         )
 
-        return geo_path
+        return buildings_path
 
     def _clip_hazard_extend(self, clip_footprints=True):
         """
@@ -1832,12 +1829,14 @@ class DatabaseBuilder:
         gdf_buildings = gdf[~road_inds]
         gdf_buildings = self._clip_gdf(
             gdf_buildings, clipped_region, predicate="within"
-        )
+        ).reset_index(drop=True)
 
         if road_inds.any():
             # Clip roads
             gdf_roads = gdf[road_inds]
-            gdf_roads = self._clip_gdf(gdf_roads, clipped_region, predicate="within")
+            gdf_roads = self._clip_gdf(
+                gdf_roads, clipped_region, predicate="within"
+            ).reset_index(drop=True)
 
             idx_buildings = self.fiat_model.exposure.geom_names.index(
                 self.config.fiat_buildings_name
@@ -1860,7 +1859,7 @@ class DatabaseBuilder:
 
         # Save exposure dataframe
         del gdf["geometry"]
-        self.fiat_model.exposure.exposure_db = gdf
+        self.fiat_model.exposure.exposure_db = gdf.reset_index(drop=True)
 
         # Clip the building footprints
         fieldname = "BF_FID"
@@ -1870,10 +1869,22 @@ class DatabaseBuilder:
                 self.fiat_model.building_footprint[fieldname].isin(
                     gdf_buildings[fieldname]
                 )
-            ]
+            ].reset_index(drop=True)
 
-        # Write fiat model
-        self.fiat_model.write()
+    @staticmethod
+    def _clip_gdf(
+        gdf1: gpd.GeoDataFrame, gdf2: gpd.GeoDataFrame, predicate: str = "within"
+    ):
+        gdf_new = gpd.sjoin(gdf1, gdf2, how="inner", predicate=predicate)
+        gdf_new = gdf_new.drop(
+            columns=[
+                col
+                for col in gdf_new.columns
+                if col.endswith("_right") or (col in gdf2.columns and col != "geometry")
+            ]
+        )
+
+        return gdf_new
 
     @staticmethod
     def spatial_join(
