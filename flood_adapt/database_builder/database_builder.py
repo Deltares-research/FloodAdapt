@@ -520,13 +520,15 @@ class DatabaseBuilder:
         return fiat
 
     def create_risk_model(self) -> RiskModel:
+        # Check if return periods are provided
         if not self.config.return_periods:
             risk = RiskModel()
             self.logger.warning(
                 f"Return periods for risk calculations not provided. Default values of {risk.return_periods} will be used."
             )
-            return risk
-        return RiskModel(return_periods=self.config.return_periods)
+        else:
+            risk = RiskModel(return_periods=self.config.return_periods)
+        return risk
 
     def create_benefit_config(self) -> Optional[BenefitsModel]:
         if self.config.probabilistic_set is None:
@@ -538,12 +540,10 @@ class DatabaseBuilder:
             current_year=datetime.datetime.now().year,
             current_projection="current",
             baseline_strategy="no_measures",
-            event_set=self.config.probabilistic_set,
+            event_set=self.probabilistic_set_name,
         )
 
     def create_fiat_config(self) -> FiatConfigModel:
-        self.update_fiat_elevation()
-
         # Make sure only csv objects have geometries
         for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
             keep = geoms[_FIAT_COLUMNS.object_id].isin(
@@ -567,6 +567,9 @@ class DatabaseBuilder:
 
         # Store result for possible future use in create_infographics
         self._aggregation_areas = self.create_aggregation_areas()
+
+        # Update elevations
+        self.update_fiat_elevation()
 
         config = FiatConfigModel(
             exposure_crs=self.fiat_model.exposure.crs,
@@ -1402,6 +1405,9 @@ class DatabaseBuilder:
         # call this after sfincs to get waterlevel references
         gui = self.create_gui_config()
 
+        # set the probabilistic event set if provided
+        self.add_probabilistic_set()
+
         fiat = self.create_fiat_model()
         lat, lon = self.read_location()
 
@@ -1670,6 +1676,22 @@ class DatabaseBuilder:
             path_0 = templates_path.joinpath(folder)
             path_1 = self.static_path / folder
             shutil.copytree(path_0, path_1)
+
+    def add_probabilistic_set(self):
+        # Copy prob set if given
+        if self.config.probabilistic_set:
+            self.logger.info(
+                f"Probabilistic event set imported from {self.config.probabilistic_set}"
+            )
+            prob_event_name = Path(self.config.probabilistic_set).name
+            path_db = self.root.joinpath("input", "events", prob_event_name)
+            self.probabilistic_set_name = prob_event_name
+            shutil.copytree(self.config.probabilistic_set, path_db)
+        else:
+            self.logger.warning(
+                "Probabilistic event set not provided. Risk scenarios cannot be run in FloodAdapt."
+            )
+            self.probabilistic_set_name = None
 
     ### HELPER FUNCTIONS ###
     def make_folder_structure(self):
