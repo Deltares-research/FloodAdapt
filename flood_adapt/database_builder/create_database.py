@@ -59,7 +59,6 @@ from flood_adapt.object_model.interface.config.sfincs import (
     RiverModel,
     SfincsConfigModel,
     SfincsModel,
-    SlrModel,
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
@@ -173,7 +172,7 @@ class TideGaugeConfigModel(BaseModel):
     ref: Optional[str] = None
 
 
-class SviModel(SpatialJoinModel):
+class SviConfigModel(SpatialJoinModel):
     """
     Represents a model for the Social Vulnerability Index (SVI).
 
@@ -183,20 +182,6 @@ class SviModel(SpatialJoinModel):
     """
 
     threshold: float
-
-
-class SlrModelDef(SlrModel):
-    """
-    Represents a sea level rise (SLR) model definition.
-
-    Attributes
-    ----------
-        vertical_offset (us.UnitfulLength): The vertical offset of the SLR model, measured in meters.
-    """
-
-    vertical_offset: us.UnitfulLength = us.UnitfulLength(
-        value=0, units=us.UnitTypesLength.meters
-    )
 
 
 class ConfigModel(BaseModel):
@@ -260,10 +245,10 @@ class ConfigModel(BaseModel):
     )
     fiat_buildings_name: Optional[str] = "buildings"
     fiat_roads_name: Optional[str] = "roads"
-    slr: Optional[SlrModelDef] = SlrModelDef()
+    slr: Optional[SlrScenariosModel] = None
     tide_gauge: Optional[TideGaugeConfigModel] = None
     bfe: Optional[SpatialJoinModel] = None
-    svi: Optional[SviModel] = None
+    svi: Optional[SviConfigModel] = None
     road_width: Optional[float] = 5
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
@@ -933,7 +918,7 @@ class DatabaseBuilder:
             )
             roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
             roads_geom_filename = self.fiat_model.config["exposure"]["geom"][
-                f"file{roads_ind+1}"
+                f"file{roads_ind + 1}"
             ]
             roads_path = Path(self.fiat_model.root).joinpath(roads_geom_filename)
 
@@ -1573,7 +1558,7 @@ class DatabaseBuilder:
         else:
             slr_scenarios = None
         # store config
-        self.site_attrs["sfincs"]["slr"] = SlrModel(
+        self.site_attrs["sfincs"]["slr"] = SlrScenariosModel(
             vertical_offset=vertical_offset, scenarios=slr_scenarios
         )
 
