@@ -1435,7 +1435,7 @@ class DatabaseBuilder:
         self.add_probabilistic_set()
 
         fiat = self.create_fiat_model()
-        lat, lon = self.read_location()
+        lon, lat = self.read_location()
 
         config = SiteModel(
             name=self.config.name,
