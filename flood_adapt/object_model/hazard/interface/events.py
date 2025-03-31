@@ -74,6 +74,3 @@ class IEvent(IObject[T_IEVENT_MODEL]):
 
     @abstractmethod
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None: ...
-
-    @abstractmethod
-    def preprocess(self, output_dir: Path): ...

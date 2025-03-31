@@ -1,7 +1,5 @@
-from copy import deepcopy
 from pathlib import Path
 from tempfile import gettempdir
-from unittest.mock import patch
 
 import pytest
 
@@ -11,6 +9,7 @@ from flood_adapt.object_model.hazard.event.event_set import (
     EventSetModel,
     SubEventModel,
 )
+from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
     SyntheticEventModel,
@@ -37,6 +36,13 @@ from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
+from tests.data.create_test_input import _create_hurricane_event
+from tests.test_object_model.test_events.test_historical import (
+    setup_nearshore_event,
+    setup_offshore_meteo_event,
+)
+
+__all__ = ["setup_nearshore_event", "setup_offshore_meteo_event"]
 
 
 @pytest.fixture()
@@ -111,16 +117,25 @@ def test_sub_event() -> SyntheticEvent:
 
 
 @pytest.fixture()
-def test_eventset(test_sub_event: SyntheticEvent) -> EventSet:
+def test_eventset(
+    test_sub_event: SyntheticEvent,
+    setup_nearshore_event: HistoricalEvent,
+    setup_offshore_meteo_event: HistoricalEvent,
+) -> EventSet:
     sub_event_models: list[SubEventModel] = []
     sub_events = []
-    for i, freq in [(1, 0.5), (39, 0.2), (78, 0.02)]:
-        sub_event_model = SubEventModel(name=f"subevent_{i:04d}", frequency=freq)
-        sub_event = deepcopy(test_sub_event)
-        sub_event.attrs.name = sub_event_model.name
 
-        sub_event_models.append(sub_event_model)
-        sub_events.append(sub_event)
+    hurricane = _create_hurricane_event("sub_hurricane")
+    synthetic = test_sub_event
+    historical_nearshore = setup_nearshore_event
+    historical_offshore = setup_offshore_meteo_event
+
+    for i, event in enumerate(
+        [hurricane, synthetic, historical_nearshore, historical_offshore]
+    ):
+        event.attrs.name = f"{event.attrs.name}_{i + 1 :04d}"
+        sub_event_models.append(SubEventModel(name=event.attrs.name, frequency=i + 1))
+        sub_events.append(event)
 
     event_set = EventSet(
         EventSetModel(
@@ -173,19 +188,6 @@ class TestEventSet:
             assert (
                 tmp_path.parent / sub_event.name / f"{sub_event.name}.toml"
             ).exists()
-
-    @patch("flood_adapt.object_model.hazard.event.synthetic.SyntheticEvent.preprocess")
-    def test_eventset_synthetic_process(
-        self,
-        mock_process,
-        setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet],
-        tmp_path: Path,
-    ):
-        test_db, scn, event_set = setup_eventset_scenario
-        output_dir = tmp_path / "eventset"
-        event_set.preprocess(output_dir)
-
-        assert mock_process.call_count == len(event_set.attrs.sub_events)
 
     def test_calculate_rp_floodmaps(
         self, setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet]

@@ -83,10 +83,12 @@ class TestOffshoreSfincsHandler:
         mock_meteohandler_read,
     ):
         # Arrange
-        _, scenario, _ = setup_offshore_scenario
+        _, scenario, event = setup_offshore_scenario
 
         # Act
-        wl_df = OffshoreSfincsHandler().get_resulting_waterlevels(scenario)
+        wl_df = OffshoreSfincsHandler(
+            scenario=scenario, event=event
+        ).get_resulting_waterlevels()
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)

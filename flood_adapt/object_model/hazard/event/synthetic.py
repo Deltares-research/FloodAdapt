@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import ClassVar, List
 
 from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
@@ -37,6 +36,3 @@ class SyntheticEventModel(EventModel):
 
 class SyntheticEvent(Event[SyntheticEventModel]):
     _attrs_type = SyntheticEventModel
-
-    def preprocess(self, output_dir: Path):
-        pass

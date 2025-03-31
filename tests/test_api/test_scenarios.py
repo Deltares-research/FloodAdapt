@@ -1,6 +1,3 @@
-import shutil
-from pathlib import Path
-
 import pytest
 
 from flood_adapt.api import scenarios as api_scenarios
@@ -9,6 +6,7 @@ from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
+from tests.data.create_test_input import create_event_set_with_hurricanes
 from tests.test_adapter.test_sfincs_adapter import mock_meteohandler_read
 from tests.test_object_model.test_events.test_eventset import (
     test_eventset,
@@ -27,6 +25,7 @@ __all__ = [
     "test_eventset",
     "test_sub_event",
     "test_event_all_synthetic",
+    "create_event_set_with_hurricanes",
     "setup_nearshore_event",
     "setup_offshore_meteo_event",
     "setup_offshore_scenario",
@@ -74,10 +73,10 @@ def setup_offshore_meteo_scenario(
 @pytest.fixture()
 def setup_hurricane_scenario(
     test_db: IDatabase,
-    setup_hurricane_event: tuple[HurricaneEvent, Path],
+    setup_hurricane_event: HurricaneEvent,
     mock_meteohandler_read,
 ) -> tuple[Scenario, HurricaneEvent]:
-    event, cyc_file = setup_hurricane_event
+    event = setup_hurricane_event
     scn = Scenario(
         ScenarioModel(
             name="hurricane",
@@ -87,7 +86,6 @@ def setup_hurricane_scenario(
         )
     )
     test_db.events.save(event)
-    shutil.copy2(cyc_file, test_db.events.input_path / event.attrs.name / cyc_file.name)
     test_db.scenarios.save(scn)
     return scn, event
 
@@ -109,19 +107,15 @@ def setup_synthetic_scenario(test_db, test_event_all_synthetic):
 
 @pytest.fixture()
 def setup_eventset_scenario(
-    test_db: IDatabase,
-    test_eventset,
-    dummy_projection,
-    dummy_strategy,
+    test_db: IDatabase, dummy_projection, dummy_strategy, test_eventset
 ):
     test_db.projections.save(dummy_projection)
     test_db.strategies.save(dummy_strategy)
-
     test_db.events.save(test_eventset)
 
     scn = Scenario(
         ScenarioModel(
-            name="test_scenario",
+            name="test_risk_scenario_with_hurricanes",
             event=test_eventset.attrs.name,
             projection=dummy_projection.attrs.name,
             strategy=dummy_strategy.attrs.name,
