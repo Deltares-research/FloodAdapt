@@ -356,27 +356,6 @@ class DatabaseBuilder:
                 "Database path is not provided. Please provide a path using the 'database_path' attribute."
             )
 
-        # Check if database already exists
-        if self.root.exists() and not overwrite:
-            raise ValueError(
-                f"There is already a Database folder in '{self.root.as_posix()}'."
-            )
-        if self.root.exists() and overwrite:
-            shutil.rmtree(self.root)
-            warnings.warn(
-                f"There is already a Database folder in '{self.root.as_posix()}, which will be overwritten'."
-            )
-
-        # Create database folder
-        self.root.mkdir(parents=True)
-
-        self.logger.info(f"Creating a FloodAdapt database in '{self.root.as_posix()}'")
-
-        # Read user models and copy to templates
-        self.fiat_model = self.read_template_fiat_model()
-        self.sfincs_overland_model = self.read_template_sfincs_overland_model()
-        self.sfincs_offshore_model = self.read_template_sfincs_offshore_model()
-
         # Read info that needs to be used to create other models
         self.unit_system = self.create_default_units()
 
@@ -427,13 +406,42 @@ class DatabaseBuilder:
     def static_path(self) -> Path:
         return self.root / "static"
 
-    def build(self):
-        # Create the models
-        self.make_folder_structure()
-        site_model = self.create_site_config()
+    def build(self, overwrite: bool = False) -> None:
+        # Check if database already exists
+        if self.root.exists() and not overwrite:
+            raise ValueError(
+                f"There is already a Database folder in '{self.root.as_posix()}'."
+            )
+        if self.root.exists() and overwrite:
+            shutil.rmtree(self.root)
+            warnings.warn(
+                f"There is already a Database folder in '{self.root.as_posix()}, which will be overwritten'."
+            )
+        # Create database folder
+        self.root.mkdir(parents=True)
 
-        site = Site(site_config=site_model)
-        site.save(self.static_path / "config" / "site.toml")
+        with FloodAdaptLogging.to_file(
+            file_path=self.root.joinpath("database_builder.log")
+        ):
+            self.logger.info(
+                f"Creating a FloodAdapt database in '{self.root.as_posix()}'"
+            )
+
+            # Create the models
+            self.make_folder_structure()
+
+            # Read user models and copy to templates
+            self.fiat_model = self.read_template_fiat_model()
+            self.sfincs_overland_model = self.read_template_sfincs_overland_model()
+            self.sfincs_offshore_model = self.read_template_sfincs_offshore_model()
+
+            # Prepare site configuration
+            site_model = self.create_site_config()
+            site = Site(site_config=site_model)
+            site.save(self.static_path / "config" / "site.toml")
+
+            # Save log file
+            self.logger.info("FloodAdapt database creation finished!")
 
     def create_standard_objects(self) -> list:
         NO_MEASURES = Strategy(
@@ -587,6 +595,19 @@ class DatabaseBuilder:
             svi=self.create_svi(),
         )
 
+        # Update output geoms names
+        output_geom = {}
+        counter = 0
+        for key in self.fiat_model.config["exposure"]["geom"].keys():
+            if "file" in key:
+                counter += 1
+                output_geom[f"name{counter}"] = Path(
+                    self.fiat_model.config["exposure"]["geom"][key]
+                ).name
+        self.fiat_model.config["output"]["geom"] = output_geom
+        # Update FIAT model with the new config
+        self.fiat_model.write()
+
         return config
 
     def update_fiat_elevation(self):
@@ -613,19 +634,13 @@ class DatabaseBuilder:
                 f"Ground elevation for FIAT objects is in '{FIAT_units}', while SFINCS ground elevation is in 'meters'. Values in the exposure csv will be converted by a factor of {conversion_factor}"
             )
 
-        exposure_csv_path = Path(self.fiat_model.root).joinpath(
-            "exposure", "exposure.csv"
-        )
-        exposure = pd.read_csv(exposure_csv_path)
+        exposure = self.fiat_model.exposure.exposure_db
         dem = rxr.open_rasterio(dem_file)
         # TODO make sure only fiat_model object changes take place!
         if self.config.fiat_roads_name in self.fiat_model.exposure.geom_names:
-            roads_path = (
-                Path(self.fiat_model.root)
-                / "exposure"
-                / f"{self.config.fiat_roads_name}.gpkg"
-            )
-            roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
+            roads = self.fiat_model.exposure.exposure_geoms[
+                self._get_fiat_road_index()
+            ].to_crs(dem.spatial_ref.crs_wkt)
             roads["geometry"] = roads.geometry.centroid  # get centroids
 
             x_points = xr.DataArray(roads["geometry"].x, dims="points")
@@ -652,21 +667,18 @@ class DatabaseBuilder:
             ]
             del exposure["elev"]
 
-        buildings_path = (
-            Path(self.fiat_model.root)
-            / "exposure"
-            / f"{self.config.fiat_buildings_name}.gpkg"
-        )
-        points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
-        points["geometry"] = points.geometry.centroid
-        x_points = xr.DataArray(points["geometry"].x, dims="points")
-        y_points = xr.DataArray(points["geometry"].y, dims="points")
-        points["elev"] = (
+        buildings = self.fiat_model.exposure.exposure_geoms[
+            self._get_fiat_building_index()
+        ].to_crs(dem.spatial_ref.crs_wkt)
+        buildings["geometry"] = buildings.geometry.centroid
+        x_points = xr.DataArray(buildings["geometry"].x, dims="points")
+        y_points = xr.DataArray(buildings["geometry"].y, dims="points")
+        buildings["elev"] = (
             dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
             * conversion_factor
         )
         exposure = exposure.merge(
-            points[[_FIAT_COLUMNS.object_id, "elev"]],
+            buildings[[_FIAT_COLUMNS.object_id, "elev"]],
             on=_FIAT_COLUMNS.object_id,
             how="left",
         )
@@ -676,12 +688,7 @@ class DatabaseBuilder:
         ] = exposure.loc[exposure[_FIAT_COLUMNS.primary_object_type] != "road", "elev"]
         del exposure["elev"]
 
-        exposure.to_csv(exposure_csv_path, index=False)
-
     def read_damage_unit(self) -> str:
-        if self.fiat_model.exposure is None:
-            raise ValueError("No exposure data found in the FIAT model.")
-
         if self.fiat_model.exposure.damage_unit is not None:
             return self.fiat_model.exposure.damage_unit
         else:
@@ -739,7 +746,7 @@ class DatabaseBuilder:
         return f"{self.config.fiat_roads_name}.gpkg"
 
     def create_new_developments(self) -> Optional[str]:
-        return None  # TODO
+        return None  # TODO "new_development_area.gpkg" is now the default value
 
     def create_footprints(self) -> Optional[Path]:
         # TODO @panos check this function
@@ -868,14 +875,66 @@ class DatabaseBuilder:
         )
 
     def create_aggregation_areas(self) -> list[AggregationModel]:
-        # TODO @panos check this function
+        # TODO split this to 3 methods?
         aggregation_areas = []
 
+        # first check if the FIAT model has existing aggregation areas
+        if self.fiat_model.spatial_joins["aggregation_areas"]:
+            # Use the aggregation areas from the FIAT model
+            for aggr in self.fiat_model.spatial_joins["aggregation_areas"]:
+                # Check if the exposure csv has the correct column
+                col_name = _FIAT_COLUMNS.aggregation_label.format(name=aggr["name"])
+                if col_name not in self.fiat_model.exposure.exposure_db.columns:
+                    raise KeyError(
+                        f"While aggregation area '{aggr['name']}' exists in the spatial joins of the FIAT model, the column '{col_name}' is missing in the exposure csv."
+                    )
+                # Check equity config
+                if aggr["equity"] is not None:
+                    equity_config = EquityModel(
+                        census_data=str(
+                            self.static_path.joinpath(
+                                "templates", "fiat", aggr["equity"]["census_data"]
+                            )
+                            .relative_to(self.static_path)
+                            .as_posix()
+                        ),
+                        percapitaincome_label=aggr["equity"]["percapitaincome_label"],
+                        totalpopulation_label=aggr["equity"]["totalpopulation_label"],
+                    )
+                else:
+                    equity_config = None
+                # Make aggregation config
+                aggr = AggregationModel(
+                    name=aggr["name"],
+                    file=str(
+                        self.static_path.joinpath("templates", "fiat", aggr["file"])
+                        .relative_to(self.static_path)
+                        .as_posix()
+                    ),
+                    field_name=aggr["field_name"],
+                    equity=equity_config,
+                )
+                aggregation_areas.append(aggr)
+
+                self.logger.info(
+                    f"Aggregation areas: {aggr.name} from the FIAT model are going to be used."
+                )
+
+        # Then check if the user has provided extra aggregation areas in the config
         if self.config.aggregation_areas:
-            # Use the aggregation areas from the config
+            # Loop through aggr areas given in config
             for aggr in self.config.aggregation_areas:
-                # Add column in FIAT
-                aggr_name = Path(aggr.file).stem
+                # Get name of type of aggregation area
+                if aggr.name is not None:
+                    aggr_name = aggr.name
+                else:
+                    aggr_name = Path(aggr.file).stem
+                # If aggregation area already in FIAT model raise Error
+                if aggr_name in [aggr.name for aggr in aggregation_areas]:
+                    raise ValueError(
+                        f"Aggregation area '{aggr_name}' already exists in the FIAT model."
+                    )
+                # Do spatial join of FIAT objects and aggregation areas
                 exposure_csv = self.fiat_model.exposure.exposure_db
                 buildings_joined, aggr_areas = self.spatial_join(
                     objects=self.fiat_model.exposure.exposure_geoms[
@@ -894,19 +953,20 @@ class DatabaseBuilder:
                     buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
                 )
                 self.fiat_model.exposure.exposure_db = exposure_csv
+                # Update spatial joins in FIAT model
                 if self.fiat_model.spatial_joins["aggregation_areas"] is None:
                     self.fiat_model.spatial_joins["aggregation_areas"] = []
                 self.fiat_model.spatial_joins["aggregation_areas"].append(
                     {
                         "name": aggr_name,
-                        "file": aggr_path.relative_to(self.fiat_model.root),
+                        "file": aggr_path.relative_to(self.fiat_model.root).as_posix(),
                         "field_name": _FIAT_COLUMNS.aggregation_label.format(
                             name=aggr_name
                         ),
-                        "equity": None,
+                        "equity": None,  # TODO allow adding equity as well?
                     }
                 )
-
+                # Update the aggregation areas list in the config
                 aggregation_areas.append(
                     AggregationModel(
                         name=aggr_name,
@@ -916,50 +976,18 @@ class DatabaseBuilder:
                         ),
                     )
                 )
-            return aggregation_areas
 
-        elif self.fiat_model.spatial_joins["aggregation_areas"]:
-            # Use the aggregation areas from the FIAT model
-            for aggr_0 in self.fiat_model.spatial_joins["aggregation_areas"]:
-                if aggr_0["equity"] is not None:
-                    equity_config = EquityModel(
-                        census_data=str(
-                            self.static_path.joinpath(
-                                "templates", "fiat", aggr_0["equity"]["census_data"]
-                            )
-                            .relative_to(self.static_path)
-                            .as_posix()
-                        ),
-                        percapitaincome_label=aggr_0["equity"]["percapitaincome_label"],
-                        totalpopulation_label=aggr_0["equity"]["totalpopulation_label"],
-                    )
-                else:
-                    equity_config = None
-
-                aggr = AggregationModel(
-                    name=aggr_0["name"],
-                    file=str(
-                        self.static_path.joinpath("templates", "fiat", aggr_0["file"])
-                        .relative_to(self.static_path)
-                        .as_posix()
-                    ),
-                    field_name=aggr_0["field_name"],
-                    equity=equity_config,
-                )
-                aggregation_areas.append(aggr)
-
-            self.logger.info(
-                f"The aggregation types {[aggr['name'] for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
-            )
-            return aggregation_areas
-        else:
-            # No config provided, no aggr areas in the model -> try to use the region file as a mock aggregation area
+        # No config provided, no aggr areas in the model -> try to use the region file as a mock aggregation area
+        if (
+            not self.fiat_model.spatial_joins["aggregation_areas"]
+            and not self.config.aggregation_areas
+        ):
             exposure_csv = self.fiat_model.exposure.exposure_db
             region_path = Path(self.fiat_model.root).joinpath("geoms", "region.geojson")
             if not region_path.exists():
-                msg = "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
-                self.logger.error(msg)
-                raise ValueError(msg)
+                raise ValueError(
+                    "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
+                )
 
             region = gpd.read_file(region_path)
             region = region.explode().reset_index()
@@ -992,9 +1020,9 @@ class DatabaseBuilder:
             )
             self.fiat_model.exposure.exposure_db = exposure_csv
             self.logger.warning(
-                "No aggregation areas were available in the FIAT model. The region file will be used as a mock aggregation area."
+                "No aggregation areas were available in the FIAT model and none were provided in the config file. The region file will be used as a mock aggregation area."
             )
-            return aggregation_areas
+        return aggregation_areas
 
     def create_svi(self) -> Optional[SVIModel]:
         if self.config.svi:
@@ -1037,11 +1065,14 @@ class DatabaseBuilder:
                 field_name="SVI",
             )
         elif "SVI" in self.fiat_model.exposure.exposure_db.columns:
-            self.logger.info("'SVI' column present in the FIAT exposure csv.")
+            self.logger.info(
+                "'SVI' column present in the FIAT exposure csv. Vulnerability type infometrics can be produced."
+            )
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             if "SVI" not in [attr["name"] for attr in add_attrs]:
-                self.logger.warning("No SVI map found!")
-                return None
+                self.logger.warning(
+                    "No SVI map found to display in the FloodAdapt GUI!"
+                )
 
             ind = [attr["name"] for attr in add_attrs].index("SVI")
             svi = add_attrs[ind]
@@ -1099,10 +1130,8 @@ class DatabaseBuilder:
 
         try:
             urlretrieve(url, fn)
-        except Exception as e:
-            print(e)
-            self.logger.error(f"Could not retrieve cyclone track database from {url}")
-            return None
+        except Exception:
+            raise RuntimeError(f"Could not retrieve cyclone track database from {url}")
 
         return CycloneTrackDatabaseModel(file=name)
 
@@ -1151,7 +1180,7 @@ class DatabaseBuilder:
                 fmt="png",
             )
             self.logger.info(
-                f"Tiles were created using the {subgrid_sfincs} as the elevation map."
+                f"Tiles were created using the {subgrid_sfincs.as_posix()} as the elevation map."
             )
 
         shutil.copy2(dem_file, fa_subgrid_path)
@@ -1691,7 +1720,7 @@ class DatabaseBuilder:
             self.probabilistic_set_name = None
 
     ### HELPER FUNCTIONS ###
-    def make_folder_structure(self):
+    def make_folder_structure(self) -> None:
         """
         Create the folder structure for the database.
 
@@ -1712,7 +1741,7 @@ class DatabaseBuilder:
             (self.root / "input" / name).mkdir(parents=True, exist_ok=True)
 
         # Prepare static folder structure
-        folders = ["templates"]
+        folders = ["templates", "config"]
         for name in folders:
             (self.static_path / name).mkdir(parents=True, exist_ok=True)
 
@@ -1937,6 +1966,9 @@ class DatabaseBuilder:
         return self.fiat_model.exposure.geom_names.index(
             self.config.fiat_buildings_name
         )
+
+    def _get_fiat_road_index(self) -> int:
+        return self.fiat_model.exposure.geom_names.index(self.config.fiat_roads_name)
 
     def _get_closest_station(self):
         # Get available stations from source
