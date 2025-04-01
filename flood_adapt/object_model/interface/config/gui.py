@@ -58,7 +58,7 @@ class GuiUnitModel(BaseModel):
     def imperial() -> "GuiUnitModel":
         return GuiUnitModel(
             default_length_units=us.UnitTypesLength.feet,
-            default_distance_units=us.UnitTypesLength.feet,
+            default_distance_units=us.UnitTypesLength.miles,
             default_area_units=us.UnitTypesArea.sf,
             default_volume_units=us.UnitTypesVolume.cf,
             default_velocity_units=us.UnitTypesVelocity.mph,
