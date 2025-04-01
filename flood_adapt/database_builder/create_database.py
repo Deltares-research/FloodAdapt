@@ -1541,19 +1541,19 @@ class DatabaseBuilder:
         )
 
         # If slr scenarios are given put them in the correct locations
-        if self.config.slr.scenarios:
-            self.config.slr.scenarios.file = self._check_path(
-                self.config.slr.scenarios.file
+        if self.config.slr_scenarios:
+            self.config.slr_scenarios.file = self._check_path(
+                self.config.slr_scenarios.file
             )
             slr_path = self.static_path.joinpath("slr")
             slr_path.mkdir()
-            new_file = slr_path.joinpath(Path(self.config.slr.scenarios.file).name)
+            new_file = slr_path.joinpath(Path(self.config.slr_scenarios.file).name)
             # copy file
-            shutil.copyfile(self.config.slr.scenarios.file, new_file)
+            shutil.copyfile(self.config.slr_scenarios.file, new_file)
             # make config
             slr_scenarios = SlrScenariosModel(
                 file=new_file.relative_to(self.static_path).as_posix(),
-                relative_to_year=self.config.slr.scenarios.relative_to_year,
+                relative_to_year=self.config.slr_scenarios.relative_to_year,
             )
         else:
             slr_scenarios = None
