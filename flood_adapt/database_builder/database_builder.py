@@ -25,6 +25,10 @@ from shapely import MultiLineString, MultiPolygon, Polygon
 from flood_adapt import FloodAdaptLogging
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
+from flood_adapt.api.projections import save_projection
+from flood_adapt.api.static import read_database
+from flood_adapt.api.strategies import save_strategy
+from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
     TideGaugeSource,
@@ -65,6 +69,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
 from flood_adapt.object_model.interface.config.site import (
     Site,
     SiteModel,
+    StandardObjectModel,
 )
 from flood_adapt.object_model.interface.projections import (
     PhysicalProjectionModel,
@@ -440,16 +445,25 @@ class DatabaseBuilder:
             site = Site(site_config=site_model)
             site.save(self.static_path / "config" / "site.toml")
 
+            # Save standard objects
+            self.create_standard_objects()
             # Save log file
             self.logger.info("FloodAdapt database creation finished!")
 
-    def create_standard_objects(self) -> list:
+    def create_standard_objects(self):
+        # Set environment variables after folder structure is created
+        Settings(DATABASE_ROOT=self.root.parent, DATABASE_NAME=self.root.name)
+        self.logger.info("Creating no measures strategy and current projection.")
+        read_database(self.root.parent, self.config.name)
+        # Create no measures strategy
         NO_MEASURES = Strategy(
             StrategyModel(
                 name="no_measures",
                 measures=[],
             )
         )
+        save_strategy(NO_MEASURES)
+        # Create current projection
         PROJECTION = Projection(
             ProjectionModel(
                 name="current",
@@ -457,12 +471,14 @@ class DatabaseBuilder:
                 socio_economic_change=SocioEconomicChangeModel(),
             )
         )
+        save_projection(PROJECTION)
 
-        # TODO
-        EVENT_SET = None
-
-        # TODO read db + save objects
-        return [NO_MEASURES, PROJECTION, EVENT_SET]
+        std_objects = StandardObjectModel(
+            events=[self.probabilistic_set_name],
+            projection=["current"],
+            strategy=["no_measures"],
+        )
+        return std_objects
 
     ### TEMPLATE READERS ###
     def read_template_fiat_model(self) -> HydromtFiatModel:
@@ -1434,8 +1450,16 @@ class DatabaseBuilder:
         # set the probabilistic event set if provided
         self.add_probabilistic_set()
 
+        # Create the FIAT configuration
         fiat = self.create_fiat_model()
-        lon, lat = self.read_location()
+        lon, lat = self.read_location()  # Get centroid of site
+
+        # Create standard objects
+        std_objs = StandardObjectModel(
+            events=[self.probabilistic_set_name],
+            projections=["current"],
+            strategies=["no_measures"],
+        )
 
         config = SiteModel(
             name=self.config.name,
@@ -1445,6 +1469,7 @@ class DatabaseBuilder:
             fiat=fiat,
             gui=gui,
             sfincs=sfincs,
+            standard_objects=std_objs,
         )
         return config
 
