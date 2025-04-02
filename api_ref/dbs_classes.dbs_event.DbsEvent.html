@@ -433,7 +433,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
   <li><a href="#flood_adapt.dbs_classes.dbs_event.DbsEvent.check_higher_level_usage" id="toc-flood_adapt.dbs_classes.dbs_event.DbsEvent.check_higher_level_usage" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_event.DbsEvent.check_higher_level_usage">check_higher_level_usage</a></li>
-  <li><a href="#flood_adapt.dbs_classes.dbs_event.DbsEvent.copy" id="toc-flood_adapt.dbs_classes.dbs_event.DbsEvent.copy" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_event.DbsEvent.copy">copy</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_event.DbsEvent.get" id="toc-flood_adapt.dbs_classes.dbs_event.DbsEvent.get" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_event.DbsEvent.get">get</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_event.DbsEvent.list_objects" id="toc-flood_adapt.dbs_classes.dbs_event.DbsEvent.list_objects" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_event.DbsEvent.list_objects">list_objects</a></li>
   </ul></li>
@@ -464,14 +463,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Check if an event is used in a scenario.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.dbs_classes.dbs_event.DbsEvent.copy">copy</a></td>
-<td>Copy (duplicate) an existing object, and give it a new name.</td>
-</tr>
-<tr class="odd">
 <td><a href="#flood_adapt.dbs_classes.dbs_event.DbsEvent.get">get</a></td>
 <td>Return an event object.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.dbs_classes.dbs_event.DbsEvent.list_objects">list_objects</a></td>
 <td>Return a dictionary with info on the events that currently exist in the database.</td>
 </tr>
@@ -522,56 +517,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="flood_adapt.dbs_classes.dbs_event.DbsEvent.copy" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_event.DbsEvent.copy">copy</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_event.DbsEvent.copy(old_name, new_name, new_description)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Copy (duplicate) an existing object, and give it a new name.</p>
-<section id="parameters-1" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 24%">
-<col style="width: 11%">
-<col style="width: 46%">
-<col style="width: 17%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>old_name</td>
-<td>str</td>
-<td>name of the existing measure</td>
-<td><em>required</em></td>
-</tr>
-<tr class="even">
-<td>new_name</td>
-<td>str</td>
-<td>name of the new measure</td>
-<td><em>required</em></td>
-</tr>
-<tr class="odd">
-<td>new_description</td>
-<td>str</td>
-<td>description of the new measure</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
 <section id="flood_adapt.dbs_classes.dbs_event.DbsEvent.get" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_event.DbsEvent.get">get</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_event.DbsEvent.get(name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_event.DbsEvent.get(name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return an event object.</p>
-<section id="parameters-2" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
 <table class="table">
 <thead>
 <tr class="header">
@@ -613,7 +564,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.dbs_classes.dbs_event.DbsEvent.list_objects" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_event.DbsEvent.list_objects">list_objects</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_event.DbsEvent.list_objects()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_event.DbsEvent.list_objects()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return a dictionary with info on the events that currently exist in the database.</p>
 <section id="returns-2" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
