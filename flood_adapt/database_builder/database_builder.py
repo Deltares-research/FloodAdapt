@@ -445,6 +445,9 @@ class DatabaseBuilder:
             site = Site(site_config=site_model)
             site.save(self.static_path / "config" / "site.toml")
 
+            # Add infometric and infographic configurations
+            self.create_infometrics()
+
             # Save standard objects
             self.create_standard_objects()
             # Save log file
@@ -494,6 +497,13 @@ class DatabaseBuilder:
         shutil.copytree(user_provided, location_in_db)
         in_db = HydromtFiatModel(root=str(location_in_db), mode="r+")
         in_db.read()
+        # Add check to make sure the geoms are correct
+        # TODO this should be handled in hydromt-FIAT
+        no_geoms = len(
+            [name for name in in_db.config["exposure"]["geom"].keys() if "file" in name]
+        )
+        in_db.exposure.exposure_geoms = in_db.exposure.exposure_geoms[:no_geoms]
+        in_db.exposure._geom_names = in_db.exposure._geom_names[:no_geoms]
 
         return in_db
 
@@ -576,12 +586,6 @@ class DatabaseBuilder:
             geoms = geoms[keep].reset_index(drop=True)
             self.fiat_model.exposure.exposure_geoms[i] = geoms
 
-        roads_gpkg = self.create_roads()
-
-        non_building_names = []
-        if roads_gpkg is not None:
-            non_building_names.append("road")
-
         footprints = self.create_footprints()
         if footprints is not None:
             footprints = footprints.as_posix()
@@ -592,6 +596,11 @@ class DatabaseBuilder:
 
         # Store result for possible future use in create_infographics
         self._aggregation_areas = self.create_aggregation_areas()
+
+        roads_gpkg = self.create_roads()
+        non_building_names = []
+        if roads_gpkg is not None:
+            non_building_names.append("road")
 
         # Update elevations
         self.update_fiat_elevation()
@@ -605,8 +614,8 @@ class DatabaseBuilder:
             building_footprints=footprints,
             roads_file_name=roads_gpkg,
             new_development_file_name=self.create_new_developments(),  # TODO
-            save_simulation=True,  # TODO
-            infographics=True,  # TODO
+            save_simulation=False,  # TODO
+            infographics=self.config.infographics,
             aggregation=self._aggregation_areas,
             svi=self.create_svi(),
         )
@@ -657,10 +666,10 @@ class DatabaseBuilder:
             roads = self.fiat_model.exposure.exposure_geoms[
                 self._get_fiat_road_index()
             ].to_crs(dem.spatial_ref.crs_wkt)
-            roads["geometry"] = roads.geometry.centroid  # get centroids
+            roads["centroid"] = roads.geometry.centroid  # get centroids
 
-            x_points = xr.DataArray(roads["geometry"].x, dims="points")
-            y_points = xr.DataArray(roads["geometry"].y, dims="points")
+            x_points = xr.DataArray(roads["centroid"].x, dims="points")
+            y_points = xr.DataArray(roads["centroid"].y, dims="points")
             roads["elev"] = (
                 dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
                 * conversion_factor
@@ -682,6 +691,7 @@ class DatabaseBuilder:
                 exposure[_FIAT_COLUMNS.primary_object_type] == "road", "elev"
             ]
             del exposure["elev"]
+            self.fiat_model.exposure.exposure_db = exposure
 
         buildings = self.fiat_model.exposure.exposure_geoms[
             self._get_fiat_building_index()
@@ -732,10 +742,7 @@ class DatabaseBuilder:
             # TODO check how this naming of output geoms should become more explicit!
             return None
 
-        roads_ind = self.fiat_model.exposure.geom_names.index(
-            self.config.fiat_roads_name
-        )
-        roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
+        roads = self.fiat_model.exposure.exposure_geoms[self._get_fiat_road_index()]
 
         # TODO do we need the lanes column?
         if (
@@ -753,7 +760,7 @@ class DatabaseBuilder:
                 self.config.road_width / 2, cap_style=2
             )
             roads = roads.to_crs(self.fiat_model.exposure.crs)
-            self.fiat_model.exposure.exposure_geoms[roads_ind] = roads
+            self.fiat_model.exposure.exposure_geoms[self._get_fiat_road_index()] = roads
             self.logger.info(
                 f"FIAT road objects transformed from lines to polygons assuming a road width of {self.config.road_width} meters."
             )
@@ -765,7 +772,6 @@ class DatabaseBuilder:
         return None  # TODO "new_development_area.gpkg" is now the default value
 
     def create_footprints(self) -> Optional[Path]:
-        # TODO @panos check this function
         if isinstance(self.config.building_footprints, SpatialJoinModel):
             # Use the provided building footprints
             building_footprints_file = self._check_exists_and_absolute(
@@ -1418,8 +1424,9 @@ class DatabaseBuilder:
         obs_geo["y"] = obs_geo.geometry.y
         del obs_geo["geometry"]
         obs_geo["name"] = [f"bnd_pt{num:02d}" for num in range(1, len(obs_geo) + 1)]
+        fn_off = Path(self.sfincs_offshore_model.root) / "sfincs.obs"
         obs_geo.to_csv(
-            fn.parent / "sfincs.obs",
+            fn_off,
             sep="\t",
             index=False,
             header=False,
@@ -1431,6 +1438,7 @@ class DatabaseBuilder:
         return FloodModel(
             name="offshore",
             reference=self.config.sfincs_offshore.reference,
+            vertical_offset=self.config.sfincs_offshore.vertical_offset,
         )
 
     def create_overland_model(self) -> FloodModel:
@@ -2118,7 +2126,7 @@ if __name__ == "__main__":
         )
         try:
             dbs = DatabaseBuilder.from_file(config_path=config_path)
-            dbs.build()
+            dbs.build(overwrite=True)
         except Exception as e:
             print(e)
         quit = input("Do you want to quit? (y/n)")
