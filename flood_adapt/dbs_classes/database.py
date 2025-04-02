@@ -336,9 +336,7 @@ class Database(IDatabase):
         ----------
         benefit : IBenefit
         """
-        # If the check has not been run yet, do it now
-        if not hasattr(benefit, "scenarios"):
-            benefit.check_scenarios()
+        benefit.check_scenarios()
 
         # Iterate through the scenarios needed and create them if not existing
         for index, row in benefit.scenarios.iterrows():

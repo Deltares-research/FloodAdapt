@@ -3,6 +3,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Type, TypeVar
 
+import tomli_w
+
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.object_model.interface.object_model import IObject
@@ -78,39 +80,34 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         new_description : str
             description of the new measure
         """
-        # Check if the provided old_name is valid
-        if old_name not in self.list_objects()["name"]:
-            raise ValueError(
-                f"{self._object_class.display_name}: '{old_name}' does not exist."
-            )
-
-        # First do a get and change the name and description
         copy_object = self.get(old_name)
         copy_object.attrs.name = new_name
         copy_object.attrs.description = new_description
 
-        # After changing the name and description, receate the model to re-trigger the validators
-        copy_object.attrs = type(copy_object.attrs)(**copy_object.attrs.model_dump())
+        # After changing the name and description, re-trigger the validators
+        copy_object.attrs.model_validate(copy_object.attrs)
 
-        EXCLUDE_SUFFIX = [".spw"]
-        try:
-            # Copy the folder
-            shutil.copytree(
-                self.input_path / old_name,
-                self.input_path / new_name,
-                ignore=shutil.ignore_patterns(*EXCLUDE_SUFFIX),
-            )
+        # Checking whether the new name is already in use
+        self._validate_to_save(copy_object, overwrite=False)
 
-            # Rename the toml file to not raise in the name check
-            file = self.input_path / new_name / f"{old_name}.toml"
-            file.rename(self.input_path / new_name / f"{new_name}.toml")
+        # Write only the toml file
+        toml_path = self.input_path / new_name / f"{new_name}.toml"
+        toml_path.parent.mkdir(parents=True)
+        with open(toml_path, "wb") as f:
+            tomli_w.dump(copy_object.attrs.model_dump(exclude_none=True), f)
 
-            # Check new name is valid and update toml file
-            self.save(copy_object, overwrite=True)
-        except:
-            # If an error occurs, delete the folder and raise the error
-            shutil.rmtree(self.input_path / new_name, ignore_errors=True)
-            raise
+        # Then copy all the accompanied files
+        src = self.input_path / old_name
+        dest = self.input_path / new_name
+
+        EXCLUDE = [".spw", ".toml"]
+        for file in src.glob("*"):
+            if file.suffix in EXCLUDE:
+                continue
+            if file.is_dir():
+                shutil.copytree(file, dest / file.name, dirs_exist_ok=True)
+            else:
+                shutil.copy2(file, dest / file.name)
 
     def save(
         self,
@@ -134,16 +131,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         ValueError
             Raise error if name is already in use.
         """
-        object_exists = object_model.attrs.name in self.list_objects()["name"]
-
-        # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
-        # don't want to overwrite, raise an error.
-        if overwrite and object_exists:
-            self.delete(object_model.attrs.name, toml_only=True)
-        elif not overwrite and object_exists:
-            raise ValueError(
-                f"'{object_model.attrs.name}' name is already used by another {self._object_class.display_name.lower()}. Choose a different name"
-            )
+        self._validate_to_save(object_model, overwrite=overwrite)
 
         # If the folder doesnt exist yet, make the folder and save the object
         if not (self.input_path / object_model.attrs.name).exists():
@@ -285,3 +273,32 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         }
 
         return objects
+
+    def _validate_to_save(self, object_model: T_OBJECT, overwrite: bool) -> None:
+        """Validate if the object can be saved.
+
+        Parameters
+        ----------
+        object_model : ObjectModel
+            object to be validated
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use.
+        """
+        # Check if the object exists
+        if object_model.attrs.name in self.list_objects()["name"]:
+            raise ValueError(
+                f"{self._object_class.display_name}: '{object_model.attrs.name}' already exists. Choose a different name."
+            )
+        object_exists = object_model.attrs.name in self.list_objects()["name"]
+
+        # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
+        # don't want to overwrite, raise an error.
+        if overwrite and object_exists:
+            self.delete(object_model.attrs.name, toml_only=True)
+        elif not overwrite and object_exists:
+            raise ValueError(
+                f"'{object_model.attrs.name}' name is already used by another {self._object_class.display_name.lower()}. Choose a different name"
+            )
