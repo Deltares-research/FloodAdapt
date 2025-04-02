@@ -63,7 +63,6 @@ class TestMeteoHandler:
 
         yield handler, time
 
-    @pytest.mark.slow
     def test_download_meteo_data(
         self, setup_meteo_test: tuple[MeteoHandler, TimeModel]
     ):

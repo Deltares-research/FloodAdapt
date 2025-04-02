@@ -124,7 +124,6 @@ def setup_eventset_scenario(
     return test_db, scn, test_eventset
 
 
-@pytest.mark.slow
 def test_run_offshore_scenario(test_db, setup_offshore_meteo_scenario):
     api_scenarios.save_scenario(setup_offshore_meteo_scenario)
     api_scenarios.run_scenario(setup_offshore_meteo_scenario.attrs.name)
@@ -152,7 +151,6 @@ def test_run_synthetic_scenario(test_db, setup_synthetic_scenario):
     )
 
 
-@pytest.mark.slow
 def test_run_hurricane_scenario(test_db, setup_hurricane_scenario):
     scn, event = setup_hurricane_scenario
     api_scenarios.save_scenario(scn)
@@ -161,7 +159,6 @@ def test_run_hurricane_scenario(test_db, setup_hurricane_scenario):
     assert finished_file_exists(test_db.scenarios.output_path / scn.attrs.name)
 
 
-@pytest.mark.slow
 def test_run_eventset_scenario(setup_eventset_scenario):
     test_db, scn, event_set = setup_eventset_scenario
     api_scenarios.save_scenario(scn)

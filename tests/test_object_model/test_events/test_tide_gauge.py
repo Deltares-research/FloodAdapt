@@ -103,7 +103,6 @@ def test_read_imported_waterlevels_from_file(setup_file_based_tide_gauge):
     assert dummy_1d_timeseries_df.equals(result_df)
 
 
-@pytest.mark.slow
 def test_download_tide_gauge_data(
     mock_cht_station_source_get_data, setup_download_based_tide_gauge
 ):
