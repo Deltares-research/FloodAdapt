@@ -1824,6 +1824,10 @@ class SfincsAdapter(IHazardAdapter):
         if not path.exists():
             return
 
+        if not self.settings.config.save_simulation:
+            shutil.rmtree(path)
+            return
+
         for ext in extensions:
             for file in path.glob(f"*{ext}"):
                 file.unlink()
