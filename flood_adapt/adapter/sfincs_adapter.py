@@ -935,6 +935,9 @@ class SfincsAdapter(IHazardAdapter):
         self.preprocess(scenario, event)
         self.process(scenario, event)
         self.postprocess(scenario, event)
+        shutil.rmtree(
+            self._get_simulation_path(scenario, sub_event=event), ignore_errors=True
+        )
 
     def _run_risk_scenario(self, scenario: IScenario):
         """Run the whole workflow for a risk scenario.
@@ -944,19 +947,22 @@ class SfincsAdapter(IHazardAdapter):
         total = len(scenario.event.events)
 
         for i, sub_event in enumerate(scenario.event.events):
-            sim_path = self._get_simulation_path(scenario, sub_event=sub_event)
-
-            # Preprocess
             self.preprocess(scenario, event=sub_event)
-
-            # Process
             self.logger.info(
                 f"Running SFINCS for Eventset Scenario `{scenario.attrs.name}`, Event `{sub_event.attrs.name}` ({i + 1}/{total})"
             )
+            sim_path = self._get_simulation_path(scenario, sub_event=sub_event)
             self.execute(sim_path)
 
         # Postprocess
         self.calculate_rp_floodmaps(scenario)
+
+        # Cleanup
+        for i, sub_event in enumerate(scenario.event.events):
+            shutil.rmtree(
+                self._get_simulation_path(scenario, sub_event=sub_event),
+                ignore_errors=True,
+            )
 
     ### FORCING ###
     def _add_forcing_wind(
@@ -1822,10 +1828,6 @@ class SfincsAdapter(IHazardAdapter):
     ):
         """Remove all files with the given extensions in the given path."""
         if not path.exists():
-            return
-
-        if not self.settings.config.save_simulation:
-            shutil.rmtree(path)
             return
 
         for ext in extensions:
