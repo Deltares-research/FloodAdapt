@@ -56,16 +56,10 @@ __all__ = [
     "MeasureType",
     "SelectionType",
     "FloodWall",
-    "FloodWall",
-    "GreenInfrastructure",
     "GreenInfrastructure",
     "Pump",
-    "Pump",
-    "Buyout",
     "Buyout",
     "Elevate",
-    "Elevate",
-    "FloodProof",
     "FloodProof",
     # Forcings
     "WaterlevelCSV",
@@ -89,30 +83,16 @@ __all__ = [
     "DischargeSynthetic",
     # Events
     "Event",
-    "Event",
-    "EventSet",
     "EventSet",
     "HistoricalEvent",
-    "HistoricalEvent",
     "HurricaneEvent",
-    "HurricaneEvent",
-    "SyntheticEvent",
     "SyntheticEvent",
     # Benefits
     "Benefit",
-    "Benefit",
     # Projections
-    "Projection",
-    "Projection",
-    "PhysicalProjectionModel",
-    "SocioEconomicChangeModel",
     "Projection",
     # Scenarios
     "Scenario",
-    "Scenario",
-    "Scenario",
     # Strategies
-    "Strategy",
-    "Strategy",
     "Strategy",
 ]

@@ -959,7 +959,7 @@ class SfincsAdapter(IHazardAdapter):
         self.calculate_rp_floodmaps(scenario)
 
         # Cleanup
-        for i, sub_event in enumerate(scenario.event.events):
+        for i, sub_event in enumerate(event_set._events):
             shutil.rmtree(
                 self._get_simulation_path(scenario, sub_event=sub_event),
                 ignore_errors=True,
