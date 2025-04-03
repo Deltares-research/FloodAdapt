@@ -2,6 +2,7 @@ import os
 import shutil
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Union
 
 from pydantic import BeforeValidator
 
@@ -140,9 +141,8 @@ def validate_file_extension(allowed_extensions: list[str]):
     >>>     csv_path: Annotated[Path, validate_file_extension([".csv"])]
     """
 
-    def _validator(value: Path) -> Path:
-        if not isinstance(value, Path):
-            raise TypeError("Expected a Path object")
+    def _validator(value: Union[Path, str, os.PathLike]) -> Path:
+        value = Path(value)
         if value.suffix not in allowed_extensions:
             raise ValueError(
                 f"Invalid file extension: {value}. Allowed extensions are {', '.join(allowed_extensions)}."
