@@ -114,7 +114,10 @@ class SfincsAdapter(IHazardAdapter):
         self.units = self.database.site.attrs.gui.units
         self.sfincs_logger = self.setup_sfincs_logger(model_root)
         self._model = SfincsModel(
-            root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
+            root=str(model_root.resolve()),
+            mode="r",
+            logger=self.sfincs_logger,
+            write_gis=False,
         )
         self._model.read()
 

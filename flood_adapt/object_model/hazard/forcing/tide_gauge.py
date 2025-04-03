@@ -124,6 +124,7 @@ class TideGauge(ITideGauge):
                 id=self.attrs.ID,
                 tstart=time.start_time,
                 tstop=time.end_time,
+                datum=self.attrs.reference,
             )
             index = pd.date_range(
                 start=time.start_time,
