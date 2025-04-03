@@ -64,7 +64,7 @@ class SyntheticTideModel(BaseModel):
         The amplitude of the tide harmonic relative to the datum.
     datum : str
         The datum to which the harmonic amplitude is relative.
-        Should be a datum defined in `site.sfincs.waterlevels.datums`
+        Should be a datum defined in `site.attrs.sfincs.waterlevels.datums`
     """
 
     harmonic_amplitude: us.UnitfulLength

@@ -65,7 +65,7 @@ class FloodMap(DatabaseUser):
     def mode(self):
         if hasattr(self, "_mode"):
             return self._mode
-        self._mode = self.database.events.get(self.scenario.attrs.event).attrs.mode
+        self._mode = self.database.events.get(self.scenario.event).mode
         return self._mode
 
     @property
@@ -80,7 +80,7 @@ class FloodMap(DatabaseUser):
         if hasattr(self, "_hazard_strategy"):
             return self._hazard_strategy
         self._hazard_strategy = self.database.strategies.get(
-            self.scenario.attrs.strategy
+            self.scenario.strategy
         ).get_hazard_strategy()
         return self._hazard_strategy
 
@@ -89,6 +89,6 @@ class FloodMap(DatabaseUser):
         if hasattr(self, "_physical_projection"):
             return self._physical_projection
         self._physical_projection = self.database.projections.get(
-            self.scenario.attrs.projection
-        ).get_physical_projection()
+            self.scenario.projection
+        ).physical_projection
         return self._physical_projection

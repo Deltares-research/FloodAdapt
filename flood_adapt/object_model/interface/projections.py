@@ -1,13 +1,12 @@
-from abc import abstractmethod
+import os
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
-from flood_adapt.object_model.interface.path_builder import (
-    ObjectDir,
-)
+from flood_adapt.object_model.interface.object_model import IObjectModel
 from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
 class PhysicalProjectionModel(BaseModel):
@@ -21,22 +20,6 @@ class PhysicalProjectionModel(BaseModel):
     storm_frequency_increase: float = 0.0
 
 
-class PhysicalProjection:
-    """The Projection class containing various risk drivers."""
-
-    attrs: PhysicalProjectionModel
-
-    def __init__(self, data: PhysicalProjectionModel):
-        self.attrs = PhysicalProjectionModel.model_validate(data)
-
-    def __eq__(self, other):
-        if not isinstance(other, PhysicalProjection):
-            # don't attempt to compare against unrelated types
-            return NotImplemented
-
-        return self.attrs == other.attrs
-
-
 class SocioEconomicChangeModel(BaseModel):
     population_growth_existing: Optional[float] = 0.0
     economic_growth: Optional[float] = 0.0
@@ -46,25 +29,18 @@ class SocioEconomicChangeModel(BaseModel):
     new_development_shapefile: Optional[str] = None
 
 
-class SocioEconomicChange:
-    """The Projection class containing various risk drivers."""
-
-    def __init__(self, data: SocioEconomicChangeModel):
-        self.attrs = SocioEconomicChangeModel.model_validate(data)
-
-
-class ProjectionModel(IObjectModel):
+class Projection(IObjectModel):
     physical_projection: PhysicalProjectionModel
     socio_economic_change: SocioEconomicChangeModel
 
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.socio_economic_change.new_development_shapefile:
+            src_path = resolve_filepath(
+                "projections",
+                self.name,
+                self.socio_economic_change.new_development_shapefile,
+            )
+            path = save_file_to_database(src_path, Path(output_dir))
 
-class IProjection(IObject[ProjectionModel]):
-    _attrs_type = ProjectionModel
-    dir_name = ObjectDir.projection
-    display_name = "Projection"
-
-    @abstractmethod
-    def get_physical_projection(self) -> PhysicalProjection: ...
-
-    @abstractmethod
-    def get_socio_economic_change(self) -> SocioEconomicChange: ...
+            # Update the shapefile path in the object so it is saved in the toml file as well
+            self.socio_economic_change.new_development_shapefile = path.name

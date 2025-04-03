@@ -1,15 +1,13 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, Generic, TypeVar
 
-from flood_adapt.object_model.interface.object_model import IObject
+from flood_adapt.object_model.interface.object_model import IObjectModel
 
-T_OBJECT = TypeVar("T_OBJECT", bound=IObject)
+T_OBJECT_MODEL = TypeVar("T_OBJECT_MODEL", bound=IObjectModel)
 
 
-class AbstractDatabaseElement(ABC, Generic[T_OBJECT]):
-    _object_class: Type[T_OBJECT]
-
+class AbstractDatabaseElement(ABC, Generic[T_OBJECT_MODEL]):
     input_path: Path
     output_path: Path
 
@@ -19,7 +17,7 @@ class AbstractDatabaseElement(ABC, Generic[T_OBJECT]):
         pass
 
     @abstractmethod
-    def get(self, name: str) -> T_OBJECT:
+    def get(self, name: str) -> T_OBJECT_MODEL:
         """Return the object of the type of the database with the given name.
 
         Parameters
@@ -63,7 +61,7 @@ class AbstractDatabaseElement(ABC, Generic[T_OBJECT]):
     @abstractmethod
     def save(
         self,
-        object_model: T_OBJECT,
+        object_model: T_OBJECT_MODEL,
         overwrite: bool = False,
     ):
         """Save an object in the database.
@@ -88,7 +86,7 @@ class AbstractDatabaseElement(ABC, Generic[T_OBJECT]):
         pass
 
     @abstractmethod
-    def edit(self, object_model: T_OBJECT):
+    def edit(self, object_model: T_OBJECT_MODEL):
         """Edits an already existing object in the database.
 
         Parameters

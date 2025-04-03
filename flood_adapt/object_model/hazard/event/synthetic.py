@@ -1,6 +1,6 @@
 from typing import ClassVar, List
 
-from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
+from flood_adapt.object_model.hazard.event.template_event import Event
 from flood_adapt.object_model.hazard.interface.events import (
     ForcingSource,
     ForcingType,
@@ -8,7 +8,7 @@ from flood_adapt.object_model.hazard.interface.events import (
 )
 
 
-class SyntheticEventModel(EventModel):
+class SyntheticEvent(Event):
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
@@ -32,7 +32,3 @@ class SyntheticEventModel(EventModel):
         ],
     }
     template: Template = Template.Synthetic
-
-
-class SyntheticEvent(Event[SyntheticEventModel]):
-    _attrs_type = SyntheticEventModel

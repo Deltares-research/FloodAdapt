@@ -21,12 +21,13 @@ from pydantic import BaseModel, Field
 from shapely import MultiPolygon
 from shapely.geometry import Polygon
 
-from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
+from flood_adapt.misc.config import Settings
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
     TideGaugeSource,

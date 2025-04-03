@@ -8,7 +8,6 @@ import tomli
 
 from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
-    SyntheticEventModel,
 )
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.rainfall import (
@@ -61,45 +60,45 @@ def _waterlevel_csv(dummy_1d_timeseries_df: pd.DataFrame):
 @pytest.fixture()
 def test_event_all_csv(_wind_csv, _rainfall_csv, _waterlevel_csv):
     return SyntheticEvent(
-        SyntheticEventModel(
-            name="test_synthetic_nearshore",
-            time=TimeModel(
-                start_time=datetime(2020, 1, 1),
-                end_time=datetime(2020, 1, 2),
-            ),
-            forcings={
-                ForcingType.WIND: [
-                    _wind_csv,
-                ],
-                ForcingType.RAINFALL: [
-                    _rainfall_csv,
-                ],
-                ForcingType.DISCHARGE: [
-                    DischargeConstant(
-                        river=RiverModel(
-                            name="cooper",
-                            description="Cooper River",
-                            x_coordinate=595546.3,
-                            y_coordinate=3675590.6,
-                            mean_discharge=us.UnitfulDischarge(
-                                value=5000, units=us.UnitTypesDischarge.cfs
-                            ),
-                        ),
-                        discharge=us.UnitfulDischarge(
+        name="test_synthetic_nearshore",
+        time=TimeModel(
+            start_time=datetime(2020, 1, 1),
+            end_time=datetime(2020, 1, 2),
+        ),
+        forcings={
+            ForcingType.WIND: [
+                _wind_csv,
+            ],
+            ForcingType.RAINFALL: [
+                _rainfall_csv,
+            ],
+            ForcingType.DISCHARGE: [
+                DischargeConstant(
+                    river=RiverModel(
+                        name="cooper",
+                        description="Cooper River",
+                        x_coordinate=595546.3,
+                        y_coordinate=3675590.6,
+                        mean_discharge=us.UnitfulDischarge(
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
-                    )
-                ],
-                ForcingType.WATERLEVEL: [
-                    _waterlevel_csv,
-                ],
-            },
-        )
+                    ),
+                    discharge=us.UnitfulDischarge(
+                        value=5000, units=us.UnitTypesDischarge.cfs
+                    ),
+                )
+            ],
+            ForcingType.WATERLEVEL: [
+                _waterlevel_csv,
+            ],
+        },
     )
 
 
 class TestSyntheticEvent:
-    def test_save_event_toml_and_datafiles(self, test_event_all_csv, tmp_path):
+    def test_save_event_toml_and_datafiles(
+        self, test_event_all_csv: SyntheticEvent, tmp_path
+    ):
         path = tmp_path / "test_event.toml"
         test_event = test_event_all_csv
         test_event.save(path)
@@ -108,8 +107,9 @@ class TestSyntheticEvent:
         with open(path, "rb") as f:
             content = tomli.load(f)
 
+        loaded_event = SyntheticEvent.load_file(path)
         csv_forcings = [
-            f for f in test_event.get_forcings() if f.source == ForcingSource.CSV
+            f for f in loaded_event.get_forcings() if f.source == ForcingSource.CSV
         ]
         for forcing in csv_forcings:
             assert forcing.path.exists()

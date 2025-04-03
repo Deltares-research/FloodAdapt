@@ -1,22 +1,29 @@
 import os
 from pathlib import Path
-from typing import Any, List, Optional, Type, TypeVar
+from typing import Any, List, Optional
 
 import tomli
 from pydantic import field_serializer, field_validator, model_validator
 
 from flood_adapt.misc.config import Settings
+from flood_adapt.object_model.hazard.forcing.discharge import DischargeCSV
 from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
+from flood_adapt.object_model.hazard.forcing.rainfall import (
+    RainfallCSV,
+    RainfallNetCDF,
+    RainfallTrack,
+)
+from flood_adapt.object_model.hazard.forcing.waterlevels import WaterlevelCSV
+from flood_adapt.object_model.hazard.forcing.wind import WindCSV, WindNetCDF, WindTrack
 from flood_adapt.object_model.hazard.interface.events import (
     ForcingSource,
     ForcingType,
     IEvent,
-    IEventModel,
     IForcing,
 )
 
 
-class EventModel(IEventModel):
+class Event(IEvent):
     @staticmethod
     def _parse_forcing_from_dict(
         forcing_attrs: dict[str, Any] | IForcing,
@@ -51,7 +58,7 @@ class EventModel(IEventModel):
         for ftype, forcing_list in value.items():
             ftype = ForcingType(ftype)
             forcings[ftype] = [
-                EventModel._parse_forcing_from_dict(forcing, ftype)
+                Event._parse_forcing_from_dict(forcing, ftype)
                 for forcing in forcing_list
             ]
         return forcings
@@ -105,47 +112,58 @@ class EventModel(IEventModel):
     def get_allowed_forcings(cls) -> dict[str, List[str]]:
         return {k.value: [s.value for s in v] for k, v in cls.ALLOWED_FORCINGS.items()}
 
-
-T_EVENT_MODEL = TypeVar("T_EVENT_MODEL", bound=EventModel)
-
-
-class Event(IEvent[T_EVENT_MODEL]):
-    _attrs_type: Type[T_EVENT_MODEL]
-
     def get_forcings(self) -> list[IForcing]:
-        forcings = []
-        for forcing_list in self.attrs.forcings.values():
-            forcings.extend(forcing_list)
-        return forcings
-
-    @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "Event":
-        """Load object from file."""
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
-        event = cls.load_dict(toml)
-
-        for forcing in event.get_forcings():
-            if hasattr(forcing, "path") and forcing.path is not None:
-                if not (file_path.parent / forcing.path).exists():
-                    raise FileNotFoundError(
-                        f"File {forcing.path} not found in {file_path.parent}."
-                    )
-                forcing.path = file_path.parent / forcing.path
-
-        return event
+        """Return a list of all forcings in the event."""
+        return [forcing for forcings in self.forcings.values() for forcing in forcings]
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        """Save any additional files associated with the event."""
         for forcing in self.get_forcings():
             forcing.save_additional(output_dir)
 
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False
-        _self = self.attrs.model_dump(
-            exclude={"name", "description"}, exclude_none=True
-        )
-        _other = other.attrs.model_dump(
-            exclude={"name", "description"}, exclude_none=True
-        )
-        return _self == _other
+    @classmethod
+    def load_file(cls, file_path: Path | str | os.PathLike) -> "Event":
+        """Load object from file.
+
+        Parameters
+        ----------
+        file_path : Path | str | os.PathLike
+            Path to the file to load.
+
+        """
+        with open(file_path, mode="rb") as fp:
+            toml = tomli.load(fp)
+
+        event = cls.model_validate(toml)
+
+        # Update all forcings with paths to absolute paths
+        for forcing in event.get_forcings():
+            if isinstance(
+                forcing,
+                (
+                    WaterlevelCSV,
+                    RainfallTrack,
+                    RainfallCSV,
+                    RainfallNetCDF,
+                    DischargeCSV,
+                    WindTrack,
+                    WindCSV,
+                    WindNetCDF,
+                ),
+            ):
+                if forcing.path.exists():
+                    continue
+                elif forcing.path == Path(forcing.path.name):
+                    # convert relative path to absolute path
+                    in_dir = Path(file_path).parent / forcing.path.name
+                    if not in_dir.exists():
+                        raise FileNotFoundError(
+                            f"Failed to load Event. File {forcing.path} does not exist in {in_dir.parent}."
+                        )
+                    forcing.path = in_dir
+                else:
+                    raise FileNotFoundError(
+                        f"Failed to load Event. File {forcing.path} does not exist."
+                    )
+
+        return event

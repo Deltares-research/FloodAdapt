@@ -1,6 +1,6 @@
 from typing import ClassVar, List
 
-from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
+from flood_adapt.object_model.hazard.event.template_event import Event
 from flood_adapt.object_model.hazard.interface.events import Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
@@ -8,7 +8,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
 )
 
 
-class HistoricalEventModel(EventModel):
+class HistoricalEvent(Event):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event."""
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
@@ -36,7 +36,3 @@ class HistoricalEventModel(EventModel):
         ],
     }
     template: Template = Template.Historical
-
-
-class HistoricalEvent(Event[HistoricalEventModel]):
-    _attrs_type = HistoricalEventModel

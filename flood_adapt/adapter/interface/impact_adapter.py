@@ -2,13 +2,13 @@ from abc import abstractmethod
 
 from flood_adapt.adapter.interface.model_adapter import IAdapter
 from flood_adapt.object_model.hazard.floodmap import FloodMap
-from flood_adapt.object_model.interface.measures import IMeasure
-from flood_adapt.object_model.interface.projections import IProjection
+from flood_adapt.object_model.interface.measures import Measure
+from flood_adapt.object_model.interface.projections import Projection
 
 
 class IImpactAdapter(IAdapter):
     @abstractmethod
-    def add_measure(self, measure: IMeasure):
+    def add_measure(self, measure: Measure):
         """
         Implement this to handle each supported measure type for this Impact model.
 
@@ -21,12 +21,12 @@ class IImpactAdapter(IAdapter):
         pass
 
     @abstractmethod
-    def add_projection(self, projection: IProjection):
+    def add_projection(self, projection: Projection):
         """
         Implement this to handle each supported projection type for this Impact model.
 
         A projection is a projection of the future, i.e. economic growth, etc.
-        SocioEconomicChange contains all information needed to implement the projection in the impact model. (parameters, etc.)
+        SocioEconomicChangeModel contains all information needed to implement the projection in the impact model. (parameters, etc.)
         """
         pass
 

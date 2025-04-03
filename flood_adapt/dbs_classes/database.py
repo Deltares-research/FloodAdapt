@@ -25,15 +25,15 @@ from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.interface.events import IEvent
-from flood_adapt.object_model.interface.benefits import IBenefit
+from flood_adapt.object_model.benefit_runner import Benefit, BenefitRunner
+from flood_adapt.object_model.hazard.event.template_event import Event
 from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.scenario_runner import Scenario, ScenarioRunner
 from flood_adapt.object_model.utils import finished_file_exists
 
 
@@ -179,12 +179,12 @@ class Database(IDatabase):
         return self._benefits
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
-        r"""Interpolate SLR value and reference it to the SLR reference year from the site toml.
+        """Interpolate SLR value and reference it to the SLR reference year from the site toml.
 
         Parameters
         ----------
         slr_scenario : str
-            SLR scenario name from the coulmn names in static\slr\slr.csv
+            SLR scenario name from the coulmn names in static/slr/slr.csv
         year : float
             year to evaluate
 
@@ -307,39 +307,38 @@ class Database(IDatabase):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
+    def write_to_csv(self, name: str, event: Event, df: pd.DataFrame):
         df.to_csv(
-            self.events.input_path.joinpath(event.attrs.name, f"{name}.csv"),
+            self.events.input_path.joinpath(event.name, f"{name}.csv"),
             header=False,
         )
 
-    def write_cyc(self, event: IEvent, track: TropicalCyclone):
-        cyc_file = (
-            self.events.input_path / event.attrs.name / f"{event.attrs.track_name}.cyc"
-        )
+    def write_cyc(self, event: Event, track: TropicalCyclone):
+        cyc_file = self.events.input_path / event.name / f"{event.track_name}.cyc"
         # cht_cyclone function to write TropicalCyclone as .cyc file
         track.write_track(filename=cyc_file, fmt="ddb_cyc")
 
-    def check_benefit_scenarios(self, benefit: IBenefit) -> pd.DataFrame:
+    def check_benefit_scenarios(self, benefit: Benefit) -> pd.DataFrame:
         """Return a dataframe with the scenarios needed for this benefit assessment run.
 
         Parameters
         ----------
-        benefit : IBenefit
+        benefit : Benefit
         """
         return benefit.check_scenarios()
 
-    def create_benefit_scenarios(self, benefit: IBenefit) -> None:
+    def create_benefit_scenarios(self, benefit: Benefit) -> None:
         """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already.
 
         Parameters
         ----------
-        benefit : IBenefit
+        benefit : Benefit
         """
-        benefit.check_scenarios()
+        runner = BenefitRunner(self, benefit=benefit)
+        runner.check_scenarios()
 
         # Iterate through the scenarios needed and create them if not existing
-        for index, row in benefit.scenarios.iterrows():
+        for index, row in runner.scenarios.iterrows():
             if row["scenario created"] == "No":
                 scenario_dict = {}
                 scenario_dict["event"] = row["event"]
@@ -349,7 +348,7 @@ class Database(IDatabase):
                     [row["projection"], row["event"], row["strategy"]]
                 )
 
-                scenario_obj = Scenario.load_dict(scenario_dict)
+                scenario_obj = Scenario(**scenario_dict)
                 # Check if scenario already exists (because it was created before in the loop)
                 try:
                     self.scenarios.save(scenario_obj)
@@ -360,7 +359,7 @@ class Database(IDatabase):
                     # otherwise, if it already exists and we dont need to save it, we can just continue
 
         # Update the scenarios check
-        benefit.check_scenarios()
+        runner.check_scenarios()
 
     def run_benefit(self, benefit_name: Union[str, list[str]]) -> None:
         """Run a (cost-)benefit analysis.
@@ -373,8 +372,9 @@ class Database(IDatabase):
         if not isinstance(benefit_name, list):
             benefit_name = [benefit_name]
         for name in benefit_name:
-            benefit = self._benefits.get(name)
-            benefit.run_cost_benefit()
+            benefit = self.benefits.get(benefit_name)
+            runner = BenefitRunner(self, benefit=benefit)
+            runner.run_cost_benefit()
 
     def update(self) -> None:
         self.projections = self._projections.list_objects()
@@ -599,26 +599,26 @@ class Database(IDatabase):
             name of the scenario to check if needs to be rerun for hazard
         """
         scenario = self._scenarios.get(scenario_name)
+        runner = ScenarioRunner(self, scenario=scenario)
 
         # Dont do anything if the hazard model has already been run in itself
-        if scenario.impacts.hazard.has_run:
+        if runner.impacts.hazard.has_run:
             return
 
         scns_simulated = [
-            self._scenarios.get(sim.attrs.name)
+            sim
             for sim in self.scenarios.list_objects()["objects"]
-            if self.scenarios.output_path.joinpath(sim.attrs.name, "Flooding").is_dir()
+            if self.scenarios.output_path.joinpath(sim.name, "Flooding").is_dir()
         ]
 
         for scn in scns_simulated:
-            if scn.equal_hazard_components(scenario):
-                existing = self.scenarios.output_path.joinpath(
-                    scn.attrs.name, "Flooding"
-                )
+            if self.scenarios.equal_hazard_components(scn, scenario):
+                existing = self.scenarios.output_path.joinpath(scn.name, "Flooding")
                 path_new = self.scenarios.output_path.joinpath(
-                    scenario.attrs.name, "Flooding"
+                    scenario.name, "Flooding"
                 )
-                if scn.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                runner._load_objects(scn)
+                if runner.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,
@@ -626,7 +626,7 @@ class Database(IDatabase):
                         ignore=shutil.ignore_patterns("simulations"),
                     )
                     self.logger.info(
-                        f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
+                        f"Hazard simulation is used from the '{scn.name}' scenario"
                     )
 
     def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
@@ -646,14 +646,15 @@ class Database(IDatabase):
             scenario_name = [scenario_name]
 
         errors = []
+
         for scn in scenario_name:
             try:
                 self.has_run_hazard(scn)
                 scenario = self.scenarios.get(scn)
-                scenario.run()
+                runner = ScenarioRunner(self, scenario=scenario)
+                runner.run(scenario)
             except RuntimeError:
                 errors.append(scn)
-
         if errors:
             raise RuntimeError(
                 "FloodAdapt failed to run for the following scenarios: "

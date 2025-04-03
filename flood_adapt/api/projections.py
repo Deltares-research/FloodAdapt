@@ -1,8 +1,7 @@
 from typing import Any
 
 from flood_adapt.dbs_classes.database import Database
-from flood_adapt.object_model.interface.projections import IProjection
-from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.interface.projections import Projection
 
 
 def get_projections() -> dict[str, Any]:
@@ -19,7 +18,7 @@ def get_projections() -> dict[str, Any]:
     return Database().projections.list_objects()
 
 
-def get_projection(name: str) -> IProjection:
+def get_projection(name: str) -> Projection:
     """Get a projection from the database by name.
 
     Parameters
@@ -29,7 +28,7 @@ def get_projection(name: str) -> IProjection:
 
     Returns
     -------
-    IProjection
+    Projection
         The projection object with the given name.
 
     Raises
@@ -40,33 +39,33 @@ def get_projection(name: str) -> IProjection:
     return Database().projections.get(name)
 
 
-def create_projection(attrs: dict[str, Any]) -> IProjection:
+def create_projection(attrs: dict[str, Any]) -> Projection:
     """Create a new projection object.
 
     Parameters
     ----------
     attrs : dict[str, Any]
-        The attributes of the projection object to create. Should adhere to the ProjectionModel schema.
+        The attributes of the projection object to create. Should adhere to the Projection schema.
 
     Returns
     -------
-    IProjection
+    Projection
         The projection object created from the attributes.
 
     Raises
     ------
     ValueError
-        If the attributes do not adhere to the ProjectionModel schema.
+        If the attributes do not adhere to the Projection schema.
     """
-    return Projection.load_dict(attrs)
+    return Projection(**attrs)
 
 
-def save_projection(projection: IProjection) -> None:
+def save_projection(projection: Projection) -> None:
     """Save a projection object to the database.
 
     Parameters
     ----------
-    projection : IProjection
+    projection : Projection
         The projection object to save.
 
     Raises
@@ -77,12 +76,12 @@ def save_projection(projection: IProjection) -> None:
     Database().projections.save(projection)
 
 
-def edit_projection(projection: IProjection) -> None:
+def edit_projection(projection: Projection) -> None:
     """Edit a projection object in the database.
 
     Parameters
     ----------
-    projection : IProjection
+    projection : Projection
         The projection object to edit.
 
     Raises

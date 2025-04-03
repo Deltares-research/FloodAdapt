@@ -4,19 +4,16 @@ import geopandas as gpd
 import pandas as pd
 
 from flood_adapt.dbs_classes.database import Database
-from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
-from flood_adapt.object_model.hazard.measure.green_infrastructure import (
-    GreenInfrastructure,
-)
-from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.impact.measure.buyout import Buyout
-from flood_adapt.object_model.impact.measure.elevate import Elevate
-from flood_adapt.object_model.impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.measures import (
-    IMeasure,
-    MeasureModel,
+    Buyout,
+    Elevate,
+    FloodProof,
+    FloodWall,
+    GreenInfrastructure,
+    Measure,
     MeasureType,
+    Pump,
     SelectionType,
 )
 from flood_adapt.object_model.io import unit_system as us
@@ -33,7 +30,7 @@ __all__ = [
     "calculate_volume",
     "get_green_infra_table",
     "MeasureType",
-    "MeasureModel",
+    "Measure",
     "SelectionType",
 ]
 
@@ -52,7 +49,7 @@ def get_measures() -> dict[str, Any]:
     return Database().measures.list_objects()
 
 
-def get_measure(name: str) -> IMeasure:
+def get_measure(name: str) -> Measure:
     """
     Get a measure from the database by name.
 
@@ -63,7 +60,7 @@ def get_measure(name: str) -> IMeasure:
 
     Returns
     -------
-    IMeasure
+    Measure
         The measure object with the given name.
 
     Raises
@@ -74,7 +71,7 @@ def get_measure(name: str) -> IMeasure:
     return Database().measures.get(name)
 
 
-def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
+def create_measure(attrs: dict[str, Any], type: str = None) -> Measure:
     """Create a measure from a dictionary of attributes and a type string.
 
     Parameters
@@ -86,31 +83,31 @@ def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
 
     Returns
     -------
-    IMeasure
+    Measure
         Measure object.
     """
     if type == "elevate_properties":
-        return Elevate.load_dict(attrs)
+        return Elevate(**attrs)
     elif type == "buyout_properties":
-        return Buyout.load_dict(attrs)
+        return Buyout(**attrs)
     elif type == "floodproof_properties":
-        return FloodProof.load_dict(attrs)
+        return FloodProof(**attrs)
     elif type in ["floodwall", "thin_dam", "levee"]:
-        return FloodWall.load_dict(attrs)
+        return FloodWall(**attrs)
     elif type in ["pump", "culvert"]:
-        return Pump.load_dict(attrs)
+        return Pump(**attrs)
     elif type in ["water_square", "total_storage", "greening"]:
-        return GreenInfrastructure.load_dict(attrs)
+        return GreenInfrastructure(**attrs)
     else:
         raise ValueError(f"Invalid measure type: {type}")
 
 
-def save_measure(measure: IMeasure, overwrite: bool = False) -> None:
+def save_measure(measure: Measure, overwrite: bool = False) -> None:
     """Save an event object to the database.
 
     Parameters
     ----------
-    measure : IMeasure
+    measure : Measure
         The measure object to save.
 
     Raises
@@ -121,12 +118,12 @@ def save_measure(measure: IMeasure, overwrite: bool = False) -> None:
     Database().measures.save(measure, overwrite=overwrite)
 
 
-def edit_measure(measure: IMeasure) -> None:
+def edit_measure(measure: Measure) -> None:
     """Edit an event object in the database.
 
     Parameters
     ----------
-    measure : IMeasure
+    measure : Measure
         The measure object to edit.
 
 

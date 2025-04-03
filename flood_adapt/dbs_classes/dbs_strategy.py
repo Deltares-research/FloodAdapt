@@ -2,10 +2,12 @@ from itertools import combinations
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.interface.measures import MeasureType
-from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.interface.strategies import Strategy
 
 
 class DbsStrategy(DbsTemplate[Strategy]):
+    dir_name = "strategies"
+    display_name = "Strategy"
     _object_class = Strategy
 
     def save(
@@ -30,29 +32,27 @@ class DbsStrategy(DbsTemplate[Strategy]):
         ValueError
             Raise error if name is already in use.
         """
-        object_exists = object_model.attrs.name in self.list_objects()["name"]
+        object_exists = object_model.name in self.list_objects()["name"]
 
         # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
         # don't want to overwrite, raise an error.
         if overwrite and object_exists:
-            self.delete(object_model.attrs.name, toml_only=True)
+            self.delete(object_model.name, toml_only=True)
         elif not overwrite and object_exists:
             raise ValueError(
-                f"'{object_model.attrs.name}' name is already used by another {object_model.display_name}. Choose a different name"
+                f"'{object_model.name}' name is already used by another {self.display_name}. Choose a different name"
             )
 
         # Check if any measures overlap
-        self._check_overlapping_measures(object_model.attrs.measures)
+        self._check_overlapping_measures(object_model.measures)
 
         # If the folder doesnt exist yet, make the folder and save the object
-        if not (self.input_path / object_model.attrs.name).exists():
-            (self.input_path / object_model.attrs.name).mkdir()
+        if not (self.input_path / object_model.name).exists():
+            (self.input_path / object_model.name).mkdir()
 
         # Save the object and any additional files
         object_model.save(
-            self.input_path
-            / object_model.attrs.name
-            / f"{object_model.attrs.name}.toml",
+            self.input_path / object_model.name / f"{object_model.name}.toml",
         )
 
     def _check_overlapping_measures(self, measures: list[str]):
@@ -67,7 +67,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
         impact_measures = [
             measure
             for measure in measure_objects
-            if MeasureType.is_impact(measure.attrs.type)
+            if MeasureType.is_impact(measure.type)
         ]
 
         adapter = self._database.static.get_fiat_model()
@@ -90,8 +90,8 @@ class DbsStrategy(DbsTemplate[Strategy]):
                     if counter > 0:
                         msg += " and"
                     msg += " between '{}' and '{}'".format(
-                        impact_measures[comb[0][0]].attrs.name,
-                        impact_measures[comb[1][0]].attrs.name,
+                        impact_measures[comb[0][0]].name,
+                        impact_measures[comb[1][0]].name,
                     )
                     counter += 1
             raise ValueError(msg)
@@ -129,17 +129,11 @@ class DbsStrategy(DbsTemplate[Strategy]):
         list[str]
             list of scenarios that use the strategy
         """
-        # Get all the scenarios
-        scenarios = [
-            self._database.scenarios.get(name)
-            for name in self._database.scenarios.list_objects()["name"]
-        ]
-
         # Check if strategy is used in a scenario
         used_in_scenario = [
-            scenario.attrs.name
-            for scenario in scenarios
-            if name == scenario.attrs.strategy
+            scenario.name
+            for scenario in self._database.scenarios.list_objects()["objects"]
+            if name == scenario.strategy
         ]
 
         return used_in_scenario

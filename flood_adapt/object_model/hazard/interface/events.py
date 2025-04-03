@@ -2,7 +2,7 @@ import os
 from abc import abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import ClassVar, List, Type, TypeVar
+from typing import ClassVar, List
 
 from pydantic import (
     Field,
@@ -14,10 +14,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IForcing,
 )
 from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
-from flood_adapt.object_model.interface.path_builder import (
-    ObjectDir,
-)
+from flood_adapt.object_model.interface.object_model import IObjectModel
 
 
 class Mode(str, Enum):
@@ -47,7 +44,7 @@ class Template(str, Enum):
                 raise ValueError(f"Invalid event template: {self}")
 
 
-class IEventModel(IObjectModel):
+class IEvent(IObjectModel):
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]]
 
     time: TimeModel
@@ -57,20 +54,11 @@ class IEventModel(IObjectModel):
     forcings: dict[ForcingType, list[IForcing]] = Field(default_factory=dict)
     rainfall_multiplier: float = Field(default=1.0, ge=0)
 
-
-T_IEVENT_MODEL = TypeVar("T_IEVENT_MODEL", bound=IEventModel)
-
-
-class IEvent(IObject[T_IEVENT_MODEL]):
-    _attrs_type: Type[T_IEVENT_MODEL]
-
-    dir_name = ObjectDir.event
-    display_name = "Event"
-
-    _site = None
-
     @abstractmethod
     def get_forcings(self) -> list[IForcing]: ...
 
     @abstractmethod
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None: ...
+
+    @abstractmethod
+    def get_allowed_forcings(cls) -> dict[str, List[str]]: ...

@@ -1,8 +1,10 @@
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.interface.projections import Projection
 
 
 class DbsProjection(DbsTemplate[Projection]):
+    dir_name = "projections"
+    display_name = "Projection"
     _object_class = Projection
 
     def _check_standard_objects(self, name: str) -> bool:
@@ -44,9 +46,7 @@ class DbsProjection(DbsTemplate[Projection]):
 
         # Check if projection is used in a scenario
         used_in_scenario = [
-            scenario.attrs.name
-            for scenario in scenarios
-            if name == scenario.attrs.projection
+            scenario.name for scenario in scenarios if name == scenario.projection
         ]
 
         return used_in_scenario

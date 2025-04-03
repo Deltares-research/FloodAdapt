@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import pandas as pd
 import xarray as xr
-from pydantic import Field
+from pydantic import model_validator
 
 from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
 from flood_adapt.object_model.hazard.forcing.timeseries import (
@@ -72,8 +72,16 @@ class WindSynthetic(IWind):
 class WindTrack(IWind):
     source: ForcingSource = ForcingSource.TRACK
 
-    path: Optional[Path] = Field(default=None)
-    # path to spw file, set this when creating it
+    path: Path
+    # path to cyc file, set this when creating it
+
+    @model_validator(mode="after")
+    def validate_path(self):
+        if self.path.suffix not in [".cyc", ".spw"]:
+            raise ValueError(
+                f"Invalid file extension: {self.path}. Allowed extensions are `.cyc` and `.spw`."
+            )
+        return self
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:

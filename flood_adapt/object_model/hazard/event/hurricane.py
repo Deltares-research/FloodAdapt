@@ -2,7 +2,7 @@ from typing import ClassVar, List
 
 from pydantic import BaseModel
 
-from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
+from flood_adapt.object_model.hazard.event.template_event import Event
 from flood_adapt.object_model.hazard.interface.events import Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
@@ -22,7 +22,7 @@ class TranslationModel(BaseModel):
     )
 
 
-class HurricaneEventModel(EventModel):
+class HurricaneEvent(Event):
     """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event."""
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
@@ -43,7 +43,3 @@ class HurricaneEventModel(EventModel):
     template: Template = Template.Hurricane
     hurricane_translation: TranslationModel = TranslationModel()
     track_name: str
-
-
-class HurricaneEvent(Event[HurricaneEventModel]):
-    _attrs_type = HurricaneEventModel

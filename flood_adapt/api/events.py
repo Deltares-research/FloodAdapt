@@ -10,14 +10,11 @@ from flood_adapt.dbs_classes.database import Database
 from flood_adapt.object_model.hazard.event.event_factory import (
     EventFactory,
     HistoricalEvent,
-    HistoricalEventModel,
     HurricaneEvent,
-    HurricaneEventModel,
     SyntheticEvent,
-    SyntheticEventModel,
     TranslationModel,
 )
-from flood_adapt.object_model.hazard.event.event_set import EventSet, EventSetModel
+from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.forcing.plotting import (
@@ -32,7 +29,6 @@ from flood_adapt.object_model.hazard.forcing.timeseries import (
 from flood_adapt.object_model.hazard.forcing.waterlevels import SurgeModel, TideModel
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
-    IEventModel,
     Mode,
     Template,
 )
@@ -58,7 +54,7 @@ __all__ = [
     "ForcingType",
     "Mode",
     "EventFactory",
-    "EventSetModel",
+    "EventSet",
     "IEvent",
     "IForcing",
     "IDischarge",
@@ -73,11 +69,11 @@ __all__ = [
     "IWaterlevel",
     "IWind",
     "SyntheticEvent",
-    "SyntheticEventModel",
-    "HistoricalEventModel",
+    "SyntheticEvent",
+    "HistoricalEvent",
     "HistoricalEvent",
     "HurricaneEvent",
-    "HurricaneEventModel",
+    "HurricaneEvent",
     "TranslationModel",
     "CSVTimeseries",
     "SyntheticTimeseriesModel",
@@ -86,6 +82,25 @@ __all__ = [
     "RiverModel",
     "SurgeModel",
     "TideModel",
+    # functions
+    "get_events",
+    "get_event",
+    "get_event_mode",
+    "create_event",
+    "create_event_set",
+    "list_forcings",
+    "get_allowed_forcings",
+    "save_event",
+    "save_timeseries_csv",
+    "edit_event",
+    "delete_event",
+    "copy_event",
+    "check_higher_level_usage",
+    "download_wl_data",
+    "read_csv",
+    "plot_forcing",
+    "save_cyclone_track",
+    "get_cyclone_track_by_index",
 ]
 
 
@@ -112,7 +127,7 @@ def get_event(name: str) -> IEvent | EventSet:
 
     Returns
     -------
-    IBenefit
+    Benefit
         The benefit object with the given name.
 
     Raises
@@ -139,12 +154,12 @@ def get_event_mode(name: str) -> Mode:
     return EventFactory.read_mode(filename)
 
 
-def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
+def create_event(attrs: dict[str, Any] | IEvent) -> IEvent:
     """Create a event object from a dictionary of attributes.
 
     Parameters
     ----------
-    attrs : IEventModel [str, Any]
+    attrs : IEvent [str, Any]
         Dictionary of attributes
 
     Returns
@@ -157,13 +172,13 @@ def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
 
 
 def create_event_set(
-    attrs: dict[str, Any] | EventSetModel, sub_events: list[IEvent]
+    attrs: dict[str, Any] | EventSet, sub_events: list[IEvent]
 ) -> EventSet:
     """Create a event set object from a dictionary of attributes.
 
     Parameters
     ----------
-    attrs : EventSetModel [str, Any]
+    attrs : EventSet [str, Any]
         Dictionary of attributes
     sub_events : list[IEvent]
         List of events in the event set
@@ -173,7 +188,7 @@ def create_event_set(
     EventSet
         EventSet object
     """
-    return EventSet.load_dict(attrs, sub_events)
+    return EventSet(**attrs, sub_events=sub_events)
 
 
 def list_forcings() -> list[Type[IForcing]]:
@@ -288,16 +303,14 @@ def download_wl_data(
 
     Parameters
     ----------
-    station_id : str
-        Station ID
-    start_time : str
-        Start time of data
-    end_time : str
-        End time of data
+    tide_gauge : TideGauge
+        Tide gauge object to download data from
+    time: TimeModel
+        Time model object containing start and end time
     units : UnitTypesLength
-        Units of data
-    source : str
-        Source of data. Should be one of `ndbc` or `noaa_coops`
+        Units that data the returned data will be converted to
+    out_path : str
+        Path to save the data to
     """
     return tide_gauge.get_waterlevels_in_time_frame(
         time=time,
