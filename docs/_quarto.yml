@@ -1,6 +1,9 @@
 project:
   type: website
   output-dir: "_site"
+  pre-render:
+    - version.py
+    - api.py
   render:
     - "*.qmd"
     - "*.ipynb"
@@ -15,50 +18,168 @@ filters:
 
 interlinks:
   sources:
+    geopandas:
+      url: https://geopandas.org/en/stable/docs/
+    pandas:
+      url: https://pandas.pydata.org/docs/
     python:
       url: https://docs.python.org/3/
     numpy:
       url: https://numpy.org/doc/stable/
 
 metadata-files:
-  - api/_sidebar.yml
-
+  - _sidebar.yml
+  - _version.yml
 number-sections: false
-quartodoc:
-  dir: api_ref
-  # dynamic: true
-  sections:
-    - title: flood_adapt
-      desc: ""
-      contents:
-        - name: api.benefits
-        - name: api.database_builder
-        - name: api.events
-        - name: api.measures
-        - name: api.output
-        - name: api.projections
-        - name: api.scenarios
-        - name: api.static
-        - name: api.strategies
-        - name: adapter.fiat_adapter
-        - name: adapter.sfincs_adapter
-        - name: dbs_classes.dbs_benefit.DbsBenefit
-        - name: dbs_classes.dbs_event.DbsEvent
-        - name: dbs_classes.dbs_measure.DbsMeasure
-        - name: dbs_classes.dbs_projection.DbsProjection
-        - name: dbs_classes.dbs_scenario.DbsScenario
-        - name: dbs_classes.dbs_static.DbsStatic
-        - name: dbs_classes.dbs_strategy.DbsStrategy
-        - name: dbs_classes.dbs_template.DbsTemplate
-        - name: dbs_classes.database.Database
-        - name: object_model.benefit.Benefit
-        - name: adapter.impacts_integrator.Impacts
-        - name: object_model.scenario.Scenario
-        - name: object_model.strategy.Strategy
-        - name: misc.log.FloodAdaptLogging
-        - name: misc.config.Settings
 
+quartodoc:
+  title: "Flood Adapt v{{< meta version >}}"
+  style: pkgdown
   package: flood_adapt
+  dir: api_ref
+  render_interlinks: true
+  options: # default options for all sections
+    include_attributes: true
+    include_functions: true
+    include_classes: true
+    include_inherited: false
+    signature_name: "relative"
+
+  renderer:
+    style: markdown
+    table_style: description-list
+    show_signature_annotations: true
+    display_name: name
+
+  sections:
+    - title: "API"
+      package: flood_adapt.api
+      desc: "Core API modules that contain functions to interact with the main functionality of FloodAdapt."
+      contents:
+        - benefits
+        - database_builder
+        - events
+        - measures
+        - output
+        - projections
+        - scenarios
+        - static
+        - strategies
+
+    - title: "Setup and configuration"
+      package: flood_adapt
+      desc: "Configuration settings and logging utilities for Flood Adapt."
+      contents:
+        - Settings
+        - FloodAdaptLogging
+
+    - title: "Adapters"
+      package: flood_adapt.adapter
+      desc: "Implementations of the adapters that make the connection between FloodAdapt and its models and databases."
+      contents:
+        - FiatAdapter
+        - SfincsAdapter
+
+    - title: "Database"
+      desc: "Database classes that define the structure of the database used in FloodAdapt."
+      package: flood_adapt.dbs_classes
+      contents:
+        - Database
+        - DbsBenefit
+        - DbsEvent
+        - DbsMeasure
+        - DbsProjection
+        - DbsScenario
+        - DbsStatic
+        - DbsStrategy
+        - DbsTemplate
+
+    - title: "Object models"
+      package: flood_adapt.object_model.interface.object_model
+      desc: "Object models in FloodAdapt are the components that are saved in the database. They define the configuration, input and output of the model kernels. The database stores IObjectModels, and returns IObjectModels when queried. "
+      contents:
+        # General
+        - IObjectModel
+
+    - subtitle: "Measures"
+      package: flood_adapt.object_model
+      desc: "Various flood protection and mitigation measures available that can interact with the models. Can be impact measures or a hazard measures, where impact measures do not affect the hazard model at all, and hazard measures do."
+      contents:
+        # General
+        - Measure
+        - MeasureType
+        - SelectionType
+
+        # Hazard
+        - FloodWall
+        - GreenInfrastructure
+        - Pump
+
+        # Impact
+        - Buyout
+        - Elevate
+        - FloodProof
+
+    - subtitle: "Strategies"
+      package: flood_adapt.object_model
+      desc: "A collection of measures that can be used to define a strategy for flood risk management."
+      contents:
+        - Strategy
+
+    - subtitle: "Events"
+      package: flood_adapt.object_model
+      desc: "Event types including historical, synthetic, and hurricane events."
+      contents:
+        - Event
+        - SyntheticEvent
+        - HistoricalEvent
+        - HurricaneEvent
+        - EventSet
+    - subtitle: "Projections"
+      package: flood_adapt.object_model
+      desc: "Climate and socio-economic projections for future scenario analysis."
+      contents:
+        - Projection
+
+    - subtitle: "Scenarios"
+      package: flood_adapt.object_model
+      desc: "Scenario modeling for assessing different flood risk management approaches. Scenarios consist of a combination of event, projection, and strategy."
+      contents:
+        - Scenario
+
+    - subtitle: "Benefits"
+      package: flood_adapt.object_model
+      desc: "Benefit calculation for different flood risk management strategies. Benefits can be used to perform cost benefit analysis on a strategy, which is calculated based on the impact of the event on the population and infrastructure."
+      contents:
+        - Benefit
+
+    - title: "Unit system"
+      package: flood_adapt.object_model.io.unit_system
+      desc: "Unit system for FloodAdapt. The unit system is used to convert between different units of measurement, and to define the units of the input and output of the models."
+      contents:
+        # Unitful classes
+        - ValueUnitPair
+        - UnitfulLength
+        - UnitfulHeight
+        - UnitfulArea
+        - UnitfulVelocity
+        - UnitfulDirection
+        - UnitfulDischarge
+        - UnitfulIntensity
+        - UnitfulVolume
+        - UnitfulTime
+        - UnitfulLengthRefValue
+
+        # Unit enums
+        - UnitTypesLength
+        - UnitTypesArea
+        - UnitTypesVolume
+        - UnitTypesVelocity
+        - UnitTypesDirection
+        - UnitTypesTime
+        - UnitTypesDischarge
+        - UnitTypesIntensity
+        - VerticalReference
 
 website:
   title: "Flood Adapt Documentation"
@@ -150,8 +271,12 @@ website:
           - "5_technical_docs/RiskScenario.qmd"
           - "5_technical_docs/EquityCalc.qmd"
           - "5_technical_docs/BenefitCalc.qmd"
-      - text: "API reference"
-        href: "api_ref/"
+      - section: "API reference"
+        href: "api_ref/index.qmd"
+        contents:
+          - "api_ref/*.qmd"
+          - "api_ref/object_model/*.qmd"
+
 
 format:
   html:

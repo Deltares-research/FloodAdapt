@@ -66,7 +66,15 @@ build = [
     "pyinstaller == 6.7.0",
     "pefile<2024.8.26", # This version introduces a significant slowdown in binary vs data reclassification step of pyinstaller. Pyinstaller is aware. https://github.com/pyinstaller/pyinstaller/issues/8762
 ]
-docs = ["jupyter", "jupyter-cache", "matplotlib", "quartodoc", "regex"]
+docs = [
+    "jupyter",
+    "jupyter-cache",
+    "matplotlib",
+    "quartodoc",
+    "sphinx",
+    "sphinx-rtd-theme",
+    "regex",
+]
 all = ["flood-adapt[build,dev,docs]"]
 
 [project.urls]
@@ -123,3 +131,10 @@ all = { features = ["all"], solve-group = "py311" }
 install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"]}
 pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"]}
 tests = {cmd = "pytest tests"}
+
+[tool.pixi.feature.docs.tasks]
+build-docs = { cmd = "quartodoc build --config docs/_quarto.yml" } # TODO add task for installing quarto if not installed
+render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs"] }
+clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_inv docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
+clean-notebooks = { cmd = "python docs/examples/clear_notebooks.py" }
+clean-docs = {depends-on=["clean-generated-docs", "clean-notebooks"]}
