@@ -1,6 +1,7 @@
 import math
 import os
 from pathlib import Path
+from typing import Annotated
 
 import numpy as np
 import pandas as pd
@@ -19,7 +20,10 @@ from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.utils import copy_file_to_output_dir
+from flood_adapt.object_model.utils import (
+    copy_file_to_output_dir,
+    validate_file_extension,
+)
 
 
 class SurgeModel(BaseModel):
@@ -82,7 +86,7 @@ class WaterlevelSynthetic(IWaterlevel):
 class WaterlevelCSV(IWaterlevel):
     source: ForcingSource = ForcingSource.CSV
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".csv"])]
     units: us.UnitTypesLength = us.UnitTypesLength.meters
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:

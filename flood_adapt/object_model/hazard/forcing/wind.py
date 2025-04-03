@@ -1,10 +1,9 @@
 import os
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import pandas as pd
 import xarray as xr
-from pydantic import model_validator
 
 from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
 from flood_adapt.object_model.hazard.forcing.timeseries import (
@@ -18,7 +17,10 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWind,
 )
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.utils import copy_file_to_output_dir
+from flood_adapt.object_model.utils import (
+    copy_file_to_output_dir,
+    validate_file_extension,
+)
 
 
 class WindConstant(IWind):
@@ -72,16 +74,8 @@ class WindSynthetic(IWind):
 class WindTrack(IWind):
     source: ForcingSource = ForcingSource.TRACK
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".cyc", ".spw"])]
     # path to cyc file, set this when creating it
-
-    @model_validator(mode="after")
-    def validate_path(self):
-        if self.path.suffix not in [".cyc", ".spw"]:
-            raise ValueError(
-                f"Invalid file extension: {self.path}. Allowed extensions are `.cyc` and `.spw`."
-            )
-        return self
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
@@ -91,7 +85,7 @@ class WindTrack(IWind):
 class WindCSV(IWind):
     source: ForcingSource = ForcingSource.CSV
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".csv"])]
 
     units: dict[str, Any] = {
         "speed": us.UnitTypesVelocity.mps,
@@ -113,7 +107,7 @@ class WindNetCDF(IWind):
     source: ForcingSource = ForcingSource.NETCDF
     units: us.UnitTypesVelocity = us.UnitTypesVelocity.mps
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".nc"])]
 
     def read(self) -> xr.Dataset:
         required_vars = ("wind10_v", "wind10_u", "press_msl")

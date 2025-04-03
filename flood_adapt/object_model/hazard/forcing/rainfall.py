@@ -1,9 +1,9 @@
 import os
 from pathlib import Path
+from typing import Annotated
 
 import pandas as pd
 import xarray as xr
-from pydantic import model_validator
 
 from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
 from flood_adapt.object_model.hazard.forcing.timeseries import (
@@ -19,7 +19,10 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.utils import copy_file_to_output_dir
+from flood_adapt.object_model.utils import (
+    copy_file_to_output_dir,
+    validate_file_extension,
+)
 
 
 class RainfallConstant(IRainfall):
@@ -59,15 +62,7 @@ class RainfallMeteo(IRainfall):
 class RainfallTrack(IRainfall):
     source: ForcingSource = ForcingSource.TRACK
 
-    path: Path
-
-    @model_validator(mode="after")
-    def validate_path(self):
-        if self.path.suffix not in [".cyc", ".spw"]:
-            raise ValueError(
-                f"Invalid file extension: {self.path}. Allowed extensions are `.cyc` and `.spw`."
-            )
-        return self
+    path: Annotated[Path, validate_file_extension([".cyc", ".spw"])]
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
@@ -77,7 +72,8 @@ class RainfallTrack(IRainfall):
 class RainfallCSV(IRainfall):
     source: ForcingSource = ForcingSource.CSV
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".csv"])]
+
     units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
@@ -95,7 +91,7 @@ class RainfallNetCDF(IRainfall):
     source: ForcingSource = ForcingSource.NETCDF
     units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".nc"])]
 
     def read(self) -> xr.Dataset:
         required_vars = ("precip",)
