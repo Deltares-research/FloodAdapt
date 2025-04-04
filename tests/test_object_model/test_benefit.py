@@ -124,14 +124,14 @@ class TestBenefitScenariosNotCreated:
         assert isinstance(scenarios, pd.DataFrame)
         assert len(scenarios) == 4
         assert "No" not in scenarios["scenario created"].to_list()
-        assert all(scenarios["event"] == runner.site_info.attrs.fiat.benefits.event_set)
+        assert all(scenarios["event"] == runner.site_info.fiat.benefits.event_set)
         assert (
             scenarios.loc["current_no_measures", "strategy"]
-            == runner.site_info.attrs.fiat.benefits.baseline_strategy
+            == runner.site_info.fiat.benefits.baseline_strategy
         )
         assert (
             scenarios.loc["future_no_measures", "strategy"]
-            == runner.site_info.attrs.fiat.benefits.baseline_strategy
+            == runner.site_info.fiat.benefits.baseline_strategy
         )
 
         assert (
@@ -140,14 +140,14 @@ class TestBenefitScenariosNotCreated:
         assert scenarios.loc["future_with_strategy", "strategy"] == benefit_obj.strategy
         assert (
             scenarios.loc["current_no_measures", "projection"]
-            == runner.site_info.attrs.fiat.benefits.current_projection
+            == runner.site_info.fiat.benefits.current_projection
         )
         assert (
             scenarios.loc["future_no_measures", "projection"] == benefit_obj.projection
         )
         assert (
             scenarios.loc["current_with_strategy", "projection"]
-            == runner.site_info.attrs.fiat.benefits.current_projection
+            == runner.site_info.fiat.benefits.current_projection
         )
         assert (
             scenarios.loc["future_with_strategy", "projection"]
@@ -403,16 +403,11 @@ class TestBenefitScenariosRun:
         cost_columns = ["costs", "costs_discounted", "profits", "profits_discounted"]
 
         assert set(main_columns).issubset(time_series.columns)
-        assert (
-            time_series["year"].min()
-            == runner.site_info.attrs.fiat.benefits.current_year
-        )
+        assert time_series["year"].min() == runner.site_info.fiat.benefits.current_year
         assert time_series["year"].max() == benefit_obj.future_year
         assert (
             len(time_series)
-            == benefit_obj.future_year
-            - runner.site_info.attrs.fiat.benefits.current_year
-            + 1
+            == benefit_obj.future_year - runner.site_info.fiat.benefits.current_year + 1
         )
 
         # assert if results.toml has correct values
@@ -451,7 +446,7 @@ class TestBenefitScenariosRun:
         benefit_obj, aggrs, runner = prepare_outputs
         runner.cba_aggregation()
         # loop through aggregation types
-        for aggr_type in runner.site_info.attrs.fiat.config.aggregation:
+        for aggr_type in runner.site_info.fiat.config.aggregation:
             # assert existence of output files
             csv_path = runner.results_path.joinpath(f"benefits_{aggr_type.name}.csv")
             gpkg_path = runner.results_path.joinpath(f"benefits_{aggr_type.name}.gpkg")
@@ -493,7 +488,7 @@ class TestBenefitScenariosRun:
         with open(results_path, mode="rb") as fp:
             results = tomli.load(fp)
         # get aggregation
-        for aggr_type in runner.site_info.attrs.fiat.config.aggregation:
+        for aggr_type in runner.site_info.fiat.config.aggregation:
             csv_agg_results = pd.read_csv(
                 runner.results_path.joinpath(f"benefits_{aggr_type.name}.csv")
             )

@@ -40,7 +40,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
-from flood_adapt.object_model.interface.config.site import Site, SiteModel
+from flood_adapt.object_model.interface.config.site import Site
 
 DATA_DIR = Path(__file__).parent
 
@@ -55,13 +55,11 @@ def update_database_static(database_path: Path):
 
     sfincs = create_sfincs_config()
 
-    config = create_site_config(sfincs=sfincs)
-    site = Site(config)
+    site = create_site_config(sfincs=sfincs)
     site.save(config_dir / "site.toml")
 
     sfincs.river = None
-    no_river_config = create_site_config(sfincs=sfincs)
-    no_river = Site(no_river_config)
+    no_river = create_site_config(sfincs=sfincs)
     no_river.save(
         config_dir / "site_without_river.toml", sfincs="sfincs_without_river.toml"
     )
@@ -299,8 +297,8 @@ def create_site_config(
     fiat: FiatModel = create_fiat_config(),
     gui: GuiModel = create_gui_config(),
     sfincs: SfincsModel = create_sfincs_config(),
-) -> SiteModel:
-    config = SiteModel(
+) -> Site:
+    config = Site(
         name="Charleston",
         description="Charleston, SC",
         lat=32.7765,

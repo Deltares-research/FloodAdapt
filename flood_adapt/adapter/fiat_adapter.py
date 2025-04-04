@@ -649,7 +649,7 @@ class FiatAdapter(IImpactAdapter):
             dem = (
                 self.database.static_path
                 / "dem"
-                / self.database.site.attrs.sfincs.dem.filename
+                / self.database.site.sfincs.dem.filename
             )
             # Call adapter method to add the new areas
             self.apply_population_growth_new(

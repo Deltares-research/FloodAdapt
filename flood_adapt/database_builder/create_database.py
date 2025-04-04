@@ -66,7 +66,6 @@ from flood_adapt.object_model.interface.config.sfincs import (
 )
 from flood_adapt.object_model.interface.config.site import (
     Site,
-    SiteModel,
     StandardObjectModel,
 )
 from flood_adapt.object_model.io import unit_system as us
@@ -934,7 +933,7 @@ class DatabaseBuilder:
             )
             roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
             roads_geom_filename = self.fiat_model.config["exposure"]["geom"][
-                f"file{roads_ind+1}"
+                f"file{roads_ind + 1}"
             ]
             roads_path = Path(self.fiat_model.root).joinpath(roads_geom_filename)
 
@@ -1857,7 +1856,7 @@ class DatabaseBuilder:
         site_config_path.parent.mkdir()
 
         # Create and validate object for config
-        site = SiteModel(
+        site = Site(
             name=self.site_attrs["name"],
             description=self.site_attrs["description"],
             lat=self.site_attrs["lat"],
@@ -1886,8 +1885,7 @@ class DatabaseBuilder:
         )
 
         # Save configs
-        site_obj = Site.load_dict(site)
-        site_obj.save(site_config_path)
+        site.save(site_config_path)
 
     @staticmethod
     def _clip_gdf(

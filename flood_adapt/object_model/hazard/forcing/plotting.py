@@ -74,13 +74,13 @@ def plot_discharge(
     site: Site,
 ) -> tuple[str, Optional[List[Exception]]]:
     rivers: List[IDischarge] = event.forcings.get(ForcingType.DISCHARGE)
-    if site.attrs.sfincs.river is None:
+    if site.sfincs.river is None:
         raise ValueError("No rivers defined for this site.")
     elif not rivers:
         return "", None
     logger.debug("Plotting discharge data")
 
-    units = site.attrs.gui.units.default_discharge_units
+    units = site.gui.units.default_discharge_units
 
     data = pd.DataFrame()
     errors = []
@@ -116,7 +116,7 @@ def plot_discharge(
         return "", errors
 
     river_names, river_descriptions = [], []
-    for river in site.attrs.sfincs.river:
+    for river in site.sfincs.river:
         river_names.append(river.name)
         river_descriptions.append(river.description or river.name)
 
@@ -165,7 +165,7 @@ def plot_waterlevel(
     forcing_list = event.forcings.get(ForcingType.WATERLEVEL)
     if not forcing_list:
         return "", None
-    elif site.attrs.sfincs.water_level is None:
+    elif site.sfincs.water_level is None:
         raise ValueError("No water levels defined for this site.")
 
     waterlevel = forcing_list[0]
@@ -176,19 +176,19 @@ def plot_waterlevel(
         return "", None
 
     logger.debug("Plotting water level data")
-    units = site.attrs.gui.units.default_length_units
+    units = site.gui.units.default_length_units
     data = None
     try:
         if isinstance(waterlevel, WaterlevelGauged):
-            if site.attrs.sfincs.tide_gauge is None:
+            if site.sfincs.tide_gauge is None:
                 raise ValueError("No tide gauge defined for this site.")
-            data = TideGauge(
-                site.attrs.sfincs.tide_gauge
-            ).get_waterlevels_in_time_frame(event.time, units=units)
+            data = TideGauge(site.sfincs.tide_gauge).get_waterlevels_in_time_frame(
+                event.time, units=units
+            )
 
             # Convert to main reference
-            datum_correction = site.attrs.sfincs.water_level.get_datum(
-                site.attrs.sfincs.tide_gauge.reference
+            datum_correction = site.sfincs.water_level.get_datum(
+                site.sfincs.tide_gauge.reference
             ).height.convert(units)
             data += datum_correction
 
@@ -196,8 +196,8 @@ def plot_waterlevel(
             data = waterlevel.to_dataframe(event.time)
         elif isinstance(waterlevel, WaterlevelSynthetic):
             data = waterlevel.to_dataframe(time_frame=event.time)
-            datum_correction = site.attrs.sfincs.water_level.get_datum(
-                site.attrs.gui.plotting.synthetic_tide.datum
+            datum_correction = site.sfincs.water_level.get_datum(
+                site.gui.plotting.synthetic_tide.datum
             ).height.convert(units)
             data += datum_correction
         else:
@@ -227,15 +227,15 @@ def plot_waterlevel(
         y=0,
         line_dash="dash",
         line_color="#000000",
-        annotation_text=site.attrs.sfincs.water_level.reference,
+        annotation_text=site.sfincs.water_level.reference,
         annotation_position="bottom right",
     )
 
     # plot other references
-    for wl_ref in site.attrs.sfincs.water_level.datums:
+    for wl_ref in site.sfincs.water_level.datums:
         if (
-            wl_ref.name == site.attrs.sfincs.config.overland_model.reference
-            or wl_ref.name in site.attrs.gui.plotting.excluded_datums
+            wl_ref.name == site.sfincs.config.overland_model.reference
+            or wl_ref.name in site.gui.plotting.excluded_datums
         ):
             continue
 
@@ -323,7 +323,7 @@ def plot_rainfall(
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title={"text": "Time"},
         yaxis_title={
-            "text": f"Rainfall intensity [{site.attrs.gui.units.default_intensity_units.value}]"
+            "text": f"Rainfall intensity [{site.gui.units.default_intensity_units.value}]"
         },
         showlegend=False,
         xaxis={"range": [event.time.start_time, event.time.end_time]},
@@ -395,11 +395,11 @@ def plot_wind(
 
     # Set y-axes titles
     fig.update_yaxes(
-        title_text=f"Wind speed [{site.attrs.gui.units.default_velocity_units.value}]",
+        title_text=f"Wind speed [{site.gui.units.default_velocity_units.value}]",
         secondary_y=False,
     )
     fig.update_yaxes(
-        title_text=f"Wind direction {site.attrs.gui.units.default_direction_units.value}",
+        title_text=f"Wind direction {site.gui.units.default_direction_units.value}",
         secondary_y=True,
     )
 

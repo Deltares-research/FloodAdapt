@@ -200,9 +200,7 @@ class Database(IDatabase):
         ValueError
             if the year to evaluate is outside of the time range in the slr.csv file
         """
-        input_file = self.input_path.parent.joinpath(
-            "static", self.site.attrs.sfincs.slr.scenarios.file
-        )
+        input_file = self.static_path / self.site.sfincs.slr.scenarios.file
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
             raise ValueError(
@@ -210,7 +208,7 @@ class Database(IDatabase):
             )
         else:
             slr = np.interp(year, df["year"], df[slr_scenario])
-            ref_year = self.site.attrs.sfincs.slr.scenarios.relative_to_year
+            ref_year = self.site.sfincs.slr.scenarios.relative_to_year
             if ref_year > df["year"].max() or ref_year < df["year"].min():
                 raise ValueError(
                     f"The reference year {ref_year} is outside the range of the available SLR scenarios"
@@ -221,13 +219,13 @@ class Database(IDatabase):
                     value=slr - ref_slr,
                     units=df["units"][0],
                 )
-                gui_units = self.site.attrs.gui.units.default_length_units
+                gui_units = self.site.gui.units.default_length_units
                 return np.round(new_slr.convert(gui_units), decimals=2)
 
     # TODO: should probably be moved to frontend
     def plot_slr_scenarios(self) -> str:
         input_file = self.input_path.parent.joinpath(
-            "static", self.site.attrs.sfincs.slr.scenarios.file
+            "static", self.site.sfincs.slr.scenarios.file
         )
         df = pd.read_csv(input_file)
         ncolors = len(df.columns) - 2
@@ -243,7 +241,7 @@ class Database(IDatabase):
             else:
                 df = df.rename(columns={"year": "Year"})
 
-        ref_year = self.site.attrs.sfincs.slr.scenarios.relative_to_year
+        ref_year = self.site.sfincs.slr.scenarios.relative_to_year
         if ref_year > df["Year"].max() or ref_year < df["Year"].min():
             raise ValueError(
                 f"The reference year {ref_year} is outside the range of the available SLR scenarios"
@@ -258,7 +256,7 @@ class Database(IDatabase):
         # convert to units used in GUI
         slr_current_units = us.UnitfulLength(value=1.0, units=units)
         conversion_factor = slr_current_units.convert(
-            self.site.attrs.gui.units.default_length_units
+            self.site.gui.units.default_length_units
         )
         df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
 
@@ -266,7 +264,7 @@ class Database(IDatabase):
         df = df.rename(
             columns={
                 "variable": "Scenario",
-                "value": f"Sea level rise [{self.site.attrs.gui.units.default_length_units.value}]",
+                "value": f"Sea level rise [{self.site.gui.units.default_length_units.value}]",
             }
         )
 
@@ -276,7 +274,7 @@ class Database(IDatabase):
         fig = line(
             df,
             x="Year",
-            y=f"Sea level rise [{self.site.attrs.gui.units.default_length_units.value}]",
+            y=f"Sea level rise [{self.site.gui.units.default_length_units.value}]",
             color="Scenario",
             color_discrete_sequence=colors,
         )
@@ -432,7 +430,7 @@ class Database(IDatabase):
         """
         # Get conresion factor need to get from the sfincs units to the gui units
         units = us.UnitfulLength(
-            value=1, units=self.site.attrs.gui.units.default_length_units
+            value=1, units=self.site.gui.units.default_length_units
         )
         unit_cor = units.convert(new_units=us.UnitTypesLength.meters)
 
@@ -695,7 +693,9 @@ class Database(IDatabase):
                     func(path)  # Retry deletion
                     return  # Exit if successful
                 except Exception as e:
-                    print(f"Attempt {attempt+1}/{retries} failed to delete {path}: {e}")
+                    print(
+                        f"Attempt {attempt + 1}/{retries} failed to delete {path}: {e}"
+                    )
 
             print(f"Giving up on deleting {path} after {retries} attempts.")
 

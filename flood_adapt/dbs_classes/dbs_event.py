@@ -62,9 +62,9 @@ class DbsEvent(DbsTemplate[Event]):
             True if the event is a standard event, False otherwise
         """
         # Check if event is a standard event
-        if self._database.site.attrs.standard_objects:
-            if self._database.site.attrs.standard_objects.events:
-                if name in self._database.site.attrs.standard_objects.events:
+        if self._database.site.standard_objects:
+            if self._database.site.standard_objects.events:
+                if name in self._database.site.standard_objects.events:
                     return True
         return False
 

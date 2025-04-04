@@ -26,7 +26,7 @@ class FloodMap(DatabaseUser):
 
     def __init__(self, scenario_name: str) -> None:
         self.name = scenario_name
-        self.type = self.database.site.attrs.fiat.config.floodmap_type
+        self.type = self.database.site.fiat.config.floodmap_type
         self._get_flood_map_paths()
 
     def _get_flood_map_paths(self):
@@ -50,7 +50,7 @@ class FloodMap(DatabaseUser):
         elif self.mode == Mode.risk:
             check_files = [RP_map.exists() for RP_map in self.path]
             check_rps = len(self.path) == len(
-                self.database.site.attrs.fiat.risk.return_periods
+                self.database.site.fiat.risk.return_periods
             )
             return all(check_files) & check_rps
 
@@ -72,7 +72,7 @@ class FloodMap(DatabaseUser):
     def crs(self):
         if hasattr(self, "_crs"):
             return self._crs
-        self._crs = self.database.site.attrs.crs
+        self._crs = self.database.site.crs
         return self._crs
 
     @property

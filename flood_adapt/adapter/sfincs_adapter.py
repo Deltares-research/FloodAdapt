@@ -110,8 +110,8 @@ class SfincsAdapter(IHazardAdapter):
         Args:
             model_root (Path): Root directory of overland sfincs model.
         """
-        self.settings = self.database.site.attrs.sfincs
-        self.units = self.database.site.attrs.gui.units
+        self.settings = self.database.site.sfincs
+        self.units = self.database.site.gui.units
         self.sfincs_logger = self.setup_sfincs_logger(model_root)
         self._model = SfincsModel(
             root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
@@ -634,7 +634,7 @@ class SfincsAdapter(IHazardAdapter):
             df, gdf = model._get_zs_points()
 
         gui_units = us.UnitTypesLength(
-            self.database.site.attrs.gui.units.default_length_units
+            self.database.site.gui.units.default_length_units
         )
         conversion_factor = us.UnitfulLength(
             value=1.0, units=us.UnitTypesLength("meters")
@@ -663,8 +663,7 @@ class SfincsAdapter(IHazardAdapter):
             for wl_ref in self.settings.water_level.datums:
                 if (
                     wl_ref.name == self.settings.config.overland_model.reference
-                    or wl_ref.name
-                    in self.database.site.attrs.gui.plotting.excluded_datums
+                    or wl_ref.name in self.database.site.gui.plotting.excluded_datums
                 ):
                     continue
                 fig.add_hline(
@@ -800,7 +799,7 @@ class SfincsAdapter(IHazardAdapter):
             scenario.projection
         ).physical_projection
 
-        floodmap_rp = self.database.site.attrs.fiat.risk.return_periods
+        floodmap_rp = self.database.site.fiat.risk.return_periods
         frequencies = [sub_event.frequency for sub_event in event.sub_events]
 
         # adjust storm frequency for hurricane events
@@ -1133,7 +1132,7 @@ class SfincsAdapter(IHazardAdapter):
                 value=1.0, units=forcing.surge.timeseries.peak_value.units
             ).convert(us.UnitTypesLength.meters)
             datum_correction = self.settings.water_level.get_datum(
-                self.database.site.attrs.gui.plotting.synthetic_tide.datum
+                self.database.site.gui.plotting.synthetic_tide.datum
             ).height.convert(us.UnitTypesLength.meters)
 
             df_ts = df_ts * conversion + datum_correction
@@ -1280,7 +1279,7 @@ class SfincsAdapter(IHazardAdapter):
                 float(
                     us.UnitfulLength(
                         value=float(height),
-                        units=self.database.site.attrs.gui.units.default_length_units,
+                        units=self.database.site.gui.units.default_length_units,
                     ).convert(us.UnitTypesLength("meters"))
                 )
                 for height in gdf_floodwall["z"]
@@ -1312,7 +1311,7 @@ class SfincsAdapter(IHazardAdapter):
         elif green_infrastructure.selection_type == "aggregation_area":
             # TODO this logic already exists in the Database controller but cannot be used due to cyclic imports
             # Loop through available aggregation area types
-            for aggr_dict in self.database.site.attrs.fiat.config.aggregation:
+            for aggr_dict in self.database.site.fiat.config.aggregation:
                 # check which one is used in measure
                 if not aggr_dict.name == green_infrastructure.aggregation_area_type:
                     continue
@@ -1608,7 +1607,7 @@ class SfincsAdapter(IHazardAdapter):
 
         if isinstance(event, EventSet):
             map_fn = []
-            for rp in self.database.site.attrs.fiat.risk.return_periods:
+            for rp in self.database.site.fiat.risk.return_periods:
                 map_fn.append(results_path / f"RP_{rp:04d}_maps.nc")
         elif isinstance(event, IEvent):
             map_fn = [results_path / "max_water_level_map.nc"]

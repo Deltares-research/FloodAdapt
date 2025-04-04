@@ -110,9 +110,9 @@ class DbsStrategy(DbsTemplate[Strategy]):
             Raise error if strategy is a standard strategy.
         """
         # Check if strategy is a standard strategy
-        if self._database.site.attrs.standard_objects:
-            if self._database.site.attrs.standard_objects.strategies:
-                if name in self._database.site.attrs.standard_objects.strategies:
+        if self._database.site.standard_objects:
+            if self._database.site.standard_objects.strategies:
+                if name in self._database.site.standard_objects.strategies:
                     return True
         return False
 

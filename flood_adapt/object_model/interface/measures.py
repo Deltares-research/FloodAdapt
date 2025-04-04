@@ -449,7 +449,7 @@ class GreenInfrastructure(HazardMeasure):
             Area [m2]
         """
         # Determine local CRS
-        crs = pyproj.CRS.from_string(site.attrs.sfincs.config.csname)
+        crs = pyproj.CRS.from_string(site.sfincs.config.csname)
         gdf = gdf.to_crs(crs)
 
         # The GeoJSON file can contain multiple polygons

@@ -174,8 +174,8 @@ def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: Site) -> float:
     ----------
     gdf : gpd.GeoDataFrame
         A GeoDataFrame containing the polygon geometry.
-    site : ISite
-        An instance of ISite representing the site information.
+    site : Site
+        An instance of Site representing the site information.
 
     Returns
     -------

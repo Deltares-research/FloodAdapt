@@ -134,7 +134,7 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
                     y_coordinate=y,
                 )
             )
-    test_db.site.attrs.sfincs.river = rivers
+    test_db.site.sfincs.river = rivers
 
     with SfincsAdapter(model_root=(overland_2_rivers)) as adapter:
         adapter.set_timing(TimeModel())
@@ -145,7 +145,7 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
 
 @pytest.fixture()
 def synthetic_discharge():
-    if river := Database().site.attrs.sfincs.river:
+    if river := Database().site.sfincs.river:
         return DischargeSynthetic(
             river=river[0],
             timeseries=SyntheticTimeseriesModel[us.UnitfulDischarge](
@@ -171,7 +171,7 @@ def test_river() -> RiverModel:
 
 @pytest.fixture()
 def river_in_db() -> RiverModel:
-    return Database().site.attrs.sfincs.river[0]
+    return Database().site.sfincs.river[0]
 
 
 @pytest.fixture()
@@ -270,8 +270,8 @@ def _mock_meteohandler_read(
     **kwargs,
 ) -> xr.Dataset | xr.DataArray:
     gen = np.random.default_rng(42)
-    lat = [test_db.site.attrs.lat - 10, test_db.site.attrs.lat + 10]
-    lon = [test_db.site.attrs.lon - 10, test_db.site.attrs.lon + 10]
+    lat = [test_db.site.lat - 10, test_db.site.lat + 10]
+    lon = [test_db.site.lon - 10, test_db.site.lon + 10]
     _time = pd.date_range(
         start=time.start_time,
         end=time.end_time,
@@ -439,8 +439,8 @@ class TestAddForcing:
 
             ds = get_test_dataset(
                 time=time,
-                lat=int(test_db.site.attrs.lat),
-                lon=int(test_db.site.attrs.lon),
+                lat=int(test_db.site.lat),
+                lon=int(test_db.site.lon),
             )
             ds.to_netcdf(path)
             forcing = WindNetCDF(path=path)
@@ -602,8 +602,8 @@ class TestAddForcing:
 
             ds = get_test_dataset(
                 time=time,
-                lat=int(test_db.site.attrs.lat),
-                lon=int(test_db.site.attrs.lon),
+                lat=int(test_db.site.lat),
+                lon=int(test_db.site.lon),
             )
             ds.to_netcdf(path)
             forcing = RainfallNetCDF(path=path)
@@ -758,10 +758,10 @@ class TestAddForcing:
             # Arrange
             num_rivers = 2
             sfincs_adapter, db = sfincs_adapter_2_rivers
-            assert db.site.attrs.sfincs.river is not None
-            assert len(db.site.attrs.sfincs.river) == num_rivers
+            assert db.site.sfincs.river is not None
+            assert len(db.site.sfincs.river) == num_rivers
 
-            for i, river in enumerate(db.site.attrs.sfincs.river):
+            for i, river in enumerate(db.site.sfincs.river):
                 discharge = DischargeConstant(
                     river=river,
                     discharge=us.UnitfulDischarge(
@@ -776,7 +776,7 @@ class TestAddForcing:
             river_locations = sfincs_adapter.discharge.vector.to_gdf()
             river_discharges = sfincs_adapter.discharge.to_dataframe()["dis"]
 
-            for i, river in enumerate(db.site.attrs.sfincs.river):
+            for i, river in enumerate(db.site.sfincs.river):
                 assert river_locations.geometry[i].x == river.x_coordinate
                 assert river_locations.geometry[i].y == river.y_coordinate
                 assert river_discharges[i] == i * 1000
@@ -1019,8 +1019,8 @@ class TestAddProjection:
 
 class TestAddObsPoint:
     def test_add_obs_points(self, test_db: IDatabase):
-        if test_db.site.attrs.sfincs.obs_point is None:
-            test_db.site.attrs.sfincs.obs_point = [
+        if test_db.site.sfincs.obs_point is None:
+            test_db.site.sfincs.obs_point = [
                 ObsPointModel(
                     name="obs1",
                     description="Ashley River - James Island Expy",
@@ -1034,7 +1034,7 @@ class TestAddObsPoint:
         path_in = (
             test_db.static_path
             / "templates"
-            / test_db.site.attrs.sfincs.config.overland_model.name
+            / test_db.site.sfincs.config.overland_model.name
         )
 
         # Act
@@ -1057,7 +1057,7 @@ class TestAddObsPoint:
         lat = []
         lon = []
 
-        site_points = test_db.site.attrs.sfincs.obs_point
+        site_points = test_db.site.sfincs.obs_point
         for pt in site_points:
             names.append(pt.name)
             lat.append(pt.lat)
@@ -1134,7 +1134,7 @@ class TestPostProcessing:
 
     @pytest.fixture(scope="class")
     def synthetic_discharge_class(self):
-        if river := Database().site.attrs.sfincs.river:
+        if river := Database().site.sfincs.river:
             return DischargeSynthetic(
                 river=river[0],
                 timeseries=SyntheticTimeseriesModel[us.UnitfulDischarge](
