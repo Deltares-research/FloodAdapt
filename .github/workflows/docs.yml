@@ -21,14 +21,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # - name: Setup Quarto
-      #   run: |
-      #     sudo apt update
-      #     sudo apt install -y curl gdebi-core
-      #     mkdir -p tmp
-      #     curl -L https://github.com/quarto-dev/quarto-cli/releases/download/v1.3.450/quarto-1.3.450-linux-amd64.deb --output tmp/quarto.deb
-      #     sudo gdebi -n tmp/quarto.deb
-
       - name: Setup Quarto on Windows
         run: |
           Invoke-WebRequest -Uri "https://github.com/quarto-dev/quarto-cli/releases/download/v1.3.450/quarto-1.3.450-windows.msi" -OutFile "quarto.msi"
@@ -47,11 +39,8 @@ jobs:
         run: pixi run render-docs
 
       - run: |
-          import os
-          from flood_adapt import __version__
-          print(f"v{__version__}")
-          os.environ["DOC_VERSION"] = f"v{__version__}"
-        shell: pixi run -e docs python {0}
+          DOC_VERSION=$(pixi run -e docs python -c "from flood_adapt import __version__; print(__version__)")
+          echo "DOC_VERSION=${DOC_VERSION}" >> $GITHUB_ENV
 
       - name: Upload to GitHub Pages
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
