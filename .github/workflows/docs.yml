@@ -33,10 +33,11 @@ jobs:
           environments: docs
           frozen: true
 
-      - name: Build
+      - name: Build docs
         run: pixi run render-docs
 
-      - run: |
+      - name: Read version
+        run: |
           DOC_VERSION=$(pixi run -e docs python -c "from flood_adapt import __version__; print(__version__)")
           echo "DOC_VERSION=${DOC_VERSION}" >> $GITHUB_ENV
 
@@ -47,4 +48,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_site
           keep_files: false
-          full_commit_message: Deploy ${{ env.DOC_VERSION }} to GitHub Pages
+          full_commit_message: Deploy v${{ env.DOC_VERSION }} to GitHub Pages
