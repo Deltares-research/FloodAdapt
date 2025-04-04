@@ -79,13 +79,40 @@ class SelectionType(str, Enum):
 
 
 class Measure(IObjectModel):
-    """The expected variables and data types of attributes common to all measures."""
+    """The expected variables and data types of attributes common to all measures.
+
+    A measure is a collection of attributes that can be applied to a model.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type: MeasureType
+        Type of measure. Should be one of the MeasureType enum values.
+    """
 
     type: MeasureType
 
 
 class HazardMeasure(Measure):
-    """The expected variables and data types of attributes common to all impact measures."""
+    """The expected variables and data types of attributes common to all hazard measures.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type: MeasureType
+        Type of measure. Should be one of the MeasureType enum values and is_hazard.
+    selection_type: SelectionType
+        Type of selection. Should be one of the SelectionType enum values.
+    polygon_file: str, Optional, default = None
+        Path to a polygon file, either absolute or relative to the measure path in the database.
+
+    """
 
     selection_type: SelectionType
     polygon_file: Optional[str] = Field(
@@ -122,7 +149,27 @@ class HazardMeasure(Measure):
 
 
 class ImpactMeasure(Measure):
-    """The expected variables and data types of attributes common to all impact measures."""
+    """The expected variables and data types of attributes common to all impact measures.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type: MeasureType
+        Type of measure. Should be one of the MeasureType enum values and is_hazard.
+    selection_type: SelectionType
+        Type of selection. Should be one of the SelectionType enum values.
+    polygon_file: str, Optional, default = None
+        Path to a polygon file, either absolute or relative to the measure path in the database.
+    property_type: str
+        Type of property. Should be one of the PropertyType enum values.
+    aggregation_area_type: str, Optional, default = None
+        Type of aggregation area. Should be one of the SelectionType enum values.
+    aggregation_area_name: str, Optional, default = None
+            Name of the aggregation area.
+    """
 
     type: MeasureType
     selection_type: SelectionType

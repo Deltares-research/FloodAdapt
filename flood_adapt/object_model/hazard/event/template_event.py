@@ -24,6 +24,26 @@ from flood_adapt.object_model.hazard.interface.events import (
 
 
 class Event(IEvent):
+    """The accepted input for an event in FloodAdapt.
+
+    Attributes
+    ----------
+    name : str
+        The name of the event.
+    description : str, default=""
+        The description of the event.
+    time : TimeModel
+        The time frame of the event.
+    template : Template
+        The template of the event.
+    mode : Mode
+        The mode of the event.
+    rainfall_multiplier : float
+        The rainfall multiplier of the event.
+    forcings : dict[ForcingType, list[IForcing]]
+        The forcings of the event.
+    """
+
     @staticmethod
     def _parse_forcing_from_dict(
         forcing_attrs: dict[str, Any] | IForcing,

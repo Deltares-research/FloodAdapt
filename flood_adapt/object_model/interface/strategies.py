@@ -15,6 +15,18 @@ from flood_adapt.object_model.measure_factory import (
 
 
 class Strategy(IObjectModel):
+    """
+    Class representing a strategy in FloodAdapt.
+
+    A strategy is a collection of measures that can be applied to a model.
+
+    Attributes
+    ----------
+    measures : list[str]
+        A list of measures associated with the strategy. Should be a list of measure names that are saved in the database.
+
+    """
+
     measures: list[str] = []
 
     def get_measures(self) -> list[Measure]:

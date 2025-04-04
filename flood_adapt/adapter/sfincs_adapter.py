@@ -19,7 +19,7 @@ import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
-from hydromt_sfincs import SfincsModel
+from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
 from shapely.affinity import translate
@@ -95,9 +95,19 @@ from flood_adapt.object_model.utils import cd, resolve_filepath
 
 
 class SfincsAdapter(IHazardAdapter):
+    """Adapter for the SFINCS model.
+
+    This class is used to run the SFINCS model and process the results.
+
+    Attributes
+    ----------
+    settings : SfincsModel
+        The settings for the SFINCS model.
+    """
+
     logger = FloodAdaptLogging.getLogger("SfincsAdapter")
     _site: Site
-    _model: SfincsModel
+    _model: HydromtSfincsModel
 
     ###############
     ### PUBLIC ####
@@ -107,13 +117,15 @@ class SfincsAdapter(IHazardAdapter):
     def __init__(self, model_root: Path):
         """Load overland sfincs model based on a root directory.
 
-        Args:
-            model_root (Path): Root directory of overland sfincs model.
+        Parameters
+        ----------
+        model_root : Path
+            Root directory of overland sfincs model.
         """
         self.settings = self.database.site.sfincs
         self.units = self.database.site.gui.units
-        self.sfincs_logger = self.setup_sfincs_logger(model_root)
-        self._model = SfincsModel(
+        self.sfincs_logger = self._setup_sfincs_logger(model_root)
+        self._model = HydromtSfincsModel(
             root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
         )
         self._model.read()
@@ -156,26 +168,6 @@ class SfincsAdapter(IHazardAdapter):
     def __exit__(self, exc_type, exc_value, traceback) -> bool:
         self.close_files()
         return False
-
-    def ensure_no_existing_forcings(self):
-        """Check for existing forcings in the model and raise an error if any are found."""
-        all_forcings = {
-            "waterlevel": self.waterlevels,
-            "rainfall": self.rainfall,
-            "wind": self.wind,
-            "discharge": self.discharge,
-        }
-        contains_forcings = ", ".join(
-            [
-                f"{name.capitalize()}"
-                for name, forcing in all_forcings.items()
-                if forcing is not None
-            ]
-        )
-        if contains_forcings:
-            raise ValueError(
-                f"{contains_forcings} forcing(s) should not exists in the SFINCS template model. Remove it from the SFINCS model located at: {self.get_model_root()}. For more information on SFINCS and its input files, see the SFINCS documentation at: `https://sfincs.readthedocs.io/en/latest/input.html`"
-            )
 
     def has_run(self, scenario: Scenario) -> bool:
         """Check if the model has been run."""
@@ -245,7 +237,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def run(self, scenario: Scenario):
         """Run the whole workflow (Preprocess, process and postprocess) for a given scenario."""
-        self.ensure_no_existing_forcings()
+        self._ensure_no_existing_forcings()
         event = self.database.events.get(scenario.event)
 
         if event.mode == Mode.risk:
@@ -438,6 +430,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         return self._model.quadtree
 
+    # Forcing properties
     @property
     def waterlevels(self) -> xr.Dataset | xr.DataArray | None:
         return self._model.forcing.get("bzs")
@@ -962,6 +955,26 @@ class SfincsAdapter(IHazardAdapter):
             shutil.rmtree(
                 self._get_simulation_path(scenario, sub_event=sub_event),
                 ignore_errors=True,
+            )
+
+    def _ensure_no_existing_forcings(self):
+        """Check for existing forcings in the model and raise an error if any are found."""
+        all_forcings = {
+            "waterlevel": self.waterlevels,
+            "rainfall": self.rainfall,
+            "wind": self.wind,
+            "discharge": self.discharge,
+        }
+        contains_forcings = ", ".join(
+            [
+                f"{name.capitalize()}"
+                for name, forcing in all_forcings.items()
+                if forcing is not None
+            ]
+        )
+        if contains_forcings:
+            raise ValueError(
+                f"{contains_forcings} forcing(s) should not exists in the SFINCS template model. Remove it from the SFINCS model located at: {self.get_model_root()}. For more information on SFINCS and its input files, see the SFINCS documentation at: `https://sfincs.readthedocs.io/en/latest/input.html`"
             )
 
     ### FORCING ###
@@ -1809,7 +1822,7 @@ class SfincsAdapter(IHazardAdapter):
 
         return gpd.GeoDataFrame({"geometry": points}, crs=self._model.crs)
 
-    def setup_sfincs_logger(self, model_root: Path) -> logging.Logger:
+    def _setup_sfincs_logger(self, model_root: Path) -> logging.Logger:
         """Initialize the logger for the SFINCS model."""
         # Create a logger for the SFINCS model manually
         sfincs_logger = logging.getLogger("SfincsModel")

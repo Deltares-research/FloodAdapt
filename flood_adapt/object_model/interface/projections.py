@@ -10,6 +10,20 @@ from flood_adapt.object_model.utils import resolve_filepath, save_file_to_databa
 
 
 class PhysicalProjectionModel(BaseModel):
+    """The accepted input for a physical projection in FloodAdapt.
+
+    Attributes
+    ----------
+    sea_level_rise : us.UnitfulLength, default = us.UnitfulLength(0.0, us.UnitTypesLength.meters).
+        The sea level rise in meters.
+    subsidence : us.UnitfulLength, default = us.UnitfulLength(0.0, us.UnitTypesLength.meters).
+        The subsidence in meters.
+    rainfall_multiplier : float, default = 1.0.
+        The rainfall multiplier.
+    storm_frequency_increase : float, default = 0.0.
+        The storm frequency increase as a percentage.
+    """
+
     sea_level_rise: us.UnitfulLength = us.UnitfulLength(
         value=0.0, units=us.UnitTypesLength.meters
     )
@@ -21,6 +35,22 @@ class PhysicalProjectionModel(BaseModel):
 
 
 class SocioEconomicChangeModel(BaseModel):
+    """The accepted input for socio-economic change in FloodAdapt.
+
+    Attributes
+    ----------
+    population_growth_existing : float, default = 0.0.
+        The existing population growth rate.
+    economic_growth : float, default = 0.0.
+        The economic growth rate.
+    population_growth_new : float, default = 0.0.
+        The population growth rate for new developments.
+    new_development_elevation : us.UnitfulLengthRefValue, default = None.
+        The elevation of new developments.
+    new_development_shapefile : str, default = None.
+        The path to the shapefile of new developments.
+    """
+
     population_growth_existing: Optional[float] = 0.0
     economic_growth: Optional[float] = 0.0
 
@@ -30,6 +60,19 @@ class SocioEconomicChangeModel(BaseModel):
 
 
 class Projection(IObjectModel):
+    """The accepted input for a projection in FloodAdapt.
+
+    A projection is a combination of a physical projection and a socio-economic change.
+
+    Attributes
+    ----------
+    physical_projection : PhysicalProjectionModel
+        The physical projection model. Contains information about hazard drivers.
+    socio_economic_change : SocioEconomicChangeModel
+        The socio-economic change model. Contains information about impact drivers.
+
+    """
+
     physical_projection: PhysicalProjectionModel
     socio_economic_change: SocioEconomicChangeModel
 

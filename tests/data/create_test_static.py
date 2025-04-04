@@ -2,7 +2,6 @@ from pathlib import Path
 
 from flood_adapt import unit_system as us
 from flood_adapt.misc.config import Settings
-from flood_adapt.object_model.hazard.interface.forcing import Scstype
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
     TideGaugeSource,
@@ -34,6 +33,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     ObsPointModel,
     RiverModel,
     SCSModel,
+    Scstype,
     SfincsConfigModel,
     SfincsModel,
     SlrModel,

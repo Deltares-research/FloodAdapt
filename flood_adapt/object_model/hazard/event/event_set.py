@@ -10,12 +10,36 @@ from flood_adapt.object_model.interface.object_model import IObjectModel
 
 
 class SubEventModel(BaseModel):
+    """The accepted input for a sub event in FloodAdapt.
+
+    Attributes
+    ----------
+    name : str
+        The name of the sub event.
+    frequency : float
+        The frequency of the sub event.
+    """
+
     name: str
     frequency: float
 
 
 class EventSet(IObjectModel):
-    """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
+    """BaseModel describing the expected variables and data types for parameters of EventSet.
+
+    An EventSet is a collection of events that can be used to create a scenario and perform a probabilistoc risk assessment.
+
+    Attributes
+    ----------
+    name : str
+        The name of the event.
+    description : str, default=""
+        The description of the event.
+    mode : Mode, default=Mode.risk
+        The mode of the event.
+    sub_events : List[SubEventModel]
+        The sub events of the event set.
+    """
 
     _events: Optional[List[IEvent]] = None
 

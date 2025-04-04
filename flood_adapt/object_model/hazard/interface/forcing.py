@@ -20,13 +20,6 @@ class ShapeType(str, Enum):
     scs = "scs"
 
 
-class Scstype(str, Enum):
-    type1 = "type_1"
-    type1a = "type_1a"
-    type2 = "type_2"
-    type3 = "type_3"
-
-
 class ForcingType(str, Enum):
     """Enum class for the different types of forcing parameters."""
 

@@ -20,7 +20,27 @@ class StandardObjectModel(BaseModel):
 
 
 class Site(BaseModel):
-    """The expected variables and data types of attributes of the Site class."""
+    """The expected variables and data types of attributes of the Site class.
+
+    Attributes
+    ----------
+    name : str
+        Name of the site.
+    description : str, default=""
+        Description of the site.
+    lat : float
+        Latitude of the site.
+    lon : float
+        Longitude of the site.
+    standard_objects : StandardObjectModel, default=StandardObjectModel()
+        Standard objects of the site.
+    gui : GuiModel
+        GUI model of the site.
+    sfincs : SfincsModel
+        SFincs model of the site.
+    fiat : FiatModel
+        Fiat model of the site.
+    """
 
     name: str
     description: str = ""

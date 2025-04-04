@@ -21,6 +21,28 @@ class TideGaugeModel(BaseModel):
     """The accepted input for the variable tide_gauge in Site.
 
     The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
+
+    Attributes
+    ----------
+    name : Optional[int | str], default=None
+        Name of the tide gauge.
+    description : Optional[str], default=""
+        Description of the tide gauge.
+    source : TideGaugeSource
+        Source of the tide gauge data.
+    reference : str
+        Reference of the tide gauge data. Should be defined in site.sfincs.water_level
+    ID : Optional[int], default=None
+        ID of the tide gauge data.
+    file : Optional[Path], default=None
+        Only for file based tide gauges. Should be a path relative to the static folder.
+    lat : Optional[float], default=None
+        Latitude of the tide gauge data.
+    lon : Optional[float], default=None
+        Longitude of the tide gauge data.
+    units : us.UnitTypesLength, default=us.UnitTypesLength.meters
+        Units of the water levels in the downloaded file.
+
     """
 
     name: Optional[int | str] = None

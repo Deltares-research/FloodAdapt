@@ -95,7 +95,7 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
                 time_step=timedelta(hours=1),
             )
         )
-        adapter.ensure_no_existing_forcings()
+        adapter._ensure_no_existing_forcings()
 
         return adapter
 
@@ -138,7 +138,7 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
 
     with SfincsAdapter(model_root=(overland_2_rivers)) as adapter:
         adapter.set_timing(TimeModel())
-        adapter.ensure_no_existing_forcings()
+        adapter._ensure_no_existing_forcings()
 
         return adapter, test_db
 
@@ -1093,7 +1093,7 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
 
     # Ensure template is clean
     adapter = SfincsAdapter(SFINCS_PATH)
-    adapter.ensure_no_existing_forcings()
+    adapter._ensure_no_existing_forcings()
 
     # Mock scenario to get a rainfall multiplier
     mock_scn = mock.Mock()
@@ -1109,7 +1109,7 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
     # Act
     adapter = SfincsAdapter(COPY_PATH)
     with pytest.raises(ValueError) as e:
-        adapter.ensure_no_existing_forcings()
+        adapter._ensure_no_existing_forcings()
 
     # Assert
     assert (
@@ -1227,7 +1227,7 @@ class TestPostProcessing:
             test_db_class.static.get_overland_sfincs_model().get_model_root()
         )
         with SfincsAdapter(model_root=overland_path) as adapter:
-            adapter.ensure_no_existing_forcings()
+            adapter._ensure_no_existing_forcings()
 
             adapter.preprocess(scn, event)
             adapter.process(scn, event)

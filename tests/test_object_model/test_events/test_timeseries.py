@@ -16,8 +16,8 @@ from flood_adapt.object_model.hazard.forcing.timeseries import (
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.hazard.interface.forcing import Scstype
 from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
+from flood_adapt.object_model.interface.config.sfincs import Scstype
 from flood_adapt.object_model.io import unit_system as us
 
 
