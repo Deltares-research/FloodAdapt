@@ -34,14 +34,18 @@ jobs:
         with:
           pixi-version: v0.44.0
           cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }} # only save cache on push to main
+          environments: [ docs]
 
       - name: Build
         run: pixi run render-docs
 
-      - name: Read version from _version.yml
-        run: |
-          VERSION=$(grep 'version:' docs/_version.yml | awk '{print $2}')
-          echo "DOC_VERSION=v${VERSION}" >> $GITHUB_ENV
+      - run: |
+          import os
+          from flood_adapt import __version__
+          print(f"v{__version__}")
+          os.environ["DOC_VERSION"] = f"v{__version__}"
+        shell: pixi run -e docs python {0}
 
       - name: Upload to GitHub Pages
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
