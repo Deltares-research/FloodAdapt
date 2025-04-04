@@ -90,7 +90,7 @@ class Database(IDatabase):
             if not self._init_done:
                 raise ValueError(
                     """Database path and name must be provided for the first initialization.
-                    To do this, run api_static.read_database(database_path, site_name) first."""
+                    To do this, run `flood_adapt.api.static.read_database(database_path, site_name)` first."""
                 )
             else:
                 return  # Skip re-initialization
