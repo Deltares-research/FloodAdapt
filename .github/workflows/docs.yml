@@ -12,7 +12,7 @@ permissions:
 jobs:
   docs:
     name: Build and Deploy Documentation
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     defaults:
       run:
         shell: bash -l {0}
@@ -21,13 +21,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Quarto
+      # - name: Setup Quarto
+      #   run: |
+      #     sudo apt update
+      #     sudo apt install -y curl gdebi-core
+      #     mkdir -p tmp
+      #     curl -L https://github.com/quarto-dev/quarto-cli/releases/download/v1.3.450/quarto-1.3.450-linux-amd64.deb --output tmp/quarto.deb
+      #     sudo gdebi -n tmp/quarto.deb
+
+      - name: Setup Quarto on Windows
         run: |
-          sudo apt update
-          sudo apt install -y curl gdebi-core
-          mkdir -p tmp
-          curl -L https://github.com/quarto-dev/quarto-cli/releases/download/v1.3.450/quarto-1.3.450-linux-amd64.deb --output tmp/quarto.deb
-          sudo gdebi -n tmp/quarto.deb
+          Invoke-WebRequest -Uri "https://github.com/quarto-dev/quarto-cli/releases/download/v1.3.450/quarto-1.3.450-windows.msi" -OutFile "quarto.msi"
+          Start-Process msiexec.exe -Wait -ArgumentList "/i quarto.msi /quiet /norestart"
+        shell: pwsh
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.8.4
