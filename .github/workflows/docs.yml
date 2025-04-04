@@ -34,6 +34,7 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }} # only save cache on push to main
           environments: docs
+          frozen: true
 
       - name: Build
         run: pixi run render-docs
