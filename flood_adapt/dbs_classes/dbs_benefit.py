@@ -79,3 +79,15 @@ class DbsBenefit(DbsTemplate[Benefit]):
         output_path = self.output_path / benefit.name
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
+
+    def has_run_check(self, name: str) -> bool:
+        results_path = self.output_path.joinpath(name)
+        # Output files to check
+        results_toml = results_path.joinpath("results.toml")
+        results_csv = results_path.joinpath("time_series.csv")
+        results_html = results_path.joinpath("benefits.html")
+
+        check = all(
+            result.exists() for result in [results_toml, results_csv, results_html]
+        )
+        return check
