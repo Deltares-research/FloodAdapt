@@ -2,10 +2,14 @@ import shutil
 from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.benefit_runner import BenefitRunner
+from flood_adapt.object_model.interface.scenarios import Scenario
+from flood_adapt.object_model.utils import finished_file_exists
 
 
 class DbsScenario(DbsTemplate[Scenario]):
+    dir_name = "scenarios"
+    display_name = "Scenario"
     _object_class = Scenario
 
     def list_objects(self) -> dict[str, list[Any]]:
@@ -18,10 +22,10 @@ class DbsScenario(DbsTemplate[Scenario]):
         """
         scenarios = super().list_objects()
         objects = scenarios["objects"]
-        scenarios["Projection"] = [obj.attrs.projection for obj in objects]
-        scenarios["Event"] = [obj.attrs.event for obj in objects]
-        scenarios["Strategy"] = [obj.attrs.strategy for obj in objects]
-        scenarios["finished"] = [obj.has_run_check() for obj in objects]
+        scenarios["Projection"] = [obj.projection for obj in objects]
+        scenarios["Event"] = [obj.event for obj in objects]
+        scenarios["Strategy"] = [obj.strategy for obj in objects]
+        scenarios["finished"] = [self.has_run_check(obj.name) for obj in objects]
 
         return scenarios
 
@@ -48,7 +52,7 @@ class DbsScenario(DbsTemplate[Scenario]):
         if (self.output_path / name).exists():
             shutil.rmtree(self.output_path / name, ignore_errors=False)
 
-    def edit(self, object_model: Scenario):
+    def edit(self, scenario: Scenario):
         """Edits an already existing scenario in the database.
 
         Parameters
@@ -63,10 +67,10 @@ class DbsScenario(DbsTemplate[Scenario]):
         """
         # Check if it is possible to edit the scenario. This then also covers checking whether the
         # scenario is already used in a higher level object. If this is the case, it cannot be edited.
-        super().edit(object_model)
+        super().edit(scenario)
 
         # Delete output if edited
-        output_path = self.output_path / object_model.attrs.name
+        output_path = self.output_path / scenario.name
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
 
@@ -83,18 +87,64 @@ class DbsScenario(DbsTemplate[Scenario]):
             list[str]
                 list of benefits that use the scenario
         """
-        # Get all the benefits
-        benefits = [
-            self._database.benefits.get(name)
-            for name in self._database.benefits.list_objects()["name"]
-        ]
-
-        # Check in which benefits this scenario is used
-        used_in_benefit = [
-            benefit.attrs.name
-            for benefit in benefits
-            for scenario in benefit.check_scenarios()["scenario created"].to_list()
-            if name == scenario
-        ]
+        benefits = self._database.benefits.list_objects()["objects"]
+        used_in_benefit = []
+        for benefit in benefits:
+            runner = BenefitRunner(database=self._database, benefit=benefit)
+            scenarios = runner.check_scenarios()["scenario created"].to_list()
+            for scenario in scenarios:
+                if name == scenario:
+                    used_in_benefit.append(benefit.name)
 
         return used_in_benefit
+
+    def equal_hazard_components(self, left: Scenario, right: Scenario) -> bool:
+        """Check if two scenarios have the same hazard components.
+
+        Parameters
+        ----------
+        left : Scenario
+            first scenario to be compared
+        right : Scenario
+            second scenario to be compared
+
+        Returns
+        -------
+            bool
+                True if the scenarios have the same hazard components, False otherwise
+        """
+        event_left = self._database.events.get(left.event)
+        event_right = self._database.events.get(right.event)
+        equal_events = event_left == event_right
+
+        left_projection = self._database.projections.get(left.projection)
+        right_projection = self._database.projections.get(right.projection)
+        equal_projection = (
+            left_projection.physical_projection == right_projection.physical_projection
+        )
+
+        left_strategy = self._database.strategies.get(
+            left.strategy
+        ).get_hazard_strategy()
+        right_strategy = self._database.strategies.get(
+            right.strategy
+        ).get_hazard_strategy()
+        equal_strategy = left_strategy == right_strategy
+
+        return equal_events and equal_projection and equal_strategy
+
+    def has_run_check(self, name: str) -> bool:
+        """Check if the scenario has been run.
+
+        Parameters
+        ----------
+        name : str
+            name of the scenario to be checked
+
+        Returns
+        -------
+            bool
+                True if the scenario has been run, False otherwise
+        """
+        results_path = self.output_path / name
+        return finished_file_exists(results_path)

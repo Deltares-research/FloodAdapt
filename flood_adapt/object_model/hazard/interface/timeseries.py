@@ -10,10 +10,10 @@ import plotly.graph_objects as go
 from pydantic import BaseModel, model_validator
 
 from flood_adapt.object_model.hazard.interface.forcing import (
-    Scstype,
     ShapeType,
 )
 from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.interface.config.sfincs import Scstype
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.io.csv import read_csv
 

@@ -4,7 +4,6 @@ import pytest
 
 from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
-    SyntheticEventModel,
 )
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.rainfall import RainfallConstant
@@ -28,77 +27,73 @@ from flood_adapt.object_model.io import unit_system as us
 @pytest.fixture()
 def test_event_all_synthetic():
     return SyntheticEvent(
-        SyntheticEventModel(
-            name="test_synthetic_nearshore",
-            time=TimeModel(
-                start_time=datetime(2020, 1, 1),
-                end_time=datetime(2020, 1, 2),
-            ),
-            forcings={
-                ForcingType.WIND: [
-                    WindConstant(
-                        speed=us.UnitfulVelocity(
-                            value=5, units=us.UnitTypesVelocity.mps
-                        ),
-                        direction=us.UnitfulDirection(
-                            value=60, units=us.UnitTypesDirection.degrees
-                        ),
+        name="test_synthetic_nearshore",
+        time=TimeModel(
+            start_time=datetime(2020, 1, 1),
+            end_time=datetime(2020, 1, 2),
+        ),
+        forcings={
+            ForcingType.WIND: [
+                WindConstant(
+                    speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
+                    direction=us.UnitfulDirection(
+                        value=60, units=us.UnitTypesDirection.degrees
+                    ),
+                )
+            ],
+            ForcingType.RAINFALL: [
+                RainfallConstant(
+                    intensity=us.UnitfulIntensity(
+                        value=20, units=us.UnitTypesIntensity.mm_hr
                     )
-                ],
-                ForcingType.RAINFALL: [
-                    RainfallConstant(
-                        intensity=us.UnitfulIntensity(
-                            value=20, units=us.UnitTypesIntensity.mm_hr
-                        )
-                    )
-                ],
-                ForcingType.DISCHARGE: [
-                    DischargeConstant(
-                        river=RiverModel(
-                            name="cooper",
-                            description="Cooper River",
-                            x_coordinate=595546.3,
-                            y_coordinate=3675590.6,
-                            mean_discharge=us.UnitfulDischarge(
-                                value=5000, units=us.UnitTypesDischarge.cfs
-                            ),
-                        ),
-                        discharge=us.UnitfulDischarge(
+                )
+            ],
+            ForcingType.DISCHARGE: [
+                DischargeConstant(
+                    river=RiverModel(
+                        name="cooper",
+                        description="Cooper River",
+                        x_coordinate=595546.3,
+                        y_coordinate=3675590.6,
+                        mean_discharge=us.UnitfulDischarge(
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
-                    )
-                ],
-                ForcingType.WATERLEVEL: [
-                    WaterlevelSynthetic(
-                        surge=SurgeModel(
-                            timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
-                                shape_type=ShapeType.triangle,
-                                duration=us.UnitfulTime(
-                                    value=1, units=us.UnitTypesTime.days
-                                ),
-                                peak_time=us.UnitfulTime(
-                                    value=8, units=us.UnitTypesTime.hours
-                                ),
-                                peak_value=us.UnitfulLength(
-                                    value=1, units=us.UnitTypesLength.meters
-                                ),
-                            )
-                        ),
-                        tide=TideModel(
-                            harmonic_amplitude=us.UnitfulLength(
+                    ),
+                    discharge=us.UnitfulDischarge(
+                        value=5000, units=us.UnitTypesDischarge.cfs
+                    ),
+                )
+            ],
+            ForcingType.WATERLEVEL: [
+                WaterlevelSynthetic(
+                    surge=SurgeModel(
+                        timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                            shape_type=ShapeType.triangle,
+                            duration=us.UnitfulTime(
+                                value=1, units=us.UnitTypesTime.days
+                            ),
+                            peak_time=us.UnitfulTime(
+                                value=8, units=us.UnitTypesTime.hours
+                            ),
+                            peak_value=us.UnitfulLength(
                                 value=1, units=us.UnitTypesLength.meters
                             ),
-                            harmonic_period=us.UnitfulTime(
-                                value=12.4, units=us.UnitTypesTime.hours
-                            ),
-                            harmonic_phase=us.UnitfulTime(
-                                value=0, units=us.UnitTypesTime.hours
-                            ),
+                        )
+                    ),
+                    tide=TideModel(
+                        harmonic_amplitude=us.UnitfulLength(
+                            value=1, units=us.UnitTypesLength.meters
                         ),
-                    )
-                ],
-            },
-        )
+                        harmonic_period=us.UnitfulTime(
+                            value=12.4, units=us.UnitTypesTime.hours
+                        ),
+                        harmonic_phase=us.UnitfulTime(
+                            value=0, units=us.UnitTypesTime.hours
+                        ),
+                    ),
+                )
+            ],
+        },
     )
 
 

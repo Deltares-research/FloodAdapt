@@ -4,7 +4,6 @@ import pytest
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.historical import (
     HistoricalEvent,
-    HistoricalEventModel,
 )
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.rainfall import RainfallMeteo
@@ -24,9 +23,8 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
-from flood_adapt.object_model.interface.scenarios import ScenarioModel
+from flood_adapt.object_model.interface.scenarios import Scenario
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.scenario import Scenario
 
 
 class TestWaterlevelSynthetic:
@@ -192,7 +190,7 @@ class TestWaterlevelModel:
     @pytest.fixture()
     def setup_offshore_scenario(self, test_db: IDatabase):
         event = HistoricalEvent(
-            HistoricalEventModel(
+            HistoricalEvent(
                 name="test_historical_offshore_meteo",
                 time=TimeModel(),
                 forcings={
@@ -228,12 +226,10 @@ class TestWaterlevelModel:
         test_db.events.save(event)
 
         scn = Scenario(
-            ScenarioModel(
-                name="test_scenario",
-                event=event.attrs.name,
-                projection="current",
-                strategy="no_measures",
-            )
+            name="test_scenario",
+            event=event.name,
+            projection="current",
+            strategy="no_measures",
         )
         test_db.scenarios.save(scn)
 

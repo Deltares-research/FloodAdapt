@@ -1,8 +1,7 @@
 from typing import Any, Union
 
 from flood_adapt.dbs_classes.database import Database
-from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.interface.scenarios import Scenario
 
 
 def get_scenarios() -> dict[str, Any]:
@@ -18,7 +17,7 @@ def get_scenarios() -> dict[str, Any]:
     return Database().scenarios.list_objects()
 
 
-def get_scenario(name: str) -> IScenario:
+def get_scenario(name: str) -> Scenario:
     """Get a scenario from the database by name.
 
     Parameters
@@ -28,7 +27,7 @@ def get_scenario(name: str) -> IScenario:
 
     Returns
     -------
-    IScenario
+    Scenario
         The scenario object with the given name.
 
     Raises
@@ -39,33 +38,33 @@ def get_scenario(name: str) -> IScenario:
     return Database().scenarios.get(name)
 
 
-def create_scenario(attrs: dict[str, Any]) -> IScenario:
+def create_scenario(attrs: dict[str, Any]) -> Scenario:
     """Create a new scenario object.
 
     Parameters
     ----------
     attrs : dict[str, Any]
-        The attributes of the scenario object to create. Should adhere to the ScenarioModel schema.
+        The attributes of the scenario object to create. Should adhere to the Scenario schema.
 
     Returns
     -------
-    IScenario
+    Scenario
         The scenario object created from the attributes.
 
     Raises
     ------
     ValueError
-        If the attributes do not adhere to the ScenarioModel schema.
+        If the attributes do not adhere to the Scenario schema.
     """
-    return Scenario.load_dict(attrs)
+    return Scenario(**attrs)
 
 
-def save_scenario(scenario: IScenario) -> tuple[bool, str]:
+def save_scenario(scenario: Scenario) -> tuple[bool, str]:
     """Save the scenario to the database.
 
     Parameters
     ----------
-    scenario : IScenario
+    scenario : Scenario
         The scenario to save.
 
     Returns
@@ -82,12 +81,12 @@ def save_scenario(scenario: IScenario) -> tuple[bool, str]:
         return False, str(e)
 
 
-def edit_scenario(scenario: IScenario) -> None:
+def edit_scenario(scenario: Scenario) -> None:
     """Edit a scenario object in the database.
 
     Parameters
     ----------
-    scenario : IScenario
+    scenario : Scenario
         The scenario object to edit.
 
     Raises

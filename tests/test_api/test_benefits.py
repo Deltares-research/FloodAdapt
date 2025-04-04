@@ -14,7 +14,7 @@ def get_rng():
 def test_benefit(test_db, get_rng):
     # Inputs for benefit calculation
     # Name given already exists to do test for error capture
-    config = test_db.site.attrs.fiat.config.benefit
+    config = test_db.site.fiat.config.benefit
     benefit_dict = {
         "name": "benefit_raise_properties_2050",
         "description": "",

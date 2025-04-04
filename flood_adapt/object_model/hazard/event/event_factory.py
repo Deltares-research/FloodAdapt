@@ -1,32 +1,28 @@
 from pathlib import Path
-from typing import Any, List, Type
+from typing import Any, List
 
 import tomli
 
 from flood_adapt.object_model.hazard.event.event_set import (
-    EventSet,
+    EventSet,  # noqa: F401
 )
 from flood_adapt.object_model.hazard.event.historical import (
     HistoricalEvent,
-    HistoricalEventModel,
 )
 from flood_adapt.object_model.hazard.event.hurricane import (
     HurricaneEvent,
-    HurricaneEventModel,
     TranslationModel,
 )
 from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
-    SyntheticEventModel,
 )
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
-    IEventModel,
     Mode,
     Template,
 )
 
-__all__ = ["TranslationModel"]
+__all__ = ["TranslationModel", "EventSet"]
 
 
 class EventFactory:
@@ -36,18 +32,18 @@ class EventFactory:
 
     Attributes
     ----------
-    _EVENT_TEMPLATES : dict[str, (Event, IEventModel)]
+    _EVENT_TEMPLATES : dict[str, (Event, IEvent)]
         Dictionary mapping event templates to event classes and models
     """
 
     _EVENT_TEMPLATES = {
-        Template.Hurricane: (HurricaneEvent, HurricaneEventModel),
-        Template.Historical: (HistoricalEvent, HistoricalEventModel),
-        Template.Synthetic: (SyntheticEvent, SyntheticEventModel),
+        Template.Hurricane: HurricaneEvent,
+        Template.Historical: HistoricalEvent,
+        Template.Synthetic: SyntheticEvent,
     }
 
     @staticmethod
-    def get_event_from_template(template: Template) -> Type[IEvent]:
+    def get_event_from_template(template: Template) -> type[IEvent]:
         """Get the event class corresponding to the template.
 
         Parameters
@@ -62,25 +58,7 @@ class EventFactory:
         """
         if template not in EventFactory._EVENT_TEMPLATES:
             raise ValueError(f"Invalid event template: {template}")
-        return EventFactory._EVENT_TEMPLATES[template][0]
-
-    @staticmethod
-    def get_eventmodel_from_template(template: Template) -> type[IEventModel]:
-        """Get the event class corresponding to the template.
-
-        Parameters
-        ----------
-        template : str
-            Name of the event template
-
-        Returns
-        -------
-        Type[Event]
-            Event template
-        """
-        if template not in EventFactory._EVENT_TEMPLATES:
-            raise ValueError(f"Invalid event template: {template}")
-        return EventFactory._EVENT_TEMPLATES[template][1]
+        return EventFactory._EVENT_TEMPLATES[template]
 
     @staticmethod
     def read_template(filepath: Path) -> Template:
@@ -106,7 +84,7 @@ class EventFactory:
         return Mode(toml.get("mode"))
 
     @staticmethod
-    def load_file(toml_file: Path) -> IEvent | EventSet:
+    def load_file(toml_file: Path) -> IEvent:
         """Return event object based on toml file.
 
         Parameters
@@ -130,7 +108,7 @@ class EventFactory:
         return event_type.load_file(toml_file)
 
     @staticmethod
-    def load_dict(attrs: dict[str, Any] | IEventModel) -> IEvent | EventSet:
+    def load_dict(attrs: dict[str, Any] | IEvent) -> IEvent | EventSet:
         """Return event object based on attrs dict.
 
         Parameters
@@ -143,7 +121,7 @@ class EventFactory:
         Event
             Event object based on template
         """
-        if isinstance(attrs, IEventModel):
+        if isinstance(attrs, IEvent):
             mode = attrs.mode
             template = attrs.template
         else:
@@ -152,14 +130,12 @@ class EventFactory:
 
         if mode == Mode.risk:
             # TODO Load events
-            return EventSet.load_dict(attrs, sub_events=[])
+            return EventSet(**attrs)
         elif mode == Mode.single_event:
-            return EventFactory.get_event_from_template(template).load_dict(attrs)
+            return EventFactory.get_event_from_template(template)(**attrs)
         else:
             raise ValueError(f"Invalid event mode: {mode}")
 
     @staticmethod
     def get_allowed_forcings(template) -> dict[str, List[str]]:
-        return EventFactory.get_event_from_template(
-            template
-        )._attrs_type.get_allowed_forcings()
+        return EventFactory.get_event_from_template(template).get_allowed_forcings()

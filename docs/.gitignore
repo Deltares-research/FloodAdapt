@@ -6,3 +6,4 @@
 !api/.gitkeep
 *.jupyter_cache/
 objects.json
+_version.yml

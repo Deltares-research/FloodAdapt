@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
@@ -10,8 +9,8 @@ from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.projections import SocioEconomicChange
-from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.interface.projections import SocioEconomicChangeModel
+from flood_adapt.object_model.interface.scenarios import Scenario
 
 
 class Impacts(DatabaseUser):
@@ -23,14 +22,14 @@ class Impacts(DatabaseUser):
     logger = FloodAdaptLogging.getLogger("Impacts")
     name: str
     hazard: FloodMap
-    socio_economic_change: SocioEconomicChange
+    socio_economic_change: SocioEconomicChangeModel
     impact_strategy: ImpactStrategy
 
-    def __init__(self, scenario: IScenario):
-        self.name = scenario.attrs.name
+    def __init__(self, scenario: Scenario):
+        self.name = scenario.name
         self.scenario = scenario
         self.site_info = self.database.site
-        self.models: list[IImpactAdapter] = [
+        self.models = [
             self.database.static.get_fiat_model()
         ]  # for now only FIAT adapter
 
@@ -39,12 +38,16 @@ class Impacts(DatabaseUser):
         return FloodMap(self.name)
 
     @property
-    def socio_economic_change(self) -> SocioEconomicChange:
-        return self.scenario.projection.get_socio_economic_change()
+    def socio_economic_change(self) -> SocioEconomicChangeModel:
+        return self.database.projections.get(
+            self.scenario.projection
+        ).socio_economic_change
 
     @property
     def impact_strategy(self) -> ImpactStrategy:
-        return self.scenario.strategy.get_impact_strategy()
+        return self.database.strategies.get(
+            self.scenario.strategy
+        ).get_impact_strategy()
 
     @property
     def results_path(self) -> Path:

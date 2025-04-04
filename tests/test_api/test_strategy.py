@@ -25,11 +25,11 @@ def test_strategy(test_db):
         api_strategies.delete_strategy("strategy_comb")
 
     # Change to unused name
-    strategy.attrs.name = "test_strat_1"
+    strategy.name = "test_strat_1"
 
     api_strategies.save_strategy(strategy)
-    assert api_strategies.get_strategy(strategy.attrs.name) == strategy
+    assert api_strategies.get_strategy(strategy.name) == strategy
 
-    api_strategies.delete_strategy(strategy.attrs.name)
+    api_strategies.delete_strategy(strategy.name)
     with pytest.raises(ValueError):
-        api_strategies.get_strategy(strategy.attrs.name)
+        api_strategies.get_strategy(strategy.name)

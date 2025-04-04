@@ -25,8 +25,8 @@ class MeteoHandler(IMeteoHandler):
             name="gfs_anl_0p50",
             source="gfs_analysis_0p50",
             path=self.dir,
-            lon_range=(self.site.attrs.lon - 10, self.site.attrs.lon + 10),
-            lat_range=(self.site.attrs.lat - 10, self.site.attrs.lat + 10),
+            lon_range=(self.site.lon - 10, self.site.lon + 10),
+            lat_range=(self.site.lat - 10, self.site.lat + 10),
         )
         # quick fix for sites near the 0 degree longitude -> shift the meteo download area either east or west of the 0 degree longitude
         # TODO implement a good solution to this in cht_meteo

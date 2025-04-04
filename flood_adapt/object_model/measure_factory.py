@@ -3,15 +3,16 @@ from typing import Union
 
 import tomli
 
-from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
-from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+from flood_adapt.object_model.interface.measures import (
+    Buyout,
+    Elevate,
+    FloodProof,
+    FloodWall,
     GreenInfrastructure,
+    Measure,
+    MeasureType,
+    Pump,
 )
-from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.impact.measure.buyout import Buyout
-from flood_adapt.object_model.impact.measure.elevate import Elevate
-from flood_adapt.object_model.impact.measure.floodproof import FloodProof
-from flood_adapt.object_model.interface.measures import IMeasure, MeasureType
 
 
 class MeasureFactory:
@@ -24,7 +25,7 @@ class MeasureFactory:
         return MeasureType(type)
 
     @staticmethod
-    def get_measure_object(filepath: Union[str, os.PathLike]) -> IMeasure:
+    def get_measure_object(filepath: Union[str, os.PathLike]) -> Measure:
         measure_type = MeasureFactory.get_measure_type(filepath)
 
         if MeasureType.is_impact(measure_type):
@@ -47,7 +48,7 @@ class ImpactMeasureFactory:
 
     Returns
     -------
-        Measure: IMeasure subclass
+        Measure: Measure subclass
     """
 
     @staticmethod
@@ -70,7 +71,7 @@ class HazardMeasureFactory:
 
     Returns
     -------
-        Measure: IMeasure subclass
+        Measure: Measure subclass
     """
 
     @staticmethod

@@ -21,14 +21,14 @@ from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.interface.scenarios import Scenario
 
 
 class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
     logger = FloodAdaptLogging.getLogger("OffshoreSfincsAdapter")
     template_path: Path
 
-    def __init__(self, scenario: IScenario, event: IEvent) -> None:
+    def __init__(self, scenario: Scenario, event: IEvent) -> None:
         self.template_path = (
             self.database.static.get_offshore_sfincs_model().get_model_root()
         )
@@ -91,47 +91,46 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             sim_path path to the root of the offshore model
         """
         self.logger.info(
-            f"Preparing offshore model to generate waterlevels for `{self.scenario.attrs.name}`"
+            f"Preparing offshore model to generate waterlevels for `{self.scenario.name}`"
         )
         sim_path = self._get_simulation_path()
+        # SfincsAdapter.write() doesnt write the bca file apparently so we need to copy the template
+        if sim_path.exists():
+            shutil.rmtree(sim_path)
+        shutil.copytree(self.template_path, sim_path)
 
-        with SfincsAdapter(model_root=self.template_path) as _offshore_model:
+        with SfincsAdapter(model_root=sim_path) as _offshore_model:
             if _offshore_model.sfincs_completed(sim_path):
-                self.logger.info(
-                    f"Skip preprocessing offshore model as it has already been run for `{self.scenario.attrs.name}`."
+                _offshore_model.logger.info(
+                    f"Skip preprocessing offshore model as it has already been run for `{self.scenario.name}`."
                 )
                 return
-            _offshore_model._current_event = self.event
-            _offshore_model._current_scenario = self.scenario
-
-            # SfincsAdapter.write() doesnt write the bca file apparently so we need to copy the template
-            if sim_path.exists():
-                shutil.rmtree(sim_path)
-            shutil.copytree(self.template_path, sim_path)
-
-            # Set root & create dir and write template model
+            # Load objects, set root & write template model
+            _offshore_model._load_scenario_objects(self.scenario, self.event)
             _offshore_model.write(path_out=sim_path)
-
-            physical_projection = self.scenario.projection.get_physical_projection()
-
-            # Edit offshore model
-            _offshore_model.set_timing(self.event.attrs.time)
+            _offshore_model.set_timing(self.event.time)
 
             # Add water levels
-            _offshore_model._add_bzs_from_bca(self.event, physical_projection.attrs)
+            _offshore_model._add_bzs_from_bca(
+                _offshore_model._event, _offshore_model._projection.physical_projection
+            )
 
             # Add spw if applicable
             track_forcings = [
-                f for f in self.event.get_forcings() if f.source == ForcingSource.TRACK
+                f
+                for f in _offshore_model._event.get_forcings()
+                if f.source == ForcingSource.TRACK
             ]
             if track_forcings:
                 for forcing in track_forcings:
                     _offshore_model.add_forcing(forcing)
 
             # Add wind and if applicable pressure forcing from meteo data
-            elif isinstance(self.event, HistoricalEvent):
+            elif isinstance(_offshore_model._event, HistoricalEvent):
                 wind_forcings = [
-                    f for f in self.event.get_forcings() if isinstance(f, IWind)
+                    f
+                    for f in _offshore_model._event.get_forcings()
+                    if isinstance(f, IWind)
                 ]
 
                 if wind_forcings:
@@ -145,7 +144,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
                     # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
                     if isinstance(wind_forcing, WindMeteo):
-                        ds = MeteoHandler().read(self.event.attrs.time)
+                        ds = MeteoHandler().read(_offshore_model._event.time)
                         _offshore_model._add_pressure_forcing_from_grid(ds=ds)
 
             # write sfincs model in output destination
@@ -164,20 +163,21 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
                 _offshore_model.execute(path=sim_path)
             except RuntimeError as e:
                 raise RuntimeError(
-                    f"Failed to run offshore model for {self.scenario.attrs.name}"
+                    f"Failed to run offshore model for {self.scenario.name}"
                 ) from e
 
     def _get_simulation_path(self) -> Path:
-        if self.scenario.event.attrs.mode == Mode.risk:
+        main_event = self.database.events.get(self.scenario.event)
+        if main_event.mode == Mode.risk:
             return (
                 db_path(
                     TopLevelDir.output,
                     object_dir=ObjectDir.scenario,
-                    obj_name=self.scenario.attrs.name,
+                    obj_name=self.scenario.name,
                 )
                 / "Flooding"
                 / "simulations"
-                / self.event.attrs.name
+                / self.event.name
                 / self.template_path.name
             )
         else:
@@ -185,7 +185,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
                 db_path(
                     TopLevelDir.output,
                     object_dir=ObjectDir.scenario,
-                    obj_name=self.scenario.attrs.name,
+                    obj_name=self.scenario.name,
                 )
                 / "Flooding"
                 / "simulations"

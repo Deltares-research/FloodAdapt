@@ -9,6 +9,20 @@ from flood_adapt.object_model.interface.config.sfincs import FloodmapType
 
 
 class BenefitsModel(BaseModel):
+    """The accepted input for the variable benefits in Site.
+
+    Attributes
+    ----------
+    current_year : int
+        The current year used in benefits calculations.
+    current_projection : str
+        The current projection used in benefits calculations.
+    baseline_strategy : str
+        The baseline strategy used in benefits calculations.
+    event_set : str
+        The event set used in benefits calculations.
+    """
+
     current_year: int
     current_projection: str
     baseline_strategy: str
@@ -16,12 +30,39 @@ class BenefitsModel(BaseModel):
 
 
 class EquityModel(BaseModel):
+    """
+    The accepted input for the variable equity in Site.
+
+    Attributes
+    ----------
+    census_data : str
+        TODO
+    percapitaincome_label : Optional[str], default="PerCapitaIncome"
+        TODO
+    totalpopulation_label : Optional[str], default="TotalPopulation"
+        TODO
+    """
+
     census_data: str
     percapitaincome_label: Optional[str] = "PerCapitaIncome"
     totalpopulation_label: Optional[str] = "TotalPopulation"
 
 
 class AggregationModel(BaseModel):
+    """The accepted input for the variable aggregation in Site.
+
+    Attributes
+    ----------
+    name : str
+        TODO
+    file : str
+        TODO
+    field_name : str
+        TODO
+    equity : Optional[EquityModel], default=None
+        TODO
+    """
+
     name: str
     file: str
     field_name: str
@@ -29,12 +70,34 @@ class AggregationModel(BaseModel):
 
 
 class BFEModel(BaseModel):
+    """The accepted input for the variable bfe in Site.
+
+    Attributes
+    ----------
+    geom : str
+        TODO
+    table : Optional[str], default=None
+        TODO
+    field_name : str
+        TODO
+    """
+
     geom: str
     table: Optional[str] = None
     field_name: str
 
 
 class SVIModel(BaseModel):
+    """The accepted input for the variable svi in Site.
+
+    Attributes
+    ----------
+    geom : str
+        TODO
+    field_name : str
+        TODO
+    """
+
     geom: str
     field_name: str
 
@@ -45,8 +108,10 @@ class NoFootprintsModel(BaseModel):
 
     Attributes
     ----------
-        shape (Optional[str]): The shape of the object. Default is "triangle".
-        diameter_meters (Optional[float]): The diameter of the object in meters. Default is 10.
+    shape : Optional[str], default="triangle"
+        The shape of the object with no footprints.
+    diameter_meters : Optional[float], default=10
+        The diameter of the object with no footprints in meters.
     """
 
     shape: Optional[str] = "triangle"
@@ -54,7 +119,13 @@ class NoFootprintsModel(BaseModel):
 
 
 class RiskModel(BaseModel):
-    """The accepted input for the variable risk in Site."""
+    """The accepted input for the variable risk in Site.
+
+    Attributes
+    ----------
+    return_periods : list[int]
+        The return periods for the risk model.
+    """
 
     return_periods: list
 
@@ -67,7 +138,38 @@ class DamageType(str, Enum):
 
 
 class FiatConfigModel(BaseModel):
-    """The accepted input for the variable fiat in Site."""
+    """Configuration settings for the FIAT model.
+
+    Attributes
+    ----------
+    exposure_crs : str
+        The coordinate reference system of the exposure data.
+    bfe : Optional[BFEModel], default=None
+        The base flood elevation model.
+    aggregation : list[AggregationModel]
+        Configuration for the aggregation model.
+    floodmap_type : FloodmapType
+        The type of flood map to be used.
+    non_building_names : Optional[list[str]], default=None
+        List of non-building names to be used in the model.
+    damage_unit : str, default="$"
+        The unit of damage used in the model.
+    building_footprints : Optional[str], default=None
+        Path to the building footprints data.
+    roads_file_name : Optional[str], default=None
+        Path to the roads data.
+    new_development_file_name : Optional[str], default="new_development_area.gpkg"
+        Path to the new development area data.
+    save_simulation : Optional[bool], default=False
+        Whether to keep or delete the simulation files after the simulation is finished and all output files are created.
+        If True, the simulation files are kept. If False, the simulation files are deleted.
+    svi : Optional[SVIModel], default=None
+        The social vulnerability index model.
+    infographics : Optional[bool], default=False
+        Whether to create infographics or not.
+    no_footprints : Optional[NoFootprintsModel], default=NoFootprintsModel()
+        Configuration for objects with no footprints.
+    """
 
     exposure_crs: str
     bfe: Optional[BFEModel] = None
@@ -92,6 +194,18 @@ class FiatConfigModel(BaseModel):
 
 
 class FiatModel(BaseModel):
+    """The expected variables and data types of attributes of the Fiat class.
+
+    Attributes
+    ----------
+    risk : RiskModel
+        Configuration of probabilistic risk runs.
+    config : FiatConfigModel
+        Configuration for the FIAT model.
+    benefits : BenefitsModel
+        Configuration for running benefit calculations.
+    """
+
     risk: RiskModel
 
     config: FiatConfigModel

@@ -2,6 +2,9 @@ import os
 import shutil
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Union
+
+from pydantic import BeforeValidator
 
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
@@ -123,3 +126,27 @@ def copy_file_to_output_dir(file_path: Path, output_dir: Path) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(file_path, output_dir)
     return output_dir / file_path.name
+
+
+def validate_file_extension(allowed_extensions: list[str]):
+    """Validate the extension of the given path has one of the given suffixes.
+
+    Examples
+    --------
+    >>> from pydantic import BaseModel
+    >>> from pathlib import Path
+    >>> from typing import Annotated
+
+    >>> class MyClass(BaseModel):
+    >>>     csv_path: Annotated[Path, validate_file_extension([".csv"])]
+    """
+
+    def _validator(value: Union[Path, str, os.PathLike]) -> Path:
+        value = Path(value)
+        if value.suffix not in allowed_extensions:
+            raise ValueError(
+                f"Invalid file extension: {value}. Allowed extensions are {', '.join(allowed_extensions)}."
+            )
+        return value
+
+    return BeforeValidator(_validator)

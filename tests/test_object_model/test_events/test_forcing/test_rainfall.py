@@ -7,12 +7,12 @@ from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.interface.forcing import Scstype
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.interface.config.sfincs import Scstype
 from flood_adapt.object_model.io import unit_system as us
 
 

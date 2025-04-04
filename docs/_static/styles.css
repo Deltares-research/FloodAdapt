@@ -21,3 +21,25 @@
 .navbar-right .fa-github {
     font-size: 40px; /* Adjust the value as needed */
 }
+
+table {
+  table-layout: auto !important;
+  width: 100% !important;
+}
+
+th, td {
+  white-space: nowrap;
+}
+
+.doc-section dt code {
+    background: none;
+}
+
+.doc-section dt {
+    background-color: #f8e4d8;
+    display: block;
+}
+
+.doc-section dl dd {
+    margin-left: 3rem;
+}
