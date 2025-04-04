@@ -80,14 +80,18 @@ class DbsBenefit(DbsTemplate[Benefit]):
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
 
-    def has_run_check(self, name: str) -> bool:
-        results_path = self.output_path.joinpath(name)
-        # Output files to check
-        results_toml = results_path.joinpath("results.toml")
-        results_csv = results_path.joinpath("time_series.csv")
-        results_html = results_path.joinpath("benefits.html")
+    def get_runner(self, name: str) -> BenefitRunner:
+        return BenefitRunner(self._database, self.get(name))
 
-        check = all(
-            result.exists() for result in [results_toml, results_csv, results_html]
-        )
-        return check
+    def has_run_check(self, name: str) -> bool:
+        return self.get_runner(name).has_run_check()
+
+    def ready_to_run(self, name: str) -> bool:
+        """Check if all the required scenarios have already been run.
+
+        Returns
+        -------
+        bool
+            True if required scenarios have been already run
+        """
+        return self.get_runner(name).ready_to_run()
