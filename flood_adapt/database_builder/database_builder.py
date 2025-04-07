@@ -315,7 +315,7 @@ class ConfigModel(BaseModel):
 
     sfincs_overland: FloodModel
     sfincs_offshore: Optional[FloodModel] = None
-    subgrid: Optional[DemModel] = None
+    dem: Optional[DemModel] = None
 
     excluded_datums: list[str] = Field(default_factory=list)
 
@@ -661,7 +661,7 @@ class DatabaseBuilder:
         This method reads the DEM file and the exposure CSV file, and updates the ground elevations
         of the FIAT objects (roads and buildings) based on the nearest elevation values from the DEM.
         """
-        dem_file = self.static_path.joinpath("dem", "dep_subgrid.tif")
+        dem_file = self._dem_path
         # TODO resolve issue with double geometries in hydromt-FIAT and use update_ground_elevation method instead
         # self.fiat_model.update_ground_elevation(dem_file, grnd_elev_unit="meters")
         self.logger.info(
@@ -807,8 +807,39 @@ class DatabaseBuilder:
                 self.config.building_footprints.field_name,
             )
             return path
-
-        # First check if it is spatially joined and/or exists already
+        elif self.config.building_footprints == FootprintsOptions.OSM:
+            self.logger.info(
+                "Building footprint data will be downloaded from Open Street Maps."
+            )
+            region = self.fiat_model.region
+            if region is None:
+                raise ValueError(
+                    "No region file found in the FIAT model. Building footprints cannot be created."
+                )
+            region = region.to_crs(4326)
+            if isinstance(region.boundary.to_numpy()[0], MultiLineString):
+                polygon = Polygon(
+                    region.boundary.to_numpy()[0].envelope
+                )  # TODO check if this is correct
+            else:
+                polygon = Polygon(region.boundary.to_numpy()[0])
+            footprints = get_buildings_from_osm(polygon)
+            footprints["BF_FID"] = np.arange(1, len(footprints) + 1)
+            footprints = footprints[["BF_FID", "geometry"]]
+            path = self._join_building_footprints(footprints, "BF_FID")
+            return path
+        # Then check if geometries are already footprints
+        elif isinstance(
+            self.fiat_model.exposure.exposure_geoms[
+                self._get_fiat_building_index()
+            ].geometry.iloc[0],
+            (Polygon, MultiPolygon),
+        ):
+            self.logger.info(
+                "Building footprints are already available in the FIAT model geometry files."
+            )
+            return None
+        # check if it is spatially joined and/or exists already
         elif "BF_FID" in self.fiat_model.exposure.exposure_db.columns:
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             fiat_path = Path(self.fiat_model.root)
@@ -832,40 +863,7 @@ class DatabaseBuilder:
                     "While 'BF_FID' column exists, connection to a spatial footprints file is missing."
                 )
 
-        # Then check if geometries are already footprints
-        elif isinstance(
-            self.fiat_model.exposure.exposure_geoms[
-                self._get_fiat_building_index()
-            ].geometry.iloc[0],
-            (Polygon, MultiPolygon),
-        ):
-            self.logger.info(
-                "Building footprints are already available in the FIAT model geometry files."
-            )
-            return None
-
         # Other methods
-        elif self.config.building_footprints == FootprintsOptions.OSM:
-            self.logger.info(
-                "Building footprint data will be downloaded from Open Street Maps."
-            )
-            region = self.fiat_model.region
-            if region is None:
-                raise ValueError(
-                    "No region file found in the FIAT model. Building footprints cannot be created."
-                )
-            region = region.to_crs(4326)
-            if isinstance(region.boundary.to_numpy()[0], MultiLineString):
-                polygon = Polygon(
-                    region.boundary.to_numpy()[0].envelope
-                )  # TODO check if this is correct
-            else:
-                polygon = Polygon(region.boundary.to_numpy()[0])
-            footprints = get_buildings_from_osm(polygon)
-            footprints["BF_FID"] = np.arange(1, len(footprints) + 1)
-            footprints = footprints[["BF_FID", "geometry"]]
-            path = self._join_building_footprints(footprints, "BF_FID")
-            return path
         else:
             self.logger.warning(
                 "No building footprints are available. Buildings will be plotted with a default shape in FloodAdapt."
@@ -1181,8 +1179,8 @@ class DatabaseBuilder:
         return SCSModel(file=scs_file.name, type=self.config.scs.type)
 
     def create_dem_model(self) -> DemModel:
-        if self.config.subgrid:
-            subgrid_sfincs = Path(self.config.subgrid.filename)
+        if self.config.dem:
+            subgrid_sfincs = Path(self.config.dem.filename)
         else:
             self.logger.warning(
                 "No subgrid depth geotiff file provided in the config file. Using the one from the SFINCS model."
@@ -1219,6 +1217,7 @@ class DatabaseBuilder:
             )
 
         shutil.copy2(dem_file, fa_subgrid_path)
+        self._dem_path = fa_subgrid_path
         return DemModel(
             filename=fa_subgrid_path.name, units=us.UnitTypesLength.meters
         )  # always in meters
@@ -1827,6 +1826,11 @@ class DatabaseBuilder:
             self._get_fiat_building_index()
         ]
         exposure_csv = self.fiat_model.exposure.exposure_db
+        if "BF_FID" in exposure_csv.columns:
+            self.logger.warning(
+                "Column 'BF_FID' already exists in the exposure columns and will be replaced."
+            )
+            del exposure_csv["BF_FID"]
         buildings_joined, building_footprints = self.spatial_join(
             buildings,
             building_footprints,
