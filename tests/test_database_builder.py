@@ -14,7 +14,6 @@ from shapely import Polygon
 from flood_adapt import Settings
 from flood_adapt import unit_system as us
 from flood_adapt.api.static import read_database
-from flood_adapt.database_builder.create_database import SviConfigModel
 from flood_adapt.database_builder.database_builder import (
     Basins,
     ConfigModel,
@@ -23,6 +22,7 @@ from flood_adapt.database_builder.database_builder import (
     GuiConfigModel,
     Point,
     SpatialJoinModel,
+    SviConfigModel,
     TideGaugeConfigModel,
     UnitSystems,
 )
@@ -71,6 +71,20 @@ class TestDataBaseBuilder:
 
             yield config
 
+    @pytest.fixture(scope="function")
+    def mock_aggregation_areas(self):
+        """Fixture to mock the create_aggregation_areas method."""
+        return Mock(
+            return_value=[
+                AggregationModel(
+                    name="aggr_lvl_1", file="aggr_lvl_1.geojson", field_name="name"
+                ),
+                AggregationModel(
+                    name="aggr_lvl_2", file="aggr_lvl_2.geojson", field_name="name"
+                ),
+            ]
+        )
+
     ### Fiat ###
     def test_read_fiat_model(self, mock_config: ConfigModel):
         # Arrange
@@ -105,10 +119,19 @@ class TestDataBaseBuilder:
         # Assert
         assert risk == RiskModel()
 
+    def test_add_probabilistic_set(self, mock_config: ConfigModel):
+        # Arrange
+        mock_config.probabilistic_set = self.db_path / "input" / "events" / "test_set"
+        builder = DatabaseBuilder(mock_config)
+        builder.add_probabilistic_set()
+
+        assert builder.probabilistic_set_name == "test_set"
+
     def test_create_benefits_with_test_set(self, mock_config: ConfigModel):
         # Arrange
-        mock_config.probabilistic_set = "test_set"
+        mock_config.probabilistic_set = self.db_path / "input" / "events" / "test_set"
         builder = DatabaseBuilder(mock_config)
+        builder.probabilistic_set_name = "test_set"
 
         # Act
         benefits = builder.create_benefit_config()
@@ -117,7 +140,7 @@ class TestDataBaseBuilder:
             current_year=datetime.now().year,  # TODO mock datetime
             current_projection="current",
             baseline_strategy="no_measures",
-            event_set=mock_config.probabilistic_set,
+            event_set="test_set",
         )
 
         # Assert
@@ -141,11 +164,10 @@ class TestDataBaseBuilder:
         mock_config.building_footprints = None
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
+        builder.read_template_fiat_model()
         builder.fiat_model = Mock(wraps=builder.fiat_model)
 
-        mock_df = pd.DataFrame(
-            {"geometry": [Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])]}
-        )
+        mock_df = pd.DataFrame({"geometry": [shapely.geometry.Point(0, 0)]})
         mock_exposure_geoms = MagicMock()
         mock_exposure_geoms.__getitem__.return_value = (
             mock_df  # Simulate dictionary-like behavior
@@ -161,8 +183,8 @@ class TestDataBaseBuilder:
         assert footprints is None
 
     def test_create_footprints_from_config(self, mock_config: ConfigModel):
+        # TODO check
         # Arrange
-        # TODO fix test
         mock_config.building_footprints = SpatialJoinModel(
             name="BF_FID",
             file=str(self.templates_path / "fiat/exposure/buildings.gpkg"),
@@ -170,7 +192,7 @@ class TestDataBaseBuilder:
         )
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
-
+        builder.read_template_fiat_model()
         # Act
         footprints = builder.create_footprints()
 
@@ -183,33 +205,15 @@ class TestDataBaseBuilder:
         )
         assert footprints is not None
         assert expected_file.exists()
-        assert footprints == expected_file.relative_to(builder.static_path).as_posix()
+        assert footprints == expected_file.relative_to(builder.static_path)
 
     def test_create_footprints_from_OSM(self, mock_config: ConfigModel):
         # Arrange
-        # TODO fix test
         mock_config.building_footprints = FootprintsOptions.OSM
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
-        builder._get_fiat_building_index = Mock(return_value=0)
-
-        mock_fiat_model = Mock(wraps=builder.fiat_model)
-        mock_fiat_model.root = builder.fiat_model.root
-        mock_fiat_model.exposure.exposure_db = pd.DataFrame(columns=["BF_FID"])
-        mock_fiat_model.exposure.exposure_db.columns = ["object_id"]
-        mock_fiat_model.exposure.exposure_geoms = MagicMock()
-        mock_fiat_model.exposure.exposure_geoms.__getitem__.return_value = (
-            gpd.GeoDataFrame(
-                {
-                    "geometry": [shapely.Point(0, 0)],
-                    "object_id": [1],
-                },
-                geometry="geometry",
-                crs="EPSG:4326",
-            )
-        )
-
-        builder.fiat_model = mock_fiat_model
+        builder.read_template_fiat_model()
+        del builder.fiat_model.exposure.exposure_db["BF_FID"]
 
         # Act
         footprints = builder.create_footprints()
@@ -227,8 +231,16 @@ class TestDataBaseBuilder:
         mock_config.fiat_buildings_name = "buildings"
 
         builder = DatabaseBuilder(mock_config)
+        builder.read_template_fiat_model()
         builder.fiat_model = Mock(wraps=builder.fiat_model)
         builder.fiat_model.exposure.exposure_db = pd.DataFrame(columns=["BF_FID"])
+        builder.fiat_model.exposure.exposure_geoms = [
+            gpd.GeoDataFrame(
+                {"object_id": [1], "geometry": [shapely.geometry.Point(0, 0)]},
+                geometry="geometry",
+            )
+        ]
+        builder.fiat_model.exposure.geom_names = ["buildings"]
         builder.fiat_model.spatial_joins = {
             "additional_attributes": [
                 {
@@ -238,6 +250,7 @@ class TestDataBaseBuilder:
             ]
         }
         fiat_path = builder.static_path / "templates" / "fiat"
+        builder.fiat_model.root = fiat_path
         (fiat_path / "exposure/building_footprints").mkdir(parents=True, exist_ok=True)
         (fiat_path / "exposure/building_footprints/building_footprints.gpkg").touch()
 
@@ -249,6 +262,32 @@ class TestDataBaseBuilder:
             fiat_path / "exposure/building_footprints/building_footprints.gpkg"
         )
         assert footprints == expected_path.relative_to(builder.static_path)
+
+    def test_create_footprints_from_geometries(self, mock_config: ConfigModel):
+        # Arrange
+        mock_config.building_footprints = None
+        mock_config.fiat_buildings_name = "buildings"
+
+        builder = DatabaseBuilder(mock_config)
+        builder.read_template_fiat_model()
+        builder.fiat_model = Mock(wraps=builder.fiat_model)
+        builder.fiat_model.exposure.exposure_db = pd.DataFrame(columns=["object_id"])
+        builder.fiat_model.exposure.exposure_geoms = [
+            gpd.GeoDataFrame(
+                {
+                    "object_id": [1],
+                    "geometry": [Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])],
+                },
+                geometry="geometry",
+            )
+        ]
+        builder.fiat_model.exposure.geom_names = ["buildings"]
+
+        # Act
+        footprints = builder.create_footprints()
+
+        # Assert
+        assert footprints is None
 
     def test_create_aggregation_areas_from_config(self, mock_config: ConfigModel):
         # Arrange
@@ -270,7 +309,7 @@ class TestDataBaseBuilder:
         ]
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
-
+        builder.read_template_fiat_model()
         # Act
         areas = builder.create_aggregation_areas()
 
@@ -288,10 +327,11 @@ class TestDataBaseBuilder:
 
     def test_create_aggregation_areas_from_region(self, mock_config: ConfigModel):
         # Arrange
-        # TODO add/mock region
-        mock_config.fiat_buildings_name = "buildings"
         mock_config.aggregation_areas = None
+        mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
+        builder.read_template_fiat_model()
+        builder.fiat_model.spatial_joins["aggregation_areas"] = None
 
         # Act
         areas = builder.create_aggregation_areas()
@@ -313,11 +353,10 @@ class TestDataBaseBuilder:
 
     def test_create_aggregation_areas_from_fiat_model(self, mock_config: ConfigModel):
         # Arrange
-        # TODO get a fiat model with aggregation areas
         mock_config.aggregation_areas = None
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
-        builder.fiat_model = Mock(wraps=builder.fiat_model)
+        builder.read_template_fiat_model()
         builder.fiat_model.spatial_joins = {
             "aggregation_areas": [
                 {
@@ -373,7 +412,7 @@ class TestDataBaseBuilder:
         )
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
-
+        builder.read_template_fiat_model()
         # Act
         bfe = builder.create_bfe()
 
@@ -411,7 +450,8 @@ class TestDataBaseBuilder:
         )
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
-
+        builder.read_template_fiat_model()
+        del builder.fiat_model.exposure.exposure_db["SVI"]
         # Act
         svi = builder.create_svi()
 
@@ -424,6 +464,7 @@ class TestDataBaseBuilder:
             field_name="SVI",
         )
         assert svi is not None
+        assert "SVI" in builder.fiat_model.exposure.exposure_db.columns
         assert expected_svi_path.exists()
         assert svi == expected_svi
 
@@ -456,17 +497,18 @@ class TestDataBaseBuilder:
         builder = DatabaseBuilder(mock_config)
 
         # Act
-        model = builder.read_template_sfincs_offshore_model()
+        builder.read_template_sfincs_offshore_model()
 
         # Assert
         assert not (builder.static_path / "templates" / "offshore").exists()
-        assert model is None
+        assert builder.sfincs_offshore_model is None
 
     def test_create_sfincs_overland(self, mock_config: ConfigModel):
         # Arrange
         mock_config.sfincs_offshore = None
         builder = DatabaseBuilder(mock_config)
-
+        builder.read_template_sfincs_overland_model()
+        builder.read_template_sfincs_overland_model()
         # Act
         sfincs = builder.create_overland_model()
 
@@ -481,6 +523,8 @@ class TestDataBaseBuilder:
     def test_create_sfincs_offshore(self, mock_config: ConfigModel):
         # Arrange
         builder = DatabaseBuilder(mock_config)
+        builder.read_template_sfincs_overland_model()
+        builder.read_template_sfincs_offshore_model()
 
         # Act
         sfincs = builder.create_offshore_model()
@@ -498,6 +542,8 @@ class TestDataBaseBuilder:
         # Arrange
         mock_config.sfincs_offshore = None
         builder = DatabaseBuilder(mock_config)
+        builder.read_template_sfincs_overland_model()
+        builder.read_template_sfincs_offshore_model()
 
         # Act
         sfincs = builder.create_offshore_model()
@@ -513,7 +559,7 @@ class TestDataBaseBuilder:
             relative_to_year=2020,
         )
         builder = DatabaseBuilder(mock_config)
-
+        builder.make_folder_structure()
         # Act
         slr = builder.create_slr()
 
@@ -576,12 +622,12 @@ class TestDataBaseBuilder:
 
     def test_create_dem_model_tiles_created(self, mock_config: ConfigModel):
         # Arrange
-        mock_config.subgrid = DemModel(
+        mock_config.dem = DemModel(
             filename=str(self.static_path / "dem/charleston_14m.tif"),
             units=us.UnitTypesLength.meters,
         )
         builder = DatabaseBuilder(mock_config)
-
+        builder.setup()
         root = Path(builder.sfincs_overland_model.root)
         assert not (root / "tiles/indices").exists()
         assert not (root / "tiles/topobathy").exists()
@@ -590,12 +636,10 @@ class TestDataBaseBuilder:
         dem = builder.create_dem_model()
 
         # Assert
-        expected_tif = (
-            builder.static_path / "dem" / Path(mock_config.subgrid.filename).name
-        )
+        expected_tif = builder.static_path / "dem" / Path(mock_config.dem.filename).name
         expected_dem = DemModel(
             filename=expected_tif.name,
-            units=mock_config.subgrid.units,
+            units=mock_config.dem.units,
         )
         expected_tiles = builder.static_path / "dem" / "tiles"
         expected_indices = expected_tiles / "indices"
@@ -613,7 +657,7 @@ class TestDataBaseBuilder:
 
     def test_create_dem_model_tiles_moved(self, mock_config: ConfigModel):
         # Arrange
-        mock_config.subgrid = DemModel(
+        mock_config.dem = DemModel(
             filename=str(self.static_path / "dem/charleston_14m.tif"),
             units=us.UnitTypesLength.meters,
         )
@@ -624,6 +668,7 @@ class TestDataBaseBuilder:
             assert file.exists()
 
         builder = DatabaseBuilder(mock_config)
+        builder.setup()
         builder.sfincs_overland_model.setup_tiles = Mock()
         shutil.copytree(tiles_path, Path(builder.sfincs_overland_model.root) / "tiles")
 
@@ -632,12 +677,10 @@ class TestDataBaseBuilder:
 
         # Assert
         builder.sfincs_overland_model.setup_tiles.assert_not_called()
-        expected_tif = (
-            builder.static_path / "dem" / Path(mock_config.subgrid.filename).name
-        )
+        expected_tif = builder.static_path / "dem" / Path(mock_config.dem.filename).name
         expected_dem = DemModel(
             filename=expected_tif.name,
-            units=mock_config.subgrid.units,
+            units=mock_config.dem.units,
         )
         expected_tiles = builder.static_path / "dem" / "tiles"
         expected_indices = expected_tiles / "indices"
@@ -770,48 +813,130 @@ class TestDataBaseBuilder:
         # Assert
         assert tide_gauge is not None
 
-    # TODO fix tests below
-    def test_create_infometrics_mandatory_only(self, mock_config: ConfigModel):
+    # TODO split tests of infometrics for imperial and metric types!
+    def test_create_infometrics_mandatory_only(
+        self, mock_config: ConfigModel, mock_aggregation_areas
+    ):
+        # Arrange
+        mock_config.infographics = False
+        builder = DatabaseBuilder(mock_config)
+        builder.setup()
+        builder.create_aggregation_areas = mock_aggregation_areas
+        # Act
+        builder.create_infometrics()
+
+        # Assert
+        path_im = builder.root / "static" / "templates" / "infometrics"
+        assert path_im.exists()
+
+        # Check that exactly two TOML files are generated with the expected names
+        files = list(path_im.glob("*.toml"))
+        assert len(files) == 2
+        assert {file.name for file in files} == {
+            "mandatory_metrics_config_risk.toml",
+            "mandatory_metrics_config.toml",
+        }
+
+        # Check risk metrics
+        file_path = path_im / "mandatory_metrics_config_risk.toml"
+        with open(file_path, "rb") as f:
+            attrs = tomli.load(f)
+            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+            assert any(
+                query["name"] == "ExpectedAnnualDamages" for query in attrs["queries"]
+            )
+            assert any("TotalDamageRP" in query["name"] for query in attrs["queries"])
+
+        # Check event metrics
+        file_path = path_im / "mandatory_metrics_config.toml"
+        with open(file_path, "rb") as f:
+            attrs = tomli.load(f)
+            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+            assert any(
+                "TotalDamageEvent" in query["name"] for query in attrs["queries"]
+            )
+
+    def test_create_infometrics_with_infographics(
+        self, mock_config: ConfigModel, mock_aggregation_areas
+    ):
         # Arrange
         mock_config.svi = SviConfigModel(
             file=str(self.templates_path / "fiat/svi/CDC_svi_2020.gpkg"),
             field_name="SVI",
-            threshold=0.5,
+            threshold=0.8,
         )
-        mock_config.fiat_buildings_name = "buildings"
-        mock_config.infographics = None
-        # TODO fix create_aggregation_areas()
+        mock_config.infographics = True
         builder = DatabaseBuilder(mock_config)
-
+        builder.setup()
+        builder.create_aggregation_areas = mock_aggregation_areas
+        builder._has_roads = True
         # Act
         builder.create_infometrics()
 
         # Assert
         path_im = builder.root / "static" / "templates" / "infometrics"
         assert path_im.exists()
-        for file_name in [
+
+        # Check that exactly two TOML files are generated with the expected names
+        files = list(path_im.glob("*.toml"))
+        assert len(files) == 5
+        assert {file.name for file in files} == {
             "mandatory_metrics_config_risk.toml",
             "mandatory_metrics_config.toml",
-        ]:
-            file_path = path_im / file_name
-            assert file_path.exists()
-            with open(file_path, "rb") as f:
-                attrs = tomli.load(f)
-                assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-                assert all(
-                    "road" not in query["name"].lower() for query in attrs["queries"]
-                )
-                assert all(
-                    query["long_name"] == "Damage in USD" for query in attrs["queries"]
-                )
-                assert all(query["filter"] == "SVI > 0.5" for query in attrs["queries"])
+            "metrics_additional_risk_configs.toml",
+            "infographic_metrics_config.toml",
+            "infographic_metrics_config_risk.toml",
+        }
 
-    def test_create_infometrics_no_svi(self, mock_config: ConfigModel):
+        # Check risk metrics
+        file_path = path_im / "infographic_metrics_config_risk.toml"
+        with open(file_path, "rb") as f:
+            attrs = tomli.load(f)
+            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+            assert any(query["name"] == "FloodedHomes" for query in attrs["queries"])
+            assert any("ImpactedHomes" in query["name"] for query in attrs["queries"])
+            assert any("HighSVI" in query["name"] for query in attrs["queries"])
+            assert any("LowSVI" in query["name"] for query in attrs["queries"])
+            for query in attrs["queries"]:
+                if "SVI" in query["name"]:
+                    assert any(
+                        part.startswith("`SVI` < 0.8")
+                        or part.startswith("`SVI` >= 0.8")
+                        for part in query["filter"].split(" AND ")
+                    )
+
+        # Check event metrics
+        file_path = path_im / "infographic_metrics_config.toml"
+        with open(file_path, "rb") as f:
+            attrs = tomli.load(f)
+            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+            assert any("road" in query["name"].lower() for query in attrs["queries"])
+            assert any("Residential" in query["name"] for query in attrs["queries"])
+            assert any("Commercial" in query["name"] for query in attrs["queries"])
+            assert any("Industrial" in query["name"] for query in attrs["queries"])
+            assert any(
+                "LowVulnerability" in query["name"] for query in attrs["queries"]
+            )
+            assert any(
+                "HighVulnerability" in query["name"] for query in attrs["queries"]
+            )
+            for query in attrs["queries"]:
+                if "SVI" in query["name"]:
+                    assert any(
+                        part.startswith("`SVI` < 0.8")
+                        or part.startswith("`SVI` >= 0.8")
+                        for part in query["filter"].split(" AND ")
+                    )
+
+    def test_create_infometrics_no_svi(
+        self, mock_config: ConfigModel, mock_aggregation_areas
+    ):
         # Arrange
         mock_config.svi = None
-        mock_config.fiat_buildings_name = "buildings"
-        # TODO fix create_aggregation_areas()
+        mock_config.infographics = True
         builder = DatabaseBuilder(mock_config)
+        builder.setup()
+        builder.create_aggregation_areas = mock_aggregation_areas
 
         # Act
         builder.create_infometrics()
@@ -819,50 +944,75 @@ class TestDataBaseBuilder:
         # Assert
         path_im = builder.root / "static" / "templates" / "infometrics"
         assert path_im.exists()
-        for file_name in ["metrics_config.toml", "metrics_config_risk.toml"]:
-            file_path = path_im / file_name
-            assert file_path.exists()
-            with open(file_path, "rb") as f:
-                attrs = tomli.load(f)
-                assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-                assert all(
-                    "road" not in query["name"].lower() for query in attrs["queries"]
-                )
-                assert all(
-                    query["long_name"] == "Damage in USD" for query in attrs["queries"]
-                )
-                assert all(
-                    "SVI_threshold" not in query["filter"] for query in attrs["queries"]
-                )
+        # Check that exactly two TOML files are generated with the expected names
+        files = list(path_im.glob("*.toml"))
+        assert len(files) == 5
+        assert {file.name for file in files} == {
+            "mandatory_metrics_config_risk.toml",
+            "mandatory_metrics_config.toml",
+            "metrics_additional_risk_configs.toml",
+            "infographic_metrics_config.toml",
+            "infographic_metrics_config_risk.toml",
+        }
 
-    def test_create_infometrics_no_roads(self, mock_config: ConfigModel):
+        # Check risk metrics
+        file_path = path_im / "infographic_metrics_config_risk.toml"
+        with open(file_path, "rb") as f:
+            attrs = tomli.load(f)
+            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+            assert any(query["name"] == "FloodedHomes" for query in attrs["queries"])
+            assert any("ImpactedHomes" in query["name"] for query in attrs["queries"])
+            assert all("SVI" not in query["name"] for query in attrs["queries"])
+
+        # Check event metrics
+        file_path = path_im / "infographic_metrics_config.toml"
+        with open(file_path, "rb") as f:
+            attrs = tomli.load(f)
+            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+            assert all(
+                "road" not in query["name"].lower() for query in attrs["queries"]
+            )
+            assert any("Residential" in query["name"] for query in attrs["queries"])
+            assert any("Commercial" in query["name"] for query in attrs["queries"])
+            assert any("Industrial" in query["name"] for query in attrs["queries"])
+            assert all(
+                "Vulnerability" not in query["name"] for query in attrs["queries"]
+            )
+
+    def test_create_infometrics_no_roads(
+        self, mock_config: ConfigModel, mock_aggregation_areas
+    ):
         # Arrange
         mock_config.svi = None
-        mock_config.fiat_buildings_name = "buildings"
-        # TODO fix create_aggregation_areas()
+        mock_config.infographics = True
         builder = DatabaseBuilder(mock_config)
-
+        builder.setup()
+        builder.create_aggregation_areas = mock_aggregation_areas
+        builder._has_roads = False
         # Act
         builder.create_infometrics()
 
         # Assert
         path_im = builder.root / "static" / "templates" / "infometrics"
         assert path_im.exists()
-        for file_name in ["metrics_config.toml", "metrics_config_risk.toml"]:
-            file_path = path_im / file_name
-            assert file_path.exists()
-            with open(file_path, "rb") as f:
-                attrs = tomli.load(f)
-                assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-                assert all(
-                    "road" not in query["name"].lower() for query in attrs["queries"]
-                )
-                assert all(
-                    query["long_name"] == "Damage in USD" for query in attrs["queries"]
-                )
-                assert all(
-                    "SVI_threshold" not in query["filter"] for query in attrs["queries"]
-                )
+        # Check that exactly two TOML files are generated with the expected names
+        files = list(path_im.glob("*.toml"))
+        assert len(files) == 5
+        assert {file.name for file in files} == {
+            "mandatory_metrics_config_risk.toml",
+            "mandatory_metrics_config.toml",
+            "metrics_additional_risk_configs.toml",
+            "infographic_metrics_config.toml",
+            "infographic_metrics_config_risk.toml",
+        }
+
+        # Check event metrics
+        file_path = path_im / "infographic_metrics_config.toml"
+        with open(file_path, "rb") as f:
+            attrs = tomli.load(f)
+            assert all(
+                "road" not in query["name"].lower() for query in attrs["queries"]
+            )
 
     def test_build(self, full_config: ConfigModel):
         # Arrange
@@ -872,7 +1022,7 @@ class TestDataBaseBuilder:
         builder.build()
 
         # Assert
-        db = read_database(full_config.database_path)
+        db = read_database(full_config.database_path, full_config.name)
         assert db is not None
 
     @pytest.fixture(scope="function")
@@ -887,47 +1037,18 @@ class TestDataBaseBuilder:
                 #
                 name="test_db",
                 database_path=tmpdirname,
-                unit_system=UnitSystems.metric,
+                unit_system=UnitSystems.imperial,
                 gui=GuiConfigModel(
+                    max_flood_depth=5,
                     max_aggr_dmg=1e6,
-                    max_flood_depth=1e6,
-                    max_footprint_dmg=1e6,
-                    max_benefits=1e6,
+                    max_footprint_dmg=250000,
+                    max_benefits=5e6,
                 ),
                 infographics=True,
-                probabilistic_set="test_set",
+                probabilistic_set=str(db_path / "input" / "events" / "test_set"),
                 #
                 # SFINCS
                 #
-                references=WaterlevelReferenceModel(
-                    reference="MLLW",
-                    datums=[
-                        DatumModel(
-                            name="MLLW",
-                            height=us.UnitfulLength(
-                                value=0.0, units=us.UnitTypesLength.meters
-                            ),
-                        ),
-                        DatumModel(
-                            name="MSL",
-                            height=us.UnitfulLength(
-                                value=0.89, units=us.UnitTypesLength.meters
-                            ),
-                        ),
-                        DatumModel(
-                            name="NAVD88",
-                            height=us.UnitfulLength(
-                                value=0.957, units=us.UnitTypesLength.meters
-                            ),
-                        ),
-                        DatumModel(
-                            name="MHHW",
-                            height=us.UnitfulLength(
-                                value=1.757, units=us.UnitTypesLength.meters
-                            ),
-                        ),
-                    ],
-                ),
                 sfincs_overland=FloodModel(
                     name=str(templates_path / "overland"),
                     reference="NAVD88",
@@ -935,13 +1056,16 @@ class TestDataBaseBuilder:
                 sfincs_offshore=FloodModel(
                     name=str(templates_path / "offshore"),
                     reference="MSL",
+                    vertical_offset=us.UnitfulLength(
+                        value=0.33, units=us.UnitTypesLength.feet
+                    ),
                 ),
-                subgrid=DemModel(
+                dem=DemModel(
                     filename=str(static_path / "dem/charleston_14m.tif"),
                     units=us.UnitTypesLength.meters,
                 ),
                 excluded_datums=["NAVD88"],
-                slr=SlrScenariosModel(
+                slr_scenarios=SlrScenariosModel(
                     file=str(static_path / "slr/slr.csv"),
                     relative_to_year=2020,
                 ),
@@ -950,11 +1074,7 @@ class TestDataBaseBuilder:
                     type=Scstype.type3,
                 ),
                 tide_gauge=TideGaugeConfigModel(
-                    id=8665530,
-                    ref="MSL",
                     source=TideGaugeSource.noaa_coops,
-                    description="Charleston Cooper River Entrance",
-                    location=Point(lat=32.78, lon=-79.9233),
                     max_distance=us.UnitfulLength(
                         value=100, units=us.UnitTypesLength.miles
                     ),
