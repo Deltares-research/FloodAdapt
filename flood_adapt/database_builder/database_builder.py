@@ -432,13 +432,8 @@ class DatabaseBuilder:
                 f"Creating a FloodAdapt database in '{self.root.as_posix()}'"
             )
 
-            # Create the models
-            self.make_folder_structure()
-
-            # Read user models and copy to templates
-            self.fiat_model = self.read_template_fiat_model()
-            self.sfincs_overland_model = self.read_template_sfincs_overland_model()
-            self.sfincs_offshore_model = self.read_template_sfincs_offshore_model()
+            # Make folder structure and read models
+            self.setup()
 
             # Prepare site configuration
             site_model = self.create_site_config()
@@ -452,6 +447,15 @@ class DatabaseBuilder:
             self.create_standard_objects()
             # Save log file
             self.logger.info("FloodAdapt database creation finished!")
+
+    def setup(self) -> None:
+        # Create the models
+        self.make_folder_structure()
+
+        # Read user models and copy to templates
+        self.read_template_fiat_model()
+        self.read_template_sfincs_overland_model()
+        self.read_template_sfincs_offshore_model()
 
     def create_standard_objects(self):
         # Set environment variables after folder structure is created
@@ -484,7 +488,7 @@ class DatabaseBuilder:
         return std_objects
 
     ### TEMPLATE READERS ###
-    def read_template_fiat_model(self) -> HydromtFiatModel:
+    def read_template_fiat_model(self):
         user_provided = self._check_exists_and_absolute(self.config.fiat)
 
         # Read config model
@@ -505,9 +509,23 @@ class DatabaseBuilder:
         in_db.exposure.exposure_geoms = in_db.exposure.exposure_geoms[:no_geoms]
         in_db.exposure._geom_names = in_db.exposure._geom_names[:no_geoms]
 
-        return in_db
+        # Make sure that a region polygon is included
+        if "region" not in in_db.geoms:
+            gdf = in_db.exposure.get_full_gdf(in_db.exposure.exposure_db)
+            # Combine all geometries into a single geometry
+            merged_geometry = gdf.unary_union
 
-    def read_template_sfincs_overland_model(self) -> HydromtSfincsModel:
+            # If the result is not a polygon, you can create a convex hull
+            if not isinstance(merged_geometry, Polygon):
+                merged_geometry = merged_geometry.convex_hull
+            # Create a new GeoDataFrame with the resulting polygon
+            in_db.geoms["region"] = gpd.GeoDataFrame(
+                geometry=[merged_geometry], crs=gdf.crs
+            )
+
+        self.fiat_model = in_db
+
+    def read_template_sfincs_overland_model(self):
         user_provided = self._check_exists_and_absolute(
             self.config.sfincs_overland.name
         )
@@ -522,11 +540,12 @@ class DatabaseBuilder:
         shutil.copytree(user_provided, location_in_db)
         in_db = HydromtSfincsModel(root=str(location_in_db), mode="r+")
         in_db.read()
-        return in_db
+        self.sfincs_overland_model = in_db
 
-    def read_template_sfincs_offshore_model(self) -> Optional[HydromtSfincsModel]:
+    def read_template_sfincs_offshore_model(self):
         if self.config.sfincs_offshore is None:
-            return None
+            self.sfincs_offshore_model = None
+            return
         user_provided = self._check_exists_and_absolute(
             self.config.sfincs_offshore.name
         )
@@ -542,7 +561,7 @@ class DatabaseBuilder:
         shutil.copytree(user_provided, location_in_db)
         in_db = HydromtSfincsModel(str(location_in_db), mode="r+")
         in_db.read(epsg=epsg)
-        return in_db
+        self.sfincs_offshore_model = in_db
 
     ### FIAT ###
     def create_fiat_model(self) -> FiatModel:
@@ -1005,13 +1024,7 @@ class DatabaseBuilder:
             and not self.config.aggregation_areas
         ):
             exposure_csv = self.fiat_model.exposure.exposure_db
-            region_path = Path(self.fiat_model.root).joinpath("geoms", "region.geojson")
-            if not region_path.exists():
-                raise ValueError(
-                    "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
-                )
-
-            region = gpd.read_file(region_path)
+            region = self.fiat_model.geoms["region"]
             region = region.explode().reset_index()
             region["aggr_id"] = ["region_" + str(i) for i in np.arange(len(region)) + 1]
             aggregation_path = Path(self.fiat_model.root).joinpath(
@@ -1169,7 +1182,7 @@ class DatabaseBuilder:
 
     def create_dem_model(self) -> DemModel:
         if self.config.subgrid:
-            subgrid_sfincs = self.config.subgrid.filename
+            subgrid_sfincs = Path(self.config.subgrid.filename)
         else:
             self.logger.warning(
                 "No subgrid depth geotiff file provided in the config file. Using the one from the SFINCS model."
@@ -1662,7 +1675,7 @@ class DatabaseBuilder:
 
     def _create_optional_infometrics(self, templates_path: Path, path_im: Path):
         # If infographics are going to be created in FA, get template metric configurations
-        if self.config.infographics is None:
+        if not self.config.infographics:
             return
 
         # Check what type of infographics should be used
@@ -1975,7 +1988,9 @@ class DatabaseBuilder:
             layer = gpd.read_file(layer)
         layer = layer[[field_name, "geometry"]]
         layer = layer.to_crs(objects.crs)
-
+        if field_name in objects.columns:
+            layer = layer.rename(columns={field_name: "layer_field"})
+            field_name = "layer_field"
         # Spatial join of the layers
         objects_joined = objects.sjoin(layer, how="left", predicate="intersects")
 
