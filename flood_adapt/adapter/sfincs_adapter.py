@@ -301,16 +301,15 @@ class SfincsAdapter(IHazardAdapter):
             model.write(path_out=sim_path)
 
     def process(self, scenario: Scenario, event: IEvent):
-        if not event.mode == Mode.single_event:
+        if event.mode != Mode.single_event:
             raise ValueError(f"Unsupported event mode: {event.mode}.")
 
         sim_path = self._get_simulation_path(scenario=scenario, sub_event=event)
         self.logger.info(f"Running SFINCS for single event Scenario `{scenario.name}`")
         self.execute(sim_path)
 
-    def postprocess(self, scenario: Scenario, event: Optional[IEvent] = None):
-        event = event or scenario.event
-        if not event.mode == Mode.single_event:
+    def postprocess(self, scenario: Scenario, event: IEvent):
+        if event.mode != Mode.single_event:
             raise ValueError(f"Unsupported event mode: {event.mode}.")
 
         self.logger.info(f"Postprocessing SFINCS for Scenario `{scenario.name}`")
@@ -607,8 +606,6 @@ class SfincsAdapter(IHazardAdapter):
     def plot_wl_obs(
         self,
         scenario: Scenario,
-        sim_path: Optional[Path] = None,
-        event: Optional[IEvent] = None,
     ):
         """Plot water levels at SFINCS observation points as html.
 
@@ -619,8 +616,7 @@ class SfincsAdapter(IHazardAdapter):
             return
 
         self.logger.info("Plotting water levels at observation points")
-        event = event or scenario.event
-        sim_path = sim_path or self._get_simulation_path(scenario, sub_event=event)
+        sim_path = self._get_simulation_path(scenario)
 
         # read SFINCS model
         with SfincsAdapter(model_root=sim_path) as model:
@@ -686,38 +682,8 @@ class SfincsAdapter(IHazardAdapter):
                 showlegend=False,
             )
 
-            # check if event is historic
-            if isinstance(event, HistoricalEvent):
-                if self.settings.tide_gauge is None:
-                    continue
-                df_gauge = TideGauge(
-                    attrs=self.settings.tide_gauge
-                ).get_waterlevels_in_time_frame(
-                    time=TimeModel(
-                        start_time=event.time.start_time,
-                        end_time=event.time.end_time,
-                    ),
-                    units=us.UnitTypesLength(gui_units),
-                )
-
-                if df_gauge is not None:
-                    gauge_reference_height = self.settings.water_level.get_datum(
-                        self.settings.tide_gauge.reference
-                    ).height.convert(gui_units)
-
-                    waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
-
-                    # If data is available, add to plot
-                    fig.add_trace(
-                        go.Scatter(
-                            x=pd.DatetimeIndex(df_gauge.index),
-                            y=waterlevel,
-                            line_color="#ea6404",
-                        )
-                    )
-                    fig["data"][0]["name"] = "model"
-                    fig["data"][1]["name"] = "measurement"
-                    fig.update_layout(showlegend=True)
+            event = self.database.events.get(scenario.event)
+            self._add_tide_gauge_plot(fig, event, units=gui_units)
 
             # write html to results folder
             station_name = gdf.iloc[ii]["Name"]
@@ -934,6 +900,7 @@ class SfincsAdapter(IHazardAdapter):
         This means preprocessing and running the SFINCS model for each event in the event set, and then postprocessing the results.
         """
         event_set: EventSet = self.database.events.get(scenario.event)
+        event_set.load_sub_events()
         total = len(event_set._events)
 
         for i, sub_event in enumerate(event_set._events):
@@ -944,7 +911,6 @@ class SfincsAdapter(IHazardAdapter):
             self.logger.info(
                 f"Running SFINCS for Eventset Scenario `{scenario.name}`, Event `{sub_event.name}` ({i + 1}/{total})"
             )
-            sim_path = self._get_simulation_path(scenario, sub_event=sub_event)
             self.execute(sim_path)
 
         # Postprocess
@@ -1282,7 +1248,6 @@ class SfincsAdapter(IHazardAdapter):
         )
 
         # Add floodwall attributes to geodataframe
-        gdf_floodwall["name"] = floodwall.name
         gdf_floodwall["name"] = floodwall.name
         if (gdf_floodwall.geometry.type == "MultiLineString").any():
             gdf_floodwall = gdf_floodwall.explode()
@@ -1754,8 +1719,10 @@ class SfincsAdapter(IHazardAdapter):
         self, tc: TropicalCyclone, hurricane_translation: TranslationModel
     ):
         if math.isclose(
-            hurricane_translation.eastwest_translation.value, 0
-        ) and math.isclose(hurricane_translation.northsouth_translation.value, 0):
+            hurricane_translation.eastwest_translation.value, 0, abs_tol=1e-6
+        ) and math.isclose(
+            hurricane_translation.northsouth_translation.value, 0, abs_tol=1e-6
+        ):
             return tc
 
         self.logger.info(f"Translating the track of the tropical cyclone `{tc.name}`")
@@ -1862,3 +1829,40 @@ class SfincsAdapter(IHazardAdapter):
             self._event_set = _event
         else:
             self._event_set = None
+
+    def _add_tide_gauge_plot(
+        self, fig, event: IEvent, units: us.UnitTypesLength
+    ) -> None:
+        # check if event is historic
+        if not isinstance(event, HistoricalEvent):
+            return
+        if self.settings.tide_gauge is None:
+            return
+        df_gauge = TideGauge(
+            attrs=self.settings.tide_gauge
+        ).get_waterlevels_in_time_frame(
+            time=TimeModel(
+                start_time=event.time.start_time,
+                end_time=event.time.end_time,
+            ),
+            units=us.UnitTypesLength(units),
+        )
+
+        if df_gauge is not None:
+            gauge_reference_height = self.settings.water_level.get_datum(
+                self.settings.tide_gauge.reference
+            ).height.convert(units)
+
+            waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
+
+            # If data is available, add to plot
+            fig.add_trace(
+                go.Scatter(
+                    x=pd.DatetimeIndex(df_gauge.index),
+                    y=waterlevel,
+                    line_color="#ea6404",
+                )
+            )
+            fig["data"][0]["name"] = "model"
+            fig["data"][1]["name"] = "measurement"
+            fig.update_layout(showlegend=True)
