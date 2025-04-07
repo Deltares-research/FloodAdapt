@@ -900,7 +900,6 @@ class SfincsAdapter(IHazardAdapter):
         This means preprocessing and running the SFINCS model for each event in the event set, and then postprocessing the results.
         """
         event_set: EventSet = self.database.events.get(scenario.event)
-        event_set.load_sub_events()
         total = len(event_set._events)
 
         for i, sub_event in enumerate(event_set._events):
