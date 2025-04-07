@@ -45,7 +45,6 @@ quartodoc:
     include_classes: true
     include_inherited: false
     signature_name: "relative"
-    children: embedded
 
   renderer:
     style: markdown
@@ -213,8 +212,8 @@ website:
     title: FloodAdapt
     pinned: true
     left:
-      - text: Home
-        href: index.qmd
+      - text: Introduction
+        href: 1_introduction/index.qmd
       - text: User Guide
         href: 4_user_guide/index.qmd
       - text: Setup Guide
