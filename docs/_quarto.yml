@@ -14,12 +14,11 @@ project:
 filters:
   - include-code-files
   - interlinks
-  #  - section-bibliographies
 
 interlinks:
   sources:
     geopandas:
-      url: https://geopandas.org/en/stable/docs/
+      url: https://geopandas.org/en/stable/
     pandas:
       url: https://pandas.pydata.org/docs/
     python:
@@ -28,8 +27,9 @@ interlinks:
       url: https://numpy.org/doc/stable/
 
 metadata-files:
-  - _sidebar.yml
-  - _version.yml
+  - user_documentation.yml # user guide + sidebar
+  - api_ref/_sidebar.yml  # api reference + sidebar
+  - _version.yml          # version information
 number-sections: false
 
 quartodoc:
@@ -37,6 +37,7 @@ quartodoc:
   style: pkgdown
   package: flood_adapt
   dir: api_ref
+  out_index: api_index.qmd # generates index at: api_ref/api_index.qmd
   render_interlinks: true
   options: # default options for all sections
     include_attributes: true
@@ -44,11 +45,13 @@ quartodoc:
     include_classes: true
     include_inherited: false
     signature_name: "relative"
+    children: embedded
 
   renderer:
     style: markdown
     table_style: description-list
     show_signature_annotations: true
+    # show_source: true # enable when merged: https://github.com/machow/quartodoc/issues/354
     display_name: name
 
   sections:
@@ -184,6 +187,9 @@ quartodoc:
 
 website:
   title: "Flood Adapt Documentation"
+  repo-url: https://github.com/Deltares-research/FloodAdapt
+  repo-actions: [source, issue]
+  issue-url: https://github.com/Deltares-research/FloodAdapt/issues/new/choose
   page-navigation: true
   favicon: _static/logo.png
   search:
@@ -202,81 +208,25 @@ website:
           />
         </a>
 
-  navbar: # Create navigation bar on
+  navbar:
     logo: _static/logo.png
     title: FloodAdapt
     pinned: true
+    left:
+      - text: Home
+        href: index.qmd
+      - text: User Guide
+        href: 4_user_guide/index.qmd
+      - text: Setup Guide
+        href: 3_setup_guide/index.qmd
+      - text: Technical Documentation
+        href: 5_technical_docs/index.qmd
+      - text: API Reference
+        href: api_ref/api_index.qmd
+
     right:
       - icon: github
         url: https://github.com/Deltares-research/FloodAdapt
-
-  sidebar:
-    border: true
-    collapse-level: 1
-    style: "docked"
-    background: light
-    search: true
-
-    contents:
-      - text: "Introduction"
-        file: 1_introduction/index.qmd
-      - section: "User Guide"
-        file: 4_user_guide/index.qmd # This contains text before sections start
-        contents:
-          - "4_user_guide/getting_started.qmd"
-          - "4_user_guide/site_tab.qmd"
-          - section: "Events"
-            file: "4_user_guide/events/index.qmd"
-            contents:
-              - section: "Historical Events"
-                file: "4_user_guide/events/historic_events/index.qmd"
-                contents:
-                  - "4_user_guide/events/historic_events/historic_events_hurricane.qmd"
-                  - "4_user_guide/events/historic_events/historic_events_gauged.qmd"
-                  - "4_user_guide/events/historic_events/historic_events_ungauged.qmd"
-              - "4_user_guide/events/synthetic_events.qmd"
-              - "4_user_guide/events/probabilistic_events.qmd"
-          - section: "Projections"
-            file: "4_user_guide/projections/index.qmd"
-            contents:
-              - "4_user_guide/projections/climate.qmd"
-              - "4_user_guide/projections/socioEconomic.qmd"
-          - section: "Measures"
-            file: "4_user_guide/measures/index.qmd"
-            contents:
-              - "4_user_guide/measures/hydraulic.qmd"
-              - "4_user_guide/measures/green_infra.qmd"
-              - "4_user_guide/measures/buildings.qmd"
-          - "4_user_guide/strategy/index.qmd"
-          - "4_user_guide/scenarios/index.qmd"
-          - "4_user_guide/output/index.qmd"
-          - "4_user_guide/compare/index.qmd"
-          - "4_user_guide/benefits.qmd"
-      - section: "Setup Guide"
-        file: 3_setup_guide/index.qmd
-        contents:
-          - section: "SFINCS Setup"
-            file: "3_setup_guide/SFINCS/index.qmd"
-            contents:
-              - "3_setup_guide/SFINCS/hydromt_sfincs_gui.qmd"
-          - section: "Delft FIAT Setup"
-            file: "3_setup_guide/Delft_Fiat/index.qmd"
-            contents:
-              - "3_setup_guide/Delft_Fiat/hydromt_fiat_gui.qmd"
-          - "3_setup_guide/risk_analysis.qmd"
-          - "3_setup_guide/database.qmd"
-      - section: "Technical docs"
-        file: "5_technical_docs/index.qmd"
-        contents:
-          - "5_technical_docs/EventScenario.qmd"
-          - "5_technical_docs/RiskScenario.qmd"
-          - "5_technical_docs/EquityCalc.qmd"
-          - "5_technical_docs/BenefitCalc.qmd"
-      - section: "API reference"
-        href: "api_ref/index.qmd"
-        contents:
-          - "api_ref/*.qmd"
-          - "api_ref/object_model/*.qmd"
 
 
 format:
@@ -290,9 +240,6 @@ format:
     page-layout: article
     grid:
       content-mode: standard
-
-# bibliography: references.bib
-# citeproc: false
 
 execute:
   freeze: auto

@@ -133,7 +133,7 @@ pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commi
 tests = {cmd = "pytest tests"}
 
 [tool.pixi.feature.docs.tasks]
-clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_inv docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
+clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
 clean-notebooks = { cmd = "python docs/examples/clear_notebooks.py" }
 clean-docs = {depends-on=["clean-generated-docs", "clean-notebooks"]}
 build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
