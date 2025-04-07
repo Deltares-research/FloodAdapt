@@ -281,7 +281,7 @@ def create_sfincs_config() -> SfincsModel:
     sfincs = SfincsModel(
         config=config,
         water_level=waterlevel_reference,
-        slr=SlrScenariosModel(relative_to_year=2020, file="slr/slr.csv"),
+        slr_scenarios=SlrScenariosModel(relative_to_year=2020, file="slr/slr.csv"),
         dem=DemModel(filename="charleston_14m.tif", units=us.UnitTypesLength.meters),
         scs=SCSModel(file="scs_rainfall.csv", type=Scstype.type3),
         cyclone_track_database=CycloneTrackDatabaseModel(file="IBTrACS.NA.v04r00.nc"),
