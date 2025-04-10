@@ -146,7 +146,7 @@ def plot_discharge(
 
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir=event.dir_name, obj_name=event.name)
+    output_dir = db_path(object_dir="events", obj_name=event.name)
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "discharge_timeseries.html"
@@ -263,7 +263,7 @@ def plot_waterlevel(
 
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir=event.dir_name, obj_name=event.name)
+    output_dir = db_path(object_dir="events", obj_name=event.name)
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "waterlevel_timeseries.html"
@@ -328,7 +328,7 @@ def plot_rainfall(
     )
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir=event.dir_name, obj_name=event.name)
+    output_dir = db_path(object_dir="events", obj_name=event.name)
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "rainfall_timeseries.html"
@@ -418,7 +418,7 @@ def plot_wind(
 
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir=event.dir_name, obj_name=event.name)
+    output_dir = db_path(object_dir="events", obj_name=event.name)
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "wind_timeseries.html"

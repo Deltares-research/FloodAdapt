@@ -41,6 +41,7 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     CSVTimeseries,
     ShapeType,
     SyntheticTimeseries,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
@@ -76,6 +77,7 @@ __all__ = [
     "TranslationModel",
     "CSVTimeseries",
     "SyntheticTimeseries",
+    "TimeseriesFactory",
     "DischargeConstant",
     "RiverModel",
     "SurgeModel",
