@@ -323,7 +323,8 @@ class Database(IDatabase):
         ----------
         benefit : Benefit
         """
-        return benefit.check_scenarios()
+        runner = BenefitRunner(self, benefit=benefit)
+        return runner.check_scenarios()
 
     def create_benefit_scenarios(self, benefit: Benefit) -> None:
         """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already.
