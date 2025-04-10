@@ -3,7 +3,7 @@ import math
 from abc import ABC
 from datetime import timedelta
 from enum import Enum
-from typing import Generic, Optional, Type, TypeVar
+from typing import Generic, Optional, Type, TypeVar, Union
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -28,13 +28,14 @@ __all__ = [
     "UnitfulIntensity",
     "UnitfulVolume",
     "UnitfulTime",
+    "ValueUnitPairs",
 ]
 
 TUnit = TypeVar("TUnit", bound=enum.Enum)
 TClass = TypeVar("TClass", bound="ValueUnitPair")
 
 
-class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
+class ValueUnitPair(ABC, BaseModel, Generic[TUnit]):
     """
     Represents a value with associated units.
 
@@ -90,45 +91,32 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
 
     @model_validator(mode="before")
     @classmethod
-    def extract_unit_class(cls, data: Optional[dict]) -> dict:
-        UNITS: dict[Type, Type] = {
-            UnitTypesLength: UnitfulLength,
-            UnitTypesTime: UnitfulTime,
-            UnitTypesDischarge: UnitfulDischarge,
-            UnitTypesDirection: UnitfulDirection,
-            UnitTypesVelocity: UnitfulVelocity,
-            UnitTypesIntensity: UnitfulIntensity,
-            UnitTypesArea: UnitfulArea,
-            UnitTypesVolume: UnitfulVolume,
-        }
-        if data is None or isinstance(
-            data,
-            ValueUnitPair,
-        ):
-            # Sometimes the data is already a ValueUnitPair instance, so no need to validate
-            # If it is None, dont raise an error here and let the caller handle it
-            return data
+    def extract_unit_class(cls, data: Optional[dict]) -> "ValueUnitPair":
+        if cls is not ValueUnitPair:
+            return data  # Already in the right subclass, don't interfere
 
-        if data.get("units") is None:
-            raise ValueError("No units provided")
+        if not isinstance(data, dict):
+            raise TypeError("Expected dictionary for deserialization.")
 
-        unit_enum = None
         str_unit = data.get("units")
-        for unit_types_enum in UNITS:
+        if not str_unit:
+            raise ValueError("Missing 'units' field in input data.")
+
+        for unit_enum_cls, vu_cls in UNIT_TO_CLASS.items():
             try:
-                unit_enum = unit_types_enum(str_unit)
-                data["units"] = unit_enum
-                return data
-            except Exception:
+                enum_unit = unit_enum_cls(str_unit)
+                data["units"] = enum_unit
+                return vu_cls(**data)
+            except ValueError:
                 continue
 
-        raise ValueError(f"Unsupported unit: {str_unit}")
+        raise ValueError(f"Unsupported or unknown unit: {str_unit}")
 
     def __str__(self) -> str:
         return f"{self.value} {self.units.value}"
 
     def __repr__(self) -> str:
-        return self.__str__()
+        return f"{type(self).__name__}(value={self.value}, units={self.units})"
 
     def __sub__(self: TClass, other: TClass) -> TClass:
         if not isinstance(other, type(self)):
@@ -570,3 +558,26 @@ class UnitfulTime(ValueUnitPair[UnitTypesTime]):
             datetime.timedelta object with representation: (days, seconds, microseconds)
         """
         return timedelta(seconds=self.convert(UnitTypesTime.seconds))
+
+
+ValueUnitPairs = Union[
+    UnitfulLength,
+    UnitfulTime,
+    UnitfulDischarge,
+    UnitfulDirection,
+    UnitfulVelocity,
+    UnitfulIntensity,
+    UnitfulArea,
+    UnitfulVolume,
+]
+
+UNIT_TO_CLASS: dict[enum.EnumMeta, Type[ValueUnitPairs]] = {
+    UnitTypesLength: UnitfulLength,
+    UnitTypesTime: UnitfulTime,
+    UnitTypesDischarge: UnitfulDischarge,
+    UnitTypesDirection: UnitfulDirection,
+    UnitTypesVelocity: UnitfulVelocity,
+    UnitTypesIntensity: UnitfulIntensity,
+    UnitTypesArea: UnitfulArea,
+    UnitTypesVolume: UnitfulVolume,
+}

@@ -1,7 +1,7 @@
 from typing import ClassVar, List
 
-from flood_adapt.object_model.hazard.event.template_event import Event
 from flood_adapt.object_model.hazard.interface.events import (
+    Event,
     ForcingSource,
     ForcingType,
     Template,

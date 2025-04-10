@@ -39,11 +39,12 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindMeteo,
     WindTrack,
 )
-from flood_adapt.object_model.hazard.interface.events import IEvent
-from flood_adapt.object_model.hazard.interface.forcing import ForcingType, ShapeType
+from flood_adapt.object_model.hazard.interface.events import Event
+from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
-    SyntheticTimeseriesModel,
+    ShapeType,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.interface.benefits import (
     Benefit,
@@ -61,9 +62,9 @@ from flood_adapt.object_model.interface.measures import (
     SelectionType,
 )
 from flood_adapt.object_model.interface.projections import (
-    PhysicalProjectionModel,
+    PhysicalProjection,
     Projection,
-    SocioEconomicChangeModel,
+    SocioEconomicChange,
 )
 from flood_adapt.object_model.interface.scenarios import Scenario
 from flood_adapt.object_model.interface.strategies import Strategy
@@ -134,12 +135,12 @@ def create_events():
 def create_projections():
     ALL_PROJECTIONS = Projection(
         name="all_projections",
-        physical_projection=PhysicalProjectionModel(
+        physical_projection=PhysicalProjection(
             sea_level_rise=us.UnitfulLength(value=2, units=us.UnitTypesLength.feet),
             rainfall_multiplier=2,
             storm_frequency_increase=2,
         ),
-        socio_economic_change=SocioEconomicChangeModel(
+        socio_economic_change=SocioEconomicChange(
             economic_growth=20,
             population_growth_new=20,
             population_growth_existing=20,
@@ -154,19 +155,19 @@ def create_projections():
 
     CURRENT = Projection(
         name="current",
-        physical_projection=PhysicalProjectionModel(),
-        socio_economic_change=SocioEconomicChangeModel(),
+        physical_projection=PhysicalProjection(),
+        socio_economic_change=SocioEconomicChange(),
     )
 
     POP_GROWTH_NEW_20 = Projection(
         name="pop_growth_new_20",
-        physical_projection=PhysicalProjectionModel(
+        physical_projection=PhysicalProjection(
             rainfall_multiplier=1.0,
             storm_frequency_increase=0.0,
             sea_level_rise=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.feet),
             subsidence=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.feet),
         ),
-        socio_economic_change=SocioEconomicChangeModel(
+        socio_economic_change=SocioEconomicChange(
             population_growth_new=20.0,
             economic_growth=0.0,
             population_growth_existing=0.0,
@@ -180,11 +181,11 @@ def create_projections():
 
     SLR_2FT = Projection(
         name="SLR_2ft",
-        physical_projection=PhysicalProjectionModel(
+        physical_projection=PhysicalProjection(
             sea_level_rise=us.UnitfulLength(value=2, units=us.UnitTypesLength.feet),
             subsidence=us.UnitfulLength(value=1, units=us.UnitTypesLength.feet),
         ),
-        socio_economic_change=SocioEconomicChangeModel(),
+        socio_economic_change=SocioEconomicChange(),
     )
 
     return [ALL_PROJECTIONS, CURRENT, POP_GROWTH_NEW_20, SLR_2FT]
@@ -552,7 +553,7 @@ def _create_single_events():
                         ),
                     ),
                     surge=SurgeModel(
-                        timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                        timeseries=TimeseriesFactory.from_args(
                             shape_type=ShapeType.triangle,
                             duration=us.UnitfulTime(
                                 value=1, units=us.UnitTypesTime.days
@@ -563,7 +564,7 @@ def _create_single_events():
                             peak_value=us.UnitfulLength(
                                 value=9.22, units=us.UnitTypesLength.feet
                             ),
-                        ),
+                        )
                     ),
                 ),
             ],
@@ -594,7 +595,7 @@ def _create_single_events():
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
                     ),
-                    timeseries=SyntheticTimeseriesModel[us.UnitfulDischarge](
+                    timeseries=TimeseriesFactory.from_args(
                         shape_type=ShapeType.block,
                         duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                         peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
@@ -615,7 +616,7 @@ def _create_single_events():
                         ),
                     ),
                     surge=SurgeModel(
-                        timeseries=SyntheticTimeseriesModel(
+                        timeseries=TimeseriesFactory.from_args(
                             shape_type=ShapeType.triangle,
                             duration=us.UnitfulTime(
                                 value=1, units=us.UnitTypesTime.days
@@ -650,7 +651,7 @@ def _create_single_events():
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
                     ),
-                    timeseries=SyntheticTimeseriesModel(
+                    timeseries=TimeseriesFactory.from_args(
                         shape_type=ShapeType.block,
                         duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                         peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
@@ -692,7 +693,7 @@ def _create_single_events():
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
                     ),
-                    timeseries=SyntheticTimeseriesModel(
+                    timeseries=TimeseriesFactory.from_args(
                         shape_type=ShapeType.block,
                         duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                         peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
@@ -712,7 +713,7 @@ def _create_single_events():
 
 def _create_event_set(name: str) -> EventSet:
     sub_event_models: List[SubEventModel] = []
-    sub_events: List[IEvent] = []
+    sub_events: List[Event] = []
 
     sub_events.append(_create_synthetic_event(name=f"subevent_{1:04d}"))
     sub_event_models.append(SubEventModel(name=f"subevent_{1:04d}", frequency=1))
@@ -732,7 +733,7 @@ def _create_event_set(name: str) -> EventSet:
 
 def create_event_set_with_hurricanes():
     sub_event_models: List[SubEventModel] = []
-    sub_events: List[IEvent] = []
+    sub_events: List[Event] = []
 
     for i in range(1, 5):
         sub_events.append(_create_hurricane_event(name=f"subevent_hurricane{i:04d}"))
@@ -787,7 +788,7 @@ def _create_synthetic_event(name: str) -> SyntheticEvent:
             ForcingType.WATERLEVEL: [
                 WaterlevelSynthetic(
                     surge=SurgeModel(
-                        timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                        timeseries=TimeseriesFactory.from_args(
                             shape_type=ShapeType.triangle,
                             duration=us.UnitfulTime(
                                 value=1, units=us.UnitTypesTime.days

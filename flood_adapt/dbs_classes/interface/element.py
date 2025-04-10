@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Generic, TypeVar
 
-from flood_adapt.object_model.interface.object_model import IObjectModel
+from flood_adapt.object_model.interface.object_model import Object
 
-T_OBJECT_MODEL = TypeVar("T_OBJECT_MODEL", bound=IObjectModel)
+T_OBJECT_MODEL = TypeVar("T_OBJECT_MODEL", bound=Object)
 
 
 class AbstractDatabaseElement(ABC, Generic[T_OBJECT_MODEL]):

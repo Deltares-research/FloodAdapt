@@ -10,7 +10,7 @@ from flood_adapt.object_model.hazard.forcing.rainfall import (
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
-    SyntheticTimeseriesModel,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.interface.config.sfincs import Scstype
 from flood_adapt.object_model.io import unit_system as us
@@ -44,7 +44,7 @@ class TestRainfallSynthetic:
             end_time=start + duration,
         )
 
-        timeseries = SyntheticTimeseriesModel[us.UnitfulIntensity](
+        timeseries = TimeseriesFactory.from_args(
             shape_type=ShapeType.block,
             duration=us.UnitfulTime(
                 value=duration.total_seconds(), units=us.UnitTypesTime.seconds
@@ -71,7 +71,7 @@ class TestRainfallSynthetic:
 
     def test_rainfall_synthetic_scs_to_dataframe(self):
         # Arrange
-        timeseries = SyntheticTimeseriesModel[us.UnitfulLength](
+        timeseries = TimeseriesFactory.from_args(
             shape_type=ShapeType.scs,
             duration=us.UnitfulTime(value=4, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),

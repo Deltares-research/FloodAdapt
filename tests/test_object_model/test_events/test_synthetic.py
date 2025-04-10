@@ -13,12 +13,13 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelSynthetic,
 )
 from flood_adapt.object_model.hazard.forcing.wind import WindConstant
-from flood_adapt.object_model.hazard.interface.forcing import ForcingType, ShapeType
+from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
-    SyntheticTimeseriesModel,
+    ShapeType,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
@@ -67,7 +68,7 @@ def test_event_all_synthetic():
             ForcingType.WATERLEVEL: [
                 WaterlevelSynthetic(
                     surge=SurgeModel(
-                        timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                        timeseries=TimeseriesFactory.from_args(
                             shape_type=ShapeType.triangle,
                             duration=us.UnitfulTime(
                                 value=1, units=us.UnitTypesTime.days

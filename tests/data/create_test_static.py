@@ -2,8 +2,8 @@ from pathlib import Path
 
 from flood_adapt import unit_system as us
 from flood_adapt.misc.config import Settings
-from flood_adapt.object_model.hazard.interface.tide_gauge import (
-    TideGaugeModel,
+from flood_adapt.object_model.hazard.forcing.tide_gauge import (
+    TideGauge,
     TideGaugeSource,
 )
 from flood_adapt.object_model.interface.config.fiat import (
@@ -240,7 +240,7 @@ def create_sfincs_config() -> SfincsModel:
         save_simulation=False,
     )
 
-    tide_gauge = TideGaugeModel(
+    tide_gauge = TideGauge(
         name=8665530,
         reference="MSL",
         source=TideGaugeSource.noaa_coops,

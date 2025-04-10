@@ -10,13 +10,14 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.object_model.hazard.forcing.timeseries import (
-    GaussianTimeseriesCalculator,
-    ShapeType,
-    SyntheticTimeseries,
-    SyntheticTimeseriesModel,
-)
 from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
+from flood_adapt.object_model.hazard.interface.timeseries import (
+    BlockTimeseries,
+    GaussianTimeseries,
+    ScsTimeseries,
+    ShapeType,
+    TimeseriesFactory,
+)
 from flood_adapt.object_model.interface.config.sfincs import Scstype
 from flood_adapt.object_model.io import unit_system as us
 
@@ -65,7 +66,7 @@ class TestTimeseriesModel:
         model = self.get_test_model(shape_type)
 
         # Act
-        timeseries_model = SyntheticTimeseriesModel[us.UnitfulIntensity](**model)
+        timeseries_model = TimeseriesFactory.from_args(**model)
 
         # Assert
         assert timeseries_model.shape_type == ShapeType.block
@@ -84,7 +85,7 @@ class TestTimeseriesModel:
         model = self.get_test_model(ShapeType.gaussian)
 
         # Act
-        timeseries_model = SyntheticTimeseriesModel[us.UnitfulLength](**model)
+        timeseries_model = TimeseriesFactory.from_args(**model)
 
         # Assert
         assert timeseries_model.shape_type == ShapeType.gaussian
@@ -104,7 +105,7 @@ class TestTimeseriesModel:
         model = self.get_test_model(ShapeType.scs)
 
         # Act
-        timeseries_model = SyntheticTimeseriesModel[us.UnitfulLength](**model)
+        timeseries_model = TimeseriesFactory.from_args(**model)
 
         # Assert
         assert timeseries_model.shape_type == ShapeType.scs
@@ -123,30 +124,29 @@ class TestTimeseriesModel:
         # Arrange
         model = self.get_test_model(ShapeType.block)
         model_path = tmp_path / "test.toml"
-        timeseries = SyntheticTimeseries.load_dict(model)
+        saved = TimeseriesFactory.from_args(**model)
 
         # Act
-        timeseries.save(model_path)
-        loaded_model = SyntheticTimeseries.load_file(model_path)
+        saved.save(model_path)
+        loaded = BlockTimeseries.load_file(model_path)
 
         # Assert
-        assert timeseries == loaded_model
+        assert saved.model_dump() == loaded.model_dump()
 
-    @pytest.mark.parametrize("to_remove", ["scs_type", "scs_file_name"])
-    def test_timeseriesmodel_invalid_input_shapetype_scs(self, to_remove):
+    def test_timeseriesmodel_invalid_input_shapetype_scs(self, test_db_class):
         # Arrange
         model = self.get_test_model(ShapeType.scs)
-        model.pop(to_remove)
+        model["peak_value"] = model.pop("cumulative")
 
         # Act
         with pytest.raises(ValidationError) as e:
-            SyntheticTimeseriesModel[us.UnitfulLength].model_validate(model)
+            TimeseriesFactory.from_args(**model)
 
         # Assert
         errors = e.value.errors()
         assert len(errors) == 1
         assert (
-            "SCS timeseries must have `scs_file_name`, `scs_type` and `cumulative` specified."
+            "SCS timeseries must have `cumulative` specified."
             in errors[0]["ctx"]["error"].args[0]
         )
 
@@ -167,13 +167,13 @@ class TestTimeseriesModel:
 
         # Act
         with pytest.raises(ValidationError) as e:
-            SyntheticTimeseriesModel[us.UnitfulIntensity].model_validate(model)
+            TimeseriesFactory.from_args(**model)
 
         # Assert
         errors = e.value.errors()
         assert len(errors) == 1
         assert (
-            "Either peak_value or cumulative must be specified for the timeseries model."
+            "Either `peak_value` or `cumulative` must be specified for Synthetic Timeseries."
             in errors[0]["ctx"]["error"].args[0]
         )
 
@@ -195,13 +195,13 @@ class TestTimeseriesModel:
 
         # Act
         with pytest.raises(ValidationError) as e:
-            SyntheticTimeseriesModel[us.UnitfulIntensity].model_validate(model)
+            TimeseriesFactory.from_args(**model)
 
         # Assert
         errors = e.value.errors()
         assert len(errors) == 1
         assert (
-            "Either peak_value or cumulative must be specified for the timeseries model."
+            "Either `peak_value` or `cumulative` must be specified for Synthetic Timeseries."
             in errors[0]["ctx"]["error"].args[0]
         )
 
@@ -229,7 +229,7 @@ class TestSyntheticTimeseries:
     ):
         match shape_type:
             case ShapeType.scs:
-                attrs = SyntheticTimeseriesModel[us.UnitfulLength](
+                return ScsTimeseries(
                     shape_type=ShapeType.scs,
                     peak_time=us.UnitfulTime(
                         value=peak_time, units=us.UnitTypesTime.hours
@@ -244,7 +244,7 @@ class TestSyntheticTimeseries:
                     scs_type=Scstype.type3,
                 )
             case ShapeType.gaussian:
-                attrs = SyntheticTimeseriesModel[us.UnitfulLength](
+                return GaussianTimeseries(
                     shape_type=ShapeType.gaussian,
                     peak_time=us.UnitfulTime(
                         value=peak_time, units=us.UnitTypesTime.hours
@@ -257,7 +257,7 @@ class TestSyntheticTimeseries:
                     ),
                 )
             case _:
-                attrs = SyntheticTimeseriesModel[us.UnitfulIntensity](
+                return TimeseriesFactory.from_args(
                     shape_type=shape_type,
                     peak_time=us.UnitfulTime(
                         value=peak_time, units=us.UnitTypesTime.hours
@@ -269,8 +269,6 @@ class TestSyntheticTimeseries:
                         value=peak_value, units=us.UnitTypesIntensity.mm_hr
                     ),
                 )
-        ts = SyntheticTimeseries(data=attrs)
-        return ts
 
     @pytest.mark.parametrize("shape_type", [ShapeType.block, ShapeType.triangle])
     @pytest.mark.parametrize("duration, peak_time, peak_value, cumulative", TEST_ATTRS)
@@ -289,12 +287,12 @@ class TestSyntheticTimeseries:
         )
 
         data = ts.calculate_data(time.time_step)
-        result = math.floor(ts.attrs.duration.to_timedelta() / time.time_step)
+        result = math.floor(ts.duration.to_timedelta() / time.time_step)
         assert (
             result == len(data) - 1
-        ), f"{ts.attrs.duration.to_timedelta()}/{time.time_step} should eq {result}, but it is: {len(data) - 1}."
+        ), f"{ts.duration.to_timedelta()}/{time.time_step} should eq {result}, but it is: {len(data) - 1}."
 
-        assert np.amax(data) == pytest.approx(ts.attrs.peak_value.value, rel=1e-2)
+        assert np.amax(data) == pytest.approx(ts.peak_value.value, rel=1e-2)
 
     @pytest.mark.parametrize("duration, peak_time, peak_value, cumulative", TEST_ATTRS)
     def test_calculate_data_scs(self, duration, peak_time, peak_value, cumulative):
@@ -315,8 +313,8 @@ class TestSyntheticTimeseries:
 
         assert abs(cum_rainfall_ts - cumulative) < 0.01
         assert (
-            int(ts.attrs.duration.to_timedelta() / time.time_step) == len(data) - 1
-        ), f"int({ts.attrs.duration.to_timedelta()}/{time.time_step}) should eq int({ts.attrs.duration.to_timedelta() / time.time_step}), but it is: {len(data) - 1}."
+            int(ts.duration.to_timedelta() / time.time_step) == len(data) - 1
+        ), f"int({ts.duration.to_timedelta()}/{time.time_step}) should eq int({ts.duration.to_timedelta() / time.time_step}), but it is: {len(data) - 1}."
 
     def test_load_file(self):
         path = Path(tempfile.gettempdir()) / "test.toml"
@@ -330,23 +328,20 @@ class TestSyntheticTimeseries:
             """
             )
 
-        result = SyntheticTimeseries.load_file(path)
+        result = TimeseriesFactory.load_file(path)
 
-        assert result.attrs.shape_type == ShapeType.block
-        assert result.attrs.peak_time == us.UnitfulTime(
-            value=0, units=us.UnitTypesTime.hours
-        )
-        assert result.attrs.duration == us.UnitfulTime(
-            value=1, units=us.UnitTypesTime.hours
-        )
-        assert result.attrs.peak_value == us.UnitfulIntensity(
+        assert isinstance(result, BlockTimeseries)
+        assert result.shape_type == ShapeType.block
+        assert result.peak_time == us.UnitfulTime(value=0, units=us.UnitTypesTime.hours)
+        assert result.duration == us.UnitfulTime(value=1, units=us.UnitTypesTime.hours)
+        assert result.peak_value == us.UnitfulIntensity(
             value=1, units=us.UnitTypesIntensity.mm_hr
         )
 
-    def test_save(self):
+    def test_save(self, tmp_path):
         try:
-            temp_path = "test.toml"
-            attrs = SyntheticTimeseriesModel[us.UnitfulIntensity](
+            temp_path = Path(tmp_path) / "test.toml"
+            ts = BlockTimeseries(
                 shape_type=ShapeType.block,
                 peak_time=us.UnitfulTime(value=0, units=us.UnitTypesTime.hours),
                 duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -354,7 +349,6 @@ class TestSyntheticTimeseries:
                     value=1, units=us.UnitTypesIntensity.mm_hr
                 ),
             )
-            ts = SyntheticTimeseries(data=attrs)
 
             try:
                 ts.save(temp_path)
@@ -381,7 +375,6 @@ class TestSyntheticTimeseries:
         time_frame = TimeModel(
             start_time=REFERENCE_TIME,
             end_time=REFERENCE_TIME + timedelta(hours=duration),
-            time_step=timedelta(seconds=10),
         )
 
         # Call the to_dataframe method
@@ -417,7 +410,6 @@ class TestSyntheticTimeseries:
         time_frame = TimeModel(
             start_time=start,
             end_time=end,
-            time_step=timedelta(seconds=10),
         )
 
         # new_peak_time is after the full_df_duration so it will be cut off
@@ -435,8 +427,6 @@ class TestSyntheticTimeseries:
             shape_type=shape_type,
         )
 
-        timestep = timedelta(seconds=10)
-
         df = ts.to_dataframe(time_frame)
 
         assert isinstance(df, pd.DataFrame)
@@ -447,7 +437,7 @@ class TestSyntheticTimeseries:
         expected_time_range = pd.date_range(
             start=REFERENCE_TIME,
             end=end,
-            freq=timestep,
+            freq=time_frame.time_step,
         )
 
         # The last value should always be 0, but there is an off by one error in the calculation for block & gaussian somewhere. Others work as expected
@@ -459,7 +449,7 @@ class TestSyntheticTimeseries:
         ), f"{df.index} == {expected_time_range}"
 
 
-class TestGaussianCalculator:
+class TestGaussian:
     _TEST_ATTRS = permutations([1, 10, 100, 1000], r=3)
 
     @pytest.mark.parametrize(
@@ -468,8 +458,7 @@ class TestGaussianCalculator:
     )
     def test_cumulative_is_correct(self, cumulative, duration, time_step):
         # Act
-        calc = GaussianTimeseriesCalculator()
-        model = SyntheticTimeseriesModel[us.UnitfulLength](
+        ts = GaussianTimeseries(
             shape_type=ShapeType.gaussian,
             duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=duration / 2, units=us.UnitTypesTime.hours),
@@ -478,16 +467,16 @@ class TestGaussianCalculator:
             ),
         )
 
-        data = calc.calculate(attrs=model, timestep=timedelta(seconds=time_step))
+        data = ts.calculate_data(time_step=timedelta(seconds=time_step))
 
         assert data.shape[0] > 0, "Time series should have data points"
         assert np.isclose(
             np.trapz(
                 data, dx=time_step / 3600
             ),  # divide by 3600 to convert seconds to hours, rainfall units are in [inch | mm | ...] / hr
-            model.cumulative.value,
+            ts.cumulative.value,
             atol=1e-3,
-        ), f"Integral should be close to cumulative value. {np.trapz(data, time_step)} != {model.cumulative.value}"
+        ), f"Integral should be close to cumulative value. {np.trapz(data, time_step)} != {ts.cumulative.value}"
         assert np.all(data >= 0), "All values should be non-negative"
 
     @pytest.mark.parametrize(
@@ -496,8 +485,7 @@ class TestGaussianCalculator:
     )
     def test_peak_value_is_correct(self, peak_value, duration, time_step):
         # Act
-        calc = GaussianTimeseriesCalculator()
-        model = SyntheticTimeseriesModel[us.UnitfulIntensity](
+        ts = GaussianTimeseries(
             shape_type=ShapeType.gaussian,
             duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=duration / 2, units=us.UnitTypesTime.hours),
@@ -506,10 +494,10 @@ class TestGaussianCalculator:
             ),
         )
 
-        data = calc.calculate(attrs=model, timestep=timedelta(seconds=time_step))
+        data = ts.calculate_data(time_step=timedelta(seconds=time_step))
 
         assert data.shape[0] > 0, "Time series should have data points"
         assert np.isclose(
-            np.amax(data), model.peak_value.value, atol=1e-3
-        ), f"Integral should be close to cumulative value. {np.trapz(data, time_step)} != {model.peak_value.value}"
+            np.amax(data), ts.peak_value.value, atol=1e-3
+        ), f"Integral should be close to cumulative value. {np.trapz(data, time_step)} != {ts.peak_value.value}"
         assert np.all(data >= 0), "All values should be non-negative"

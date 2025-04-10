@@ -8,8 +8,8 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.projections import (
-    PhysicalProjectionModel,
-    SocioEconomicChangeModel,
+    PhysicalProjection,
+    SocioEconomicChange,
 )
 from flood_adapt.object_model.scenario_runner import Scenario, ScenarioRunner
 from flood_adapt.object_model.utils import finished_file_exists
@@ -37,11 +37,11 @@ def test_init_valid_input(test_db, test_scenarios: dict[str, Scenario]):
     impacts = Impacts(test_scenario)
     assert isinstance(impacts, Impacts)
     assert isinstance(impacts.site_info, Site)
-    assert isinstance(impacts.socio_economic_change, SocioEconomicChangeModel)
+    assert isinstance(impacts.socio_economic_change, SocioEconomicChange)
     assert isinstance(impacts.impact_strategy, ImpactStrategy)
     assert isinstance(impacts.hazard, FloodMap)
     assert isinstance(impacts.hazard.hazard_strategy, HazardStrategy)
-    assert isinstance(impacts.hazard.physical_projection, PhysicalProjectionModel)
+    assert isinstance(impacts.hazard.physical_projection, PhysicalProjection)
 
 
 class Test_scenario_run:

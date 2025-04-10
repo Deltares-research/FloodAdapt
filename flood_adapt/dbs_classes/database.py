@@ -26,7 +26,7 @@ from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.benefit_runner import Benefit, BenefitRunner
-from flood_adapt.object_model.hazard.event.template_event import Event
+from flood_adapt.object_model.hazard.interface.events import Event
 from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
@@ -651,8 +651,9 @@ class Database(IDatabase):
                 scenario = self.scenarios.get(scn)
                 runner = ScenarioRunner(self, scenario=scenario)
                 runner.run(scenario)
-            except RuntimeError:
+            except RuntimeError as e:
                 errors.append(scn)
+                self.logger.error(f"Error running scenario {scn}: {e}")
         if errors:
             raise RuntimeError(
                 "FloodAdapt failed to run for the following scenarios: "

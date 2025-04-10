@@ -1,8 +1,8 @@
 # from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.interface.object_model import IObjectModel
+from flood_adapt.object_model.interface.object_model import Object
 
 
-class Scenario(IObjectModel):
+class Scenario(Object):
     """BaseModel describing the expected variables and data types of a scenario.
 
     A scenario is a combination of an event, a projection, and a strategy, that all should be saved in the database.

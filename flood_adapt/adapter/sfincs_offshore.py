@@ -10,7 +10,7 @@ from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
 from flood_adapt.object_model.hazard.forcing.wind import WindMeteo
-from flood_adapt.object_model.hazard.interface.events import IEvent, Mode
+from flood_adapt.object_model.hazard.interface.events import Event, Mode
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWind,
@@ -28,7 +28,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
     logger = FloodAdaptLogging.getLogger("OffshoreSfincsAdapter")
     template_path: Path
 
-    def __init__(self, scenario: Scenario, event: IEvent) -> None:
+    def __init__(self, scenario: Scenario, event: Event) -> None:
         self.template_path = (
             self.database.static.get_offshore_sfincs_model().get_model_root()
         )
@@ -63,7 +63,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         return waterlevels
 
     @staticmethod
-    def requires_offshore_run(event: IEvent) -> bool:
+    def requires_offshore_run(event: Event) -> bool:
         return any(
             forcing.source in [ForcingSource.MODEL, ForcingSource.TRACK]
             for forcing in event.get_forcings()

@@ -8,7 +8,7 @@ import pyproj
 from pydantic import Field, field_validator, model_validator
 
 from flood_adapt.object_model.interface.config.site import Site
-from flood_adapt.object_model.interface.object_model import IObjectModel
+from flood_adapt.object_model.interface.object_model import Object
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
@@ -78,7 +78,7 @@ class SelectionType(str, Enum):
     all = "all"
 
 
-class Measure(IObjectModel):
+class Measure(Object):
     """The expected variables and data types of attributes common to all measures.
 
     A measure is a collection of attributes that can be applied to a model.

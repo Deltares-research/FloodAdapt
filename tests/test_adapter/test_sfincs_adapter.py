@@ -63,7 +63,7 @@ from flood_adapt.object_model.hazard.interface.models import (
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
-    SyntheticTimeseriesModel,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.interface.config.sfincs import ObsPointModel, RiverModel
 from flood_adapt.object_model.interface.measures import (
@@ -78,6 +78,7 @@ from flood_adapt.object_model.io import unit_system as us
 from tests.fixtures import TEST_DATA_DIR
 from tests.test_object_model.test_events.test_forcing.test_netcdf import (
     get_test_dataset,
+    time_model_2_hr_timestep,
 )
 
 
@@ -148,7 +149,7 @@ def synthetic_discharge():
     if river := Database().site.sfincs.river:
         return DischargeSynthetic(
             river=river[0],
-            timeseries=SyntheticTimeseriesModel[us.UnitfulDischarge](
+            timeseries=TimeseriesFactory.from_args(
                 shape_type=ShapeType.triangle,
                 duration=us.UnitfulTime(value=3, units=us.UnitTypesTime.hours),
                 peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -177,7 +178,7 @@ def river_in_db() -> RiverModel:
 @pytest.fixture()
 def synthetic_rainfall():
     return RainfallSynthetic(
-        timeseries=SyntheticTimeseriesModel[us.UnitfulIntensity](
+        timeseries=TimeseriesFactory.from_args(
             shape_type=ShapeType.triangle,
             duration=us.UnitfulTime(value=3, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -189,13 +190,13 @@ def synthetic_rainfall():
 @pytest.fixture()
 def synthetic_wind():
     return WindSynthetic(
-        magnitude=SyntheticTimeseriesModel[us.UnitfulVelocity](
+        magnitude=TimeseriesFactory.from_args(
             shape_type=ShapeType.triangle,
             duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
             peak_value=us.UnitfulVelocity(value=1, units=us.UnitTypesVelocity.mps),
         ),
-        direction=SyntheticTimeseriesModel[us.UnitfulDirection](
+        direction=TimeseriesFactory.from_args(
             shape_type=ShapeType.triangle,
             duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
@@ -210,7 +211,7 @@ def synthetic_wind():
 def synthetic_waterlevels():
     return WaterlevelSynthetic(
         surge=SurgeModel(
-            timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+            timeseries=TimeseriesFactory.from_args(
                 shape_type=ShapeType.triangle,
                 duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                 peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
@@ -434,7 +435,8 @@ class TestAddForcing:
             # Arrange
             path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
 
-            time = TimeModel(time_step=timedelta(hours=1))
+            time = time_model_2_hr_timestep()
+
             default_sfincs_adapter.set_timing(time)
 
             ds = get_test_dataset(
@@ -597,7 +599,7 @@ class TestAddForcing:
             adapter = sfincs_adapter_with_dummy_scn
             path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
 
-            time = TimeModel(time_step=timedelta(hours=1))
+            time = time_model_2_hr_timestep()
             adapter.set_timing(time)
 
             ds = get_test_dataset(
@@ -1122,7 +1124,7 @@ class TestPostProcessing:
     @pytest.fixture(scope="class")
     def synthetic_rainfall_class(self):
         return RainfallSynthetic(
-            timeseries=SyntheticTimeseriesModel[us.UnitfulIntensity](
+            timeseries=TimeseriesFactory.from_args(
                 shape_type=ShapeType.triangle,
                 duration=us.UnitfulTime(value=3, units=us.UnitTypesTime.hours),
                 peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -1137,7 +1139,7 @@ class TestPostProcessing:
         if river := Database().site.sfincs.river:
             return DischargeSynthetic(
                 river=river[0],
-                timeseries=SyntheticTimeseriesModel[us.UnitfulDischarge](
+                timeseries=TimeseriesFactory.from_args(
                     shape_type=ShapeType.triangle,
                     duration=us.UnitfulTime(value=3, units=us.UnitTypesTime.hours),
                     peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -1151,7 +1153,7 @@ class TestPostProcessing:
     def synthetic_waterlevels_class(self):
         return WaterlevelSynthetic(
             surge=SurgeModel(
-                timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                timeseries=TimeseriesFactory.from_args(
                     shape_type=ShapeType.triangle,
                     duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                     peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),

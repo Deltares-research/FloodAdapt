@@ -21,14 +21,9 @@ from flood_adapt.object_model.hazard.forcing.plotting import (
     plot_forcing as _plot_forcing,
 )
 from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
-from flood_adapt.object_model.hazard.forcing.timeseries import (
-    CSVTimeseries,
-    SyntheticTimeseries,
-    SyntheticTimeseriesModel,
-)
 from flood_adapt.object_model.hazard.forcing.waterlevels import SurgeModel, TideModel
 from flood_adapt.object_model.hazard.interface.events import (
-    IEvent,
+    Event,
     Mode,
     Template,
 )
@@ -40,9 +35,13 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IRainfall,
     IWaterlevel,
     IWind,
-    ShapeType,
 )
 from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.timeseries import (
+    CSVTimeseries,
+    ShapeType,
+    SyntheticTimeseries,
+)
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
 
@@ -55,7 +54,7 @@ __all__ = [
     "Mode",
     "EventFactory",
     "EventSet",
-    "IEvent",
+    "Event",
     "IForcing",
     "IDischarge",
     "IRainfall",
@@ -76,7 +75,6 @@ __all__ = [
     "HurricaneEvent",
     "TranslationModel",
     "CSVTimeseries",
-    "SyntheticTimeseriesModel",
     "SyntheticTimeseries",
     "DischargeConstant",
     "RiverModel",
@@ -117,23 +115,23 @@ def get_events() -> dict[str, Any]:
     return Database().events.list_objects()
 
 
-def get_event(name: str) -> IEvent | EventSet:
-    """Get a benefit from the database by name.
+def get_event(name: str) -> Event | EventSet:
+    """Get an event from the database by name.
 
     Parameters
     ----------
     name : str
-        The name of the benefit to retrieve.
+        The name of the event to retrieve.
 
     Returns
     -------
-    Benefit
-        The benefit object with the given name.
+    Event | EventSet
+        The event with the given name.
 
     Raises
     ------
     ValueError
-        If the benefit with the given name does not exist.
+        If the event with the given name does not exist.
     """
     return Database().events.get(name)
 
@@ -154,12 +152,12 @@ def get_event_mode(name: str) -> Mode:
     return EventFactory.read_mode(filename)
 
 
-def create_event(attrs: dict[str, Any] | IEvent) -> IEvent:
+def create_event(attrs: dict[str, Any] | Event) -> Event:
     """Create a event object from a dictionary of attributes.
 
     Parameters
     ----------
-    attrs : IEvent [str, Any]
+    attrs : Event [str, Any]
         Dictionary of attributes
 
     Returns
@@ -172,7 +170,7 @@ def create_event(attrs: dict[str, Any] | IEvent) -> IEvent:
 
 
 def create_event_set(
-    attrs: dict[str, Any] | EventSet, sub_events: list[IEvent]
+    attrs: dict[str, Any] | EventSet, sub_events: list[Event]
 ) -> EventSet:
     """Create a event set object from a dictionary of attributes.
 
@@ -180,7 +178,7 @@ def create_event_set(
     ----------
     attrs : EventSet [str, Any]
         Dictionary of attributes
-    sub_events : list[IEvent]
+    sub_events : list[Event]
         List of events in the event set
 
     Returns
@@ -199,12 +197,12 @@ def get_allowed_forcings(template: Template) -> dict[str, List[str]]:
     return EventFactory.get_allowed_forcings(template)
 
 
-def save_event(event: IEvent) -> None:
+def save_event(event: Event) -> None:
     """Save an event object to the database.
 
     Parameters
     ----------
-    event : IEvent
+    event : Event
         The event object to save.
 
     Raises
@@ -215,14 +213,14 @@ def save_event(event: IEvent) -> None:
     Database().events.save(event)
 
 
-def save_timeseries_csv(name: str, event: IEvent, df: pd.DataFrame) -> None:
+def save_timeseries_csv(name: str, event: Event, df: pd.DataFrame) -> None:
     """Save timeseries data to a csv file.
 
     Parameters
     ----------
     name : str
         Name of the event
-    event : IEvent
+    event : Event
         Event object
     df : pd.DataFrame
         Dataframe of timeseries data
@@ -230,12 +228,12 @@ def save_timeseries_csv(name: str, event: IEvent, df: pd.DataFrame) -> None:
     Database().write_to_csv(name, event, df)
 
 
-def edit_event(event: IEvent) -> None:
+def edit_event(event: Event) -> None:
     """Edit an event object in the database.
 
     Parameters
     ----------
-    event : IEvent
+    event : Event
         The event object to edit.
 
     Raises
@@ -336,13 +334,13 @@ def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
 
 
 def plot_forcing(
-    event: IEvent, forcing_type: ForcingType
+    event: Event, forcing_type: ForcingType
 ) -> tuple[str, Optional[List[Exception]]]:
     """Plot forcing data for an event.
 
     Parameters
     ----------
-    event : IEvent
+    event : Event
         The event object
     forcing_type : ForcingType
         The type of forcing data to plot
@@ -350,12 +348,12 @@ def plot_forcing(
     return _plot_forcing(event, Database().site, forcing_type)
 
 
-def save_cyclone_track(event: IEvent, track: TropicalCyclone):
+def save_cyclone_track(event: Event, track: TropicalCyclone):
     """Save cyclone track data to the event folder.
 
     Parameters
     ----------
-    event : IEvent
+    event : Event
         The event object
     track : TropicalCyclone
         The cyclone track data

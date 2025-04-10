@@ -5,13 +5,12 @@ import pandas as pd
 import pytest
 from noaa_coops.station import COOPSAPIError
 
-from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
-from flood_adapt.object_model.hazard.forcing.timeseries import CSVTimeseries
-from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.hazard.interface.tide_gauge import (
-    TideGaugeModel,
+from flood_adapt.object_model.hazard.forcing.tide_gauge import (
+    TideGauge,
     TideGaugeSource,
 )
+from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.timeseries import CSVTimeseries
 from flood_adapt.object_model.io import unit_system as us
 
 
@@ -43,7 +42,7 @@ def setup_file_based_tide_gauge(
     csv_path = tmp_path / "waterlevels.csv"
     dummy_1d_timeseries_df.to_csv(csv_path)
 
-    tide_gauge_model = TideGaugeModel(
+    tide_gauge = TideGauge(
         name=8665530,
         reference="MSL",
         source=TideGaugeSource.file,
@@ -53,12 +52,11 @@ def setup_file_based_tide_gauge(
         lon=-79.9233,
         file=csv_path,
     )
-    tide_gauge = TideGauge(attrs=tide_gauge_model)
-    expected_df = (
-        CSVTimeseries[us.UnitfulLength]()
-        .load_file(csv_path)
-        .to_dataframe(time_frame=dummy_time_model)
-    )
+
+    expected_df = CSVTimeseries.load_file(
+        path=csv_path, units=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters)
+    ).to_dataframe(time_frame=dummy_time_model)
+
     return tide_gauge, csv_path, dummy_time_model, expected_df
 
 
@@ -69,7 +67,7 @@ def setup_download_based_tide_gauge(
     csv_path = tmp_path / "waterlevels.csv"
     dummy_1d_timeseries_df.to_csv(csv_path)
 
-    tide_gauge_model = TideGaugeModel(
+    tide_gauge = TideGauge(
         name=8665530,
         reference="MSL",
         source=TideGaugeSource.noaa_coops,
@@ -78,13 +76,10 @@ def setup_download_based_tide_gauge(
         lat=32.78,
         lon=-79.9233,
     )
-    tide_gauge = TideGauge(attrs=tide_gauge_model)
 
-    expected_df = (
-        CSVTimeseries[us.UnitfulLength]()
-        .load_file(csv_path)
-        .to_dataframe(time_frame=dummy_time_model)
-    )
+    expected_df = CSVTimeseries.load_file(
+        path=csv_path, units=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters)
+    ).to_dataframe(time_frame=dummy_time_model)
     return tide_gauge, csv_path, dummy_time_model, expected_df
 
 

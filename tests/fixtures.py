@@ -12,9 +12,9 @@ from flood_adapt.object_model.interface.measures import (
     SelectionType,
 )
 from flood_adapt.object_model.interface.projections import (
-    PhysicalProjectionModel,
+    PhysicalProjection,
     Projection,
-    SocioEconomicChangeModel,
+    SocioEconomicChange,
 )
 from flood_adapt.object_model.interface.strategies import Strategy
 from flood_adapt.object_model.io import unit_system as us
@@ -51,8 +51,8 @@ def dummy_2d_timeseries_df(dummy_time_model) -> pd.DataFrame:
 def dummy_projection():
     return Projection(
         name="dummy_projection",
-        physical_projection=PhysicalProjectionModel(),
-        socio_economic_change=SocioEconomicChangeModel(),
+        physical_projection=PhysicalProjection(),
+        socio_economic_change=SocioEconomicChange(),
     )
 
 

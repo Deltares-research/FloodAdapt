@@ -26,7 +26,7 @@ class IImpactAdapter(IAdapter):
         Implement this to handle each supported projection type for this Impact model.
 
         A projection is a projection of the future, i.e. economic growth, etc.
-        SocioEconomicChangeModel contains all information needed to implement the projection in the impact model. (parameters, etc.)
+        SocioEconomicChange contains all information needed to implement the projection in the impact model. (parameters, etc.)
         """
         pass
 

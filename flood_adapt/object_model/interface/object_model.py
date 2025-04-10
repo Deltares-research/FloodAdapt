@@ -6,8 +6,8 @@ import tomli_w
 from pydantic import BaseModel, Field
 
 
-class IObjectModel(BaseModel):
-    """Base class for object models.
+class Object(BaseModel):
+    """Base class for FloodAdapt objects.
 
     Attributes
     ----------
@@ -26,7 +26,7 @@ class IObjectModel(BaseModel):
     description: str = Field(default="", description="Description of the object.")
 
     @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "IObjectModel":
+    def load_file(cls, file_path: Path | str | os.PathLike) -> "Object":
         """Load object from file.
 
         Parameters

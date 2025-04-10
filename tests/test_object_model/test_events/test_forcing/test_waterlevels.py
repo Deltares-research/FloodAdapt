@@ -7,7 +7,6 @@ from flood_adapt.object_model.hazard.event.historical import (
 )
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.rainfall import RainfallMeteo
-from flood_adapt.object_model.hazard.forcing.timeseries import CSVTimeseries
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     SurgeModel,
     TideModel,
@@ -19,8 +18,9 @@ from flood_adapt.object_model.hazard.forcing.wind import WindMeteo
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
+    CSVTimeseries,
     ShapeType,
-    SyntheticTimeseriesModel,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.interface.scenarios import Scenario
@@ -126,7 +126,7 @@ class TestWaterlevelSynthetic:
     ):
         # Arrange
         surge_model = SurgeModel(
-            timeseries=SyntheticTimeseriesModel[type(surge_peak_value)](
+            timeseries=TimeseriesFactory.from_args(
                 shape_type=surge_shape,
                 duration=surge_duration,
                 peak_time=peak_time,
@@ -170,11 +170,10 @@ class TestWaterlevelCSV:
             end_time=dummy_1d_timeseries_df.index[-1],
         )
 
-        expected_df = (
-            CSVTimeseries[us.UnitfulDischarge]()
-            .load_file(path=path)
-            .to_dataframe(time_frame=time)
-        )
+        expected_df = CSVTimeseries.load_file(
+            path=path,
+            units=us.UnitfulDischarge(value=0, units=us.UnitTypesDischarge.cms),
+        ).to_dataframe(time_frame=time)
 
         # Act
         wl_df = WaterlevelCSV(path=path).to_dataframe(time_frame=time)

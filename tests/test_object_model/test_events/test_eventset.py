@@ -22,13 +22,13 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 from flood_adapt.object_model.hazard.forcing.wind import WindConstant
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
-    ShapeType,
 )
 from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
-    SyntheticTimeseriesModel,
+    ShapeType,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.interface.scenarios import Scenario
@@ -83,7 +83,7 @@ def test_sub_event() -> SyntheticEvent:
             ForcingType.WATERLEVEL: [
                 WaterlevelSynthetic(
                     surge=SurgeModel(
-                        timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                        timeseries=TimeseriesFactory.from_args(
                             shape_type=ShapeType.triangle,
                             duration=us.UnitfulTime(
                                 value=1, units=us.UnitTypesTime.days
@@ -127,7 +127,7 @@ def test_eventset(
     for i, event in enumerate(
         [hurricane, synthetic, historical_nearshore, historical_offshore]
     ):
-        event.name = f"{event.name}_{i + 1 :04d}"
+        event.name = f"{event.name}_{i + 1:04d}"
         sub_event_models.append(SubEventModel(name=event.name, frequency=i + 1))
         sub_events.append(event)
 

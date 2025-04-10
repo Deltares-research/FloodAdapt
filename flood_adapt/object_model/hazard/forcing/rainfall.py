@@ -6,17 +6,15 @@ import pandas as pd
 import xarray as xr
 
 from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
-from flood_adapt.object_model.hazard.forcing.timeseries import (
-    CSVTimeseries,
-    SyntheticTimeseries,
-)
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IRainfall,
 )
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
-    SyntheticTimeseriesModel,
+    CSVTimeseries,
+    SyntheticTimeseries,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import (
@@ -43,14 +41,12 @@ class RainfallConstant(IRainfall):
 
 class RainfallSynthetic(IRainfall):
     source: ForcingSource = ForcingSource.SYNTHETIC
-    timeseries: (
-        SyntheticTimeseriesModel[us.UnitfulIntensity]
-        | SyntheticTimeseriesModel[us.UnitfulLength]
-    )
+    timeseries: SyntheticTimeseries
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        rainfall = SyntheticTimeseries(data=self.timeseries)
-        return rainfall.to_dataframe(time_frame=time_frame)
+        return TimeseriesFactory.from_object(self.timeseries).to_dataframe(
+            time_frame=time_frame
+        )
 
 
 class RainfallMeteo(IRainfall):
@@ -77,11 +73,9 @@ class RainfallCSV(IRainfall):
     units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        return (
-            CSVTimeseries[self.units]
-            .load_file(path=self.path)
-            .to_dataframe(time_frame=time_frame)
-        )
+        return CSVTimeseries.load_file(
+            path=self.path, units=us.UnitfulIntensity(value=0, units=self.units)
+        ).to_dataframe(time_frame=time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))

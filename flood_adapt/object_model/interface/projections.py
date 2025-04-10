@@ -4,12 +4,12 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from flood_adapt.object_model.interface.object_model import IObjectModel
+from flood_adapt.object_model.interface.object_model import Object
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class PhysicalProjectionModel(BaseModel):
+class PhysicalProjection(BaseModel):
     """The accepted input for a physical projection in FloodAdapt.
 
     Attributes
@@ -34,7 +34,7 @@ class PhysicalProjectionModel(BaseModel):
     storm_frequency_increase: float = 0.0
 
 
-class SocioEconomicChangeModel(BaseModel):
+class SocioEconomicChange(BaseModel):
     """The accepted input for socio-economic change in FloodAdapt.
 
     Attributes
@@ -59,22 +59,22 @@ class SocioEconomicChangeModel(BaseModel):
     new_development_shapefile: Optional[str] = None
 
 
-class Projection(IObjectModel):
+class Projection(Object):
     """The accepted input for a projection in FloodAdapt.
 
     A projection is a combination of a physical projection and a socio-economic change.
 
     Attributes
     ----------
-    physical_projection : PhysicalProjectionModel
+    physical_projection : PhysicalProjection
         The physical projection model. Contains information about hazard drivers.
-    socio_economic_change : SocioEconomicChangeModel
+    socio_economic_change : SocioEconomicChange
         The socio-economic change model. Contains information about impact drivers.
 
     """
 
-    physical_projection: PhysicalProjectionModel
-    socio_economic_change: SocioEconomicChangeModel
+    physical_projection: PhysicalProjection
+    socio_economic_change: SocioEconomicChange
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.socio_economic_change.new_development_shapefile:

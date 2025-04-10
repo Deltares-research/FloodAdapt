@@ -4,7 +4,6 @@ from flood_adapt.object_model.hazard.event.event_factory import (
     HurricaneEvent,
     SyntheticEvent,
 )
-from flood_adapt.object_model.hazard.event.template_event import Event
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -32,6 +31,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindSynthetic,
     WindTrack,
 )
+from flood_adapt.object_model.hazard.interface.events import Event
 from flood_adapt.object_model.interface.benefits import Benefit
 from flood_adapt.object_model.interface.measures import (
     Buyout,

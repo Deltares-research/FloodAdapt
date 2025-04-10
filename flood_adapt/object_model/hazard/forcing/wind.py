@@ -6,15 +6,15 @@ import pandas as pd
 import xarray as xr
 
 from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
-from flood_adapt.object_model.hazard.forcing.timeseries import (
-    CSVTimeseries,
-    SyntheticTimeseries,
-    SyntheticTimeseriesModel,
-    TimeModel,
-)
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWind,
+)
+from flood_adapt.object_model.hazard.interface.timeseries import (
+    CSVTimeseries,
+    SyntheticTimeseries,
+    TimeModel,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import (
@@ -46,8 +46,8 @@ class WindConstant(IWind):
 class WindSynthetic(IWind):
     source: ForcingSource = ForcingSource.SYNTHETIC
 
-    magnitude: SyntheticTimeseriesModel[us.UnitfulVelocity]
-    direction: SyntheticTimeseriesModel[us.UnitfulDirection]
+    magnitude: SyntheticTimeseries
+    direction: SyntheticTimeseries
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         time = pd.date_range(
@@ -56,10 +56,12 @@ class WindSynthetic(IWind):
             freq=time_frame.time_step,
             name="time",
         )
-        magnitude = SyntheticTimeseries(self.magnitude).to_dataframe(
+
+        magnitude = TimeseriesFactory.from_object(self.magnitude).to_dataframe(
             time_frame=time_frame,
         )
-        direction = SyntheticTimeseries(self.direction).to_dataframe(
+
+        direction = TimeseriesFactory.from_object(self.direction).to_dataframe(
             time_frame=time_frame,
         )
         return pd.DataFrame(
@@ -93,7 +95,9 @@ class WindCSV(IWind):
     }
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        return CSVTimeseries[self.units].load_file(self.path).to_dataframe(time_frame)
+        return CSVTimeseries.load_file(
+            path=self.path, units=us.UnitfulVelocity(value=0, units=self.units["speed"])
+        ).to_dataframe(time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))

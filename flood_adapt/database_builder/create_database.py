@@ -28,8 +28,8 @@ from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.interface.tide_gauge import (
-    TideGaugeModel,
+from flood_adapt.object_model.hazard.forcing.tide_gauge import (
+    TideGauge,
     TideGaugeSource,
 )
 from flood_adapt.object_model.interface.config.fiat import (
@@ -1378,7 +1378,7 @@ class DatabaseBuilder:
                 )  # This always return values in meters currently
                 if station is not None:
                     # Add tide_gauge information in site toml
-                    self.site_attrs["sfincs"]["tide_gauge"] = TideGaugeModel(
+                    self.site_attrs["sfincs"]["tide_gauge"] = TideGauge(
                         name=station["name"],
                         description=f"observations from '{self.config.tide_gauge.source}' api",
                         source=self.config.tide_gauge.source,
@@ -1434,7 +1434,7 @@ class DatabaseBuilder:
                 if not file_path.parent.exists():
                     file_path.parent.mkdir()
                 shutil.copyfile(self.config.tide_gauge.file, file_path)
-                self.site_attrs["sfincs"]["tide_gauge"] = TideGaugeModel(
+                self.site_attrs["sfincs"]["tide_gauge"] = TideGauge(
                     description="observations from file stored in database",
                     source="file",
                     file=str(Path(file_path.relative_to(self.static_path)).as_posix()),

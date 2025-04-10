@@ -1,9 +1,7 @@
 from datetime import datetime, timedelta
-from typing import Optional
 
 from pydantic import (
     BaseModel,
-    field_serializer,
     field_validator,
     model_validator,
 )
@@ -16,7 +14,10 @@ REFERENCE_TIME = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
 class TimeModel(BaseModel):
     start_time: datetime = REFERENCE_TIME
     end_time: datetime = REFERENCE_TIME + timedelta(days=1)
-    time_step: Optional[timedelta] = None
+
+    @property
+    def time_step(self) -> timedelta:
+        return self._time_step
 
     @field_validator("start_time", "end_time", mode="before")
     @classmethod
@@ -51,21 +52,14 @@ class TimeModel(BaseModel):
 
     @model_validator(mode="after")
     def dynamic_timestep(self):
-        if self.time_step is not None:
-            return self
         num_intervals = 1000
         time_span = (self.end_time - self.start_time).total_seconds()
 
         # Round the time step to the second for simplicity
-        self.time_step = timedelta(
+        self._time_step = timedelta(
             seconds=int(timedelta(seconds=time_span / num_intervals).total_seconds())
         )
         return self
-
-    @field_serializer("time_step")
-    @classmethod
-    def serialize_time_step(cls, value: timedelta) -> float:
-        return value.total_seconds()
 
     @property
     def duration(self) -> timedelta:

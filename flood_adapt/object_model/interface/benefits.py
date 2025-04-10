@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from flood_adapt.object_model.interface.object_model import IObjectModel
+from flood_adapt.object_model.interface.object_model import Object
 
 
 class CurrentSituationModel(BaseModel):
@@ -21,7 +21,7 @@ class CurrentSituationModel(BaseModel):
     year: int
 
 
-class Benefit(IObjectModel):
+class Benefit(Object):
     """BaseModel describing the expected variables and data types of a Benefit analysis object.
 
     Attributes

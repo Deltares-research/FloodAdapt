@@ -20,10 +20,16 @@ def required_coords():
     return ("time", "lat", "lon")
 
 
+def time_model_2_hr_timestep() -> TimeModel:
+    time = TimeModel()
+    time._time_step = timedelta(hours=2)
+    return time
+
+
 def get_test_dataset(
+    time: TimeModel = time_model_2_hr_timestep(),
     lat: int = -80,
     lon: int = 32,
-    time: TimeModel = TimeModel(time_step=timedelta(hours=1)),
     coords: tuple[str, ...] = ("time", "lat", "lon"),
     data_vars: tuple[str, ...] = ("wind10_u", "wind10_v", "press_msl", "precip"),
 ) -> xr.Dataset:
@@ -110,9 +116,9 @@ def test_all_datavar_missing_coords_raises_validation_error(
 
 def test_netcdf_timestep_less_than_1_hour_raises(required_vars, required_coords):
     # Arrange
-    ds = get_test_dataset(
-        time=TimeModel(time_step=timedelta(minutes=30)),
-    )
+    time = TimeModel()
+    time._time_step = timedelta(minutes=30)  # less than 1 hour
+    ds = get_test_dataset(time=time)
 
     # Act
     with pytest.raises(ValueError) as e:

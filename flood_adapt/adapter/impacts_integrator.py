@@ -9,7 +9,7 @@ from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.projections import SocioEconomicChangeModel
+from flood_adapt.object_model.interface.projections import SocioEconomicChange
 from flood_adapt.object_model.interface.scenarios import Scenario
 
 
@@ -22,7 +22,7 @@ class Impacts(DatabaseUser):
     logger = FloodAdaptLogging.getLogger("Impacts")
     name: str
     hazard: FloodMap
-    socio_economic_change: SocioEconomicChangeModel
+    socio_economic_change: SocioEconomicChange
     impact_strategy: ImpactStrategy
 
     def __init__(self, scenario: Scenario):
@@ -38,7 +38,7 @@ class Impacts(DatabaseUser):
         return FloodMap(self.name)
 
     @property
-    def socio_economic_change(self) -> SocioEconomicChangeModel:
+    def socio_economic_change(self) -> SocioEconomicChange:
         return self.database.projections.get(
             self.scenario.projection
         ).socio_economic_change

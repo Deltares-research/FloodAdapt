@@ -10,7 +10,7 @@ from flood_adapt.object_model.interface.config.sfincs import (
     AsciiStr,
     DemModel,
     RiverModel,
-    TideGaugeModel,
+    TideGauge,
 )
 from flood_adapt.object_model.interface.config.site import (
     SfincsModel,
@@ -247,7 +247,7 @@ def test_loadFile_tomlFile_no_river(test_sites):
     assert isinstance(test_site.name, str)
     assert isinstance(test_site.sfincs, SfincsModel)
     assert isinstance(test_site.sfincs.dem, DemModel)
-    assert isinstance(test_site.sfincs.tide_gauge, TideGaugeModel)
+    assert isinstance(test_site.sfincs.tide_gauge, TideGauge)
     assert test_site.lat == 32.7765
     assert test_site.fiat.config.exposure_crs == "EPSG:4326"
 

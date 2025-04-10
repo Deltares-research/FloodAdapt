@@ -7,9 +7,10 @@ from pydantic import AfterValidator, BaseModel, Field, model_validator
 from tomli import load as load_toml
 from typing_extensions import Annotated
 
-from flood_adapt.object_model.hazard.interface.tide_gauge import (
-    TideGaugeModel,
+from flood_adapt.object_model.hazard.forcing.tide_gauge import (
+    TideGauge,
 )
+from flood_adapt.object_model.hazard.interface.timeseries import Scstype
 from flood_adapt.object_model.io import unit_system as us
 
 
@@ -19,13 +20,6 @@ def ensure_ascii(s: str):
 
 
 AsciiStr = Annotated[str, AfterValidator(ensure_ascii)]
-
-
-class Scstype(str, Enum):
-    type1 = "type_1"
-    type1a = "type_1a"
-    type2 = "type_2"
-    type3 = "type_3"
 
 
 class Cstype(str, Enum):
@@ -302,7 +296,7 @@ class SfincsModel(BaseModel):
         The cyclone track database model.
     scs : SCSModel, optional, default = None
         The SCS model.
-    tide_gauge : TideGaugeModel, optional, default = None
+    tide_gauge : TideGauge, optional, default = None
         The tide gauge model.
     river : list[RiverModel], optional, default = None
         The river model.
@@ -321,7 +315,7 @@ class SfincsModel(BaseModel):
         flooding_threshold=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters)
     )  # TODO we dont actually use this anywhere?
 
-    tide_gauge: Optional[TideGaugeModel] = None
+    tide_gauge: Optional[TideGauge] = None
     river: Optional[list[RiverModel]] = None
     obs_point: Optional[list[ObsPointModel]] = None
 

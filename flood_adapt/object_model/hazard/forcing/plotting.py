@@ -8,7 +8,6 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.event.template_event import Event
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -19,7 +18,6 @@ from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallCSV,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelCSV,
     WaterlevelGauged,
@@ -30,7 +28,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindCSV,
     WindSynthetic,
 )
-from flood_adapt.object_model.hazard.interface.events import Template
+from flood_adapt.object_model.hazard.interface.events import Event, Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -182,7 +180,7 @@ def plot_waterlevel(
         if isinstance(waterlevel, WaterlevelGauged):
             if site.sfincs.tide_gauge is None:
                 raise ValueError("No tide gauge defined for this site.")
-            data = TideGauge(site.sfincs.tide_gauge).get_waterlevels_in_time_frame(
+            data = site.sfincs.tide_gauge.get_waterlevels_in_time_frame(
                 event.time, units=units
             )
 

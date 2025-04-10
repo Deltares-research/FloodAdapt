@@ -5,9 +5,9 @@ import tomli
 
 from flood_adapt import unit_system as us
 from flood_adapt.object_model.interface.projections import (
-    PhysicalProjectionModel,
+    PhysicalProjection,
     Projection,
-    SocioEconomicChangeModel,
+    SocioEconomicChange,
 )
 
 
@@ -54,8 +54,8 @@ def test_projection(test_data_dir):
     return Projection(
         name="test_projection",
         description="test description",
-        physical_projection=PhysicalProjectionModel(),
-        socio_economic_change=SocioEconomicChangeModel(
+        physical_projection=PhysicalProjection(),
+        socio_economic_change=SocioEconomicChange(
             new_development_shapefile=str(
                 test_data_dir / "shapefiles" / "pop_growth_new_20.shp"
             )
@@ -97,8 +97,8 @@ def test_projection_loadFile_checkAllAttrs(test_db, test_dict):
 def test_projection_loadFile_validFiles(test_projections: dict[str, Projection]):
     test_projection = test_projections["all_projections.toml"]
     # Assert that the configured risk drivers are set to the values from the toml file
-    assert isinstance(test_projection.physical_projection, PhysicalProjectionModel)
-    assert isinstance(test_projection.socio_economic_change, SocioEconomicChangeModel)
+    assert isinstance(test_projection.physical_projection, PhysicalProjection)
+    assert isinstance(test_projection.socio_economic_change, SocioEconomicChange)
 
 
 def test_projection_loadFile_invalidFile_raiseFileNotFoundError():

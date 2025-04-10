@@ -5,8 +5,8 @@ from typing import List, Optional
 import tomli
 from pydantic import BaseModel
 
-from flood_adapt.object_model.hazard.interface.events import IEvent, Mode
-from flood_adapt.object_model.interface.object_model import IObjectModel
+from flood_adapt.object_model.hazard.interface.events import Event, Mode
+from flood_adapt.object_model.interface.object_model import Object
 
 
 class SubEventModel(BaseModel):
@@ -24,7 +24,7 @@ class SubEventModel(BaseModel):
     frequency: float
 
 
-class EventSet(IObjectModel):
+class EventSet(Object):
     """BaseModel describing the expected variables and data types for parameters of EventSet.
 
     An EventSet is a collection of events that can be used to create a scenario and perform a probabilistoc risk assessment.
@@ -41,14 +41,14 @@ class EventSet(IObjectModel):
         The sub events of the event set.
     """
 
-    _events: Optional[List[IEvent]] = None
+    _events: Optional[List[Event]] = None
 
     mode: Mode = Mode.risk
     sub_events: List[SubEventModel]
 
     def load_sub_events(
         self,
-        sub_events: Optional[List[IEvent]] = None,
+        sub_events: Optional[List[Event]] = None,
         file_path: Optional[Path] = None,
     ) -> None:
         """Load sub events from a list or from a file path."""

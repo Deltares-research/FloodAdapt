@@ -1,29 +1,80 @@
+from enum import Enum
 from pathlib import Path
 from typing import ClassVar, Optional
 
 import cht_observations.observation_stations as cht_station
 import pandas as pd
 from noaa_coops.station import COOPSAPIError
+from pydantic import BaseModel, model_validator
 
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.forcing.timeseries import CSVTimeseries
 from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.hazard.interface.tide_gauge import (
-    ITideGauge,
-    TideGaugeModel,
-)
+from flood_adapt.object_model.hazard.interface.timeseries import CSVTimeseries
 from flood_adapt.object_model.io import unit_system as us
 
 
-class TideGauge(ITideGauge):
-    _cached_data: ClassVar[dict[str, pd.DataFrame]] = {}
-    logger = FloodAdaptLogging.getLogger("TideGauge")
+class TideGaugeSource(str, Enum):
+    """The accepted input for the variable source in tide_gauge."""
 
-    def __init__(self, attrs: TideGaugeModel):
-        if isinstance(attrs, TideGaugeModel):
-            self.attrs = attrs
-        else:
-            self.attrs = TideGaugeModel.model_validate(attrs)
+    file = "file"
+    noaa_coops = "noaa_coops"
+
+
+class TideGauge(BaseModel):
+    """The accepted input for the variable tide_gauge in Site.
+
+    The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
+
+    Attributes
+    ----------
+    name : Optional[int | str], default=None
+        Name of the tide gauge.
+    description : Optional[str], default=""
+        Description of the tide gauge.
+    source : TideGaugeSource
+        Source of the tide gauge data.
+    reference : str
+        Reference of the tide gauge data. Should be defined in site.sfincs.water_level
+    ID : Optional[int], default=None
+        ID of the tide gauge data.
+    file : Optional[Path], default=None
+        Only for file based tide gauges. Should be a path relative to the static folder.
+    lat : Optional[float], default=None
+        Latitude of the tide gauge data.
+    lon : Optional[float], default=None
+        Longitude of the tide gauge data.
+    units : us.UnitTypesLength, default=us.UnitTypesLength.meters
+        Units of the water levels in the downloaded file.
+
+    """
+
+    name: Optional[int | str] = None
+    description: Optional[str] = ""
+    source: TideGaugeSource
+    reference: str
+    ID: Optional[int] = None  # Attribute used to download from correct gauge
+    file: Optional[Path] = None  # for locally stored data
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    units: us.UnitTypesLength = (
+        us.UnitTypesLength.meters
+    )  # units of the water levels in the downloaded file
+
+    _cached_data: ClassVar[dict[str, pd.DataFrame]] = {}
+    logger: ClassVar = FloodAdaptLogging.getLogger("TideGauge")
+
+    @model_validator(mode="after")
+    def validate_selection_type(self) -> "TideGauge":
+        if self.source == TideGaugeSource.file and self.file is None:
+            raise ValueError(
+                "If `source` is 'file' a file path relative to the static folder should be provided with the attribute 'file'."
+            )
+        elif self.source == TideGaugeSource.noaa_coops and self.ID is None:
+            raise ValueError(
+                "If `source` is 'noaa_coops' the id of the station should be provided with the attribute 'ID'."
+            )
+
+        return self
 
     def get_waterlevels_in_time_frame(
         self,
@@ -37,7 +88,7 @@ class TideGauge(ITideGauge):
         ----------
         time : TimeModel
             Time model with start and end time.
-        tide_gauge : TideGaugeModel
+        tide_gauge : TideGauge
             Tide gauge model.
         out_path : Optional[Path], optional
             Path to save the data, by default None.
@@ -49,34 +100,29 @@ class TideGauge(ITideGauge):
         pd.DataFrame
             Dataframe with time as index and the waterlevel for each observation station as columns.
         """
-        self.logger.info(
-            f"Retrieving waterlevels for tide gauge {self.attrs.ID} for {time}"
-        )
-        if self.attrs.file:
-            gauge_data = self._read_imported_waterlevels(
-                time=time, path=self.attrs.file
-            )
+        self.logger.info(f"Retrieving waterlevels for tide gauge {self.ID} for {time}")
+        if self.file:
+            gauge_data = self._read_imported_waterlevels(time=time, path=self.file)
         else:
             gauge_data = self._download_tide_gauge_data(time=time)
 
         if gauge_data is None:
             self.logger.warning(
-                f"Could not retrieve waterlevels for tide gauge {self.attrs.ID}"
+                f"Could not retrieve waterlevels for tide gauge {self.ID}"
             )
             return pd.DataFrame()
 
-        gauge_data.columns = [f"waterlevel_{self.attrs.ID}"]
-        gauge_data = gauge_data * us.UnitfulLength(
-            value=1.0, units=self.attrs.units
-        ).convert(units)
+        gauge_data.columns = [f"waterlevel_{self.ID}"]
+        gauge_data = gauge_data * us.UnitfulLength(value=1.0, units=self.units).convert(
+            units
+        )
 
         if out_path is not None:
             Path(out_path).parent.mkdir(parents=True, exist_ok=True)
             gauge_data.to_csv(Path(out_path))
         return gauge_data
 
-    @staticmethod
-    def _read_imported_waterlevels(time: TimeModel, path: Path) -> pd.DataFrame:
+    def _read_imported_waterlevels(self, time: TimeModel, path: Path) -> pd.DataFrame:
         """Read waterlevels from an imported csv file.
 
         Parameters
@@ -90,11 +136,9 @@ class TideGauge(ITideGauge):
             Dataframe with time as index and the waterlevel for each observation station as columns.
             The data is sliced to the time range specified in the time model.
         """
-        return (
-            CSVTimeseries[us.UnitfulLength]()
-            .load_file(path)
-            .to_dataframe(time_frame=time)
-        )
+        return CSVTimeseries.load_file(
+            path=path, units=us.UnitfulLength(value=0, units=self.units)
+        ).to_dataframe(time_frame=time)
 
     def _download_tide_gauge_data(self, time: TimeModel) -> pd.DataFrame | None:
         """Download waterlevel data from NOAA station using station_id, start and stop time.
@@ -113,15 +157,15 @@ class TideGauge(ITideGauge):
         None
             If the data could not be downloaded.
         """
-        cache_key = f"{self.attrs.ID}_{time.start_time}_{time.end_time}"
+        cache_key = f"{self.ID}_{time.start_time}_{time.end_time}"
         if cache_key in self.__class__._cached_data:
             self.logger.info("Tide gauge data retrieved from cache")
             return self.__class__._cached_data[cache_key]
 
         try:
-            source_obj = cht_station.source(self.attrs.source.value)
+            source_obj = cht_station.source(self.source.value)
             series = source_obj.get_data(
-                id=self.attrs.ID,
+                id=self.ID,
                 tstart=time.start_time,
                 tstop=time.end_time,
             )
@@ -136,7 +180,7 @@ class TideGauge(ITideGauge):
 
         except COOPSAPIError as e:
             self.logger.error(
-                f"Could not download tide gauge data for station {self.attrs.ID}. {e}"
+                f"Could not download tide gauge data for station {self.ID}. {e}"
             )
             return None
 

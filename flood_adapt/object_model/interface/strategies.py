@@ -4,7 +4,7 @@ from flood_adapt.object_model.interface.measures import (
     Measure,
     MeasureType,
 )
-from flood_adapt.object_model.interface.object_model import IObjectModel
+from flood_adapt.object_model.interface.object_model import Object
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     db_path,
@@ -14,7 +14,7 @@ from flood_adapt.object_model.measure_factory import (
 )
 
 
-class Strategy(IObjectModel):
+class Strategy(Object):
     """
     Class representing a strategy in FloodAdapt.
 

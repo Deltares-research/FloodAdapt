@@ -17,7 +17,7 @@ from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
 )
 from flood_adapt.object_model.hazard.interface.events import (
-    IEvent,
+    Event,
     Mode,
     Template,
 )
@@ -32,7 +32,7 @@ class EventFactory:
 
     Attributes
     ----------
-    _EVENT_TEMPLATES : dict[str, (Event, IEvent)]
+    _EVENT_TEMPLATES : dict[str, (Event, Event)]
         Dictionary mapping event templates to event classes and models
     """
 
@@ -43,7 +43,7 @@ class EventFactory:
     }
 
     @staticmethod
-    def get_event_from_template(template: Template) -> type[IEvent]:
+    def get_event_from_template(template: Template) -> type[Event]:
         """Get the event class corresponding to the template.
 
         Parameters
@@ -84,7 +84,7 @@ class EventFactory:
         return Mode(toml.get("mode"))
 
     @staticmethod
-    def load_file(toml_file: Path) -> IEvent:
+    def load_file(toml_file: Path) -> Event:
         """Return event object based on toml file.
 
         Parameters
@@ -108,7 +108,7 @@ class EventFactory:
         return event_type.load_file(toml_file)
 
     @staticmethod
-    def load_dict(attrs: dict[str, Any] | IEvent) -> IEvent | EventSet:
+    def load_dict(attrs: dict[str, Any] | Event) -> Event | EventSet:
         """Return event object based on attrs dict.
 
         Parameters
@@ -121,7 +121,7 @@ class EventFactory:
         Event
             Event object based on template
         """
-        if isinstance(attrs, IEvent):
+        if isinstance(attrs, Event):
             mode = attrs.mode
             template = attrs.template
         else:

@@ -3,7 +3,7 @@ from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.template_event import Event
+from flood_adapt.object_model.hazard.interface.events import Event
 
 
 class DbsEvent(DbsTemplate[Event]):

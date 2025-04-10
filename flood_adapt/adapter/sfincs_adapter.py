@@ -44,10 +44,6 @@ from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallSynthetic,
     RainfallTrack,
 )
-from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
-from flood_adapt.object_model.hazard.forcing.timeseries import (
-    CSVTimeseries,
-)
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelCSV,
     WaterlevelGauged,
@@ -62,7 +58,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindSynthetic,
     WindTrack,
 )
-from flood_adapt.object_model.hazard.interface.events import IEvent, Mode, Template
+from flood_adapt.object_model.hazard.interface.events import Event, Mode, Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -86,7 +82,7 @@ from flood_adapt.object_model.interface.path_builder import (
     db_path,
 )
 from flood_adapt.object_model.interface.projections import (
-    PhysicalProjectionModel,
+    PhysicalProjection,
     Projection,
 )
 from flood_adapt.object_model.interface.scenarios import Scenario
@@ -245,7 +241,7 @@ class SfincsAdapter(IHazardAdapter):
         else:
             self._run_single_event(scenario=scenario, event=event)
 
-    def preprocess(self, scenario: Scenario, event: IEvent):
+    def preprocess(self, scenario: Scenario, event: Event):
         """
         Preprocess the SFINCS model for a given scenario.
 
@@ -253,7 +249,7 @@ class SfincsAdapter(IHazardAdapter):
         ----------
         scenario : Scenario
             Scenario to preprocess.
-        event : IEvent, optional
+        event : Event, optional
             Event to preprocess, by default None.
         """
         # I dont like this due to it being state based and might break if people use functions in the wrong order
@@ -300,7 +296,7 @@ class SfincsAdapter(IHazardAdapter):
             # Save any changes made to disk as well
             model.write(path_out=sim_path)
 
-    def process(self, scenario: Scenario, event: IEvent):
+    def process(self, scenario: Scenario, event: Event):
         if event.mode != Mode.single_event:
             raise ValueError(f"Unsupported event mode: {event.mode}.")
 
@@ -308,7 +304,7 @@ class SfincsAdapter(IHazardAdapter):
         self.logger.info(f"Running SFINCS for single event Scenario `{scenario.name}`")
         self.execute(sim_path)
 
-    def postprocess(self, scenario: Scenario, event: IEvent):
+    def postprocess(self, scenario: Scenario, event: Event):
         if event.mode != Mode.single_event:
             raise ValueError(f"Unsupported event mode: {event.mode}.")
 
@@ -886,7 +882,7 @@ class SfincsAdapter(IHazardAdapter):
     ######################################
     ### PRIVATE - use at your own risk ###
     ######################################
-    def _run_single_event(self, scenario: Scenario, event: IEvent):
+    def _run_single_event(self, scenario: Scenario, event: Event):
         self.preprocess(scenario, event)
         self.process(scenario, event)
         self.postprocess(scenario, event)
@@ -1119,7 +1115,8 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(forcing, WaterlevelGauged):
             if self.settings.tide_gauge is None:
                 raise ValueError("No tide gauge defined for this site.")
-            df_ts = TideGauge(self.settings.tide_gauge).get_waterlevels_in_time_frame(
+
+            df_ts = self.settings.tide_gauge.get_waterlevels_in_time_frame(
                 time=time_frame,
             )
             conversion = us.UnitfulLength(
@@ -1134,11 +1131,8 @@ class SfincsAdapter(IHazardAdapter):
 
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelCSV):
-            df_ts = (
-                CSVTimeseries[forcing.units]
-                .load_file(path=forcing.path)
-                .to_dataframe(time_frame=time_frame)
-            )
+            df_ts = forcing.to_dataframe(time_frame=time_frame)
+
             if df_ts is None:
                 raise ValueError("Failed to get waterlevel data.")
             conversion = us.UnitfulLength(value=1.0, units=forcing.units).convert(
@@ -1473,9 +1467,7 @@ class SfincsAdapter(IHazardAdapter):
         self.logger.info("Adding pressure forcing to the offshore model")
         self._model.setup_pressure_forcing_from_grid(press=ds)
 
-    def _add_bzs_from_bca(
-        self, event: IEvent, physical_projection: PhysicalProjectionModel
-    ):
+    def _add_bzs_from_bca(self, event: Event, physical_projection: PhysicalProjection):
         # ONLY offshore models
         """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs."""
         if self.settings.config.offshore_model is None:
@@ -1529,7 +1521,7 @@ class SfincsAdapter(IHazardAdapter):
         return self.database.scenarios.output_path / scenario.name / "Flooding"
 
     def _get_simulation_path(
-        self, scenario: Scenario, sub_event: Optional[IEvent] = None
+        self, scenario: Scenario, sub_event: Optional[Event] = None
     ) -> Path:
         """
         Return the path to the simulation results.
@@ -1538,7 +1530,7 @@ class SfincsAdapter(IHazardAdapter):
         ----------
         scenario : Scenario
             The scenario for which to get the simulation path.
-        sub_event : Optional[IEvent], optional
+        sub_event : Optional[Event], optional
             The sub-event for which to get the simulation path, by default None.
             Is only used when the event associated with the scenario is an EventSet.
         """
@@ -1553,13 +1545,13 @@ class SfincsAdapter(IHazardAdapter):
             if sub_event is None:
                 raise ValueError("Event must be provided when scenario is an EventSet.")
             return base_path.parent / sub_event.name / base_path.name
-        elif isinstance(event, IEvent):
+        elif isinstance(event, Event):
             return base_path
         else:
             raise ValueError(f"Unsupported mode: {event.mode}")
 
     def _get_simulation_path_offshore(
-        self, scenario: Scenario, sub_event: Optional[IEvent] = None
+        self, scenario: Scenario, sub_event: Optional[Event] = None
     ) -> Path:
         # Get the path to the offshore model (will not be used if offshore model is not created)
         if self.settings.config.offshore_model is None:
@@ -1572,7 +1564,7 @@ class SfincsAdapter(IHazardAdapter):
         event = self.database.events.get(scenario.event)
         if isinstance(event, EventSet):
             return base_path.parent / sub_event.name / base_path.name
-        elif isinstance(event, IEvent):
+        elif isinstance(event, Event):
             return base_path
         else:
             raise ValueError(f"Unsupported mode: {event.mode}")
@@ -1586,14 +1578,14 @@ class SfincsAdapter(IHazardAdapter):
             map_fn = []
             for rp in self.database.site.fiat.risk.return_periods:
                 map_fn.append(results_path / f"RP_{rp:04d}_maps.nc")
-        elif isinstance(event, IEvent):
+        elif isinstance(event, Event):
             map_fn = [results_path / "max_water_level_map.nc"]
         else:
             raise ValueError(f"Unsupported mode: {event.mode}")
 
         return map_fn
 
-    def _get_event_input_path(self, event: IEvent) -> Path:
+    def _get_event_input_path(self, event: Event) -> Path:
         """Return the path to the event input directory."""
         return self.database.events.input_path / event.name
 
@@ -1817,7 +1809,7 @@ class SfincsAdapter(IHazardAdapter):
             for file in path.glob(f"*{ext}"):
                 file.unlink()
 
-    def _load_scenario_objects(self, scenario: Scenario, event: IEvent) -> None:
+    def _load_scenario_objects(self, scenario: Scenario, event: Event) -> None:
         self._scenario = scenario
         self._projection = self.database.projections.get(scenario.projection)
         self._strategy = self.database.strategies.get(scenario.strategy)
@@ -1830,16 +1822,14 @@ class SfincsAdapter(IHazardAdapter):
             self._event_set = None
 
     def _add_tide_gauge_plot(
-        self, fig, event: IEvent, units: us.UnitTypesLength
+        self, fig, event: Event, units: us.UnitTypesLength
     ) -> None:
         # check if event is historic
         if not isinstance(event, HistoricalEvent):
             return
         if self.settings.tide_gauge is None:
             return
-        df_gauge = TideGauge(
-            attrs=self.settings.tide_gauge
-        ).get_waterlevels_in_time_frame(
+        df_gauge = self.settings.tide_gauge.get_waterlevels_in_time_frame(
             time=TimeModel(
                 start_time=event.time.start_time,
                 end_time=event.time.end_time,
