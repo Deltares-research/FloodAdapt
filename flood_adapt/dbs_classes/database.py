@@ -371,7 +371,7 @@ class Database(IDatabase):
         if not isinstance(benefit_name, list):
             benefit_name = [benefit_name]
         for name in benefit_name:
-            benefit = self.benefits.get(benefit_name)
+            benefit = self.benefits.get(name)
             runner = BenefitRunner(self, benefit=benefit)
             runner.run_cost_benefit()
 
