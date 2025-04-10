@@ -21,7 +21,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
 
         Parameters
         ----------
-        object_model : ObjectModel
+        object_model : Object
             object to be saved in the database
         overwrite : bool, optional
             whether to overwrite the object if it already exists in the

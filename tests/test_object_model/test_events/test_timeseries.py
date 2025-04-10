@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
     BlockTimeseries,
     GaussianTimeseries,
@@ -275,7 +275,7 @@ class TestSyntheticTimeseries:
     def test_calculate_data_correct_peak_value(
         self, shape_type, duration, peak_time, peak_value, cumulative
     ):
-        time = TimeModel(
+        time = TimeFrame(
             start_time=REFERENCE_TIME,
             end_time=REFERENCE_TIME + timedelta(hours=duration),
         )
@@ -296,7 +296,7 @@ class TestSyntheticTimeseries:
 
     @pytest.mark.parametrize("duration, peak_time, peak_value, cumulative", TEST_ATTRS)
     def test_calculate_data_scs(self, duration, peak_time, peak_value, cumulative):
-        time = TimeModel(
+        time = TimeFrame(
             start_time=REFERENCE_TIME,
             end_time=REFERENCE_TIME + timedelta(hours=duration),
         )
@@ -372,7 +372,7 @@ class TestSyntheticTimeseries:
             cumulative=cumulative,
             shape_type=shape_type,
         )
-        time_frame = TimeModel(
+        time_frame = TimeFrame(
             start_time=REFERENCE_TIME,
             end_time=REFERENCE_TIME + timedelta(hours=duration),
         )
@@ -407,7 +407,7 @@ class TestSyntheticTimeseries:
         full_df_duration = timedelta(hours=4)
         start = REFERENCE_TIME
         end = start + full_df_duration
-        time_frame = TimeModel(
+        time_frame = TimeFrame(
             start_time=start,
             end_time=end,
         )

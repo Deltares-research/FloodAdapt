@@ -11,7 +11,7 @@ from flood_adapt.object_model.io import unit_system as us
 REFERENCE_TIME = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
 
 
-class TimeModel(BaseModel):
+class TimeFrame(BaseModel):
     start_time: datetime = REFERENCE_TIME
     end_time: datetime = REFERENCE_TIME + timedelta(days=1)
 

@@ -9,7 +9,7 @@ from flood_adapt.object_model.hazard.forcing.tide_gauge import (
     TideGauge,
     TideGaugeSource,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import CSVTimeseries
 from flood_adapt.object_model.io import unit_system as us
 
@@ -38,7 +38,7 @@ def mock_cht_station_source_get_data(dummy_1d_timeseries_df):
 @pytest.fixture
 def setup_file_based_tide_gauge(
     dummy_time_model, dummy_1d_timeseries_df: pd.DataFrame, tmp_path
-) -> tuple[TideGauge, Path, TimeModel, pd.DataFrame]:
+) -> tuple[TideGauge, Path, TimeFrame, pd.DataFrame]:
     csv_path = tmp_path / "waterlevels.csv"
     dummy_1d_timeseries_df.to_csv(csv_path)
 
@@ -63,7 +63,7 @@ def setup_file_based_tide_gauge(
 @pytest.fixture
 def setup_download_based_tide_gauge(
     dummy_time_model, dummy_1d_timeseries_df: pd.DataFrame, tmp_path
-) -> tuple[TideGauge, Path, TimeModel, pd.DataFrame]:
+) -> tuple[TideGauge, Path, TimeFrame, pd.DataFrame]:
     csv_path = tmp_path / "waterlevels.csv"
     dummy_1d_timeseries_df.to_csv(csv_path)
 
@@ -114,7 +114,7 @@ def test_download_tide_gauge_data(
 
 
 def test_get_waterlevels_in_time_frame_from_file(
-    setup_file_based_tide_gauge: tuple[TideGauge, Path, TimeModel, pd.DataFrame],
+    setup_file_based_tide_gauge: tuple[TideGauge, Path, TimeFrame, pd.DataFrame],
 ):
     # Arrange
     tide_gauge, _, dummy_time_model, expected_df = setup_file_based_tide_gauge

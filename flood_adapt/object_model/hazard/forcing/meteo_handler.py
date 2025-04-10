@@ -9,7 +9,7 @@ from cht_meteo.dataset import MeteoDataset
 
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.interface.meteo_handler import IMeteoHandler
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.interface.config.site import Site
 
 
@@ -32,13 +32,13 @@ class MeteoHandler(IMeteoHandler):
         # TODO implement a good solution to this in cht_meteo
         self.dataset.lon_range = self._shift_grid_to_positive_lon(self.dataset)
 
-    def download(self, time: TimeModel):
+    def download(self, time: TimeFrame):
         # Download and collect data
         time_range = self.get_time_range(time)
 
         self.dataset.download(time_range=time_range)
 
-    def read(self, time: TimeModel) -> xr.Dataset:
+    def read(self, time: TimeFrame) -> xr.Dataset:
         self.download(time)
         time_range = self.get_time_range(time)
         ds = self.dataset.collect(time_range=time_range)
@@ -67,7 +67,7 @@ class MeteoHandler(IMeteoHandler):
         return ds
 
     @staticmethod
-    def get_time_range(time: TimeModel) -> tuple:
+    def get_time_range(time: TimeFrame) -> tuple:
         t0 = time.start_time
         t1 = time.end_time
         if not isinstance(t0, datetime):

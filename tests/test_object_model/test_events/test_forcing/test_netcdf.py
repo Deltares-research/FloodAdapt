@@ -7,7 +7,7 @@ import pytest
 import xarray as xr
 
 from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 
 
 @pytest.fixture
@@ -20,14 +20,14 @@ def required_coords():
     return ("time", "lat", "lon")
 
 
-def time_model_2_hr_timestep() -> TimeModel:
-    time = TimeModel()
+def time_model_2_hr_timestep() -> TimeFrame:
+    time = TimeFrame()
     time._time_step = timedelta(hours=2)
     return time
 
 
 def get_test_dataset(
-    time: TimeModel = time_model_2_hr_timestep(),
+    time: TimeFrame = time_model_2_hr_timestep(),
     lat: int = -80,
     lon: int = 32,
     coords: tuple[str, ...] = ("time", "lat", "lon"),
@@ -116,7 +116,7 @@ def test_all_datavar_missing_coords_raises_validation_error(
 
 def test_netcdf_timestep_less_than_1_hour_raises(required_vars, required_coords):
     # Arrange
-    time = TimeModel()
+    time = TimeFrame()
     time._time_step = timedelta(minutes=30)  # less than 1 hour
     ds = get_test_dataset(time=time)
 

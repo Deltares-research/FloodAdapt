@@ -8,10 +8,10 @@ import pytest
 import xarray as xr
 
 from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
-from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeFrame
 
 
-def write_mock_nc_file(meteo_dir: Path, time: TimeModel) -> xr.Dataset:
+def write_mock_nc_file(meteo_dir: Path, time: TimeFrame) -> xr.Dataset:
     time_range = MeteoHandler.get_time_range(time)
     METEO_DATETIME_FORMAT = "%Y%m%d_%H%M"
     duration = time_range[1] - time_range[0]
@@ -56,7 +56,7 @@ class TestMeteoHandler:
     @pytest.fixture()
     def setup_meteo_test(self, tmp_path):
         handler = MeteoHandler(dir=tmp_path)
-        time = TimeModel(
+        time = TimeFrame(
             start_time=REFERENCE_TIME,
             end_time=REFERENCE_TIME + timedelta(hours=3),
         )
@@ -64,7 +64,7 @@ class TestMeteoHandler:
         yield handler, time
 
     def test_download_meteo_data(
-        self, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+        self, setup_meteo_test: tuple[MeteoHandler, TimeFrame]
     ):
         # Arrange
         handler, time_model = setup_meteo_test
@@ -84,7 +84,7 @@ class TestMeteoHandler:
                     assert var in ds, f"`{var}` not found in dataset"
 
     def test_read_meteo_no_nc_files_raises_filenotfound(
-        self, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+        self, setup_meteo_test: tuple[MeteoHandler, TimeFrame]
     ):
         # Arrange
         handler, time = setup_meteo_test
@@ -102,7 +102,7 @@ class TestMeteoHandler:
             )
 
     def test_read_meteo_1_nc_file(
-        self, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+        self, setup_meteo_test: tuple[MeteoHandler, TimeFrame]
     ):
         # Arrange
         handler, time = setup_meteo_test
@@ -130,7 +130,7 @@ class TestMeteoHandler:
             ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"
 
     def test_read_meteo_multiple_nc_files(
-        self, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+        self, setup_meteo_test: tuple[MeteoHandler, TimeFrame]
     ):
         # Arrange
         handler, time = setup_meteo_test

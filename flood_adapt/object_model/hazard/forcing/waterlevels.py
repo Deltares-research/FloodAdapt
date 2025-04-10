@@ -12,7 +12,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWaterlevel,
 )
 from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
+    TimeFrame,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
     CSVTimeseries,
@@ -41,7 +41,7 @@ class TideModel(BaseModel):
         value=12.4, units=us.UnitTypesTime.hours
     )
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         index = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
@@ -65,7 +65,7 @@ class WaterlevelSynthetic(IWaterlevel):
     surge: SurgeModel
     tide: TideModel
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         tide_df = self.tide.to_dataframe(time_frame=time_frame)
 
         surge_df = TimeseriesFactory.from_object(self.surge.timeseries).to_dataframe(
@@ -91,7 +91,7 @@ class WaterlevelCSV(IWaterlevel):
     path: Annotated[Path, validate_file_extension([".csv"])]
     units: us.UnitTypesLength = us.UnitTypesLength.meters
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         return CSVTimeseries.load_file(
             path=self.path, units=us.UnitfulLength(value=0, units=self.units)
         ).to_dataframe(time_frame=time_frame)

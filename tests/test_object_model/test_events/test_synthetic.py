@@ -15,7 +15,7 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 from flood_adapt.object_model.hazard.forcing.wind import WindConstant
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
+    TimeFrame,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
@@ -29,7 +29,7 @@ from flood_adapt.object_model.io import unit_system as us
 def test_event_all_synthetic():
     return SyntheticEvent(
         name="test_synthetic_nearshore",
-        time=TimeModel(
+        time=TimeFrame(
             start_time=datetime(2020, 1, 1),
             end_time=datetime(2020, 1, 2),
         ),

@@ -7,7 +7,7 @@ from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     TimeseriesFactory,
@@ -24,7 +24,7 @@ class TestRainfallConstant:
 
         # Act
         rainfall_forcing = RainfallConstant(intensity=intensity)
-        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeModel())
+        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeFrame())
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)
@@ -39,7 +39,7 @@ class TestRainfallSynthetic:
         start = pd.Timestamp("2020-01-01")
         duration = timedelta(hours=4)
 
-        time_frame = TimeModel(
+        time_frame = TimeFrame(
             start_time=start,
             end_time=start + duration,
         )
@@ -82,7 +82,7 @@ class TestRainfallSynthetic:
 
         # Act
         rainfall_forcing = RainfallSynthetic(timeseries=timeseries)
-        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeModel())
+        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeFrame())
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)

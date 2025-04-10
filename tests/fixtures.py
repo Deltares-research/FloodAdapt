@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.interface.measures import (
     Buyout,
     MeasureType,
@@ -33,8 +33,8 @@ TEST_DATA_DIR = Path(__file__).parent / "data"
 
 
 @pytest.fixture(scope="function")
-def dummy_time_model() -> TimeModel:
-    return TimeModel()
+def dummy_time_model() -> TimeFrame:
+    return TimeFrame()
 
 
 @pytest.fixture(scope="function")
@@ -95,7 +95,7 @@ def dummy_strategy(test_db, dummy_buyout_measure, dummy_pump_measure):
     return model
 
 
-def _n_dim_dummy_timeseries_df(n_dims: int, time_model: TimeModel) -> pd.DataFrame:
+def _n_dim_dummy_timeseries_df(n_dims: int, time_model: TimeFrame) -> pd.DataFrame:
     time = pd.date_range(
         start=time_model.start_time - 10 * time_model.time_step,
         end=time_model.end_time + 10 * time_model.time_step,

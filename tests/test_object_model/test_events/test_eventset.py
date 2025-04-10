@@ -24,7 +24,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
 )
 from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
+    TimeFrame,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
@@ -47,7 +47,7 @@ __all__ = ["setup_nearshore_event", "setup_offshore_meteo_event"]
 def test_sub_event() -> SyntheticEvent:
     return SyntheticEvent(
         name="subevent",
-        time=TimeModel(),
+        time=TimeFrame(),
         forcings={
             ForcingType.WIND: [
                 WindConstant(

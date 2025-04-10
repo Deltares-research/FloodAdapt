@@ -16,7 +16,7 @@ class HistoricalEvent(Event):
         The name of the event.
     description : str, default=""
         The description of the event.
-    time : TimeModel
+    time : TimeFrame
         The time frame of the event.
     template : Template, default=Template.Historical
         The template of the event.

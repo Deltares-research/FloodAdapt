@@ -41,7 +41,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
 )
 from flood_adapt.object_model.hazard.interface.events import Event
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     TimeseriesFactory,
@@ -523,7 +523,7 @@ def create_benefits():
 def _create_single_events():
     EXTREME_12FT = SyntheticEvent(
         name="extreme12ft",
-        time=TimeModel(start_time=datetime(2020, 1, 1), end_time=datetime(2020, 1, 2)),
+        time=TimeFrame(start_time=datetime(2020, 1, 1), end_time=datetime(2020, 1, 2)),
         description="extreme 12 foot event",
         forcings={
             ForcingType.DISCHARGE: [
@@ -573,7 +573,7 @@ def _create_single_events():
 
     EXTREME_12FT_RIVERSHAPE_WINDCONST = SyntheticEvent(
         name="extreme12ft_rivershape_windconst",
-        time=TimeModel(start_time=datetime(2020, 1, 1), end_time=datetime(2020, 1, 2)),
+        time=TimeFrame(start_time=datetime(2020, 1, 1), end_time=datetime(2020, 1, 2)),
         description="extreme 12 foot event",
         forcings={
             ForcingType.WIND: [
@@ -636,7 +636,7 @@ def _create_single_events():
 
     FLORENCE = HurricaneEvent(
         name="FLORENCE",
-        time=TimeModel(start_time=datetime(2019, 8, 30), end_time=datetime(2019, 9, 1)),
+        time=TimeFrame(start_time=datetime(2019, 8, 30), end_time=datetime(2019, 9, 1)),
         description="extreme 12 foot event",
         track_name="FLORENCE",
         forcings={
@@ -671,7 +671,7 @@ def _create_single_events():
 
     KINGTIDE_NOV2021 = HistoricalEvent(
         name="kingTideNov2021",
-        time=TimeModel(
+        time=TimeFrame(
             start_time=datetime(2021, 11, 4),
             end_time=datetime(
                 year=2021,
@@ -752,7 +752,7 @@ def create_event_set_with_hurricanes():
 def _create_synthetic_event(name: str) -> SyntheticEvent:
     return SyntheticEvent(
         name=name,
-        time=TimeModel(),
+        time=TimeFrame(),
         forcings={
             ForcingType.WIND: [
                 WindConstant(
@@ -819,7 +819,7 @@ def _create_hurricane_event(name: str) -> HurricaneEvent:
     cyc_file = DATA_DIR / "cyclones" / "IAN.cyc"
     return HurricaneEvent(
         name=name,
-        time=TimeModel(),
+        time=TimeFrame(),
         track_name="IAN",
         forcings={
             ForcingType.WATERLEVEL: [WaterlevelModel()],

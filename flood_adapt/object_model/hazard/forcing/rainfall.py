@@ -10,7 +10,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IRainfall,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
@@ -28,7 +28,7 @@ class RainfallConstant(IRainfall):
 
     intensity: us.UnitfulIntensity
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
@@ -43,7 +43,7 @@ class RainfallSynthetic(IRainfall):
     source: ForcingSource = ForcingSource.SYNTHETIC
     timeseries: SyntheticTimeseries
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         return TimeseriesFactory.from_object(self.timeseries).to_dataframe(
             time_frame=time_frame
         )
@@ -72,7 +72,7 @@ class RainfallCSV(IRainfall):
 
     units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         return CSVTimeseries.load_file(
             path=self.path, units=us.UnitfulIntensity(value=0, units=self.units)
         ).to_dataframe(time_frame=time_frame)

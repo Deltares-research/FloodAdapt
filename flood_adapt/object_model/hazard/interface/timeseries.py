@@ -12,7 +12,7 @@ import tomli
 import tomli_w
 from pydantic import BaseModel, model_validator
 
-from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeFrame
 from flood_adapt.object_model.interface.path_builder import TopLevelDir, db_path
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.io.csv import read_csv
@@ -74,7 +74,7 @@ class SyntheticTimeseries(BaseModel):
         return self.peak_time + self.duration / 2
 
     def calculate_data(
-        self, time_step: timedelta = TimeModel().time_step
+        self, time_step: timedelta = TimeFrame().time_step
     ) -> np.ndarray:
         """Interpolate timeseries data as a numpy array with the provided time step and time as index and intensity as column."""
         # @abstractmethod doesnt work nicely with pydantic BaseModel, so we use this instead
@@ -84,7 +84,7 @@ class SyntheticTimeseries(BaseModel):
 
     def to_dataframe(
         self,
-        time_frame: TimeModel,
+        time_frame: TimeFrame,
     ) -> pd.DataFrame:
         """
         Interpolate the timeseries data using the time_step provided.
@@ -96,7 +96,7 @@ class SyntheticTimeseries(BaseModel):
         end_time : datetime | str
             End time of the timeseries.
         time_step : us.UnitfulTime, optional
-            Time step of the timeseries, by default TimeModel().time_step.
+            Time step of the timeseries, by default TimeFrame().time_step.
 
         """
         return self._to_dataframe(
@@ -108,7 +108,7 @@ class SyntheticTimeseries(BaseModel):
 
     def _to_dataframe(
         self,
-        time_frame: TimeModel,
+        time_frame: TimeFrame,
         ts_start_time: us.UnitfulTime,
         ts_end_time: us.UnitfulTime,
         fill_value: float = 0.0,
@@ -122,7 +122,7 @@ class SyntheticTimeseries(BaseModel):
             - Filling the missing values with 0.
 
         Args:
-            time_frame (TimeModel):
+            time_frame (TimeFrame):
                 The time frame for the data.
             ts_start_time (us.UnitfulTime):
                 The start time of the timeseries data relative to the time_frame start time.
@@ -236,7 +236,7 @@ class ScsTimeseries(SyntheticTimeseries):
     scs_type: Scstype
 
     def calculate_data(
-        self, time_step: timedelta = TimeModel().time_step
+        self, time_step: timedelta = TimeFrame().time_step
     ) -> np.ndarray:
         _duration = self.duration.convert(us.UnitTypesTime.seconds)
         _start_time = self.start_time.convert(us.UnitTypesTime.seconds)
@@ -286,7 +286,7 @@ class GaussianTimeseries(SyntheticTimeseries):
     shape_type: ShapeType = ShapeType.gaussian
 
     def calculate_data(
-        self, time_step: timedelta = TimeModel().time_step
+        self, time_step: timedelta = TimeFrame().time_step
     ) -> np.ndarray:
         _start = self.start_time.convert(us.UnitTypesTime.hours)
         _end = self.end_time.convert(us.UnitTypesTime.hours)
@@ -324,7 +324,7 @@ class BlockTimeseries(SyntheticTimeseries):
     shape_type: ShapeType = ShapeType.block
 
     def calculate_data(
-        self, time_step: timedelta = TimeModel().time_step
+        self, time_step: timedelta = TimeFrame().time_step
     ) -> np.ndarray:
         tt = pd.date_range(
             start=(REFERENCE_TIME + self.start_time.to_timedelta()),
@@ -347,7 +347,7 @@ class TriangleTimeseries(SyntheticTimeseries):
     shape_type: ShapeType = ShapeType.triangle
 
     def calculate_data(
-        self, time_step: timedelta = TimeModel().time_step
+        self, time_step: timedelta = TimeFrame().time_step
     ) -> np.ndarray:
         tt = pd.date_range(
             start=(REFERENCE_TIME + self.start_time.to_timedelta()),
@@ -412,7 +412,7 @@ class CSVTimeseries(BaseModel, Generic[TValueUnitPair]):
 
     def to_dataframe(
         self,
-        time_frame: TimeModel,
+        time_frame: TimeFrame,
         fill_value: float = 0,
     ) -> pd.DataFrame:
         """
@@ -420,7 +420,7 @@ class CSVTimeseries(BaseModel, Generic[TValueUnitPair]):
 
         Parameters
         ----------
-        time_frame : TimeModel
+        time_frame : TimeFrame
             Time frame for the data.
         fill_value : float, optional
             Value to fill missing data with, by default 0.
@@ -456,21 +456,21 @@ class CSVTimeseries(BaseModel, Generic[TValueUnitPair]):
 
     def calculate_data(
         self,
-        time_step: timedelta = TimeModel().time_step,
+        time_step: timedelta = TimeFrame().time_step,
     ) -> np.ndarray:
         return read_csv(self.path).to_numpy()
 
-    def read_time_frame(self) -> TimeModel:
+    def read_time_frame(self) -> TimeFrame:
         """
         Read the time frame from the file.
 
         Returns
         -------
-        TimeModel
+        TimeFrame
             Time frame of the data in the file.
         """
         file_data = read_csv(self.path)
-        return TimeModel(
+        return TimeFrame(
             start_time=file_data.index.min(),
             end_time=file_data.index.max(),
         )

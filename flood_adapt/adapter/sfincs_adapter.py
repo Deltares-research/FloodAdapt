@@ -68,7 +68,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWaterlevel,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.measures import (
     FloodWall,
@@ -318,7 +318,7 @@ class SfincsAdapter(IHazardAdapter):
         self.plot_wl_obs(scenario)
         self.write_water_level_map(scenario)
 
-    def set_timing(self, time: TimeModel):
+    def set_timing(self, time: TimeFrame):
         """Set model reference times."""
         self.logger.info(f"Setting timing for the SFINCS model: `{time}`")
         self._model.set_config("tref", time.start_time)
@@ -393,9 +393,9 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
     ### GETTERS ###
-    def get_model_time(self) -> TimeModel:
+    def get_model_time(self) -> TimeFrame:
         t0, t1 = self._model.get_model_time()
-        return TimeModel(start_time=t0, end_time=t1)
+        return TimeFrame(start_time=t0, end_time=t1)
 
     def get_model_root(self) -> Path:
         return Path(self._model.root)
@@ -1830,7 +1830,7 @@ class SfincsAdapter(IHazardAdapter):
         if self.settings.tide_gauge is None:
             return
         df_gauge = self.settings.tide_gauge.get_waterlevels_in_time_frame(
-            time=TimeModel(
+            time=TimeFrame(
                 start_time=event.time.start_time,
                 end_time=event.time.end_time,
             ),

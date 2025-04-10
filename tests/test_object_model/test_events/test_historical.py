@@ -28,7 +28,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.hazard.interface.models import (
     REFERENCE_TIME,
-    TimeModel,
+    TimeFrame,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.interface.scenarios import Scenario
@@ -42,7 +42,7 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
         dummy_1d_timeseries_df.to_csv(tmp_csv)
         return Path(tmp_csv)
 
-    time = TimeModel(
+    time = TimeFrame(
         start_time=REFERENCE_TIME, end_time=REFERENCE_TIME + timedelta(hours=2)
     )
 
@@ -88,7 +88,7 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
 
 @pytest.fixture()
 def setup_offshore_meteo_event():
-    time = TimeModel(
+    time = TimeFrame(
         start_time=REFERENCE_TIME, end_time=REFERENCE_TIME + timedelta(hours=2)
     )
     return HistoricalEvent(

@@ -34,7 +34,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Returns
         -------
-        ObjectModel
+        Object
             object of the type of the specified object model
         """
         # Make the full path to the object
@@ -120,7 +120,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Parameters
         ----------
-        object_model : ObjectModel
+        object_model : Object
             object to be saved in the database
         overwrite : bool, optional
             whether to overwrite the object if it already exists in the
@@ -147,7 +147,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Parameters
         ----------
-        object_model : ObjectModel
+        object_model : Object
             object to be edited in the database
 
         Raises
@@ -277,7 +277,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Parameters
         ----------
-        object_model : ObjectModel
+        object_model : Object
             object to be validated
 
         Raises

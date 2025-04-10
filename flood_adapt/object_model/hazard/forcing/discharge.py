@@ -8,7 +8,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IDischarge,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
@@ -26,7 +26,7 @@ class DischargeConstant(IDischarge):
 
     discharge: us.UnitfulDischarge
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
@@ -42,7 +42,7 @@ class DischargeSynthetic(IDischarge):
 
     timeseries: SyntheticTimeseries
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         df = TimeseriesFactory.from_object(self.timeseries).to_dataframe(
             time_frame=time_frame
         )
@@ -57,7 +57,7 @@ class DischargeCSV(IDischarge):
 
     units: us.UnitTypesDischarge = us.UnitTypesDischarge.cms
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         return CSVTimeseries.load_file(
             path=self.path, units=us.UnitfulDischarge(value=0, units=self.units)
         ).to_dataframe(time_frame=time_frame)

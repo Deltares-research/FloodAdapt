@@ -13,7 +13,7 @@ class SyntheticEvent(Event):
 
     Attributes
     ----------
-    time : TimeModel
+    time : TimeFrame
         The time frame of the event.
     template : Template, default=Template.Synthetic
         The template of the event.

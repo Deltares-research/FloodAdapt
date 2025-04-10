@@ -99,10 +99,10 @@ quartodoc:
 
     - title: "Object models"
       package: flood_adapt.object_model.interface.object_model
-      desc: "Object models in FloodAdapt are the components that are saved in the database. They define the configuration, input and output of the model kernels. The database stores IObjectModels, and returns IObjectModels when queried. "
+      desc: "Object models in FloodAdapt are the components that are saved in the database. They define the configuration, input and output of the model kernels. The database stores Objects, and returns Objects when queried. "
       contents:
         # General
-        - IObjectModel
+        - Object
 
     - subtitle: "Measures"
       package: flood_adapt.object_model

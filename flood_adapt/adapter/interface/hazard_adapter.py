@@ -5,14 +5,14 @@ import geopandas as gpd
 
 from flood_adapt.adapter.interface.model_adapter import IAdapter
 from flood_adapt.object_model.hazard.interface.forcing import IForcing
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.interface.measures import Measure
 from flood_adapt.object_model.interface.projections import Projection
 
 
 class IHazardAdapter(IAdapter):
     @abstractmethod
-    def set_timing(self, time: TimeModel):
+    def set_timing(self, time: TimeFrame):
         """
         Implement this to handle the timing of the event from the Event.
 

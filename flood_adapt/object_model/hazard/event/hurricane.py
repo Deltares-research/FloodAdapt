@@ -30,7 +30,7 @@ class HurricaneEvent(Event):
         The name of the event.
     description : str, default=""
         The description of the event.
-    time : TimeModel
+    time : TimeFrame
         The time frame of the event.
     template : Template, default=Template.Hurricane
         The template of the event.

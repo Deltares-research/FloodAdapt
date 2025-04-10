@@ -17,7 +17,7 @@ from flood_adapt.object_model.hazard.interface.events import (
     ForcingType,
 )
 from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
+    TimeFrame,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.interface.scenarios import Scenario
@@ -30,7 +30,7 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
     cyc_file = TEST_DATA_DIR / "IAN.cyc"
     event = HurricaneEvent(
         name="hurricane",
-        time=TimeModel(),
+        time=TimeFrame(),
         track_name="IAN",
         forcings={
             ForcingType.WATERLEVEL: [WaterlevelModel()],

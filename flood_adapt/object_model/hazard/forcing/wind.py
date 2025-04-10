@@ -13,7 +13,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
 from flood_adapt.object_model.hazard.interface.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
-    TimeModel,
+    TimeFrame,
     TimeseriesFactory,
 )
 from flood_adapt.object_model.io import unit_system as us
@@ -29,7 +29,7 @@ class WindConstant(IWind):
     speed: us.UnitfulVelocity
     direction: us.UnitfulDirection
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
@@ -49,7 +49,7 @@ class WindSynthetic(IWind):
     magnitude: SyntheticTimeseries
     direction: SyntheticTimeseries
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
@@ -94,7 +94,7 @@ class WindCSV(IWind):
         "direction": us.UnitTypesDirection.degrees,
     }
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         return CSVTimeseries.load_file(
             path=self.path, units=us.UnitfulVelocity(value=0, units=self.units["speed"])
         ).to_dataframe(time_frame)

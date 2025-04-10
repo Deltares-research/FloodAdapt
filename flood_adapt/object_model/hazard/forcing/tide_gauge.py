@@ -8,7 +8,7 @@ from noaa_coops.station import COOPSAPIError
 from pydantic import BaseModel, model_validator
 
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import CSVTimeseries
 from flood_adapt.object_model.io import unit_system as us
 
@@ -78,7 +78,7 @@ class TideGauge(BaseModel):
 
     def get_waterlevels_in_time_frame(
         self,
-        time: TimeModel,
+        time: TimeFrame,
         out_path: Optional[Path] = None,
         units: us.UnitTypesLength = us.UnitTypesLength.meters,
     ) -> pd.DataFrame:
@@ -86,7 +86,7 @@ class TideGauge(BaseModel):
 
         Parameters
         ----------
-        time : TimeModel
+        time : TimeFrame
             Time model with start and end time.
         tide_gauge : TideGauge
             Tide gauge model.
@@ -122,7 +122,7 @@ class TideGauge(BaseModel):
             gauge_data.to_csv(Path(out_path))
         return gauge_data
 
-    def _read_imported_waterlevels(self, time: TimeModel, path: Path) -> pd.DataFrame:
+    def _read_imported_waterlevels(self, time: TimeFrame, path: Path) -> pd.DataFrame:
         """Read waterlevels from an imported csv file.
 
         Parameters
@@ -140,7 +140,7 @@ class TideGauge(BaseModel):
             path=path, units=us.UnitfulLength(value=0, units=self.units)
         ).to_dataframe(time_frame=time)
 
-    def _download_tide_gauge_data(self, time: TimeModel) -> pd.DataFrame | None:
+    def _download_tide_gauge_data(self, time: TimeFrame) -> pd.DataFrame | None:
         """Download waterlevel data from NOAA station using station_id, start and stop time.
 
         Parameters

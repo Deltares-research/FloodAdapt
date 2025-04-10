@@ -59,7 +59,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWind,
 )
 from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
+    TimeFrame,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
@@ -90,7 +90,7 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
         duration = timedelta(hours=3)
 
         adapter.set_timing(
-            TimeModel(
+            TimeFrame(
                 start_time=start_time,
                 end_time=start_time + duration,
                 time_step=timedelta(hours=1),
@@ -107,7 +107,7 @@ def sfincs_adapter_with_dummy_scn(default_sfincs_adapter):
     dummy_scn = mock.Mock()
     dummy_event = mock.Mock()
     dummy_event.rainfall_multiplier = 2
-    dummy_event.time = TimeModel()
+    dummy_event.time = TimeFrame()
     dummy_scn.event = dummy_event
     default_sfincs_adapter._scenario = dummy_scn
 
@@ -138,7 +138,7 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
     test_db.site.sfincs.river = rivers
 
     with SfincsAdapter(model_root=(overland_2_rivers)) as adapter:
-        adapter.set_timing(TimeModel())
+        adapter.set_timing(TimeFrame())
         adapter._ensure_no_existing_forcings()
 
         return adapter, test_db
@@ -237,7 +237,7 @@ def test_event_all_synthetic(
     return SyntheticEvent(
         SyntheticEvent(
             name="all_synthetic",
-            time=TimeModel(),
+            time=TimeFrame(),
             forcings={
                 ForcingType.DISCHARGE: [synthetic_discharge],
                 ForcingType.RAINFALL: [synthetic_rainfall],
@@ -265,7 +265,7 @@ def database_with_synthetic_scenario(test_db, test_event_all_synthetic):
 
 
 def _mock_meteohandler_read(
-    time: TimeModel,
+    time: TimeFrame,
     test_db: IDatabase,
     *args,
     **kwargs,
@@ -502,7 +502,7 @@ class TestAddForcing:
             # Arrange
             tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
             t0, t1 = default_sfincs_adapter._model.get_model_time()
-            time_frame = TimeModel(start_time=t0, end_time=t1)
+            time_frame = TimeFrame(start_time=t0, end_time=t1)
             synthetic_wind.to_dataframe(time_frame).to_csv(tmp_path)
 
             forcing = WindCSV(path=tmp_path)
@@ -709,7 +709,7 @@ class TestAddForcing:
             self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
         ):
             # Arrange
-            default_sfincs_adapter.set_timing(TimeModel())
+            default_sfincs_adapter.set_timing(TimeFrame())
 
             # Act
             default_sfincs_adapter.add_forcing(synthetic_discharge)
@@ -1182,7 +1182,7 @@ class TestPostProcessing:
     ):
         return SyntheticEvent(
             name="all_synthetic",
-            time=TimeModel(),
+            time=TimeFrame(),
             forcings={
                 ForcingType.DISCHARGE: [synthetic_discharge_class],
                 ForcingType.RAINFALL: [synthetic_rainfall_class],
@@ -1210,7 +1210,7 @@ class TestPostProcessing:
         event = test_event_all_synthetic_class
         start_time = datetime(2023, 1, 1, 0, 0, 0)
         duration = timedelta(hours=3)
-        time = TimeModel(
+        time = TimeFrame(
             start_time=start_time,
             end_time=start_time + duration,
         )

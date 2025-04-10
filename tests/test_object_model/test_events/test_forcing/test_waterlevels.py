@@ -16,7 +16,7 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 )
 from flood_adapt.object_model.hazard.forcing.wind import WindMeteo
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
     CSVTimeseries,
     ShapeType,
@@ -145,7 +145,7 @@ class TestWaterlevelSynthetic:
 
         # Act
         waterlevel_forcing = WaterlevelSynthetic(surge=surge_model, tide=tide_model)
-        wl_df = waterlevel_forcing.to_dataframe(time_frame=TimeModel())
+        wl_df = waterlevel_forcing.to_dataframe(time_frame=TimeFrame())
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
@@ -165,7 +165,7 @@ class TestWaterlevelCSV:
     ):
         path = tmp_path / "test.csv"
         dummy_1d_timeseries_df.to_csv(path)
-        time = TimeModel(
+        time = TimeFrame(
             start_time=dummy_1d_timeseries_df.index[0],
             end_time=dummy_1d_timeseries_df.index[-1],
         )
@@ -191,7 +191,7 @@ class TestWaterlevelModel:
         event = HistoricalEvent(
             HistoricalEvent(
                 name="test_historical_offshore_meteo",
-                time=TimeModel(),
+                time=TimeFrame(),
                 forcings={
                     ForcingType.WATERLEVEL: [
                         WaterlevelModel(),

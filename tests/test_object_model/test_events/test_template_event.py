@@ -21,7 +21,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
 )
 from flood_adapt.object_model.hazard.interface.forcing import ForcingSource, ForcingType
 from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
+    TimeFrame,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
@@ -61,7 +61,7 @@ def _waterlevel_csv(dummy_1d_timeseries_df: pd.DataFrame):
 def test_event_all_csv(_wind_csv, _rainfall_csv, _waterlevel_csv):
     return SyntheticEvent(
         name="test_synthetic_nearshore",
-        time=TimeModel(
+        time=TimeFrame(
             start_time=datetime(2020, 1, 1),
             end_time=datetime(2020, 1, 2),
         ),

@@ -18,7 +18,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
     IForcing,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.interface.object_model import Object
 
 
@@ -68,7 +68,7 @@ class Event(Object):
         The name of the event.
     description : str, default=""
         The description of the event.
-    time : TimeModel
+    time : TimeFrame
         The time frame of the event.
     template : Template
         The template of the event.
@@ -82,7 +82,7 @@ class Event(Object):
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]]
 
-    time: TimeModel
+    time: TimeFrame
     template: Template
     mode: Mode = Mode.single_event
 

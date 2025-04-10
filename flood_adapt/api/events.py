@@ -36,7 +36,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWaterlevel,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
     CSVTimeseries,
     ShapeType,
@@ -50,7 +50,7 @@ from flood_adapt.object_model.io import unit_system as us
 __all__ = [
     "ShapeType",
     "Template",
-    "TimeModel",
+    "TimeFrame",
     "ForcingType",
     "Mode",
     "EventFactory",
@@ -64,7 +64,7 @@ __all__ = [
     "ForcingSource",
     "ForcingType",
     "Template",
-    "TimeModel",
+    "TimeFrame",
     "IRainfall",
     "IWaterlevel",
     "IWind",
@@ -297,7 +297,7 @@ def check_higher_level_usage(name: str) -> list[str]:
 
 
 def download_wl_data(
-    tide_gauge: TideGauge, time: TimeModel, units: us.UnitTypesLength, out_path: str
+    tide_gauge: TideGauge, time: TimeFrame, units: us.UnitTypesLength, out_path: str
 ) -> pd.DataFrame:
     """Download water level data from a station or tide gauge.
 
@@ -305,7 +305,7 @@ def download_wl_data(
     ----------
     tide_gauge : TideGauge
         Tide gauge object to download data from
-    time: TimeModel
+    time: TimeFrame
         Time model object containing start and end time
     units : UnitTypesLength
         Units that data the returned data will be converted to

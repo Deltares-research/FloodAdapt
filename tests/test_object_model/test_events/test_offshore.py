@@ -20,7 +20,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
 )
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
+    TimeFrame,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.interface.scenarios import Scenario
@@ -34,7 +34,7 @@ __all__ = ["mock_meteohandler_read"]
 def setup_offshore_scenario(test_db: IDatabase):
     event = HistoricalEvent(
         name="test_historical_offshore_meteo",
-        time=TimeModel(),
+        time=TimeFrame(),
         forcings={
             ForcingType.WATERLEVEL: [WaterlevelModel()],
             ForcingType.WIND: [WindMeteo()],
