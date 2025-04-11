@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from flood_adapt.object_model.interface.scenarios import Scenario
+from flood_adapt.objects.scenarios.scenarios import Scenario
 
 
 class IOffshoreSfincsHandler(ABC):

@@ -5,23 +5,23 @@ import pandas as pd
 
 from flood_adapt.adapter.interface.offshore import IOffshoreSfincsHandler
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.misc.database_user import DatabaseUser
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.event.event_set import EventSet
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
-from flood_adapt.object_model.hazard.forcing.wind import WindMeteo
-from flood_adapt.object_model.hazard.interface.events import Event, Mode
-from flood_adapt.object_model.hazard.interface.forcing import (
-    ForcingSource,
-    IWind,
-)
-from flood_adapt.object_model.interface.database_user import DatabaseUser
-from flood_adapt.object_model.interface.path_builder import (
+from flood_adapt.misc.path_builder import (
     ObjectDir,
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.scenarios import Scenario
+from flood_adapt.objects.events.event_set import EventSet
+from flood_adapt.objects.events.events import Event, Mode
+from flood_adapt.objects.events.historical import HistoricalEvent
+from flood_adapt.objects.forcing.forcing import (
+    ForcingSource,
+    IWind,
+)
+from flood_adapt.objects.forcing.meteo_handler import MeteoHandler
+from flood_adapt.objects.forcing.wind import WindMeteo
+from flood_adapt.objects.scenarios.scenarios import Scenario
 
 
 class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):

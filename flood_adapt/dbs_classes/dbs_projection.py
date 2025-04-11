@@ -1,5 +1,5 @@
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.interface.projections import Projection
+from flood_adapt.objects.projections.projections import Projection
 
 
 class DbsProjection(DbsTemplate[Projection]):
