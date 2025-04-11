@@ -444,6 +444,7 @@ class DatabaseBuilder:
 
             # Save standard objects
             self.create_standard_objects()
+
             # Save log file
             self.logger.info("FloodAdapt database creation finished!")
 
@@ -456,6 +457,17 @@ class DatabaseBuilder:
         self.read_template_sfincs_overland_model()
         self.read_template_sfincs_offshore_model()
 
+    def set_standard_objects(self):
+        # Define name and create object
+        self._no_measures_strategy_name = "no_measures"
+        self._current_projection_name = "current"
+        std_obj = StandardObjectModel(
+            events=[self._probabilistic_set_name],
+            projections=[self._current_projection_name],
+            strategies=[self._no_measures_strategy_name],
+        )
+        return std_obj
+
     def create_standard_objects(self):
         # Create database instance
         Settings(DATABASE_ROOT=self.root.parent, DATABASE_NAME=self.root.name)
@@ -464,7 +476,7 @@ class DatabaseBuilder:
         # Create no measures strategy
         strategy = Strategy(
             StrategyModel(
-                name="no_measures",
+                name=self._no_measures_strategy_name,
                 measures=[],
             )
         )
@@ -472,7 +484,7 @@ class DatabaseBuilder:
         # Create current projection
         projection = Projection(
             ProjectionModel(
-                name="current",
+                name=self._current_projection_name,
                 physical_projection=PhysicalProjectionModel(),
                 socio_economic_change=SocioEconomicChangeModel(),
             )
@@ -482,22 +494,15 @@ class DatabaseBuilder:
         path_toml = (
             db.input_path
             / "events"
-            / self.probabilistic_set_name
-            / f"{self.probabilistic_set_name}.toml"
+            / self._probabilistic_set_name
+            / f"{self._probabilistic_set_name}.toml"
         )
         try:
-            prob_set = EventSet.load_file(path_toml)
+            EventSet.load_file(path_toml)
         except Exception as e:
             raise ValueError(
-                f"Provided probabilistic event set '{self.probabilistic_set_name}' is not valid. Error: {e}"
+                f"Provided probabilistic event set '{self._probabilistic_set_name}' is not valid. Error: {e}"
             )
-
-        std_objects = StandardObjectModel(
-            events=[prob_set.attrs.name],
-            projection=[projection.name],
-            strategy=[strategy.name],
-        )
-        return std_objects
 
     ### TEMPLATE READERS ###
     def read_template_fiat_model(self):
@@ -605,7 +610,7 @@ class DatabaseBuilder:
             current_year=datetime.datetime.now().year,
             current_projection="current",
             baseline_strategy="no_measures",
-            event_set=self.probabilistic_set_name,
+            event_set=self._probabilistic_set_name,
         )
 
     def create_fiat_config(self) -> FiatConfigModel:
@@ -644,7 +649,7 @@ class DatabaseBuilder:
             damage_unit=self.read_damage_unit(),
             building_footprints=footprints,
             roads_file_name=roads_gpkg,
-            new_development_file_name=self.create_new_developments(),  # TODO
+            new_development_file_name=self.create_new_developments(),
             save_simulation=False,  # TODO
             infographics=self.config.infographics,
             aggregation=self._aggregation_areas,
@@ -800,7 +805,7 @@ class DatabaseBuilder:
         return f"{self.config.fiat_roads_name}.gpkg"
 
     def create_new_developments(self) -> Optional[str]:
-        return None  # TODO "new_development_area.gpkg" is now the default value
+        return "new_development_area.gpkg"
 
     def create_footprints(self) -> Optional[Path]:
         if isinstance(self.config.building_footprints, SpatialJoinModel):
@@ -856,24 +861,24 @@ class DatabaseBuilder:
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             fiat_path = Path(self.fiat_model.root)
 
-            if add_attrs and "BF_FID" in [attr["name"] for attr in add_attrs]:
-                ind = [attr["name"] for attr in add_attrs].index("BF_FID")
-                footprints = add_attrs[ind]
-                footprints_path = fiat_path / footprints["file"]
-
-                if footprints_path.exists():
-                    self.logger.info(
-                        f"Using the building footprints located at {footprints_path}."
-                    )
-                    return footprints_path.relative_to(self.static_path)
-                else:
-                    raise FileNotFoundError(
-                        f"While 'BF_FID' column exists, building footprints file {footprints_path} not found."
-                    )
-            else:
+            if not (add_attrs and "BF_FID" in [attr["name"] for attr in add_attrs]):
                 raise KeyError(
                     "While 'BF_FID' column exists, connection to a spatial footprints file is missing."
                 )
+
+            ind = [attr["name"] for attr in add_attrs].index("BF_FID")
+            footprints = add_attrs[ind]
+            footprints_path = fiat_path / footprints["file"]
+
+            if not footprints_path.exists():
+                raise FileNotFoundError(
+                    f"While 'BF_FID' column exists, building footprints file {footprints_path} not found."
+                )
+
+            self.logger.info(
+                f"Using the building footprints located at {footprints_path}."
+            )
+            return footprints_path.relative_to(self.static_path)
 
         # Other methods
         else:
@@ -1106,7 +1111,7 @@ class DatabaseBuilder:
             )
 
             return SVIModel(
-                geom=str(Path(svi_path.relative_to(self.static_path)).as_posix()),
+                geom=Path(svi_path.relative_to(self.static_path)).as_posix(),
                 field_name="SVI",
             )
         elif "SVI" in self.fiat_model.exposure.exposure_db.columns:
@@ -1127,7 +1132,7 @@ class DatabaseBuilder:
             )
             # Save site attributes
             return SVIModel(
-                geom=str(Path(svi_path.relative_to(self.static_path)).as_posix()),
+                geom=Path(svi_path.relative_to(self.static_path)).as_posix(),
                 field_name=svi["field_name"],
             )
 
@@ -1486,12 +1491,8 @@ class DatabaseBuilder:
         fiat = self.create_fiat_model()
         lon, lat = self.read_location()  # Get centroid of site
 
-        # Create standard objects
-        std_objs = StandardObjectModel(
-            events=[self.probabilistic_set_name],
-            projections=["current"],
-            strategies=["no_measures"],
-        )
+        # Set standard objects
+        std_objs = self.set_standard_objects()
 
         config = SiteModel(
             name=self.config.name,
@@ -1769,12 +1770,12 @@ class DatabaseBuilder:
             prob_event_name = Path(self.config.probabilistic_set).name
             path_db = self.root.joinpath("input", "events", prob_event_name)
             shutil.copytree(self.config.probabilistic_set, path_db)
-            self.probabilistic_set_name = prob_event_name
+            self._probabilistic_set_name = prob_event_name
         else:
             self.logger.warning(
                 "Probabilistic event set not provided. Risk scenarios cannot be run in FloodAdapt."
             )
-            self.probabilistic_set_name = None
+            self._probabilistic_set_name = None
 
     ### HELPER FUNCTIONS ###
     def make_folder_structure(self) -> None:
