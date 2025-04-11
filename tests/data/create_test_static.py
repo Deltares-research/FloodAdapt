@@ -1,12 +1,8 @@
 from pathlib import Path
 
 from flood_adapt import unit_system as us
-from flood_adapt.misc.config import Settings
-from flood_adapt.object_model.hazard.forcing.tide_gauge import (
-    TideGauge,
-    TideGaugeSource,
-)
-from flood_adapt.object_model.interface.config.fiat import (
+from flood_adapt.config.config import Settings
+from flood_adapt.config.fiat import (
     AggregationModel,
     BenefitsModel,
     BFEModel,
@@ -15,7 +11,7 @@ from flood_adapt.object_model.interface.config.fiat import (
     FiatModel,
     RiskModel,
 )
-from flood_adapt.object_model.interface.config.gui import (
+from flood_adapt.config.gui import (
     GuiModel,
     GuiUnitModel,
     MapboxLayersModel,
@@ -23,7 +19,7 @@ from flood_adapt.object_model.interface.config.gui import (
     SyntheticTideModel,
     VisualizationLayersModel,
 )
-from flood_adapt.object_model.interface.config.sfincs import (
+from flood_adapt.config.sfincs import (
     Cstype,
     CycloneTrackDatabaseModel,
     DatumModel,
@@ -40,7 +36,11 @@ from flood_adapt.object_model.interface.config.sfincs import (
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
-from flood_adapt.object_model.interface.config.site import Site
+from flood_adapt.config.site import Site
+from flood_adapt.objects.forcing.tide_gauge import (
+    TideGauge,
+    TideGaugeSource,
+)
 
 DATA_DIR = Path(__file__).parent
 

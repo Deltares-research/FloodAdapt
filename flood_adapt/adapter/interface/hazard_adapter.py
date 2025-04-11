@@ -4,10 +4,10 @@ from typing import Any
 import geopandas as gpd
 
 from flood_adapt.adapter.interface.model_adapter import IAdapter
-from flood_adapt.object_model.hazard.interface.forcing import IForcing
-from flood_adapt.object_model.hazard.interface.models import TimeFrame
-from flood_adapt.object_model.interface.measures import Measure
-from flood_adapt.object_model.interface.projections import Projection
+from flood_adapt.objects.forcing.forcing import IForcing
+from flood_adapt.objects.forcing.time_frame import TimeFrame
+from flood_adapt.objects.measures.measures import Measure
+from flood_adapt.objects.projections.projections import Projection
 
 
 class IHazardAdapter(IAdapter):

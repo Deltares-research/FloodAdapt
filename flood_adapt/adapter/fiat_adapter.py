@@ -21,26 +21,26 @@ from fiat_toolbox.spatial_output.footprints import Footprints
 from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.adapter.impacts_integrator import Impacts
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
+from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.floodmap import FloodMap, FloodMapType
-from flood_adapt.object_model.hazard.interface.events import Mode
-from flood_adapt.object_model.interface.config.fiat import FiatConfigModel
-from flood_adapt.object_model.interface.measures import (
+from flood_adapt.misc.path_builder import (
+    ObjectDir,
+)
+from flood_adapt.misc.utils import cd, resolve_filepath
+from flood_adapt.objects.events.events import Mode
+from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.measures.measures import (
     Buyout,
     Elevate,
     FloodProof,
     Measure,
     MeasureType,
 )
-from flood_adapt.object_model.interface.path_builder import (
-    ObjectDir,
-)
-from flood_adapt.object_model.interface.projections import Projection
-from flood_adapt.object_model.interface.scenarios import Scenario
-from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.utils import cd, resolve_filepath
+from flood_adapt.objects.projections.projections import Projection
+from flood_adapt.objects.scenarios.scenarios import Scenario
+from flood_adapt.workflows.floodmap import FloodMap, FloodMapType
+from flood_adapt.workflows.impacts_integrator import Impacts
 
 # Define naming structure for saved files
 _IMPACT_COLUMNS = FiatColumns(
