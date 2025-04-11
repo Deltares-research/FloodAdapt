@@ -16,6 +16,7 @@ from .measures.measures import (
     Measure,
     MeasureType,
     Pump,
+    SelectionType,
 )
 from .object_model import Object
 from .projections.projections import Projection
@@ -29,12 +30,13 @@ __all__ = [
     "MeasureFactory",
     "Measure",
     "MeasureType",
+    "SelectionType",
+    "MeasureType",
     "Buyout",
     "Elevate",
     "FloodProof",
     "FloodWall",
     "GreenInfrastructure",
-    "Measure",
     "MeasureType",
     "Pump",
     # Events

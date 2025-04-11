@@ -39,7 +39,7 @@ from flood_adapt.objects.measures.measures import (
 )
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.workflows.floodmap import FloodMap, FloodMapType
+from flood_adapt.workflows.floodmap import FloodMap, FloodmapType
 from flood_adapt.workflows.impacts_integrator import Impacts
 
 # Define naming structure for saved files
@@ -674,7 +674,7 @@ class FiatAdapter(IImpactAdapter):
     def set_hazard(
         self,
         map_fn: Union[os.PathLike, list[os.PathLike]],
-        map_type: FloodMapType,
+        map_type: FloodmapType,
         var: str,
         is_risk: bool = False,
         units: str = us.UnitTypesLength.meters,
@@ -686,7 +686,7 @@ class FiatAdapter(IImpactAdapter):
         ----------
         map_fn : str
             The filename of the hazard map.
-        map_type : FloodMapType
+        map_type : FloodmapType
             The type of the flood map.
         var : str
             The variable name in the hazard map.
