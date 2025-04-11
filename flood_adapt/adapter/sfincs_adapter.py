@@ -122,7 +122,10 @@ class SfincsAdapter(IHazardAdapter):
         self.units = self.database.site.gui.units
         self.sfincs_logger = self._setup_sfincs_logger(model_root)
         self._model = HydromtSfincsModel(
-            root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
+            root=str(model_root.resolve()),
+            mode="r",
+            logger=self.sfincs_logger,
+            write_gis=False,
         )
         self._model.read()
 

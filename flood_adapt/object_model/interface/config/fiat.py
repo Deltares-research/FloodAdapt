@@ -127,7 +127,7 @@ class RiskModel(BaseModel):
         The return periods for the risk model.
     """
 
-    return_periods: list
+    return_periods: list = [1, 2, 5, 10, 25, 50, 100]
 
 
 class DamageType(str, Enum):

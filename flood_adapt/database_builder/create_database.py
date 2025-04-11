@@ -60,7 +60,6 @@ from flood_adapt.object_model.interface.config.sfincs import (
     RiverModel,
     SfincsConfigModel,
     SfincsModel,
-    SlrModel,
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
@@ -173,7 +172,7 @@ class TideGaugeConfigModel(BaseModel):
     ref: Optional[str] = None
 
 
-class SviModel(SpatialJoinModel):
+class SviConfigModel(SpatialJoinModel):
     """
     Represents a model for the Social Vulnerability Index (SVI).
 
@@ -183,20 +182,6 @@ class SviModel(SpatialJoinModel):
     """
 
     threshold: float
-
-
-class SlrModelDef(SlrModel):
-    """
-    Represents a sea level rise (SLR) model definition.
-
-    Attributes
-    ----------
-        vertical_offset (us.UnitfulLength): The vertical offset of the SLR model, measured in meters.
-    """
-
-    vertical_offset: us.UnitfulLength = us.UnitfulLength(
-        value=0, units=us.UnitTypesLength.meters
-    )
 
 
 class ConfigModel(BaseModel):
@@ -260,10 +245,10 @@ class ConfigModel(BaseModel):
     )
     fiat_buildings_name: Optional[str] = "buildings"
     fiat_roads_name: Optional[str] = "roads"
-    slr: Optional[SlrModelDef] = SlrModelDef()
+    slr: Optional[SlrScenariosModel] = None
     tide_gauge: Optional[TideGaugeConfigModel] = None
     bfe: Optional[SpatialJoinModel] = None
-    svi: Optional[SviModel] = None
+    svi: Optional[SviConfigModel] = None
     road_width: Optional[float] = 5
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
@@ -1556,24 +1541,24 @@ class DatabaseBuilder:
         )
 
         # If slr scenarios are given put them in the correct locations
-        if self.config.slr.scenarios:
-            self.config.slr.scenarios.file = self._check_path(
-                self.config.slr.scenarios.file
+        if self.config.slr_scenarios:
+            self.config.slr_scenarios.file = self._check_path(
+                self.config.slr_scenarios.file
             )
             slr_path = self.static_path.joinpath("slr")
             slr_path.mkdir()
-            new_file = slr_path.joinpath(Path(self.config.slr.scenarios.file).name)
+            new_file = slr_path.joinpath(Path(self.config.slr_scenarios.file).name)
             # copy file
-            shutil.copyfile(self.config.slr.scenarios.file, new_file)
+            shutil.copyfile(self.config.slr_scenarios.file, new_file)
             # make config
             slr_scenarios = SlrScenariosModel(
                 file=new_file.relative_to(self.static_path).as_posix(),
-                relative_to_year=self.config.slr.scenarios.relative_to_year,
+                relative_to_year=self.config.slr_scenarios.relative_to_year,
             )
         else:
             slr_scenarios = None
         # store config
-        self.site_attrs["sfincs"]["slr"] = SlrModel(
+        self.site_attrs["sfincs"]["slr"] = SlrScenariosModel(
             vertical_offset=vertical_offset, scenarios=slr_scenarios
         )
 
