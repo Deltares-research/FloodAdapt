@@ -25,10 +25,9 @@ from shapely import MultiLineString, MultiPolygon, Polygon
 from flood_adapt import FloodAdaptLogging
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
-from flood_adapt.api.projections import save_projection
 from flood_adapt.api.static import read_database
-from flood_adapt.api.strategies import save_strategy
 from flood_adapt.misc.config import Settings
+from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
     TideGaugeSource,
@@ -458,32 +457,45 @@ class DatabaseBuilder:
         self.read_template_sfincs_offshore_model()
 
     def create_standard_objects(self):
-        # Set environment variables after folder structure is created
+        # Create database instance
         Settings(DATABASE_ROOT=self.root.parent, DATABASE_NAME=self.root.name)
         self.logger.info("Creating no measures strategy and current projection.")
-        read_database(self.root.parent, self.config.name)
+        db = read_database(self.root.parent, self.config.name)
         # Create no measures strategy
-        NO_MEASURES = Strategy(
+        strategy = Strategy(
             StrategyModel(
                 name="no_measures",
                 measures=[],
             )
         )
-        save_strategy(NO_MEASURES)
+        db.strategies.save(strategy)
         # Create current projection
-        PROJECTION = Projection(
+        projection = Projection(
             ProjectionModel(
                 name="current",
                 physical_projection=PhysicalProjectionModel(),
                 socio_economic_change=SocioEconomicChangeModel(),
             )
         )
-        save_projection(PROJECTION)
+        db.projections.save(projection)
+        # Check prob set
+        path_toml = (
+            db.input_path
+            / "events"
+            / self.probabilistic_set_name
+            / f"{self.probabilistic_set_name}.toml"
+        )
+        try:
+            prob_set = EventSet.load_file(path_toml)
+        except Exception as e:
+            raise ValueError(
+                f"Provided probabilistic event set '{self.probabilistic_set_name}' is not valid. Error: {e}"
+            )
 
         std_objects = StandardObjectModel(
-            events=[self.probabilistic_set_name],
-            projection=["current"],
-            strategy=["no_measures"],
+            events=[prob_set.attrs.name],
+            projection=[projection.name],
+            strategy=[strategy.name],
         )
         return std_objects
 
@@ -1756,8 +1768,8 @@ class DatabaseBuilder:
             )
             prob_event_name = Path(self.config.probabilistic_set).name
             path_db = self.root.joinpath("input", "events", prob_event_name)
-            self.probabilistic_set_name = prob_event_name
             shutil.copytree(self.config.probabilistic_set, path_db)
+            self.probabilistic_set_name = prob_event_name
         else:
             self.logger.warning(
                 "Probabilistic event set not provided. Risk scenarios cannot be run in FloodAdapt."
