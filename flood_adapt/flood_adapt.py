@@ -387,8 +387,7 @@ class FloodAdapt:
         Mode
             The mode of the event with the given name, either `risk` or `single_event`.
         """
-        filename = self.database.events.input_path / f"{name}" / f"{name}.toml"
-        return EventFactory.read_mode(filename)
+        return self.database.events.get(name).mode
 
     def create_event(self, attrs: dict[str, Any] | Event) -> Event:
         """Create a event object from a dictionary of attributes.
