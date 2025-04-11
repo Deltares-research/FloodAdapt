@@ -9,11 +9,11 @@ from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeCSV,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.timeseries import CSVTimeseries
-from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
+    CSVTimeseries,
     ShapeType,
-    SyntheticTimeseriesModel,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
@@ -39,7 +39,7 @@ class TestDischargeConstant:
 
         # Act
         discharge_forcing = DischargeConstant(river=river, discharge=discharge)
-        discharge_df = discharge_forcing.to_dataframe(time_frame=TimeModel())
+        discharge_df = discharge_forcing.to_dataframe(time_frame=TimeFrame())
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)
@@ -54,9 +54,9 @@ class TestDischargeSynthetic:
         # Arrange
         start = REFERENCE_TIME
         duration = timedelta(hours=4)
-        time_frame = TimeModel(start_time=start, end_time=start + duration)
+        time_frame = TimeFrame(start_time=start, end_time=start + duration)
 
-        timeseries = SyntheticTimeseriesModel[us.UnitfulDischarge](
+        timeseries = TimeseriesFactory.from_args(
             shape_type=ShapeType.block,
             duration=us.UnitfulTime(
                 value=duration.total_seconds(), units=us.UnitTypesTime.seconds
@@ -89,16 +89,15 @@ class TestDischargeCSV:
         # Arrange
         path = Path(tmp_path) / "test.csv"
         dummy_1d_timeseries_df.to_csv(path)
-        time = TimeModel(
+        time = TimeFrame(
             start_time=dummy_1d_timeseries_df.index[1],
             end_time=dummy_1d_timeseries_df.index[-2],
         )
 
-        expected_df = (
-            CSVTimeseries[us.UnitfulDischarge]()
-            .load_file(path=path)
-            .to_dataframe(time_frame=time)
-        )
+        expected_df = CSVTimeseries.load_file(
+            path=path,
+            units=us.UnitfulDischarge(value=0, units=us.UnitTypesDischarge.cms),
+        ).to_dataframe(time_frame=time)
 
         # Act
         discharge_df = DischargeCSV(river=river, path=path).to_dataframe(

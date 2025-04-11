@@ -7,12 +7,12 @@ from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.interface.forcing import Scstype
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
-    SyntheticTimeseriesModel,
+    TimeseriesFactory,
 )
+from flood_adapt.object_model.interface.config.sfincs import Scstype
 from flood_adapt.object_model.io import unit_system as us
 
 
@@ -24,7 +24,7 @@ class TestRainfallConstant:
 
         # Act
         rainfall_forcing = RainfallConstant(intensity=intensity)
-        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeModel())
+        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeFrame())
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)
@@ -39,12 +39,12 @@ class TestRainfallSynthetic:
         start = pd.Timestamp("2020-01-01")
         duration = timedelta(hours=4)
 
-        time_frame = TimeModel(
+        time_frame = TimeFrame(
             start_time=start,
             end_time=start + duration,
         )
 
-        timeseries = SyntheticTimeseriesModel[us.UnitfulIntensity](
+        timeseries = TimeseriesFactory.from_args(
             shape_type=ShapeType.block,
             duration=us.UnitfulTime(
                 value=duration.total_seconds(), units=us.UnitTypesTime.seconds
@@ -71,7 +71,7 @@ class TestRainfallSynthetic:
 
     def test_rainfall_synthetic_scs_to_dataframe(self):
         # Arrange
-        timeseries = SyntheticTimeseriesModel[us.UnitfulLength](
+        timeseries = TimeseriesFactory.from_args(
             shape_type=ShapeType.scs,
             duration=us.UnitfulTime(value=4, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
@@ -82,7 +82,7 @@ class TestRainfallSynthetic:
 
         # Act
         rainfall_forcing = RainfallSynthetic(timeseries=timeseries)
-        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeModel())
+        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeFrame())
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)

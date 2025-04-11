@@ -1,26 +1,30 @@
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Type, TypeVar
+from typing import Any, TypeVar
+
+import tomli_w
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
-from flood_adapt.object_model.interface.object_model import IObject
+from flood_adapt.object_model.interface.object_model import Object
 
-T_OBJECT = TypeVar("T_OBJECT", bound=IObject)
+T_OBJECTMODEL = TypeVar("T_OBJECTMODEL", bound=Object)
 
 
-class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
-    _object_class: Type[T_OBJECT]
+class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
+    display_name: str
+    dir_name: str
+    _object_class: type[T_OBJECTMODEL]
 
     def __init__(self, database: IDatabase):
         """Initialize any necessary attributes."""
         self._database = database
-        self.input_path = database.input_path / self._object_class.dir_name.value
-        self.output_path = database.output_path / self._object_class.dir_name.value
+        self.input_path = database.input_path / self.dir_name
+        self.output_path = database.output_path / self.dir_name
         self.standard_objects = []
 
-    def get(self, name: str) -> T_OBJECT:
+    def get(self, name: str) -> T_OBJECTMODEL:
         """Return an object of the type of the database with the given name.
 
         Parameters
@@ -30,7 +34,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
 
         Returns
         -------
-        ObjectModel
+        Object
             object of the type of the specified object model
         """
         # Make the full path to the object
@@ -38,9 +42,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
 
         # Check if the object exists
         if not Path(full_path).is_file():
-            raise ValueError(
-                f"{self._object_class.display_name}: '{name}' does not exist."
-            )
+            raise ValueError(f"{self.display_name}: '{name}' does not exist.")
 
         # Load and return the object
         return self._object_class.load_file(full_path)
@@ -61,8 +63,8 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         objects = [self._object_class.load_file(path) for path in object_list["path"]]
 
         # From the loaded objects, get the name and description and add them to the object_list
-        object_list["name"] = [obj.attrs.name for obj in objects]
-        object_list["description"] = [obj.attrs.description for obj in objects]
+        object_list["name"] = [obj.name for obj in objects]
+        object_list["description"] = [obj.description for obj in objects]
         object_list["objects"] = objects
         return object_list
 
@@ -78,43 +80,38 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         new_description : str
             description of the new measure
         """
-        # Check if the provided old_name is valid
-        if old_name not in self.list_objects()["name"]:
-            raise ValueError(
-                f"{self._object_class.display_name}: '{old_name}' does not exist."
-            )
-
-        # First do a get and change the name and description
         copy_object = self.get(old_name)
-        copy_object.attrs.name = new_name
-        copy_object.attrs.description = new_description
+        copy_object.name = new_name
+        copy_object.description = new_description
 
-        # After changing the name and description, receate the model to re-trigger the validators
-        copy_object.attrs = type(copy_object.attrs)(**copy_object.attrs.model_dump())
+        # After changing the name and description, re-trigger the validators
+        copy_object.model_validate(copy_object)
 
-        EXCLUDE_SUFFIX = [".spw"]
-        try:
-            # Copy the folder
-            shutil.copytree(
-                self.input_path / old_name,
-                self.input_path / new_name,
-                ignore=shutil.ignore_patterns(*EXCLUDE_SUFFIX),
-            )
+        # Checking whether the new name is already in use
+        self._validate_to_save(copy_object, overwrite=False)
 
-            # Rename the toml file to not raise in the name check
-            file = self.input_path / new_name / f"{old_name}.toml"
-            file.rename(self.input_path / new_name / f"{new_name}.toml")
+        # Write only the toml file
+        toml_path = self.input_path / new_name / f"{new_name}.toml"
+        toml_path.parent.mkdir(parents=True)
+        with open(toml_path, "wb") as f:
+            tomli_w.dump(copy_object.model_dump(exclude_none=True), f)
 
-            # Check new name is valid and update toml file
-            self.save(copy_object, overwrite=True)
-        except:
-            # If an error occurs, delete the folder and raise the error
-            shutil.rmtree(self.input_path / new_name, ignore_errors=True)
-            raise
+        # Then copy all the accompanied files
+        src = self.input_path / old_name
+        dest = self.input_path / new_name
+
+        EXCLUDE = [".spw", ".toml"]
+        for file in src.glob("*"):
+            if file.suffix in EXCLUDE:
+                continue
+            if file.is_dir():
+                shutil.copytree(file, dest / file.name, dirs_exist_ok=True)
+            else:
+                shutil.copy2(file, dest / file.name)
 
     def save(
         self,
-        object_model: T_OBJECT,
+        object_model: T_OBJECTMODEL,
         overwrite: bool = False,
     ):
         """Save an object in the database and all associated files.
@@ -123,7 +120,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
 
         Parameters
         ----------
-        object_model : ObjectModel
+        object_model : Object
             object to be saved in the database
         overwrite : bool, optional
             whether to overwrite the object if it already exists in the
@@ -134,34 +131,23 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         ValueError
             Raise error if name is already in use.
         """
-        object_exists = object_model.attrs.name in self.list_objects()["name"]
-
-        # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
-        # don't want to overwrite, raise an error.
-        if overwrite and object_exists:
-            self.delete(object_model.attrs.name, toml_only=True)
-        elif not overwrite and object_exists:
-            raise ValueError(
-                f"'{object_model.attrs.name}' name is already used by another {self._object_class.display_name.lower()}. Choose a different name"
-            )
+        self._validate_to_save(object_model, overwrite=overwrite)
 
         # If the folder doesnt exist yet, make the folder and save the object
-        if not (self.input_path / object_model.attrs.name).exists():
-            (self.input_path / object_model.attrs.name).mkdir()
+        if not (self.input_path / object_model.name).exists():
+            (self.input_path / object_model.name).mkdir()
 
         # Save the object and any additional files
         object_model.save(
-            self.input_path
-            / object_model.attrs.name
-            / f"{object_model.attrs.name}.toml",
+            self.input_path / object_model.name / f"{object_model.name}.toml",
         )
 
-    def edit(self, object_model: T_OBJECT):
+    def edit(self, object_model: T_OBJECTMODEL):
         """Edit an already existing object in the database.
 
         Parameters
         ----------
-        object_model : ObjectModel
+        object_model : Object
             object to be edited in the database
 
         Raises
@@ -170,9 +156,9 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
             Raise error if name is already in use.
         """
         # Check if the object exists
-        if object_model.attrs.name not in self.list_objects()["name"]:
+        if object_model.name not in self.list_objects()["name"]:
             raise ValueError(
-                f"{self._object_class.display_name}: '{object_model.attrs.name}' does not exist. You cannot edit an {self._object_class.display_name.lower()} that does not exist."
+                f"{self.display_name}: '{object_model.name}' does not exist. You cannot edit an {self.display_name.lower()} that does not exist."
             )
 
         # Check if it is possible to delete the object by saving with overwrite. This then
@@ -199,13 +185,13 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         # Check if the object is a standard object. If it is, raise an error
         if self._check_standard_objects(name):
             raise ValueError(
-                f"'{name}' cannot be deleted/modified since it is a standard {self._object_class.display_name}."
+                f"'{name}' cannot be deleted/modified since it is a standard {self.display_name}."
             )
 
         # Check if object is used in a higher level object. If it is, raise an error
         if used_in := self.check_higher_level_usage(name):
             raise ValueError(
-                f"{self._object_class.display_name}: '{name}' cannot be deleted/modified since it is already used in: {', '.join(used_in)}"
+                f"{self.display_name}: '{name}' cannot be deleted/modified since it is already used in: {', '.join(used_in)}"
             )
 
         # Once all checks are passed, delete the object
@@ -285,3 +271,32 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         }
 
         return objects
+
+    def _validate_to_save(self, object_model: T_OBJECTMODEL, overwrite: bool) -> None:
+        """Validate if the object can be saved.
+
+        Parameters
+        ----------
+        object_model : Object
+            object to be validated
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use.
+        """
+        # Check if the object exists
+        if object_model.name in self.list_objects()["name"]:
+            raise ValueError(
+                f"{self.display_name}: '{object_model.name}' already exists. Choose a different name."
+            )
+        object_exists = object_model.name in self.list_objects()["name"]
+
+        # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
+        # don't want to overwrite, raise an error.
+        if overwrite and object_exists:
+            self.delete(object_model.name, toml_only=True)
+        elif not overwrite and object_exists:
+            raise ValueError(
+                f"'{object_model.name}' name is already used by another {self.display_name.lower()}. Choose a different name"
+            )

@@ -7,9 +7,10 @@ from pydantic import AfterValidator, BaseModel, Field, model_validator
 from tomli import load as load_toml
 from typing_extensions import Annotated
 
-from flood_adapt.object_model.hazard.interface.tide_gauge import (
-    TideGaugeModel,
+from flood_adapt.object_model.hazard.forcing.tide_gauge import (
+    TideGauge,
 )
+from flood_adapt.object_model.hazard.interface.timeseries import Scstype
 from flood_adapt.object_model.io import unit_system as us
 
 
@@ -33,14 +34,34 @@ class SCSModel(BaseModel):
 
     Includes the file with the non-dimensional SCS rainfall curves in the site folder and the SCS rainfall curve type.
 
+    Attributes
+    ----------
+    file : str
+        The path to the SCS rainfall curves file.
+    type : Scstype
+        The type of the SCS rainfall curve.
     """
 
     file: str
-    type: str
+    type: Scstype
 
 
 class RiverModel(BaseModel):
-    """Model that describes the accepted input for the variable river in Site."""
+    """Model that describes the accepted input for the variable river in Site.
+
+    Attributes
+    ----------
+    name : str
+        The name of the river.
+    description : Optional[str], default=None
+        description of the river.
+    mean_discharge : us.UnitfulDischarge
+        The mean discharge of the river.
+    x_coordinate : float
+        The x coordinate of the river.
+    y_coordinate : float
+        The y coordinate of the river.
+    """
 
     name: str
     description: Optional[str] = None
@@ -53,6 +74,17 @@ class ObsPointModel(BaseModel):
     """The accepted input for the variable obs_point in Site.
 
     obs_points is used to define output locations in the hazard model, which will be plotted in the user interface.
+
+    Attributes
+    ----------
+    name : Union[int, AsciiStr]
+        The name of the observation point.
+    description : Optional[str], default=""
+        The description of the observation point.
+    ID : Optional[int], default=None
+        The ID of the observation point.
+    file : Optional[str], default=None
+        The path to the observation point data file.
     """
 
     name: Union[int, AsciiStr]
@@ -72,7 +104,15 @@ class FloodFrequencyModel(BaseModel):
 
 
 class DemModel(BaseModel):
-    """The accepted input for the variable dem in Site."""
+    """The accepted input for the variable dem in Site.
+
+    Attributes
+    ----------
+    filename : str
+        The path to the digital elevation model file.
+    units : us.UnitTypesLength
+        The units of the digital elevation model file.
+    """
 
     filename: str
     units: us.UnitTypesLength
@@ -146,13 +186,27 @@ class WaterlevelReferenceModel(BaseModel):
 
 
 class CycloneTrackDatabaseModel(BaseModel):
-    """The accepted input for the variable cyclone_track_database in Site."""
+    """The accepted input for the variable cyclone_track_database in Site.
+
+    Attributes
+    ----------
+    file : str
+        The path to the cyclone track database file.
+    """
 
     file: str
 
 
 class SlrScenariosModel(BaseModel):
-    """The accepted input for the variable slr in Site."""
+    """The accepted input for the variable slr_scenarios.
+
+    Attributes
+    ----------
+    file : str
+        The path to the sea level rise scenarios file.
+    relative_to_year : int
+        The year to which the sea level rise scenarios are relative.
+    """
 
     file: str
     relative_to_year: int
@@ -181,7 +235,26 @@ class FloodModel(BaseModel):
 
 
 class SfincsConfigModel(BaseModel):
-    """The accepted input for the variable sfincs in Site."""
+    """The expected variables and data types of attributes of the SfincsConfig class.
+
+    Attributes
+    ----------
+    csname : str
+        The name of the CS model.
+    cstype : Cstype
+        Cstype of the CS model. must be either "projected" or "spherical".
+    version : Optional[str], default = None
+        The version of the CS model. If None, the version is not specified.
+    offshore_model : Optional[FloodModel], default = None
+        The offshore model. If None, the offshore model is not specified.
+    overland_model : FloodModel
+        The overland model. This is the main model used for the simulation.
+    floodmap_units : us.UnitTypesLength
+        The units used for the output floodmap. Sfincs always produces in metric units, this is used to convert the floodmap to the correct units.
+    save_simulation : Optional[bool], default = False
+        Whether to keep or delete the simulation files after the simulation is finished and all output files are created.
+        If True, the simulation files are kept. If False, the simulation files are deleted.
+    """
 
     csname: str
     cstype: Cstype
@@ -193,6 +266,32 @@ class SfincsConfigModel(BaseModel):
 
 
 class SfincsModel(BaseModel):
+    """The expected variables and data types of attributes of the Sfincs class.
+
+    Attributes
+    ----------
+    config : SfincsConfigModel
+        The configuration of the Sfincs model.
+    water_level : WaterlevelReferenceModel
+        The collection of all datums and the main reference datum.
+    dem : DemModel
+        The digital elevation model.
+    flood_frequency : FloodFrequencyModel, default = FloodFrequencyModel()
+        The flood frequency model.
+    slr : SlrModel
+        Specification of the sea level rise scenarios.
+    cyclone_track_database : CycloneTrackDatabaseModel, optional, default = None
+        The cyclone track database model.
+    scs : SCSModel, optional, default = None
+        The SCS model.
+    tide_gauge : TideGauge, optional, default = None
+        The tide gauge model.
+    river : list[RiverModel], optional, default = None
+        The river model.
+    obs_point : list[ObsPointModel], optional, default = None
+        The observation point model.
+    """
+
     config: SfincsConfigModel
     water_level: WaterlevelReferenceModel
     cyclone_track_database: Optional[CycloneTrackDatabaseModel] = None
@@ -202,8 +301,9 @@ class SfincsModel(BaseModel):
 
     flood_frequency: FloodFrequencyModel = FloodFrequencyModel(
         flooding_threshold=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters)
-    )
-    tide_gauge: Optional[TideGaugeModel] = None
+    )  # TODO we dont actually use this anywhere?
+
+    tide_gauge: Optional[TideGauge] = None
     river: Optional[list[RiverModel]] = None
     obs_point: Optional[list[ObsPointModel]] = None
 

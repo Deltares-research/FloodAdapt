@@ -4,11 +4,9 @@ import pytest
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.historical import (
     HistoricalEvent,
-    HistoricalEventModel,
 )
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.rainfall import RainfallMeteo
-from flood_adapt.object_model.hazard.forcing.timeseries import CSVTimeseries
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     SurgeModel,
     TideModel,
@@ -18,15 +16,15 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 )
 from flood_adapt.object_model.hazard.forcing.wind import WindMeteo
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
+    CSVTimeseries,
     ShapeType,
-    SyntheticTimeseriesModel,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
-from flood_adapt.object_model.interface.scenarios import ScenarioModel
+from flood_adapt.object_model.interface.scenarios import Scenario
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.scenario import Scenario
 
 
 class TestWaterlevelSynthetic:
@@ -128,7 +126,7 @@ class TestWaterlevelSynthetic:
     ):
         # Arrange
         surge_model = SurgeModel(
-            timeseries=SyntheticTimeseriesModel[type(surge_peak_value)](
+            timeseries=TimeseriesFactory.from_args(
                 shape_type=surge_shape,
                 duration=surge_duration,
                 peak_time=peak_time,
@@ -147,7 +145,7 @@ class TestWaterlevelSynthetic:
 
         # Act
         waterlevel_forcing = WaterlevelSynthetic(surge=surge_model, tide=tide_model)
-        wl_df = waterlevel_forcing.to_dataframe(time_frame=TimeModel())
+        wl_df = waterlevel_forcing.to_dataframe(time_frame=TimeFrame())
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
@@ -167,16 +165,15 @@ class TestWaterlevelCSV:
     ):
         path = tmp_path / "test.csv"
         dummy_1d_timeseries_df.to_csv(path)
-        time = TimeModel(
+        time = TimeFrame(
             start_time=dummy_1d_timeseries_df.index[0],
             end_time=dummy_1d_timeseries_df.index[-1],
         )
 
-        expected_df = (
-            CSVTimeseries[us.UnitfulDischarge]()
-            .load_file(path=path)
-            .to_dataframe(time_frame=time)
-        )
+        expected_df = CSVTimeseries.load_file(
+            path=path,
+            units=us.UnitfulDischarge(value=0, units=us.UnitTypesDischarge.cms),
+        ).to_dataframe(time_frame=time)
 
         # Act
         wl_df = WaterlevelCSV(path=path).to_dataframe(time_frame=time)
@@ -192,9 +189,9 @@ class TestWaterlevelModel:
     @pytest.fixture()
     def setup_offshore_scenario(self, test_db: IDatabase):
         event = HistoricalEvent(
-            HistoricalEventModel(
+            HistoricalEvent(
                 name="test_historical_offshore_meteo",
-                time=TimeModel(),
+                time=TimeFrame(),
                 forcings={
                     ForcingType.WATERLEVEL: [
                         WaterlevelModel(),
@@ -228,12 +225,10 @@ class TestWaterlevelModel:
         test_db.events.save(event)
 
         scn = Scenario(
-            ScenarioModel(
-                name="test_scenario",
-                event=event.attrs.name,
-                projection="current",
-                strategy="no_measures",
-            )
+            name="test_scenario",
+            event=event.name,
+            projection="current",
+            strategy="no_measures",
         )
         test_db.scenarios.save(scn)
 

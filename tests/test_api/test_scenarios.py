@@ -3,8 +3,7 @@ import pytest
 from flood_adapt.api import scenarios as api_scenarios
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
-from flood_adapt.object_model.interface.scenarios import ScenarioModel
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.interface.scenarios import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
 from tests.data.create_test_input import create_event_set_with_hurricanes
 from tests.test_adapter.test_sfincs_adapter import mock_meteohandler_read
@@ -39,13 +38,11 @@ def setup_nearshore_scenario(test_db, setup_nearshore_event):
     test_db.events.save(setup_nearshore_event)
 
     scn = Scenario(
-        ScenarioModel(
-            name="gauged_nearshore",
-            description="current_extreme12ft_no_measures",
-            event=setup_nearshore_event.attrs.name,
-            projection="current",
-            strategy="no_measures",
-        )
+        name="gauged_nearshore",
+        description="current_extreme12ft_no_measures",
+        event=setup_nearshore_event.name,
+        projection="current",
+        strategy="no_measures",
     )
     return scn
 
@@ -59,12 +56,10 @@ def setup_offshore_meteo_scenario(
     test_db.events.save(setup_offshore_meteo_event)
 
     scn = Scenario(
-        ScenarioModel(
-            name="offshore_meteo",
-            event=setup_offshore_meteo_event.attrs.name,
-            projection="current",
-            strategy="no_measures",
-        )
+        name="offshore_meteo",
+        event=setup_offshore_meteo_event.name,
+        projection="current",
+        strategy="no_measures",
     )
 
     return scn
@@ -78,12 +73,10 @@ def setup_hurricane_scenario(
 ) -> tuple[Scenario, HurricaneEvent]:
     event = setup_hurricane_event
     scn = Scenario(
-        ScenarioModel(
-            name="hurricane",
-            event=event.attrs.name,
-            projection="current",
-            strategy="no_measures",
-        )
+        name="hurricane",
+        event=event.name,
+        projection="current",
+        strategy="no_measures",
     )
     test_db.events.save(event)
     test_db.scenarios.save(scn)
@@ -95,12 +88,10 @@ def setup_synthetic_scenario(test_db, test_event_all_synthetic):
     test_db.events.save(test_event_all_synthetic)
 
     scn = Scenario(
-        ScenarioModel(
-            name="synthetic",
-            event=test_event_all_synthetic.attrs.name,
-            projection="current",
-            strategy="no_measures",
-        )
+        name="synthetic",
+        event=test_event_all_synthetic.name,
+        projection="current",
+        strategy="no_measures",
     )
     return scn
 
@@ -114,60 +105,55 @@ def setup_eventset_scenario(
     test_db.events.save(test_eventset)
 
     scn = Scenario(
-        ScenarioModel(
-            name="test_risk_scenario_with_hurricanes",
-            event=test_eventset.attrs.name,
-            projection=dummy_projection.attrs.name,
-            strategy=dummy_strategy.attrs.name,
-        )
+        name="test_risk_scenario_with_hurricanes",
+        event=test_eventset.name,
+        projection=dummy_projection.name,
+        strategy=dummy_strategy.name,
     )
     return test_db, scn, test_eventset
 
 
-@pytest.mark.slow
 def test_run_offshore_scenario(test_db, setup_offshore_meteo_scenario):
     api_scenarios.save_scenario(setup_offshore_meteo_scenario)
-    api_scenarios.run_scenario(setup_offshore_meteo_scenario.attrs.name)
+    api_scenarios.run_scenario(setup_offshore_meteo_scenario.name)
 
     assert finished_file_exists(
-        test_db.scenarios.output_path / setup_offshore_meteo_scenario.attrs.name
+        test_db.scenarios.output_path / setup_offshore_meteo_scenario.name
     )
 
 
 def test_run_nearshore_scenario(test_db, setup_nearshore_scenario):
     api_scenarios.save_scenario(setup_nearshore_scenario)
-    api_scenarios.run_scenario(setup_nearshore_scenario.attrs.name)
+    api_scenarios.run_scenario(setup_nearshore_scenario.name)
 
     assert finished_file_exists(
-        test_db.scenarios.output_path / setup_nearshore_scenario.attrs.name
+        test_db.scenarios.output_path / setup_nearshore_scenario.name
     )
 
 
 def test_run_synthetic_scenario(test_db, setup_synthetic_scenario):
     api_scenarios.save_scenario(setup_synthetic_scenario)
-    api_scenarios.run_scenario(setup_synthetic_scenario.attrs.name)
+    api_scenarios.run_scenario(setup_synthetic_scenario.name)
 
     assert finished_file_exists(
-        test_db.scenarios.output_path / setup_synthetic_scenario.attrs.name
+        test_db.scenarios.output_path / setup_synthetic_scenario.name
     )
 
 
-@pytest.mark.slow
 def test_run_hurricane_scenario(test_db, setup_hurricane_scenario):
     scn, event = setup_hurricane_scenario
     api_scenarios.save_scenario(scn)
-    api_scenarios.run_scenario(scn.attrs.name)
+    api_scenarios.run_scenario(scn.name)
 
-    assert finished_file_exists(test_db.scenarios.output_path / scn.attrs.name)
+    assert finished_file_exists(test_db.scenarios.output_path / scn.name)
 
 
-@pytest.mark.slow
 def test_run_eventset_scenario(setup_eventset_scenario):
     test_db, scn, event_set = setup_eventset_scenario
     api_scenarios.save_scenario(scn)
-    api_scenarios.run_scenario(scn.attrs.name)
+    api_scenarios.run_scenario(scn.name)
 
-    assert finished_file_exists(test_db.scenarios.output_path / scn.attrs.name)
+    assert finished_file_exists(test_db.scenarios.output_path / scn.name)
 
 
 def test_create_save_scenario(test_db, setup_offshore_meteo_event):
@@ -186,7 +172,7 @@ def test_create_save_scenario(test_db, setup_offshore_meteo_event):
         scenario = api_scenarios.create_scenario(test_dict)
 
     # correct event
-    test_dict["event"] = setup_offshore_meteo_event.attrs.name
+    test_dict["event"] = setup_offshore_meteo_event.name
     scenario = api_scenarios.create_scenario(test_dict)
 
     assert not api_scenarios.save_scenario(scenario)[0]

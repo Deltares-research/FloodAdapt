@@ -53,4 +53,5 @@
         "connectionId": "deltares",
         "projectKey": "deltares_floodadapt"
     },
+    "python.analysis.typeCheckingMode": "basic",
 }

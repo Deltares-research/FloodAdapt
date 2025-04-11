@@ -1,8 +1,7 @@
 from typing import Any
 
 from flood_adapt.dbs_classes.database import Database
-from flood_adapt.object_model.interface.strategies import IStrategy
-from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.interface.strategies import Strategy
 
 
 def get_strategies() -> dict[str, Any]:
@@ -19,7 +18,7 @@ def get_strategies() -> dict[str, Any]:
     return Database().strategies.list_objects()
 
 
-def get_strategy(name: str) -> IStrategy:
+def get_strategy(name: str) -> Strategy:
     """
     Get a strategy from the database by name.
 
@@ -30,7 +29,7 @@ def get_strategy(name: str) -> IStrategy:
 
     Returns
     -------
-    IStrategy
+    Strategy
         The strategy object with the given name.
 
     Raises
@@ -41,35 +40,35 @@ def get_strategy(name: str) -> IStrategy:
     return Database().strategies.get(name)
 
 
-def create_strategy(attrs: dict[str, Any]) -> IStrategy:
+def create_strategy(attrs: dict[str, Any]) -> Strategy:
     """Create a new strategy object.
 
     Parameters
     ----------
     attrs : dict[str, Any]
-        The attributes of the strategy object to create. Should adhere to the StrategyModel schema.
+        The attributes of the strategy object to create. Should adhere to the Strategy schema.
 
     Returns
     -------
-    IStrategy
+    Strategy
         The strategy object
 
     Raises
     ------
     ValueError
         If the strategy with the given name does not exist.
-        If attrs does not adhere to the StrategyModel schema.
+        If attrs does not adhere to the Strategy schema.
     """
-    return Strategy.load_dict(attrs)
+    return Strategy(**attrs)
 
 
-def save_strategy(strategy: IStrategy) -> None:
+def save_strategy(strategy: Strategy) -> None:
     """
     Save a strategy object to the database.
 
     Parameters
     ----------
-    strategy : IStrategy
+    strategy : Strategy
         The strategy object to save.
 
     Raises

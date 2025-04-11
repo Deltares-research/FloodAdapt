@@ -1,26 +1,57 @@
-from abc import abstractmethod
-
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
-from flood_adapt.object_model.interface.measures import IMeasure
-from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
-from flood_adapt.object_model.interface.path_builder import ObjectDir
+from flood_adapt.object_model.interface.measures import (
+    Measure,
+    MeasureType,
+)
+from flood_adapt.object_model.interface.object_model import Object
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+    db_path,
+)
+from flood_adapt.object_model.measure_factory import (
+    MeasureFactory,
+)
 
 
-class StrategyModel(IObjectModel):
+class Strategy(Object):
+    """
+    Class representing a strategy in FloodAdapt.
+
+    A strategy is a collection of measures that can be applied to a model.
+
+    Attributes
+    ----------
+    measures : list[str]
+        A list of measures associated with the strategy. Should be a list of measure names that are saved in the database.
+
+    """
+
     measures: list[str] = []
 
+    def get_measures(self) -> list[Measure]:
+        """Get the measures paths and types."""
+        # Get measure paths using a database structure
+        measure_paths = [
+            db_path(object_dir=ObjectDir.measure, obj_name=measure) / f"{measure}.toml"
+            for measure in self.measures
+        ]
+        return [MeasureFactory.get_measure_object(path) for path in measure_paths]
 
-class IStrategy(IObject[StrategyModel]):
-    _attrs_type = StrategyModel
-    dir_name = ObjectDir.strategy
-    display_name = "Strategy"
+    def get_impact_strategy(self) -> ImpactStrategy:
+        impact_measures = [
+            measure
+            for measure in self.get_measures()
+            if MeasureType.is_impact(measure.type)
+        ]
+        return ImpactStrategy(
+            measures=impact_measures,
+        )
 
-    @abstractmethod
-    def get_measures(self) -> list[IMeasure]: ...
-
-    @abstractmethod
-    def get_impact_strategy(self, validate=False) -> ImpactStrategy: ...
-
-    @abstractmethod
-    def get_hazard_strategy(self) -> HazardStrategy: ...
+    def get_hazard_strategy(self) -> HazardStrategy:
+        hazard_measures = [
+            measure
+            for measure in self.get_measures()
+            if MeasureType.is_hazard(measure.type)
+        ]
+        return HazardStrategy(measures=hazard_measures)

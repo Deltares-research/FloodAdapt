@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Optional, Type
+from typing import Any, List, Type
 
 import tomli
 
@@ -30,7 +30,6 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindSynthetic,
     WindTrack,
 )
-from flood_adapt.object_model.hazard.interface.events import Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -65,7 +64,7 @@ __all__ = [
 
 
 class ForcingFactory(IForcingFactory):
-    """Factory class for creating forcing events based on a template."""
+    """Factory class for creating forcings."""
 
     WATERLEVELS: dict[ForcingSource, Type[IForcing]] = {
         ForcingSource.MODEL: WaterlevelModel,
@@ -170,9 +169,7 @@ class ForcingFactory(IForcingFactory):
         return list(forcing_classes)
 
     @classmethod
-    def list_forcing_types_and_sources(
-        cls, template: Optional[Template] = None
-    ) -> List[tuple[ForcingType, ForcingSource]]:
+    def list_forcing_types_and_sources(cls) -> List[tuple[ForcingType, ForcingSource]]:
         """List all available forcing classes using a tuple of ForcingType and ForcingSource."""
         # TODO remove this when the backend supports all forcings
         ONLY_BACKEND_FORCINGS = {(ForcingType.WIND, ForcingSource.SYNTHETIC)}

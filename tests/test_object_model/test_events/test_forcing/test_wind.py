@@ -7,7 +7,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
     WindCSV,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.io import unit_system as us
 
 
@@ -21,7 +21,7 @@ class TestWindConstant:
 
         # Act
         wind_df = WindConstant(speed=speed, direction=direction).to_dataframe(
-            time_frame=TimeModel()
+            time_frame=TimeFrame()
         )
 
         # Assert
@@ -53,7 +53,7 @@ class TestWindCSV:
             path.parent.mkdir(parents=True)
 
         # Act
-        wind_df = WindCSV(path=path).to_dataframe(time_frame=TimeModel())
+        wind_df = WindCSV(path=path).to_dataframe(time_frame=TimeFrame())
 
         # Assert
         assert isinstance(wind_df, pd.DataFrame)

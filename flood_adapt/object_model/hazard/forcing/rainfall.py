@@ -1,26 +1,26 @@
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Annotated
 
 import pandas as pd
 import xarray as xr
-from pydantic import Field
 
 from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
-from flood_adapt.object_model.hazard.forcing.timeseries import (
-    CSVTimeseries,
-    SyntheticTimeseries,
-)
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IRainfall,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeFrame
 from flood_adapt.object_model.hazard.interface.timeseries import (
-    SyntheticTimeseriesModel,
+    CSVTimeseries,
+    SyntheticTimeseries,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.utils import copy_file_to_output_dir
+from flood_adapt.object_model.utils import (
+    copy_file_to_output_dir,
+    validate_file_extension,
+)
 
 
 class RainfallConstant(IRainfall):
@@ -28,7 +28,7 @@ class RainfallConstant(IRainfall):
 
     intensity: us.UnitfulIntensity
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
@@ -41,14 +41,12 @@ class RainfallConstant(IRainfall):
 
 class RainfallSynthetic(IRainfall):
     source: ForcingSource = ForcingSource.SYNTHETIC
-    timeseries: (
-        SyntheticTimeseriesModel[us.UnitfulIntensity]
-        | SyntheticTimeseriesModel[us.UnitfulLength]
-    )
+    timeseries: SyntheticTimeseries
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        rainfall = SyntheticTimeseries(data=self.timeseries)
-        return rainfall.to_dataframe(time_frame=time_frame)
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
+        return TimeseriesFactory.from_object(self.timeseries).to_dataframe(
+            time_frame=time_frame
+        )
 
 
 class RainfallMeteo(IRainfall):
@@ -60,8 +58,7 @@ class RainfallMeteo(IRainfall):
 class RainfallTrack(IRainfall):
     source: ForcingSource = ForcingSource.TRACK
 
-    path: Optional[Path] = Field(default=None)
-    # path to spw file, set this when creating it
+    path: Annotated[Path, validate_file_extension([".cyc", ".spw"])]
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
@@ -71,15 +68,14 @@ class RainfallTrack(IRainfall):
 class RainfallCSV(IRainfall):
     source: ForcingSource = ForcingSource.CSV
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".csv"])]
+
     units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        return (
-            CSVTimeseries[self.units]
-            .load_file(path=self.path)
-            .to_dataframe(time_frame=time_frame)
-        )
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
+        return CSVTimeseries.load_file(
+            path=self.path, units=us.UnitfulIntensity(value=0, units=self.units)
+        ).to_dataframe(time_frame=time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))
@@ -89,7 +85,7 @@ class RainfallNetCDF(IRainfall):
     source: ForcingSource = ForcingSource.NETCDF
     units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".nc"])]
 
     def read(self) -> xr.Dataset:
         required_vars = ("precip",)

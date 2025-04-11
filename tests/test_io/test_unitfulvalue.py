@@ -334,7 +334,12 @@ class TestUnitfulHeight:
         # Assert
         with pytest.raises(ValueError) as excinfo:
             us.UnitfulHeight(value=10, units="invalid_units")
-        assert "Unsupported unit: invalid_units" in str(excinfo.value)
+
+        errors = excinfo.value.errors()
+        assert len(errors) == 1, "Expected one error"
+        error = errors[0]
+        assert error["loc"] == ("units",)
+        assert "Input should be" in error["msg"]
 
 
 class TestUnitfulArea:
@@ -407,7 +412,12 @@ class TestUnitfulArea:
         # Assert
         with pytest.raises(ValueError) as excinfo:
             us.UnitfulArea(value=10, units="invalid_units")
-        assert "Unsupported unit: invalid_units" in str(excinfo.value)
+
+        errors = excinfo.value.errors()
+        assert len(errors) == 1, "Expected one error"
+        error = errors[0]
+        assert error["loc"] == ("units",)
+        assert "Input should be" in error["msg"]
 
 
 class TestUnitfulVolume:
@@ -440,7 +450,12 @@ class TestUnitfulVolume:
         # Assert
         with pytest.raises(ValueError) as excinfo:
             us.UnitfulVolume(value=10, units="invalid_units")
-        assert "Unsupported unit: invalid_units" in str(excinfo.value)
+
+        errors = excinfo.value.errors()
+        assert len(errors) == 1, "Expected one error"
+        error = errors[0]
+        assert error["loc"] == ("units",)
+        assert "Input should be" in error["msg"]
 
 
 class TestValueUnitPair:

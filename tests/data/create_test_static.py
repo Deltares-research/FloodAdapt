@@ -2,9 +2,8 @@ from pathlib import Path
 
 from flood_adapt import unit_system as us
 from flood_adapt.misc.config import Settings
-from flood_adapt.object_model.hazard.interface.forcing import Scstype
-from flood_adapt.object_model.hazard.interface.tide_gauge import (
-    TideGaugeModel,
+from flood_adapt.object_model.hazard.forcing.tide_gauge import (
+    TideGauge,
     TideGaugeSource,
 )
 from flood_adapt.object_model.interface.config.fiat import (
@@ -34,12 +33,13 @@ from flood_adapt.object_model.interface.config.sfincs import (
     ObsPointModel,
     RiverModel,
     SCSModel,
+    Scstype,
     SfincsConfigModel,
     SfincsModel,
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
-from flood_adapt.object_model.interface.config.site import Site, SiteModel
+from flood_adapt.object_model.interface.config.site import Site
 
 DATA_DIR = Path(__file__).parent
 
@@ -54,13 +54,11 @@ def update_database_static(database_path: Path):
 
     sfincs = create_sfincs_config()
 
-    config = create_site_config(sfincs=sfincs)
-    site = Site(config)
+    site = create_site_config(sfincs=sfincs)
     site.save(config_dir / "site.toml")
 
     sfincs.river = None
-    no_river_config = create_site_config(sfincs=sfincs)
-    no_river = Site(no_river_config)
+    no_river = create_site_config(sfincs=sfincs)
     no_river.save(
         config_dir / "site_without_river.toml", sfincs="sfincs_without_river.toml"
     )
@@ -229,9 +227,7 @@ def create_sfincs_config() -> SfincsModel:
         offshore_model=FloodModel(
             name="offshore",
             reference="MSL",
-            vertical_offset=us.UnitfulLength(
-                value=0.6, units=us.UnitTypesLength.meters
-            ),
+            vertical_offset=us.UnitfulLength(value=0.6, units=us.UnitTypesLength.feet),
         ),
         overland_model=FloodModel(
             name="overland",
@@ -241,7 +237,7 @@ def create_sfincs_config() -> SfincsModel:
         save_simulation=False,
     )
 
-    tide_gauge = TideGaugeModel(
+    tide_gauge = TideGauge(
         name=8665530,
         reference="MSL",
         source=TideGaugeSource.noaa_coops,
@@ -296,8 +292,8 @@ def create_site_config(
     fiat: FiatModel = create_fiat_config(),
     gui: GuiModel = create_gui_config(),
     sfincs: SfincsModel = create_sfincs_config(),
-) -> SiteModel:
-    config = SiteModel(
+) -> Site:
+    config = Site(
         name="Charleston",
         description="Charleston, SC",
         lat=32.7765,

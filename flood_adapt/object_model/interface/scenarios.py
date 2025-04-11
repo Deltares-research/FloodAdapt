@@ -1,39 +1,23 @@
-from abc import abstractmethod
-
-from flood_adapt.object_model.hazard.interface.events import IEvent
-from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
-from flood_adapt.object_model.interface.path_builder import ObjectDir
-from flood_adapt.object_model.interface.projections import IProjection
-from flood_adapt.object_model.interface.strategies import IStrategy
+# from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.object_model.interface.object_model import Object
 
 
-class ScenarioModel(IObjectModel):
-    """BaseModel describing the expected variables and data types of a scenario."""
+class Scenario(Object):
+    """BaseModel describing the expected variables and data types of a scenario.
+
+    A scenario is a combination of an event, a projection, and a strategy, that all should be saved in the database.
+
+    Attributes
+    ----------
+    event : str
+        The name of the event.
+    projection : str
+        The name of the projection.
+    strategy : str
+        The name of the strategy.
+
+    """
 
     event: str
     projection: str
     strategy: str
-
-
-class IScenario(IObject[ScenarioModel]):
-    _attrs_type = ScenarioModel
-    dir_name = ObjectDir.scenario
-    display_name = "Scenario"
-
-    @abstractmethod
-    def run(self) -> None: ...
-
-    @abstractmethod
-    def equal_hazard_components(self, other: "IScenario") -> bool: ...
-
-    @property
-    @abstractmethod
-    def event(self) -> IEvent: ...
-
-    @property
-    @abstractmethod
-    def projection(self) -> IProjection: ...
-
-    @property
-    @abstractmethod
-    def strategy(self) -> IStrategy: ...

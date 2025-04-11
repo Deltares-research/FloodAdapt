@@ -21,24 +21,25 @@ from fiat_toolbox.spatial_output.footprints import Footprints
 from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt import unit_system as us
+from flood_adapt.adapter.impacts_integrator import Impacts
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.floodmap import FloodMap, FloodMapType
 from flood_adapt.object_model.hazard.interface.events import Mode
-from flood_adapt.object_model.impact.measure.buyout import Buyout
-from flood_adapt.object_model.impact.measure.elevate import Elevate
-from flood_adapt.object_model.impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.interface.config.fiat import FiatConfigModel
 from flood_adapt.object_model.interface.measures import (
-    IMeasure,
+    Buyout,
+    Elevate,
+    FloodProof,
+    Measure,
     MeasureType,
 )
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
 )
-from flood_adapt.object_model.interface.projections import IProjection
-from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.interface.projections import Projection
+from flood_adapt.object_model.interface.scenarios import Scenario
+from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import cd, resolve_filepath
 
 # Define naming structure for saved files
@@ -158,14 +159,14 @@ class FiatAdapter(IImpactAdapter):
         self.close_files()
         return False
 
-    def has_run(self, scenario: IScenario) -> bool:
+    def has_run(self, scenario: Scenario) -> bool:
         # TODO this should include a check for all output files , and then maybe save them as output paths and types
         """
         Check if the impact results file for the given scenario exists.
 
         Parameters
         ----------
-        scenario : IScenario
+        scenario : Scenario
             The scenario for which to check the FIAT results.
 
         Returns
@@ -173,9 +174,10 @@ class FiatAdapter(IImpactAdapter):
         bool
             True if the FIAT results file exists, False otherwise.
         """
-        impacts_output_path = scenario.impacts.impacts_path
-        fiat_results_path = impacts_output_path.joinpath(
-            f"Impacts_detailed_{scenario.attrs.name}.csv"
+        impacts_path = Impacts(scenario=scenario).impacts_path
+
+        fiat_results_path = impacts_path.joinpath(
+            f"Impacts_detailed_{scenario.name}.csv"
         )
         return fiat_results_path.exists()
 
@@ -215,12 +217,12 @@ class FiatAdapter(IImpactAdapter):
             self.logger.error(f"Error while checking if FIAT has run: {e}")
             return False
 
-    def preprocess(self, scenario: IScenario) -> None:
+    def preprocess(self, scenario: Scenario) -> None:
         """
         Preprocess the FIAT-model given a scenario by setting up projections, measures, and hazards, and then saves any changes made to disk.
 
         Args:
-            scenario (IScenario): The scenario to preprocess, which includes projection,
+            scenario (Scenario): The scenario to preprocess, which includes projection,
                                   strategy, and hazard.
 
         Returns
@@ -229,14 +231,16 @@ class FiatAdapter(IImpactAdapter):
         """
         self.logger.info("Pre-processing Delft-FIAT model")
         # Projection
-        self.add_projection(scenario.projection)
+        projection = self.database.projections.get(scenario.projection)
+        self.add_projection(projection)
 
         # Measures
-        for measure in scenario.strategy.get_impact_strategy().measures:
+        strategy = self.database.strategies.get(scenario.strategy)
+        for measure in strategy.get_impact_strategy().measures:
             self.add_measure(measure)
 
         # Hazard
-        floodmap = FloodMap(scenario.attrs.name)
+        floodmap = FloodMap(scenario.name)
         var = "risk_maps" if floodmap.mode == Mode.risk else "zsmax"
         is_risk = floodmap.mode == Mode.risk
         self.set_hazard(
@@ -248,7 +252,7 @@ class FiatAdapter(IImpactAdapter):
         )
 
         # Save any changes made to disk as well
-        output_path = scenario.impacts.impacts_path / "fiat_model"
+        output_path = Impacts(scenario).impacts_path / "fiat_model"
         self.write(path_out=output_path)
 
     def run(self, scenario) -> None:
@@ -262,8 +266,10 @@ class FiatAdapter(IImpactAdapter):
         -------
             None
         """
+        sim_path = Impacts(scenario=scenario).impacts_path / "fiat_model"
+
         self.preprocess(scenario)
-        self.execute(scenario.impacts.impacts_path / "fiat_model")
+        self.execute(sim_path)
         self.postprocess(scenario)
 
     def execute(
@@ -438,12 +444,12 @@ class FiatAdapter(IImpactAdapter):
 
         if not self.outputs:
             self.read_outputs()
-
-        mode = scenario.event.attrs.mode
+        mode = self.database.events.get(scenario.event).mode
 
         # Define scenario output path
-        scenario_output_path = scenario.impacts.results_path
-        impacts_output_path = scenario.impacts.impacts_path
+        impacts = Impacts(scenario=scenario)
+        scenario_output_path = impacts.results_path
+        impacts_output_path = impacts.impacts_path
 
         # Create column mapping to update column names
         name_translation = {}
@@ -465,7 +471,7 @@ class FiatAdapter(IImpactAdapter):
 
         # Save impacts per object
         fiat_results_path = impacts_output_path.joinpath(
-            f"Impacts_detailed_{scenario.attrs.name}.csv"
+            f"Impacts_detailed_{scenario.name}.csv"
         )
         self.outputs["table"].to_csv(fiat_results_path, index=False)
 
@@ -473,7 +479,7 @@ class FiatAdapter(IImpactAdapter):
         if mode == Mode.risk:
             # Get config path
             # TODO check where this configs should be read from
-            config_path = scenario.database.static_path.joinpath(
+            config_path = self.database.static_path.joinpath(
                 "templates", "infometrics", "metrics_additional_risk_configs.toml"
             )
             with open(config_path, mode="rb") as fp:
@@ -499,7 +505,7 @@ class FiatAdapter(IImpactAdapter):
             metric_types += ["infographic"]
 
         metric_config_paths = [
-            scenario.database.static_path.joinpath(
+            self.database.static_path.joinpath(
                 "templates", "infometrics", f"{name}_metrics_config{ext}.toml"
             )
             for name in metric_types
@@ -507,7 +513,7 @@ class FiatAdapter(IImpactAdapter):
 
         # Specify the metrics output path
         metrics_outputs_path = scenario_output_path.joinpath(
-            f"Infometrics_{scenario.attrs.name}.csv"
+            f"Infometrics_{scenario.name}.csv"
         )
         self.create_infometrics(metric_config_paths, metrics_outputs_path)
 
@@ -518,11 +524,11 @@ class FiatAdapter(IImpactAdapter):
 
         # Create the infographic files
         if self.config.infographics:
-            config_base_path = scenario.database.static_path.joinpath(
+            config_base_path = self.database.static_path.joinpath(
                 "templates", "Infographics"
             )
             self.create_infographics(
-                name=scenario.attrs.name,
+                name=scenario.name,
                 output_base_path=scenario_output_path,
                 config_base_path=config_base_path,
                 metrics_path=metrics_outputs_path,
@@ -540,7 +546,7 @@ class FiatAdapter(IImpactAdapter):
         for file in aggr_metrics_paths:
             aggr_label = file.stem.split(f"{metrics_outputs_path.stem}_")[-1]
             output_path = impacts_output_path.joinpath(
-                f"Impacts_aggregated_{scenario.attrs.name}_{aggr_label}.gpkg"
+                f"Impacts_aggregated_{scenario.name}_{aggr_label}.gpkg"
             )
             self.save_aggregation_spatial(
                 aggr_label=aggr_label, metrics_path=file, output_path=output_path
@@ -549,7 +555,7 @@ class FiatAdapter(IImpactAdapter):
         # Merge points data to building footprints
         self.save_building_footprints(
             output_path=impacts_output_path.joinpath(
-                f"Impacts_building_footprints_{scenario.attrs.name}.gpkg"
+                f"Impacts_building_footprints_{scenario.name}.gpkg"
             )
         )
 
@@ -557,7 +563,7 @@ class FiatAdapter(IImpactAdapter):
         if self.config.roads_file_name:
             self.save_roads(
                 output_path=impacts_output_path.joinpath(
-                    f"Impacts_roads_{scenario.attrs.name}.gpkg"
+                    f"Impacts_roads_{scenario.name}.gpkg"
                 )
             )
 
@@ -567,23 +573,25 @@ class FiatAdapter(IImpactAdapter):
         if not self.config.save_simulation:
             self.delete_model()
 
-    def add_measure(self, measure: IMeasure):
+    def add_measure(self, measure: Measure):
         """
         Add and apply a specific impact measure to the properties of the FIAT model.
 
         Parameters
         ----------
-        measure : IMeasure
+        measure : Measure
             The impact measure to be applied. It can be of type Elevate, FloodProof, or Buyout.
 
+        Notes
+        -----
         The method logs the application of the measure and calls the appropriate method based on the measure type:
-        - Elevate: Calls elevate_properties(measure)
-        - FloodProof: Calls floodproof_properties(measure)
-        - Buyout: Calls buyout_properties(measure)
+            - Elevate: Calls elevate_properties(measure)
+            - FloodProof: Calls floodproof_properties(measure)
+            - Buyout: Calls buyout_properties(measure)
 
-        If the measure type is unsupported, a warning is logged.
+            If the measure type is unsupported, a warning is logged.
         """
-        self.logger.info(f"Applying impact measure '{measure.attrs.name}'")
+        self.logger.info(f"Applying impact measure '{measure.name}'")
         if isinstance(measure, Elevate):
             self.elevate_properties(measure)
         elif isinstance(measure, FloodProof):
@@ -595,7 +603,7 @@ class FiatAdapter(IImpactAdapter):
                 f"Skipping unsupported measure type {measure.__class__.__name__}"
             )
 
-    def add_projection(self, projection: IProjection):
+    def add_projection(self, projection: Projection):
         """
         Add the socioeconomic changes part of a projection to the FIAT model.
 
@@ -612,50 +620,54 @@ class FiatAdapter(IImpactAdapter):
         - Population growth is applied to existing objects if specified.
         """
         self.logger.info(
-            f"Applying socioeconomic changes from projection '{projection.attrs.name}'"
+            f"Applying socioeconomic changes from projection '{projection.name}'"
         )
-        socio_economic_change = projection.get_socio_economic_change()
+        socio_economic_change = projection.socio_economic_change
 
         ids_all_buildings = self.get_all_building_ids()
 
         # Implement socioeconomic changes if needed
         # First apply economic growth to existing objects
-        if not math.isclose(socio_economic_change.attrs.economic_growth, 0):
+        if not math.isclose(socio_economic_change.economic_growth, 0, abs_tol=1e-6):
             self.apply_economic_growth(
-                economic_growth=socio_economic_change.attrs.economic_growth,
+                economic_growth=socio_economic_change.economic_growth,
                 ids=ids_all_buildings,  #
             )
 
         # Then the new population growth area is added if provided
         # In the new areas, the economic growth is taken into account!
         # Order matters since for the pop growth new, we only want the economic growth!
-        if not math.isclose(socio_economic_change.attrs.population_growth_new, 0):
+        if not math.isclose(
+            socio_economic_change.population_growth_new, 0, abs_tol=1e-6
+        ):
             # Get path of new development area geometry
             area_path = resolve_filepath(
                 object_dir=ObjectDir.projection,
-                obj_name=projection.attrs.name,
-                path=socio_economic_change.attrs.new_development_shapefile,
+                obj_name=projection.name,
+                path=socio_economic_change.new_development_shapefile,
             )
 
             # Get DEM location for assigning elevation to new areas
             dem = (
                 self.database.static_path
                 / "dem"
-                / self.database.site.attrs.sfincs.dem.filename
+                / self.database.site.sfincs.dem.filename
             )
             # Call adapter method to add the new areas
             self.apply_population_growth_new(
-                population_growth=socio_economic_change.attrs.population_growth_new,
-                ground_floor_height=socio_economic_change.attrs.new_development_elevation.value,
-                elevation_type=socio_economic_change.attrs.new_development_elevation.type,
+                population_growth=socio_economic_change.population_growth_new,
+                ground_floor_height=socio_economic_change.new_development_elevation.value,
+                elevation_type=socio_economic_change.new_development_elevation.type,
                 area_path=area_path,
                 ground_elevation=dem,
             )
 
         # Then apply population growth to existing objects
-        if not math.isclose(socio_economic_change.attrs.population_growth_existing, 0):
+        if not math.isclose(
+            socio_economic_change.population_growth_existing, 0, abs_tol=1e-6
+        ):
             self.apply_population_growth_existing(
-                population_growth=socio_economic_change.attrs.population_growth_existing,
+                population_growth=socio_economic_change.population_growth_existing,
                 ids=ids_all_buildings,
             )
 
@@ -872,14 +884,14 @@ class FiatAdapter(IImpactAdapter):
 
     # MEASURES
     @staticmethod
-    def _get_area_name(measure: IMeasure):
+    def _get_area_name(measure: Measure):
         """
         Determine the area name based on the selection type of the measure.
 
         Parameters
         ----------
-        measure : IMeasure
-            An instance of IMeasure containing attributes that define the selection type and area.
+        measure : Measure
+            An instance of Measure containing attributes that define the selection type and area.
 
         Returns
         -------
@@ -887,10 +899,10 @@ class FiatAdapter(IImpactAdapter):
             The name of the area. It returns the aggregation area name if the selection type is "aggregation_area",
             the polygon file name if the selection type is "polygon", and "all" for any other selection type.
         """
-        if measure.attrs.selection_type == "aggregation_area":
-            area = measure.attrs.aggregation_area_name
-        elif measure.attrs.selection_type == "polygon":
-            area = measure.attrs.polygon_file
+        if measure.selection_type == "aggregation_area":
+            area = measure.aggregation_area_name
+        elif measure.selection_type == "polygon":
+            area = measure.polygon_file
         else:
             area = "all"
         return area
@@ -912,13 +924,13 @@ class FiatAdapter(IImpactAdapter):
         """
         area = self._get_area_name(elevate)
         self.logger.info(
-            f"Elevating '{elevate.attrs.property_type}' type properties in '{area}' by {elevate.attrs.elevation} relative to '{elevate.attrs.elevation.type}'."
+            f"Elevating '{elevate.property_type}' type properties in '{area}' by {elevate.elevation} relative to '{elevate.elevation.type}'."
         )
         # If ids are given use that as an additional filter
         objectids = self.get_object_ids(elevate)
 
         # Get reference type to align with hydromt
-        if elevate.attrs.elevation.type == "floodmap":
+        if elevate.elevation.type == "floodmap":
             if not self.config.bfe:
                 raise ValueError(
                     "Base flood elevation (bfe) map is required to use 'floodmap' as reference."
@@ -931,17 +943,17 @@ class FiatAdapter(IImpactAdapter):
                 height_reference = "geom"
             # Use hydromt function
             self._model.exposure.raise_ground_floor_height(
-                raise_by=elevate.attrs.elevation.value,
+                raise_by=elevate.elevation.value,
                 objectids=objectids,
                 height_reference=height_reference,
                 path_ref=path_ref,
                 attr_ref=self.config.bfe.field_name,
             )
 
-        elif elevate.attrs.elevation.type == "datum":
+        elif elevate.elevation.type == "datum":
             # Use hydromt function
             self._model.exposure.raise_ground_floor_height(
-                raise_by=elevate.attrs.elevation.value,
+                raise_by=elevate.elevation.value,
                 objectids=objectids,
                 height_reference="datum",
             )
@@ -960,7 +972,7 @@ class FiatAdapter(IImpactAdapter):
         """
         area = self._get_area_name(buyout)
         self.logger.info(
-            f"Buying-out '{buyout.attrs.property_type}' type properties in '{area}'."
+            f"Buying-out '{buyout.property_type}' type properties in '{area}'."
         )
         # Get columns that include max damage
         damage_cols = [
@@ -1003,7 +1015,7 @@ class FiatAdapter(IImpactAdapter):
         """
         area = self._get_area_name(floodproof)
         self.logger.info(
-            f"Flood-proofing '{floodproof.attrs.property_type}' type properties in '{area}' by {floodproof.attrs.elevation}."
+            f"Flood-proofing '{floodproof.property_type}' type properties in '{area}' by {floodproof.elevation}."
         )
         # If ids are given use that as an additional filter
         objectids = self.get_object_ids(floodproof)
@@ -1011,7 +1023,7 @@ class FiatAdapter(IImpactAdapter):
         # Use hydromt function
         self._model.exposure.truncate_damage_function(
             objectids=objectids,
-            floodproof_to=floodproof.attrs.elevation.value,
+            floodproof_to=floodproof.elevation.value,
             damage_function_types=self.damage_types,
             vulnerability=self._model.vulnerability,
         )
@@ -1095,13 +1107,13 @@ class FiatAdapter(IImpactAdapter):
         )
         return ids
 
-    def get_object_ids(self, measure: IMeasure) -> list[Any]:
+    def get_object_ids(self, measure: Measure) -> list[Any]:
         """
         Retrieve the object IDs for a given impact measure.
 
         Parameters
         ----------
-        measure : IMeasure
+        measure : Measure
             The impact measure for which to retrieve object IDs.
 
         Returns
@@ -1114,29 +1126,29 @@ class FiatAdapter(IImpactAdapter):
         ValueError
             If the measure type is not an impact measure.
         """
-        if not MeasureType.is_impact(measure.attrs.type):
+        if not MeasureType.is_impact(measure.type):
             raise ValueError(
-                f"Measure type {measure.attrs.type} is not an impact measure. "
+                f"Measure type {measure.type} is not an impact measure. "
                 "Can only retrieve object ids for impact measures."
             )
 
         # check if polygon file is used, then get the absolute path
-        if measure.attrs.polygon_file:
+        if measure.polygon_file:
             polygon_file = resolve_filepath(
                 object_dir=ObjectDir.measure,
-                obj_name=measure.attrs.name,
-                path=measure.attrs.polygon_file,
+                obj_name=measure.name,
+                path=measure.polygon_file,
             )
         else:
             polygon_file = None
 
         # use the hydromt-fiat method to the ids
         ids = self._model.exposure.get_object_ids(
-            selection_type=measure.attrs.selection_type,
-            property_type=measure.attrs.property_type,
+            selection_type=measure.selection_type,
+            property_type=measure.property_type,
             non_building_names=self.config.non_building_names,
-            aggregation=measure.attrs.aggregation_area_type,
-            aggregation_area_name=measure.attrs.aggregation_area_name,
+            aggregation=measure.aggregation_area_type,
+            aggregation_area_name=measure.aggregation_area_name,
             polygon_file=str(polygon_file),
         )
 

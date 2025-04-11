@@ -4,8 +4,7 @@ import geopandas as gpd
 import pandas as pd
 
 from flood_adapt.dbs_classes.database import Database
-from flood_adapt.object_model.benefit import Benefit
-from flood_adapt.object_model.interface.benefits import IBenefit
+from flood_adapt.object_model.benefit_runner import Benefit
 
 
 def get_benefits() -> dict[str, Any]:
@@ -22,7 +21,7 @@ def get_benefits() -> dict[str, Any]:
     return Database().benefits.list_objects()
 
 
-def get_benefit(name: str) -> IBenefit:
+def get_benefit(name: str) -> Benefit:
     """Get a benefit from the database by name.
 
     Parameters
@@ -32,8 +31,8 @@ def get_benefit(name: str) -> IBenefit:
 
     Returns
     -------
-    IBenefit
-        The benefit object with the given name.
+    Benefit
+        The benefit object with the given name. See [Benefit](/api_ref/) for details.
 
     Raises
     ------
@@ -43,23 +42,23 @@ def get_benefit(name: str) -> IBenefit:
     return Database().benefits.get(name)
 
 
-def create_benefit(attrs: dict[str, Any]) -> IBenefit:
+def create_benefit(attrs: dict[str, Any]) -> Benefit:
     """Create a new benefit object.
 
     Parameters
     ----------
     attrs : dict[str, Any]
-        The attributes of the benefit object to create. Should adhere to the BenefitModel schema.
+        The attributes of the benefit object to create. Should adhere to the Benefit schema.
     """
-    return Benefit.load_dict(attrs)
+    return Benefit(**attrs)
 
 
-def save_benefit(benefit: IBenefit) -> None:
+def save_benefit(benefit: Benefit) -> None:
     """Save a benefit object to the database.
 
     Parameters
     ----------
-    benefit : IBenefit
+    benefit : Benefit
         The benefit object to save.
 
     Raises
@@ -70,12 +69,12 @@ def save_benefit(benefit: IBenefit) -> None:
     Database().benefits.save(benefit)
 
 
-def edit_benefit(benefit: IBenefit) -> None:
+def edit_benefit(benefit: Benefit) -> None:
     """Edit a benefit object in the database.
 
     Parameters
     ----------
-    benefit : IBenefit
+    benefit : Benefit
         The benefit object to edit.
 
     Raises
@@ -102,12 +101,12 @@ def delete_benefit(name: str) -> None:
     Database().benefits.delete(name)
 
 
-def check_benefit_scenarios(benefit: IBenefit) -> pd.DataFrame:
+def check_benefit_scenarios(benefit: Benefit) -> pd.DataFrame:
     """Return a dataframe with the scenarios needed for this benefit assessment run.
 
     Parameters
     ----------
-    benefit : IBenefit
+    benefit : Benefit
         The benefit object to check.
 
     Returns
@@ -118,12 +117,12 @@ def check_benefit_scenarios(benefit: IBenefit) -> pd.DataFrame:
     return Database().check_benefit_scenarios(benefit)
 
 
-def create_benefit_scenarios(benefit: IBenefit):
+def create_benefit_scenarios(benefit: Benefit):
     """Create the benefit scenarios.
 
     Parameters
     ----------
-    benefit : IBenefit
+    benefit : Benefit
         The benefit object to create scenarios for.
     """
     Database().create_benefit_scenarios(benefit)

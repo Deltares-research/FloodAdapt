@@ -3,7 +3,7 @@ import math
 from abc import ABC
 from datetime import timedelta
 from enum import Enum
-from typing import Generic, Optional, Type, TypeVar
+from typing import Generic, Optional, Type, TypeVar, Union
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -28,25 +28,23 @@ __all__ = [
     "UnitfulIntensity",
     "UnitfulVolume",
     "UnitfulTime",
+    "ValueUnitPairs",
 ]
 
 TUnit = TypeVar("TUnit", bound=enum.Enum)
 TClass = TypeVar("TClass", bound="ValueUnitPair")
 
 
-class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
+class ValueUnitPair(ABC, BaseModel, Generic[TUnit]):
     """
     Represents a value with associated units.
 
-    Frozen class attributes:
-    ------------------------
-        _CONVERSION_FACTORS (dict[Unit: float]): A dictionary of conversion factors from the default unit to any unit.
-        _DEFAULT_UNIT (Unit): The default unit.
-
-    Instance attributes:
-    --------------------
-        value (float): The numerical value.
-        units (Unit): The units of the value.
+    Attributes
+    ----------
+    value: float
+        The numerical value.
+    units : Unit
+        The units of the value.
     """
 
     _DEFAULT_UNIT: TUnit
@@ -61,12 +59,15 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
     def convert(self, new_units: TUnit) -> float:
         """Return the value converted to the new units.
 
-        Args:
-            new_units (str): The new units.
+        Parameters
+        ----------
+        new_units : Unit
+            The new units.
 
         Returns
         -------
-            float: The converted value.
+        converted_value : float
+            The converted value.
         """
         if new_units not in self._CONVERSION_FACTORS:
             raise ValueError(f"Invalid units: {new_units}")
@@ -76,56 +77,46 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
     def transform(self: TClass, new_units: TUnit) -> TClass:
         """Return a new ValueUnitPair instance with the value converted to the new units.
 
-        Args:
-            new_units (str): The new units.
+        Parameters
+        ----------
+        new_units : Unit
+            The new units.
 
         Returns
         -------
-            ValueUnitPair: A new ValueUnitPair instance with the value converted to the new units.
+        value_unit_pair : ValueUnitPair
+            The new ValueUnitPair instance with the value converted to the new units and the new units.
         """
         return type(self)(value=self.convert(new_units), units=new_units)
 
     @model_validator(mode="before")
     @classmethod
-    def extract_unit_class(cls, data: Optional[dict]) -> dict:
-        UNITS: dict[Type, Type] = {
-            UnitTypesLength: UnitfulLength,
-            UnitTypesTime: UnitfulTime,
-            UnitTypesDischarge: UnitfulDischarge,
-            UnitTypesDirection: UnitfulDirection,
-            UnitTypesVelocity: UnitfulVelocity,
-            UnitTypesIntensity: UnitfulIntensity,
-            UnitTypesArea: UnitfulArea,
-            UnitTypesVolume: UnitfulVolume,
-        }
-        if data is None or isinstance(
-            data,
-            ValueUnitPair,
-        ):
-            # Sometimes the data is already a ValueUnitPair instance, so no need to validate
-            # If it is None, dont raise an error here and let the caller handle it
-            return data
+    def extract_unit_class(cls, data: Optional[dict]) -> "ValueUnitPair":
+        if cls is not ValueUnitPair:
+            return data  # Already in the right subclass, don't interfere
 
-        if data.get("units") is None:
-            raise ValueError("No units provided")
+        if not isinstance(data, dict):
+            raise TypeError("Expected dictionary for deserialization.")
 
-        unit_enum = None
         str_unit = data.get("units")
-        for unit_types_enum in UNITS:
+        if not str_unit:
+            raise ValueError("Missing 'units' field in input data.")
+
+        for unit_enum_cls, vu_cls in UNIT_TO_CLASS.items():
             try:
-                unit_enum = unit_types_enum(str_unit)
-                data["units"] = unit_enum
-                return data
-            except Exception:
+                enum_unit = unit_enum_cls(str_unit)
+                data["units"] = enum_unit
+                return vu_cls(**data)
+            except ValueError:
                 continue
 
-        raise ValueError(f"Unsupported unit: {str_unit}")
+        raise ValueError(f"Unsupported or unknown unit: {str_unit}")
 
     def __str__(self) -> str:
         return f"{self.value} {self.units.value}"
 
     def __repr__(self) -> str:
-        return self.__str__()
+        return f"{type(self).__name__}(value={self.value}, units={self.units})"
 
     def __sub__(self: TClass, other: TClass) -> TClass:
         if not isinstance(other, type(self)):
@@ -227,6 +218,18 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
 
 
 class UnitTypesLength(str, Enum):
+    """Units of length.
+
+    Attributes
+    ----------
+    meters : meters
+    centimeters : centimeters
+    millimeters : millimeters
+    feet : feet
+    inch : inch
+    miles : miles
+    """
+
     meters = "meters"
     centimeters = "centimeters"
     millimeters = "millimeters"
@@ -236,6 +239,17 @@ class UnitTypesLength(str, Enum):
 
 
 class UnitTypesArea(str, Enum):
+    """Units of area.
+
+    Attributes
+    ----------
+    m2 : square meters
+    dm2 : square decimeters
+    cm2 : square centimeters
+    mm2 : square millimeters
+    sf : square feet
+    """
+
     m2 = "m2"
     dm2 = "dm2"
     cm2 = "cm2"
@@ -244,21 +258,55 @@ class UnitTypesArea(str, Enum):
 
 
 class UnitTypesVolume(str, Enum):
+    """Units of volume.
+
+    Attributes
+    ----------
+    m3 : cubic meters
+    cf : cubic feet
+    """
+
     m3 = "m3"
     cf = "cf"
 
 
 class UnitTypesVelocity(str, Enum):
+    """Units of velocity.
+
+    Attributes
+    ----------
+    mps : meters per second
+    knots : nautical miles per hour
+    mph : miles per hour
+    """
+
     mps = "m/s"
     knots = "knots"
     mph = "mph"
 
 
 class UnitTypesDirection(str, Enum):
+    """Units of direction.
+
+    Attributes
+    ----------
+    degrees : degrees
+    """
+
     degrees = "deg N"
 
 
 class UnitTypesTime(str, Enum):
+    """Units of time.
+
+    Attributes
+    ----------
+    seconds : seconds
+    minutes : minutes
+    hours : hours
+    days : days
+    """
+
     seconds = "seconds"
     minutes = "minutes"
     hours = "hours"
@@ -266,21 +314,55 @@ class UnitTypesTime(str, Enum):
 
 
 class UnitTypesDischarge(str, Enum):
+    """Units of discharge.
+
+    Attributes
+    ----------
+    cfs : cubic feet per second
+    cms : cubic meters per second
+    """
+
     cfs = "cfs"
     cms = "m3/s"
 
 
 class UnitTypesIntensity(str, Enum):
+    """Units of intensity.
+
+    Attributes
+    ----------
+    inch_hr : inch per hour
+    mm_hr : millimeter per hour
+    """
+
     inch_hr = "inch/hr"
     mm_hr = "mm/hr"
 
 
 class VerticalReference(str, Enum):
+    """Vertical reference for height.
+
+    Attributes
+    ----------
+    floodmap : Use the floodmap as reference.
+    datum : Use the datum as reference.
+    """
+
     floodmap = "floodmap"
     datum = "datum"
 
 
 class UnitfulLength(ValueUnitPair[UnitTypesLength]):
+    """Combination of length and unit.
+
+    Attributes
+    ----------
+    value : float
+        The length value.
+    units : UnitTypesLength
+        The unit of length.
+    """
+
     _CONVERSION_FACTORS: dict[UnitTypesLength, float] = {
         UnitTypesLength.meters: 1.0,
         UnitTypesLength.centimeters: 100.0,
@@ -293,14 +375,47 @@ class UnitfulLength(ValueUnitPair[UnitTypesLength]):
 
 
 class UnitfulHeight(UnitfulLength):
+    """Combination of height and unit.
+
+    Attributes
+    ----------
+    value : float
+        The height value, must be greater than or equal to 0.
+    units : UnitTypesLength
+        The unit of height.
+    """
+
     value: float = Field(ge=0.0)
 
 
 class UnitfulLengthRefValue(UnitfulLength):
+    """Combination of length and unit with a reference value.
+
+    Attributes
+    ----------
+    value : float
+        The length value, must be greater than or equal to 0.
+    units : UnitTypesLength
+        The unit of length.
+    type : VerticalReference
+        The vertical reference for the length.
+    """
+
     type: VerticalReference
 
 
 class UnitfulArea(ValueUnitPair[UnitTypesArea]):
+    """Combination of area and unit.
+
+    Attributes
+    ----------
+    value : float
+        The area value, must be greater than or equal to 0.
+    units : UnitTypesArea
+            The unit of area.
+
+    """
+
     _CONVERSION_FACTORS: dict[UnitTypesArea, float] = {
         UnitTypesArea.m2: 1,
         UnitTypesArea.dm2: 100,
@@ -313,6 +428,16 @@ class UnitfulArea(ValueUnitPair[UnitTypesArea]):
 
 
 class UnitfulVelocity(ValueUnitPair[UnitTypesVelocity]):
+    """Combination of velocity and unit.
+
+    Attributes
+    ----------
+    value : float
+        The velocity value, must be greater than or equal to 0.
+    units : UnitTypesVelocity
+        The unit of velocity.
+    """
+
     _CONVERSION_FACTORS: dict[UnitTypesVelocity, float] = {
         UnitTypesVelocity.mph: 2.236936,
         UnitTypesVelocity.mps: 1,
@@ -323,6 +448,16 @@ class UnitfulVelocity(ValueUnitPair[UnitTypesVelocity]):
 
 
 class UnitfulDirection(ValueUnitPair[UnitTypesDirection]):
+    """Combination of direction and unit.
+
+    Attributes
+    ----------
+    value : float
+        The direction value, must be greater than or equal to 0 and less than or equal to 360.
+    units : UnitTypesDirection
+        The unit of direction.
+    """
+
     _CONVERSION_FACTORS: dict[UnitTypesDirection, float] = {
         UnitTypesDirection.degrees: 1.0,
     }
@@ -332,6 +467,16 @@ class UnitfulDirection(ValueUnitPair[UnitTypesDirection]):
 
 
 class UnitfulDischarge(ValueUnitPair[UnitTypesDischarge]):
+    """Combination of discharge and unit.
+
+    Attributes
+    ----------
+    value : float
+        The discharge value, must be greater than or equal to 0.
+    units : UnitTypesDischarge
+            The unit of discharge.
+    """
+
     _CONVERSION_FACTORS: dict[UnitTypesDischarge, float] = {
         UnitTypesDischarge.cfs: 35.314684921034,
         UnitTypesDischarge.cms: 1,
@@ -342,6 +487,16 @@ class UnitfulDischarge(ValueUnitPair[UnitTypesDischarge]):
 
 
 class UnitfulIntensity(ValueUnitPair[UnitTypesIntensity]):
+    """Combination of intensity and unit.
+
+    Attributes
+    ----------
+    value : float
+        The intensity value, must be greater than or equal to 0.
+    units : UnitTypesIntensity
+        The unit of intensity.
+    """
+
     _CONVERSION_FACTORS: dict[UnitTypesIntensity, float] = {
         UnitTypesIntensity.inch_hr: 1 / 25.39544832,
         UnitTypesIntensity.mm_hr: 1,
@@ -351,6 +506,16 @@ class UnitfulIntensity(ValueUnitPair[UnitTypesIntensity]):
 
 
 class UnitfulVolume(ValueUnitPair[UnitTypesVolume]):
+    """Combination of volume and unit.
+
+    Attributes
+    ----------
+    value : float
+        The volume value, must be greater than or equal to 0.
+    units : UnitTypesVolume
+            The unit of volume.
+    """
+
     _CONVERSION_FACTORS: dict[UnitTypesVolume, float] = {
         UnitTypesVolume.m3: 1.0,
         UnitTypesVolume.cf: 35.3146667,
@@ -361,6 +526,16 @@ class UnitfulVolume(ValueUnitPair[UnitTypesVolume]):
 
 
 class UnitfulTime(ValueUnitPair[UnitTypesTime]):
+    """Combination of time and unit.
+
+    Attributes
+    ----------
+    value : float
+        The time value.
+    units : UnitTypesTime
+        The unit of time.
+    """
+
     _CONVERSION_FACTORS: dict[UnitTypesTime, float] = {
         UnitTypesTime.days: 1.0 / 24.0,
         UnitTypesTime.hours: 1.0,
@@ -371,6 +546,7 @@ class UnitfulTime(ValueUnitPair[UnitTypesTime]):
 
     @staticmethod
     def from_timedelta(td: timedelta) -> "UnitfulTime":
+        """Convert given timedelta to UnitfulTime object."""
         return UnitfulTime(value=td.total_seconds(), units=UnitTypesTime.seconds)
 
     def to_timedelta(self) -> timedelta:
@@ -382,3 +558,26 @@ class UnitfulTime(ValueUnitPair[UnitTypesTime]):
             datetime.timedelta object with representation: (days, seconds, microseconds)
         """
         return timedelta(seconds=self.convert(UnitTypesTime.seconds))
+
+
+ValueUnitPairs = Union[
+    UnitfulLength,
+    UnitfulTime,
+    UnitfulDischarge,
+    UnitfulDirection,
+    UnitfulVelocity,
+    UnitfulIntensity,
+    UnitfulArea,
+    UnitfulVolume,
+]
+
+UNIT_TO_CLASS: dict[enum.EnumMeta, Type[ValueUnitPairs]] = {
+    UnitTypesLength: UnitfulLength,
+    UnitTypesTime: UnitfulTime,
+    UnitTypesDischarge: UnitfulDischarge,
+    UnitTypesDirection: UnitfulDirection,
+    UnitTypesVelocity: UnitfulVelocity,
+    UnitTypesIntensity: UnitfulIntensity,
+    UnitTypesArea: UnitfulArea,
+    UnitTypesVolume: UnitfulVolume,
+}

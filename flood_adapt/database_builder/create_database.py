@@ -21,14 +21,15 @@ from pydantic import BaseModel, Field
 from shapely import MultiPolygon
 from shapely.geometry import Polygon
 
-from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
-from flood_adapt.object_model.hazard.interface.tide_gauge import (
-    TideGaugeModel,
+from flood_adapt.misc.config import Settings
+from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.hazard.forcing.tide_gauge import (
+    TideGauge,
     TideGaugeSource,
 )
 from flood_adapt.object_model.interface.config.fiat import (
@@ -64,7 +65,6 @@ from flood_adapt.object_model.interface.config.sfincs import (
 )
 from flood_adapt.object_model.interface.config.site import (
     Site,
-    SiteModel,
     StandardObjectModel,
 )
 from flood_adapt.object_model.io import unit_system as us
@@ -1363,7 +1363,7 @@ class DatabaseBuilder:
                 )  # This always return values in meters currently
                 if station is not None:
                     # Add tide_gauge information in site toml
-                    self.site_attrs["sfincs"]["tide_gauge"] = TideGaugeModel(
+                    self.site_attrs["sfincs"]["tide_gauge"] = TideGauge(
                         name=station["name"],
                         description=f"observations from '{self.config.tide_gauge.source}' api",
                         source=self.config.tide_gauge.source,
@@ -1419,7 +1419,7 @@ class DatabaseBuilder:
                 if not file_path.parent.exists():
                     file_path.parent.mkdir()
                 shutil.copyfile(self.config.tide_gauge.file, file_path)
-                self.site_attrs["sfincs"]["tide_gauge"] = TideGaugeModel(
+                self.site_attrs["sfincs"]["tide_gauge"] = TideGauge(
                     description="observations from file stored in database",
                     source="file",
                     file=str(Path(file_path.relative_to(self.static_path)).as_posix()),
@@ -1841,7 +1841,7 @@ class DatabaseBuilder:
         site_config_path.parent.mkdir()
 
         # Create and validate object for config
-        site = SiteModel(
+        site = Site(
             name=self.site_attrs["name"],
             description=self.site_attrs["description"],
             lat=self.site_attrs["lat"],
@@ -1870,8 +1870,7 @@ class DatabaseBuilder:
         )
 
         # Save configs
-        site_obj = Site.load_dict(site)
-        site_obj.save(site_config_path)
+        site.save(site_config_path)
 
     @staticmethod
     def _clip_gdf(

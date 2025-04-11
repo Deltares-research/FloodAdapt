@@ -8,7 +8,6 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.event.template_event import Event
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -19,7 +18,6 @@ from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallCSV,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelCSV,
     WaterlevelGauged,
@@ -30,7 +28,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindCSV,
     WindSynthetic,
 )
-from flood_adapt.object_model.hazard.interface.events import Template
+from flood_adapt.object_model.hazard.interface.events import Event, Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -51,7 +49,7 @@ def plot_forcing(
     forcing_type: ForcingType,
 ) -> tuple[str, Optional[List[Exception]]]:
     """Plot the forcing data for the event."""
-    if event.attrs.forcings.get(forcing_type) is None:
+    if event.forcings.get(forcing_type) is None:
         return "", None
 
     match forcing_type:
@@ -73,14 +71,14 @@ def plot_discharge(
     event: Event,
     site: Site,
 ) -> tuple[str, Optional[List[Exception]]]:
-    rivers: List[IDischarge] = event.attrs.forcings.get(ForcingType.DISCHARGE)
-    if site.attrs.sfincs.river is None:
+    rivers: List[IDischarge] = event.forcings.get(ForcingType.DISCHARGE)
+    if site.sfincs.river is None:
         raise ValueError("No rivers defined for this site.")
     elif not rivers:
         return "", None
     logger.debug("Plotting discharge data")
 
-    units = site.attrs.gui.units.default_discharge_units
+    units = site.gui.units.default_discharge_units
 
     data = pd.DataFrame()
     errors = []
@@ -95,7 +93,7 @@ def plot_discharge(
             elif isinstance(
                 discharge, (DischargeConstant, DischargeSynthetic, DischargeCSV)
             ):
-                river_data = discharge.to_dataframe(event.attrs.time)
+                river_data = discharge.to_dataframe(event.time)
             else:
                 raise ValueError(f"Unknown discharge source: `{discharge.source}`")
 
@@ -116,7 +114,7 @@ def plot_discharge(
         return "", errors
 
     river_names, river_descriptions = [], []
-    for river in site.attrs.sfincs.river:
+    for river in site.sfincs.river:
         river_names.append(river.name)
         river_descriptions.append(river.description or river.name)
 
@@ -143,12 +141,12 @@ def plot_discharge(
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title={"text": "Time"},
         yaxis_title={"text": f"River discharge [{units.value}]"},
-        xaxis={"range": [event.attrs.time.start_time, event.attrs.time.end_time]},
+        xaxis={"range": [event.time.start_time, event.time.end_time]},
     )
 
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir=event.dir_name, obj_name=event.attrs.name)
+    output_dir = db_path(object_dir="events", obj_name=event.name)
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "discharge_timeseries.html"
@@ -162,10 +160,10 @@ def plot_waterlevel(
     event: Event,
     site: Site,
 ) -> tuple[str, Optional[List[Exception]]]:
-    forcing_list = event.attrs.forcings.get(ForcingType.WATERLEVEL)
+    forcing_list = event.forcings.get(ForcingType.WATERLEVEL)
     if not forcing_list:
         return "", None
-    elif site.attrs.sfincs.water_level is None:
+    elif site.sfincs.water_level is None:
         raise ValueError("No water levels defined for this site.")
 
     waterlevel = forcing_list[0]
@@ -176,28 +174,28 @@ def plot_waterlevel(
         return "", None
 
     logger.debug("Plotting water level data")
-    units = site.attrs.gui.units.default_length_units
+    units = site.gui.units.default_length_units
     data = None
     try:
         if isinstance(waterlevel, WaterlevelGauged):
-            if site.attrs.sfincs.tide_gauge is None:
+            if site.sfincs.tide_gauge is None:
                 raise ValueError("No tide gauge defined for this site.")
-            data = TideGauge(
-                site.attrs.sfincs.tide_gauge
-            ).get_waterlevels_in_time_frame(event.attrs.time, units=units)
+            data = site.sfincs.tide_gauge.get_waterlevels_in_time_frame(
+                event.time, units=units
+            )
 
             # Convert to main reference
-            datum_correction = site.attrs.sfincs.water_level.get_datum(
-                site.attrs.sfincs.tide_gauge.reference
+            datum_correction = site.sfincs.water_level.get_datum(
+                site.sfincs.tide_gauge.reference
             ).height.convert(units)
             data += datum_correction
 
         elif isinstance(waterlevel, WaterlevelCSV):
-            data = waterlevel.to_dataframe(event.attrs.time)
+            data = waterlevel.to_dataframe(event.time)
         elif isinstance(waterlevel, WaterlevelSynthetic):
-            data = waterlevel.to_dataframe(time_frame=event.attrs.time)
-            datum_correction = site.attrs.sfincs.water_level.get_datum(
-                site.attrs.gui.plotting.synthetic_tide.datum
+            data = waterlevel.to_dataframe(time_frame=event.time)
+            datum_correction = site.sfincs.water_level.get_datum(
+                site.gui.plotting.synthetic_tide.datum
             ).height.convert(units)
             data += datum_correction
         else:
@@ -211,7 +209,7 @@ def plot_waterlevel(
         logger.error(f"Could not retrieve waterlevel data: {waterlevel} {data}")
         return "", None
 
-    if event.attrs.template == Template.Synthetic:
+    if event.template == Template.Synthetic:
         data.index = (
             data.index - data.index[0]
         ).total_seconds() / 3600  # Convert to hours
@@ -227,15 +225,15 @@ def plot_waterlevel(
         y=0,
         line_dash="dash",
         line_color="#000000",
-        annotation_text=site.attrs.sfincs.water_level.reference,
+        annotation_text=site.sfincs.water_level.reference,
         annotation_position="bottom right",
     )
 
     # plot other references
-    for wl_ref in site.attrs.sfincs.water_level.datums:
+    for wl_ref in site.sfincs.water_level.datums:
         if (
-            wl_ref.name == site.attrs.sfincs.config.overland_model.reference
-            or wl_ref.name in site.attrs.gui.plotting.excluded_datums
+            wl_ref.name == site.sfincs.config.overland_model.reference
+            or wl_ref.name in site.gui.plotting.excluded_datums
         ):
             continue
 
@@ -265,7 +263,7 @@ def plot_waterlevel(
 
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir=event.dir_name, obj_name=event.attrs.name)
+    output_dir = db_path(object_dir="events", obj_name=event.name)
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "waterlevel_timeseries.html"
@@ -279,7 +277,7 @@ def plot_rainfall(
     event: Event,
     site: Site,
 ) -> tuple[str, Optional[List[Exception]]]:
-    forcing_list = event.attrs.forcings.get(ForcingType.RAINFALL)
+    forcing_list = event.forcings.get(ForcingType.RAINFALL)
     if not forcing_list:
         return "", None
     elif forcing_list[0].source in UNPLOTTABLE_SOURCES:
@@ -294,7 +292,7 @@ def plot_rainfall(
     data = None
     try:
         if isinstance(rainfall, (RainfallConstant, RainfallCSV, RainfallSynthetic)):
-            data = rainfall.to_dataframe(event.attrs.time)
+            data = rainfall.to_dataframe(event.time)
         else:
             raise ValueError(f"Unknown rainfall type: {rainfall}")
     except Exception as e:
@@ -306,7 +304,7 @@ def plot_rainfall(
         return "", None
 
     # Add multiplier
-    data *= event.attrs.rainfall_multiplier
+    data *= event.rainfall_multiplier
 
     # Plot actual thing
     fig = px.line(data_frame=data)
@@ -323,14 +321,14 @@ def plot_rainfall(
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title={"text": "Time"},
         yaxis_title={
-            "text": f"Rainfall intensity [{site.attrs.gui.units.default_intensity_units.value}]"
+            "text": f"Rainfall intensity [{site.gui.units.default_intensity_units.value}]"
         },
         showlegend=False,
-        xaxis={"range": [event.attrs.time.start_time, event.attrs.time.end_time]},
+        xaxis={"range": [event.time.start_time, event.time.end_time]},
     )
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir=event.dir_name, obj_name=event.attrs.name)
+    output_dir = db_path(object_dir="events", obj_name=event.name)
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "rainfall_timeseries.html"
@@ -345,7 +343,7 @@ def plot_wind(
     site: Site,
 ) -> tuple[str, Optional[List[Exception]]]:
     logger.debug("Plotting wind data")
-    forcing_list = event.attrs.forcings.get(ForcingType.WIND)
+    forcing_list = event.forcings.get(ForcingType.WIND)
     if not forcing_list:
         return "", None
     elif forcing_list[0].source in UNPLOTTABLE_SOURCES:
@@ -358,7 +356,7 @@ def plot_wind(
     data = None
     try:
         if isinstance(wind, (WindConstant, WindCSV, WindSynthetic)):
-            data = wind.to_dataframe(event.attrs.time)
+            data = wind.to_dataframe(event.time)
         else:
             raise ValueError(f"Unknown wind type: {wind}")
     except Exception as e:
@@ -367,7 +365,7 @@ def plot_wind(
 
     if data is None or data.empty:
         logger.error(
-            f"Could not retrieve wind data: {event.attrs.forcings.get(ForcingType.WIND)} {data}"
+            f"Could not retrieve wind data: {event.forcings.get(ForcingType.WIND)} {data}"
         )
         return "", None
 
@@ -395,11 +393,11 @@ def plot_wind(
 
     # Set y-axes titles
     fig.update_yaxes(
-        title_text=f"Wind speed [{site.attrs.gui.units.default_velocity_units.value}]",
+        title_text=f"Wind speed [{site.gui.units.default_velocity_units.value}]",
         secondary_y=False,
     )
     fig.update_yaxes(
-        title_text=f"Wind direction {site.attrs.gui.units.default_direction_units.value}",
+        title_text=f"Wind direction {site.gui.units.default_direction_units.value}",
         secondary_y=True,
     )
 
@@ -413,14 +411,14 @@ def plot_wind(
         legend=None,
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis={"range": [event.attrs.time.start_time, event.attrs.time.end_time]},
+        xaxis={"range": [event.time.start_time, event.time.end_time]},
         xaxis_title={"text": "Time"},
         showlegend=False,
     )
 
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir=event.dir_name, obj_name=event.attrs.name)
+    output_dir = db_path(object_dir="events", obj_name=event.name)
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "wind_timeseries.html"

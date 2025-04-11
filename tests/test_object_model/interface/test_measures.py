@@ -4,9 +4,9 @@ import pytest
 from pydantic import ValidationError
 
 from flood_adapt.object_model.interface.measures import (
-    GreenInfrastructureModel,
-    HazardMeasureModel,
-    MeasureModel,
+    GreenInfrastructure,
+    HazardMeasure,
+    Measure,
     MeasureType,
     SelectionType,
 )
@@ -45,10 +45,10 @@ def assert_validation_error(
         ), f"Expected msg: '{expected_msg}' but got '{error['msg']}'"
 
 
-class TestMeasureModel:
+class TestMeasure:
     def test_measure_model_correct_input(self):
         # Arrange
-        measure = MeasureModel(
+        measure = Measure(
             name="test_measure",
             description="test description",
             type=MeasureType.floodwall,
@@ -61,7 +61,7 @@ class TestMeasureModel:
 
     def test_measure_model_no_description(self):
         # Arrange
-        measure = MeasureModel(name="test_measure", type=MeasureType.floodwall)
+        measure = Measure(name="test_measure", type=MeasureType.floodwall)
 
         # Assert
         assert measure.name == "test_measure"
@@ -71,21 +71,21 @@ class TestMeasureModel:
     def test_measure_model_no_name(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            MeasureModel(type=MeasureType.floodwall)
+            Measure(type=MeasureType.floodwall)
 
         # Assert
-        assert "validation error for MeasureModel\nname\n  Field required" in str(
+        assert "validation error for Measure\nname\n  Field required" in str(
             excinfo.value
         )
 
     def test_measure_model_invalid_name(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            MeasureModel(name="", type=MeasureType.floodwall)
+            Measure(name="", type=MeasureType.floodwall)
 
         # Assert
         assert (
-            "validation error for MeasureModel\nname\n  String should have at least 1 character "
+            "validation error for Measure\nname\n  String should have at least 1 character "
             in str(excinfo.value)
         )
 
@@ -97,7 +97,7 @@ class TestMeasureModel:
                 "description": "test description",
                 "type": "invalid_type",
             }
-            MeasureModel.model_validate(data)
+            Measure.model_validate(data)
 
         # Assert
         assert len(excinfo.value.errors()) == 1
@@ -106,10 +106,10 @@ class TestMeasureModel:
         assert error["type"] == "enum", error["type"]
 
 
-class TestHazardMeasureModel:
+class TestHazardMeasure:
     def test_hazard_measure_model_correct_input(self):
         # Arrange
-        hazard_measure = HazardMeasureModel(
+        hazard_measure = HazardMeasure(
             name="test_hazard_measure",
             description="test description",
             type=MeasureType.floodwall,
@@ -126,7 +126,7 @@ class TestHazardMeasureModel:
 
     def test_hazard_measure_model_no_polygon_file_aggregation_area(self):
         # Arrange
-        hazard_measure = HazardMeasureModel(
+        hazard_measure = HazardMeasure(
             name="test_hazard_measure",
             description="test description",
             type=MeasureType.floodwall,
@@ -143,7 +143,7 @@ class TestHazardMeasureModel:
     def test_hazard_measure_model_no_polygon_file_polygon_input(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            HazardMeasureModel(
+            HazardMeasure(
                 name="test_hazard_measure",
                 description="test description",
                 type=MeasureType.floodwall,
@@ -156,7 +156,7 @@ class TestHazardMeasureModel:
     def test_hazard_measure_model_invalid_type(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            HazardMeasureModel(
+            HazardMeasure(
                 name="test_hazard_measure",
                 description="test description",
                 type="invalid_type",
@@ -165,12 +165,12 @@ class TestHazardMeasureModel:
             )
 
         # Assert
-        assert "HazardMeasureModel\ntype\n  Input should be " in str(excinfo.value)
+        assert "HazardMeasure\ntype\n  Input should be " in str(excinfo.value)
 
     def test_hazard_measure_model_invalid_selection_type(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            HazardMeasureModel(
+            HazardMeasure(
                 name="test_hazard_measure",
                 description="test description",
                 type=MeasureType.floodwall,
@@ -179,15 +179,13 @@ class TestHazardMeasureModel:
             )
 
         # Assert
-        assert "HazardMeasureModel\nselection_type\n  Input should be " in str(
-            excinfo.value
-        )
+        assert "HazardMeasure\nselection_type\n  Input should be " in str(excinfo.value)
 
 
-class TestGreenInfrastructureModel:
+class TestGreenInfrastructure:
     def test_green_infrastructure_model_correct_aggregation_area_greening_input(self):
         # Arrange
-        green_infrastructure = GreenInfrastructureModel(
+        green_infrastructure = GreenInfrastructure(
             name="test_green_infrastructure",
             description="test description",
             type=MeasureType.greening,
@@ -222,7 +220,7 @@ class TestGreenInfrastructureModel:
 
     def test_green_infrastructure_model_correct_total_storage_polygon_input(self):
         # Arrange
-        green_infrastructure = GreenInfrastructureModel(
+        green_infrastructure = GreenInfrastructure(
             name="test_green_infrastructure",
             description="test description",
             type=MeasureType.total_storage,
@@ -243,7 +241,7 @@ class TestGreenInfrastructureModel:
 
     def test_green_infrastructure_model_correct_water_square_polygon_input(self):
         # Arrange
-        green_infrastructure = GreenInfrastructureModel(
+        green_infrastructure = GreenInfrastructure(
             name="test_green_infrastructure",
             description="test description",
             type=MeasureType.water_square,
@@ -263,7 +261,7 @@ class TestGreenInfrastructureModel:
     def test_green_infrastructure_model_no_aggregation_area_name(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            GreenInfrastructureModel(
+            GreenInfrastructure(
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.greening,
@@ -278,14 +276,14 @@ class TestGreenInfrastructureModel:
         # Assert
         assert_validation_error(
             excinfo=excinfo,
-            class_name="GreenInfrastructureModel",
+            class_name="GreenInfrastructure",
             expected_msg="If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set.",
         )
 
     def test_green_infrastructure_model_no_aggregation_area_type(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            GreenInfrastructureModel(
+            GreenInfrastructure(
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.greening,
@@ -300,14 +298,14 @@ class TestGreenInfrastructureModel:
         # Assert
         assert_validation_error(
             excinfo=excinfo,
-            class_name="GreenInfrastructureModel",
+            class_name="GreenInfrastructure",
             expected_msg="If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set.",
         )
 
     def test_green_infrastructure_model_other_measure_type(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            GreenInfrastructureModel(
+            GreenInfrastructure(
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.floodwall,
@@ -323,7 +321,7 @@ class TestGreenInfrastructureModel:
         # Assert
         assert_validation_error(
             excinfo=excinfo,
-            class_name="GreenInfrastructureModel",
+            class_name="GreenInfrastructure",
             expected_msg="Type must be one of 'water_square', 'greening', or 'total_storage'",
         )
 
@@ -402,7 +400,7 @@ class TestGreenInfrastructureModel:
     ):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            GreenInfrastructureModel(
+            GreenInfrastructure(
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.greening,
@@ -418,7 +416,7 @@ class TestGreenInfrastructureModel:
         # Assert
         assert_validation_error(
             excinfo=excinfo,
-            class_name="GreenInfrastructureModel",
+            class_name="GreenInfrastructure",
             expected_msg=error_message,
             expected_loc=error_loc,
             expected_type=error_type,
@@ -461,7 +459,7 @@ class TestGreenInfrastructureModel:
     ):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            GreenInfrastructureModel(
+            GreenInfrastructure(
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.total_storage,
@@ -473,7 +471,7 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        assert "1 validation error for GreenInfrastructureModel" in str(excinfo.value)
+        assert "1 validation error for GreenInfrastructure" in str(excinfo.value)
         assert error_message in str(excinfo.value)
 
     @pytest.mark.parametrize(
@@ -513,7 +511,7 @@ class TestGreenInfrastructureModel:
     ):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            GreenInfrastructureModel(
+            GreenInfrastructure(
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.water_square,

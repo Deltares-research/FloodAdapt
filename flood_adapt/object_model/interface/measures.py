@@ -1,13 +1,16 @@
+import os
 from enum import Enum
-from typing import Any, Generic, Optional, Type, TypeVar
+from pathlib import Path
+from typing import Any, Optional
 
+import geopandas as gpd
+import pyproj
 from pydantic import Field, field_validator, model_validator
 
-from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
-from flood_adapt.object_model.interface.path_builder import (
-    ObjectDir,
-)
+from flood_adapt.object_model.interface.config.site import Site
+from flood_adapt.object_model.interface.object_model import Object
 from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
 class MeasureCategory(str, Enum):
@@ -75,14 +78,41 @@ class SelectionType(str, Enum):
     all = "all"
 
 
-class MeasureModel(IObjectModel):
-    """BaseModel describing the expected variables and data types of attributes common to all measures."""
+class Measure(Object):
+    """The expected variables and data types of attributes common to all measures.
+
+    A measure is a collection of attributes that can be applied to a model.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type: MeasureType
+        Type of measure. Should be one of the MeasureType enum values.
+    """
 
     type: MeasureType
 
 
-class HazardMeasureModel(MeasureModel):
-    """BaseModel describing the expected variables and data types of attributes common to all impact measures."""
+class HazardMeasure(Measure):
+    """The expected variables and data types of attributes common to all hazard measures.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type: MeasureType
+        Type of measure. Should be one of the MeasureType enum values and is_hazard.
+    selection_type: SelectionType
+        Type of selection. Should be one of the SelectionType enum values.
+    polygon_file: str, Optional, default = None
+        Path to a polygon file, either absolute or relative to the measure path in the database.
+
+    """
 
     selection_type: SelectionType
     polygon_file: Optional[str] = Field(
@@ -98,7 +128,7 @@ class HazardMeasureModel(MeasureModel):
         return value
 
     @model_validator(mode="after")
-    def validate_selection_type(self) -> "HazardMeasureModel":
+    def validate_selection_type(self) -> "HazardMeasure":
         if (
             self.selection_type
             not in [SelectionType.aggregation_area, SelectionType.all]
@@ -109,9 +139,37 @@ class HazardMeasureModel(MeasureModel):
             )
         return self
 
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.polygon_file:
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            src_path = resolve_filepath("measures", self.name, self.polygon_file)
+            path = save_file_to_database(src_path, Path(output_dir))
+            # Update the shapefile path in the object so it is saved in the toml file as well
+            self.polygon_file = path.name
 
-class ImpactMeasureModel(MeasureModel):
-    """BaseModel describing the expected variables and data types of attributes common to all impact measures."""
+
+class ImpactMeasure(Measure):
+    """The expected variables and data types of attributes common to all impact measures.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type: MeasureType
+        Type of measure. Should be one of the MeasureType enum values and is_hazard.
+    selection_type: SelectionType
+        Type of selection. Should be one of the SelectionType enum values.
+    polygon_file: str, Optional, default = None
+        Path to a polygon file, either absolute or relative to the measure path in the database.
+    property_type: str
+        Type of property. Should be one of the PropertyType enum values.
+    aggregation_area_type: str, Optional, default = None
+        Type of aggregation area. Should be one of the SelectionType enum values.
+    aggregation_area_name: str, Optional, default = None
+            Name of the aggregation area.
+    """
 
     type: MeasureType
     selection_type: SelectionType
@@ -150,45 +208,183 @@ class ImpactMeasureModel(MeasureModel):
 
         return self
 
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        """Save the additional files to the database."""
+        if self.polygon_file:
+            src_path = resolve_filepath("measures", self.name, self.polygon_file)
+            path = save_file_to_database(src_path, Path(output_dir))
+            # Update the shapefile path in the object so it is saved in the toml file as well
+            self.polygon_file = path.name
 
-class ElevateModel(ImpactMeasureModel):
-    """BaseModel describing the expected variables and data types of the "elevate" impact measure."""
+
+class Elevate(ImpactMeasure):
+    """The expected variables and data types of the "elevate" impact measure.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type : MeasureType
+        Type of measure. Should be "elevate_properties".
+    selection_type : SelectionType
+        Type of selection. Should be "polygon" or "aggregation_area".
+    polygon_file : str, Optional
+        Path to a polygon file, either absolute or relative to the measure path.
+    aggregation_area_type : str, Optional
+        Type of aggregation area. Should be "aggregation_area" or "all".
+    aggregation_area_name : str, Optional
+        Name of the aggregation area.
+    property_type : str
+        Type of property. Should be "residential" or "commercial".
+    elevation : us.UnitfulLengthRefValue
+        Elevation of the properties.
+    """
 
     type: MeasureType = MeasureType.elevate_properties
     elevation: us.UnitfulLengthRefValue
 
 
-class BuyoutModel(ImpactMeasureModel):
-    """BaseModel describing the expected variables and data types of the "buyout" impact measure."""
+class Buyout(ImpactMeasure):
+    """The expected variables and data types of the "buyout" impact measure.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str, default ""
+        Description of the measure.
+    type : MeasureType, default MeasureType.buyout_properties
+        Type of measure.
+    selection_type : SelectionType
+        Type of selection. Should be "polygon" or "aggregation_area".
+    polygon_file : str, Optional
+        Path to a polygon file, either absolute or relative to the measure path.
+    aggregation_area_type : str, Optional
+        Type of aggregation area. Should be "aggregation_area" or "all".
+    aggregation_area_name : str, Optional
+        Name of the aggregation area.
+    property_type : str
+        Type of property. Should be "residential" or "commercial".
+    elevation : UnitfulLengthRefValue
+        Elevation of the properties.
+
+    """
 
     # Buyout has only the basic impact measure attributes
     type: MeasureType = MeasureType.buyout_properties
 
 
-class FloodProofModel(ImpactMeasureModel):
-    """BaseModel describing the expected variables and data types of the "floodproof" impact measure."""
+class FloodProof(ImpactMeasure):
+    """The expected variables and data types of the "floodproof" impact measure.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type : MeasureType
+        Type of measure. Should be "floodproof_properties".
+    selection_type : SelectionType
+        Type of selection. Should be "polygon" or "aggregation_area".
+    polygon_file : str, Optional
+        Path to a polygon file, either absolute or relative to the measure path.
+    aggregation_area_type : str, Optional
+        Type of aggregation area. Should be "aggregation_area" or "all".
+    aggregation_area_name : str, Optional
+        Name of the aggregation area.
+    property_type : str
+        Type of property. Should be "residential" or "commercial".
+    elevation : UnitfulLengthRefValue
+        Elevation of the properties.
+
+    """
 
     type: MeasureType = MeasureType.floodproof_properties
     elevation: us.UnitfulLength
 
 
-class FloodWallModel(HazardMeasureModel):
-    """BaseModel describing the expected variables and data types of the "floodwall" hazard measure."""
+class FloodWall(HazardMeasure):
+    """
+    The expected variables and data types of the "floodwall" hazard measure.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type : MeasureType, default MeasureType.floodwall
+        Type of measure. Should be "floodwall"
+    selection_type : SelectionType
+        Type of selection. Should be "polygon" or "aggregation_area".
+    polygon_file : str, Optional
+        Path to a polygon file, either absolute or relative to the measure path.
+    elevation : us.UnitfulLength
+        Height of the floodwall.
+    absolute_elevation : bool
+        TODO remove?
+    """
 
     type: MeasureType = MeasureType.floodwall
     elevation: us.UnitfulLength
     absolute_elevation: Optional[bool] = False
 
 
-class PumpModel(HazardMeasureModel):
-    """BaseModel describing the expected variables and data types of the "pump" hazard measure."""
+class Pump(HazardMeasure):
+    """
+    The expected variables and data types of the "pump" hazard measure.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type : MeasureType
+        Type of measure. Should be "pump"
+    selection_type : SelectionType
+        Type of selection. Should be "polyline".
+    polygon_file : str, Optional
+        Path to a polygon file, either absolute or relative to the measure path.
+    elevation : us.UnitfulLength
+        Height of the floodwall.
+    absolute_elevation : bool
+        TODO remove?
+    """
 
     type: MeasureType = MeasureType.pump
     discharge: us.UnitfulDischarge
 
 
-class GreenInfrastructureModel(HazardMeasureModel):
-    """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure."""
+class GreenInfrastructure(HazardMeasure):
+    """The expected variables and data types of the "green infrastructure" hazard measure.
+
+    Attributes
+    ----------
+    name: str
+        Name of the measure.
+    description: str
+        Description of the measure.
+    type : MeasureType
+        Type of measure. Should be "greening"
+    selection_type : SelectionType
+        Type of selection. Should be "polygon" or "aggregation_area".
+    height : us.UnitfulHeight, Optional
+        Height of the green infrastructure.
+    volume : us.UnitfulVolume, Optional
+        Volume of the green infrastructure.
+    polygon_file : str, Optional
+        Path to a polygon file, either absolute or relative to the measure path.
+    aggregation_area_type : str, Optional
+        Type of aggregation area. Should be "aggregation_area".
+    aggregation_area_name : str, Optional
+        Name of the aggregation area.
+    percent_area : float, Optional
+        Percentage of the area that is green infrastructure.
+    """
 
     type: MeasureType = MeasureType.greening
     volume: us.UnitfulVolume
@@ -204,8 +400,8 @@ class GreenInfrastructureModel(HazardMeasureModel):
         return value
 
     @model_validator(mode="after")
-    def validate_hazard_type_values(self) -> "GreenInfrastructureModel":
-        e_msg = f"Error parsing GreenInfrastructureModel: {self.name}"
+    def validate_hazard_type_values(self) -> "GreenInfrastructure":
+        e_msg = f"Error parsing GreenInfrastructure: {self.name}"
 
         if self.type == MeasureType.total_storage:
             if self.height is not None or self.percent_area is not None:
@@ -237,7 +433,7 @@ class GreenInfrastructureModel(HazardMeasureModel):
         return self
 
     @model_validator(mode="after")
-    def validate_selection_type_values(self) -> "GreenInfrastructureModel":
+    def validate_selection_type_values(self) -> "GreenInfrastructure":
         if self.selection_type == SelectionType.aggregation_area:
             if self.aggregation_area_name is None:
                 raise ValueError(
@@ -249,14 +445,62 @@ class GreenInfrastructureModel(HazardMeasureModel):
                 )
         return self
 
+    @staticmethod
+    def calculate_volume(
+        area: us.UnitfulArea,
+        height: us.UnitfulHeight,
+        percent_area: float = 100.0,
+    ) -> float:
+        """Determine volume from area of the polygon and infiltration height.
 
-T_MEASURE_MODEL = TypeVar("T_MEASURE_MODEL", bound=MeasureModel)
+        Parameters
+        ----------
+        area : us.UnitfulArea
+            Area of polygon with units (calculated using calculate_polygon_area)
+        height : us.UnitfulHeight
+            Water height with units
+        percent_area : float, optional
+            Percentage area covered by green infrastructure [%], by default 100.0
+
+        Returns
+        -------
+        float
 
 
-class IMeasure(IObject[T_MEASURE_MODEL], Generic[T_MEASURE_MODEL]):
-    """A class for a FloodAdapt measure."""
+        Returns
+        -------
+        float
+            Volume [m3]
+        """
+        volume = (
+            area.convert(us.UnitTypesArea.m2)
+            * height.convert(us.UnitTypesLength.meters)
+            * (percent_area / 100.0)
+        )
+        return volume
 
-    _attrs_type: Type[T_MEASURE_MODEL]
+    @staticmethod
+    def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: Site) -> float:
+        """Calculate area of a GeoDataFrame Polygon.
 
-    dir_name = ObjectDir.measure
-    display_name = "Measure"
+        Parameters
+        ----------
+        gdf : gpd.GeoDataFrame
+            Polygon object
+        site : Site
+            site config (used for CRS)
+
+        Returns
+        -------
+        floatd
+            Area [m2]
+        """
+        # Determine local CRS
+        crs = pyproj.CRS.from_string(site.sfincs.config.csname)
+        gdf = gdf.to_crs(crs)
+
+        # The GeoJSON file can contain multiple polygons
+        polygon = gdf.geometry
+        # Calculate the area of all polygons
+        area = polygon.area.sum()
+        return area
