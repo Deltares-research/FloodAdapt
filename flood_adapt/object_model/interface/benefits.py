@@ -1,23 +1,54 @@
-from abc import abstractmethod
-from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
-import pandas as pd
 from pydantic import BaseModel
 
-from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
-from flood_adapt.object_model.interface.path_builder import (
-    ObjectDir,
-)
+from flood_adapt.object_model.interface.object_model import Object
 
 
 class CurrentSituationModel(BaseModel):
+    """
+    The accepted input for a current situation in FloodAdapt.
+
+    Attributes
+    ----------
+    projection : str
+        The name of the projection. Should be a projection saved in the database.
+    year : int
+        The year of the current situation.
+    """
+
     projection: str
     year: int
 
 
-class BenefitModel(IObjectModel):
-    """BaseModel describing the expected variables and data types of a Benefit analysis object."""
+class Benefit(Object):
+    """BaseModel describing the expected variables and data types of a Benefit analysis object.
+
+    Attributes
+    ----------
+    name: str
+        The name of the benefit analysis.
+    description: str, default=""
+        The description of the benefit analysis.
+    strategy : str
+        The name of the strategy. Should be a strategy saved in the database.
+    event_set : str
+        The name of the event set. Should be an event set saved in the database.
+    projection : str
+        The name of the projection. Should be a projection saved in the database.
+    future_year : int
+        The future year for the analysis.
+    current_situation : CurrentSituationModel
+        The current situation model.
+    baseline_strategy : str
+        The name of the baseline strategy.
+    discount_rate : float
+        The discount rate for the analysis.
+    implementation_cost : Optional[float], default = None
+        The implementation cost of the strategy.
+    annual_maint_cost : Optional[float], default = None
+        The annual maintenance cost of the strategy.
+    """
 
     strategy: str
     event_set: str
@@ -28,47 +59,3 @@ class BenefitModel(IObjectModel):
     discount_rate: float
     implementation_cost: Optional[float] = None
     annual_maint_cost: Optional[float] = None
-
-
-class IBenefit(IObject[BenefitModel]):
-    _attrs_type = BenefitModel
-    dir_name = ObjectDir.benefit
-    display_name = "Benefit"
-
-    results_path: Path
-    scenarios: pd.DataFrame
-
-    @abstractmethod
-    def check_scenarios(self) -> pd.DataFrame:
-        """Check which scenarios are needed for this benefit calculation and if they have already been created."""
-        ...
-
-    @abstractmethod
-    def run_cost_benefit(self):
-        """Run the cost benefit analysis."""
-        ...
-
-    @abstractmethod
-    def cba(self):
-        """Return the cost benefit analysis results."""
-        ...
-
-    @abstractmethod
-    def cba_aggregation(self):
-        """Return the cost benefit analysis results."""
-        ...
-
-    @abstractmethod
-    def get_output(self) -> dict[str, Any]:
-        """Return the output of the cost benefit analysis."""
-        ...
-
-    @abstractmethod
-    def has_run_check(self) -> bool:
-        """Check if the benefit analysis has been run."""
-        ...
-
-    @abstractmethod
-    def ready_to_run(self) -> bool:
-        """Check if the benefit analysis is ready to run."""
-        ...

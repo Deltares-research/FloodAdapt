@@ -1,31 +1,35 @@
 import math
 import os
 from pathlib import Path
+from typing import Annotated
 
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel
 
-from flood_adapt.object_model.hazard.forcing.timeseries import (
-    CSVTimeseries,
-    SyntheticTimeseries,
-    SyntheticTimeseriesModel,
-)
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWaterlevel,
 )
 from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
+    TimeFrame,
+)
+from flood_adapt.object_model.hazard.interface.timeseries import (
+    CSVTimeseries,
+    SyntheticTimeseries,
+    TimeseriesFactory,
 )
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.utils import copy_file_to_output_dir
+from flood_adapt.object_model.utils import (
+    copy_file_to_output_dir,
+    validate_file_extension,
+)
 
 
 class SurgeModel(BaseModel):
     """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model."""
 
-    timeseries: SyntheticTimeseriesModel[us.UnitfulLength]
+    timeseries: SyntheticTimeseries
 
 
 class TideModel(BaseModel):
@@ -37,7 +41,7 @@ class TideModel(BaseModel):
         value=12.4, units=us.UnitTypesTime.hours
     )
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         index = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
@@ -61,16 +65,18 @@ class WaterlevelSynthetic(IWaterlevel):
     surge: SurgeModel
     tide: TideModel
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         tide_df = self.tide.to_dataframe(time_frame=time_frame)
-        surge = SyntheticTimeseries(data=self.surge.timeseries)
-        surge_df = surge.to_dataframe(time_frame=time_frame)
+
+        surge_df = TimeseriesFactory.from_object(self.surge.timeseries).to_dataframe(
+            time_frame=time_frame
+        )
 
         # Combine
         tide_df.columns = ["waterlevel"]
         surge_df.columns = ["waterlevel"]
         surge_df = surge_df.reindex(tide_df.index, method="nearest", limit=1).fillna(
-            value=surge.attrs.fill_value
+            value=self.surge.timeseries.fill_value
         )
 
         wl_df = tide_df.add(surge_df, axis="index", fill_value=0)
@@ -82,15 +88,13 @@ class WaterlevelSynthetic(IWaterlevel):
 class WaterlevelCSV(IWaterlevel):
     source: ForcingSource = ForcingSource.CSV
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".csv"])]
     units: us.UnitTypesLength = us.UnitTypesLength.meters
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        return (
-            CSVTimeseries[self.units]
-            .load_file(path=self.path)
-            .to_dataframe(time_frame=time_frame)
-        )
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
+        return CSVTimeseries.load_file(
+            path=self.path, units=us.UnitfulLength(value=0, units=self.units)
+        ).to_dataframe(time_frame=time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))

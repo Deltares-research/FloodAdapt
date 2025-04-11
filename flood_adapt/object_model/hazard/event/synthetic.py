@@ -1,15 +1,29 @@
 from typing import ClassVar, List
 
-from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
 from flood_adapt.object_model.hazard.interface.events import (
+    Event,
     ForcingSource,
     ForcingType,
     Template,
 )
 
 
-class SyntheticEventModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
+class SyntheticEvent(Event):
+    """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event.
+
+    Attributes
+    ----------
+    time : TimeFrame
+        The time frame of the event.
+    template : Template, default=Template.Synthetic
+        The template of the event.
+    mode : Mode, default=Mode.single_event
+        The mode of the event.
+    rainfall_multiplier : float, default=1.0
+        The rainfall multiplier of the event.
+    forcings : dict[ForcingType, list[IForcing]]
+        The forcings of the event.
+    """
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [
@@ -32,7 +46,3 @@ class SyntheticEventModel(EventModel):
         ],
     }
     template: Template = Template.Synthetic
-
-
-class SyntheticEvent(Event[SyntheticEventModel]):
-    _attrs_type = SyntheticEventModel

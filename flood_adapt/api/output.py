@@ -6,6 +6,7 @@ import pandas as pd
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
+from flood_adapt.adapter.impacts_integrator import Impacts
 from flood_adapt.dbs_classes.database import Database
 
 
@@ -143,7 +144,8 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
         The HTML strings of the water level timeseries
     """
     # Get the impacts objects from the scenario
-    hazard = Database().scenarios.get(name).impacts.hazard
+    scenario = Database().scenarios.get(name)
+    hazard = Impacts(scenario).hazard
 
     # Check if the scenario has run
     if not hazard.has_run:
@@ -176,7 +178,7 @@ def get_infographic(name: str) -> str:
     """
     # Get the impacts objects from the scenario
     database = Database()
-    impact = database.scenarios.get(name).impacts
+    impact = Impacts(scenario=database.scenarios.get(name))
 
     # Check if the scenario has run
     if not impact.has_run_check():

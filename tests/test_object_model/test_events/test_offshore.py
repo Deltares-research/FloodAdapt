@@ -5,7 +5,6 @@ from flood_adapt.adapter.sfincs_offshore import OffshoreSfincsHandler
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.historical import (
     HistoricalEvent,
-    HistoricalEventModel,
 )
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
@@ -21,12 +20,11 @@ from flood_adapt.object_model.hazard.forcing.wind import (
 )
 from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
+    TimeFrame,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
-from flood_adapt.object_model.interface.scenarios import ScenarioModel
+from flood_adapt.object_model.interface.scenarios import Scenario
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.scenario import Scenario
 from tests.test_adapter.test_sfincs_adapter import mock_meteohandler_read
 
 __all__ = ["mock_meteohandler_read"]
@@ -35,41 +33,37 @@ __all__ = ["mock_meteohandler_read"]
 @pytest.fixture()
 def setup_offshore_scenario(test_db: IDatabase):
     event = HistoricalEvent(
-        HistoricalEventModel(
-            name="test_historical_offshore_meteo",
-            time=TimeModel(),
-            forcings={
-                ForcingType.WATERLEVEL: [WaterlevelModel()],
-                ForcingType.WIND: [WindMeteo()],
-                ForcingType.RAINFALL: [RainfallMeteo()],
-                ForcingType.DISCHARGE: [
-                    DischargeConstant(
-                        river=RiverModel(
-                            name="cooper",
-                            description="Cooper River",
-                            x_coordinate=595546.3,
-                            y_coordinate=3675590.6,
-                            mean_discharge=us.UnitfulDischarge(
-                                value=5000, units=us.UnitTypesDischarge.cfs
-                            ),
-                        ),
-                        discharge=us.UnitfulDischarge(
+        name="test_historical_offshore_meteo",
+        time=TimeFrame(),
+        forcings={
+            ForcingType.WATERLEVEL: [WaterlevelModel()],
+            ForcingType.WIND: [WindMeteo()],
+            ForcingType.RAINFALL: [RainfallMeteo()],
+            ForcingType.DISCHARGE: [
+                DischargeConstant(
+                    river=RiverModel(
+                        name="cooper",
+                        description="Cooper River",
+                        x_coordinate=595546.3,
+                        y_coordinate=3675590.6,
+                        mean_discharge=us.UnitfulDischarge(
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
-                    )
-                ],
-            },
-        )
+                    ),
+                    discharge=us.UnitfulDischarge(
+                        value=5000, units=us.UnitTypesDischarge.cfs
+                    ),
+                )
+            ],
+        },
     )
     test_db.events.save(event)
 
     scn = Scenario(
-        ScenarioModel(
-            name="test_scenario",
-            event=event.attrs.name,
-            projection="current",
-            strategy="no_measures",
-        )
+        name="test_scenario",
+        event=event.name,
+        projection="current",
+        strategy="no_measures",
     )
     test_db.scenarios.save(scn)
 

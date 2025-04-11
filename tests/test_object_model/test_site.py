@@ -10,12 +10,11 @@ from flood_adapt.object_model.interface.config.sfincs import (
     AsciiStr,
     DemModel,
     RiverModel,
-    TideGaugeModel,
+    TideGauge,
 )
 from flood_adapt.object_model.interface.config.site import (
     SfincsModel,
     Site,
-    SiteModel,
 )
 from tests.data.create_test_static import create_site_config
 
@@ -229,50 +228,47 @@ def test_loadFile_invalidFile_raiseFileNotFoundError(test_db):
         Site.load_file("not_a_file.toml")
 
 
-def test_loadFile_validFile_returnSiteModel(test_sites):
+def test_loadFile_validFile_returnSite(test_sites):
     test_site = test_sites["site.toml"]
     assert isinstance(test_site, Site)
-    assert isinstance(test_site.attrs, SiteModel)
 
 
 def test_loadFile_tomlFile_setAttrs(test_sites, test_dict):
     test_site = test_sites["site.toml"]
-    assert isinstance(
-        test_site.attrs.sfincs.water_level.datums[0].height, us.UnitfulLength
-    )
+    assert isinstance(test_site.sfincs.water_level.datums[0].height, us.UnitfulLength)
 
-    assert test_site.attrs.lat == 32.7765
-    assert test_site.attrs.fiat.config.exposure_crs == "EPSG:4326"
-    assert test_site.attrs.sfincs.river[0].mean_discharge.value == 5000
+    assert test_site.lat == 32.7765
+    assert test_site.fiat.config.exposure_crs == "EPSG:4326"
+    assert test_site.sfincs.river[0].mean_discharge.value == 5000
 
 
 def test_loadFile_tomlFile_no_river(test_sites):
     test_site = test_sites["site_without_river.toml"]
-    assert isinstance(test_site.attrs.name, str)
-    assert isinstance(test_site.attrs.sfincs, SfincsModel)
-    assert isinstance(test_site.attrs.sfincs.dem, DemModel)
-    assert isinstance(test_site.attrs.sfincs.tide_gauge, TideGaugeModel)
-    assert test_site.attrs.lat == 32.7765
-    assert test_site.attrs.fiat.config.exposure_crs == "EPSG:4326"
+    assert isinstance(test_site.name, str)
+    assert isinstance(test_site.sfincs, SfincsModel)
+    assert isinstance(test_site.sfincs.dem, DemModel)
+    assert isinstance(test_site.sfincs.tide_gauge, TideGauge)
+    assert test_site.lat == 32.7765
+    assert test_site.fiat.config.exposure_crs == "EPSG:4326"
 
 
 def test_save_addedRiversToModel_savedCorrectly(test_db, test_sites):
     test_site_1_river = test_sites["site.toml"]
-    number_rivers_before = len(test_site_1_river.attrs.sfincs.river)
+    number_rivers_before = len(test_site_1_river.sfincs.river)
     number_additional_rivers = 3
 
     for i in range(number_additional_rivers):
-        test_site_1_river.attrs.sfincs.river.append(
+        test_site_1_river.sfincs.river.append(
             RiverModel(
-                name=f"{test_site_1_river.attrs.sfincs.river[i].description}_{i}",
-                description=f"{test_site_1_river.attrs.sfincs.river[i].description}_{i}",
+                name=f"{test_site_1_river.sfincs.river[i].description}_{i}",
+                description=f"{test_site_1_river.sfincs.river[i].description}_{i}",
                 x_coordinate=(
-                    test_site_1_river.attrs.sfincs.river[i].x_coordinate - 1000 * i
+                    test_site_1_river.sfincs.river[i].x_coordinate - 1000 * i
                 ),
                 y_coordinate=(
-                    test_site_1_river.attrs.sfincs.river[i].y_coordinate - 1000 * i
+                    test_site_1_river.sfincs.river[i].y_coordinate - 1000 * i
                 ),
-                mean_discharge=test_site_1_river.attrs.sfincs.river[i].mean_discharge,
+                mean_discharge=test_site_1_river.sfincs.river[i].mean_discharge,
             )
         )
     new_toml = test_db.static_path / "config" / "site_multiple_rivers.toml"
@@ -282,26 +278,24 @@ def test_save_addedRiversToModel_savedCorrectly(test_db, test_sites):
 
     test_site_multiple_rivers = Site.load_file(new_toml)
 
-    assert isinstance(test_site_multiple_rivers.attrs.sfincs.river, list)
+    assert isinstance(test_site_multiple_rivers.sfincs.river, list)
     assert (
-        len(test_site_multiple_rivers.attrs.sfincs.river)
+        len(test_site_multiple_rivers.sfincs.river)
         == number_additional_rivers + number_rivers_before
     )
 
-    for i, river in enumerate(test_site_multiple_rivers.attrs.sfincs.river):
+    for i, river in enumerate(test_site_multiple_rivers.sfincs.river):
         assert isinstance(river, RiverModel)
 
-        assert isinstance(test_site_multiple_rivers.attrs.sfincs.river[i].name, str)
+        assert isinstance(test_site_multiple_rivers.sfincs.river[i].name, str)
+        assert isinstance(test_site_multiple_rivers.sfincs.river[i].x_coordinate, float)
         assert isinstance(
-            test_site_multiple_rivers.attrs.sfincs.river[i].x_coordinate, float
-        )
-        assert isinstance(
-            test_site_multiple_rivers.attrs.sfincs.river[i].mean_discharge,
+            test_site_multiple_rivers.sfincs.river[i].mean_discharge,
             us.UnitfulDischarge,
         )
         assert (
-            test_site_multiple_rivers.attrs.sfincs.river[i].mean_discharge.value
-            == test_site_1_river.attrs.sfincs.river[i].mean_discharge.value
+            test_site_multiple_rivers.sfincs.river[i].mean_discharge.value
+            == test_site_1_river.sfincs.river[i].mean_discharge.value
         )
 
 
@@ -336,8 +330,7 @@ def test_site_builder_load_file():
     if file_path.exists():
         file_path.unlink()
 
-    config = create_site_config()
-    to_save = Site(config)
+    to_save = create_site_config()
     to_save.save(file_path)
 
     loaded = Site.load_file(file_path)

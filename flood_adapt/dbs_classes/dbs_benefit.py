@@ -1,10 +1,12 @@
 import shutil
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.benefit import Benefit
+from flood_adapt.object_model.benefit_runner import Benefit, BenefitRunner
 
 
 class DbsBenefit(DbsTemplate[Benefit]):
+    display_name = "Benefit"
+    dir_name = "benefits"
     _object_class = Benefit
 
     def save(self, object_model: Benefit, overwrite: bool = False):
@@ -22,10 +24,12 @@ class DbsBenefit(DbsTemplate[Benefit]):
         ValueError
             Raise error if name is already in use. Names of benefits assessments should be unique.
         """
+        runner = BenefitRunner(self._database, benefit=object_model)
+
         # Check if all scenarios are created
-        if not all(object_model.scenarios["scenario created"] != "No"):
+        if not all(runner.scenarios["scenario created"] != "No"):
             raise ValueError(
-                f"'{object_model.attrs.name}' name cannot be created before all necessary scenarios are created."
+                f"'{object_model.name}' name cannot be created before all necessary scenarios are created."
             )
 
         # Save the benefit
@@ -55,7 +59,7 @@ class DbsBenefit(DbsTemplate[Benefit]):
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
 
-    def edit(self, object_model: Benefit):
+    def edit(self, benefit: Benefit):
         """Edits an already existing benefit in the database.
 
         Parameters
@@ -69,9 +73,25 @@ class DbsBenefit(DbsTemplate[Benefit]):
             Raise error if name is already in use.
         """
         # Check if it is possible to edit the benefit.
-        super().edit(object_model)
+        super().edit(benefit)
 
         # Delete output if edited
-        output_path = self.output_path / object_model.attrs.name
+        output_path = self.output_path / benefit.name
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
+
+    def get_runner(self, name: str) -> BenefitRunner:
+        return BenefitRunner(self._database, self.get(name))
+
+    def has_run_check(self, name: str) -> bool:
+        return self.get_runner(name).has_run_check()
+
+    def ready_to_run(self, name: str) -> bool:
+        """Check if all the required scenarios have already been run.
+
+        Returns
+        -------
+        bool
+            True if required scenarios have been already run
+        """
+        return self.get_runner(name).ready_to_run()

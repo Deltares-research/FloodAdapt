@@ -1,5 +1,6 @@
 ---
 title: 	FloodAdapt Technical documentation
+sidebar: technical_docs
 filters:
   - lightbox
 lightbox: auto

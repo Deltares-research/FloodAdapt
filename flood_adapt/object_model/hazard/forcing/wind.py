@@ -1,24 +1,26 @@
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Annotated, Any
 
 import pandas as pd
 import xarray as xr
-from pydantic import Field
 
 from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
-from flood_adapt.object_model.hazard.forcing.timeseries import (
-    CSVTimeseries,
-    SyntheticTimeseries,
-    SyntheticTimeseriesModel,
-    TimeModel,
-)
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWind,
 )
+from flood_adapt.object_model.hazard.interface.timeseries import (
+    CSVTimeseries,
+    SyntheticTimeseries,
+    TimeFrame,
+    TimeseriesFactory,
+)
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.utils import copy_file_to_output_dir
+from flood_adapt.object_model.utils import (
+    copy_file_to_output_dir,
+    validate_file_extension,
+)
 
 
 class WindConstant(IWind):
@@ -27,7 +29,7 @@ class WindConstant(IWind):
     speed: us.UnitfulVelocity
     direction: us.UnitfulDirection
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
@@ -44,20 +46,22 @@ class WindConstant(IWind):
 class WindSynthetic(IWind):
     source: ForcingSource = ForcingSource.SYNTHETIC
 
-    magnitude: SyntheticTimeseriesModel[us.UnitfulVelocity]
-    direction: SyntheticTimeseriesModel[us.UnitfulDirection]
+    magnitude: SyntheticTimeseries
+    direction: SyntheticTimeseries
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
             freq=time_frame.time_step,
             name="time",
         )
-        magnitude = SyntheticTimeseries(self.magnitude).to_dataframe(
+
+        magnitude = TimeseriesFactory.from_object(self.magnitude).to_dataframe(
             time_frame=time_frame,
         )
-        direction = SyntheticTimeseries(self.direction).to_dataframe(
+
+        direction = TimeseriesFactory.from_object(self.direction).to_dataframe(
             time_frame=time_frame,
         )
         return pd.DataFrame(
@@ -72,8 +76,8 @@ class WindSynthetic(IWind):
 class WindTrack(IWind):
     source: ForcingSource = ForcingSource.TRACK
 
-    path: Optional[Path] = Field(default=None)
-    # path to spw file, set this when creating it
+    path: Annotated[Path, validate_file_extension([".cyc", ".spw"])]
+    # path to cyc file, set this when creating it
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
@@ -83,15 +87,17 @@ class WindTrack(IWind):
 class WindCSV(IWind):
     source: ForcingSource = ForcingSource.CSV
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".csv"])]
 
     units: dict[str, Any] = {
         "speed": us.UnitTypesVelocity.mps,
         "direction": us.UnitTypesDirection.degrees,
     }
 
-    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        return CSVTimeseries[self.units].load_file(self.path).to_dataframe(time_frame)
+    def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
+        return CSVTimeseries.load_file(
+            path=self.path, units=us.UnitfulVelocity(value=0, units=self.units["speed"])
+        ).to_dataframe(time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))
@@ -105,7 +111,7 @@ class WindNetCDF(IWind):
     source: ForcingSource = ForcingSource.NETCDF
     units: us.UnitTypesVelocity = us.UnitTypesVelocity.mps
 
-    path: Path
+    path: Annotated[Path, validate_file_extension([".nc"])]
 
     def read(self) -> xr.Dataset:
         required_vars = ("wind10_v", "wind10_u", "press_msl")

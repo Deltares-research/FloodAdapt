@@ -13,20 +13,6 @@ from flood_adapt.object_model.interface.config.sfincs import RiverModel
 
 
 ### ENUMS ###
-class ShapeType(str, Enum):
-    gaussian = "gaussian"
-    block = "block"
-    triangle = "triangle"
-    scs = "scs"
-
-
-class Scstype(str, Enum):
-    type1 = "type_1"
-    type1a = "type_1a"
-    type2 = "type_2"
-    type3 = "type_3"
-
-
 class ForcingType(str, Enum):
     """Enum class for the different types of forcing parameters."""
 

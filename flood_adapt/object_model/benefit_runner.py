@@ -10,28 +10,34 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
-from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
-from flood_adapt.object_model.interface.database_user import DatabaseUser
+from flood_adapt.object_model.interface.benefits import Benefit
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
     db_path,
 )
+from flood_adapt.object_model.interface.scenarios import Scenario
+from flood_adapt.object_model.scenario_runner import ScenarioRunner
 
 
-class Benefit(IBenefit, DatabaseUser):
+class BenefitRunner:
     """Object holding all attributes and methods related to a benefit analysis."""
 
-    scenarios: pd.DataFrame
+    benefit: Benefit
+    _scenarios: pd.DataFrame
 
-    def __init__(self, data: dict[str, Any] | BenefitModel):
+    def __init__(self, database, benefit: Benefit):
         """Initialize function called when object is created through the load_file or load_dict methods."""
-        super().__init__(data)
+        self.database = database
+        self.benefit = benefit
+
         # Get output path based on database path
         self.check_scenarios()
-        self.results_path = self.database.benefits.output_path.joinpath(self.attrs.name)
+        self.results_path = self.database.benefits.output_path.joinpath(
+            self.benefit.name
+        )
         self.site_info = self.database.site
-        self.unit = self.site_info.attrs.fiat.config.damage_unit
+        self.unit = self.site_info.fiat.config.damage_unit
 
     @property
     def has_run(self):
@@ -47,7 +53,7 @@ class Benefit(IBenefit, DatabaseUser):
     def get_output(self) -> dict[str, Any]:
         if not self.has_run:
             raise RuntimeError(
-                f"Cannot read output since benefit analysis '{self.attrs.name}' has not been run yet."
+                f"Cannot read output since benefit analysis '{self.benefit.name}' has not been run yet."
             )
 
         results_toml = self.results_path.joinpath("results.toml")
@@ -96,19 +102,19 @@ class Benefit(IBenefit, DatabaseUser):
 
         # Use the predefined names for the current projections and no measures strategy
         for scenario in scenarios_calc.keys():
-            scenarios_calc[scenario]["event"] = self.attrs.event_set
+            scenarios_calc[scenario]["event"] = self.benefit.event_set
 
             if "current" in scenario:
                 scenarios_calc[scenario]["projection"] = (
-                    self.attrs.current_situation.projection
+                    self.benefit.current_situation.projection
                 )
             elif "future" in scenario:
-                scenarios_calc[scenario]["projection"] = self.attrs.projection
+                scenarios_calc[scenario]["projection"] = self.benefit.projection
 
             if "no_measures" in scenario:
-                scenarios_calc[scenario]["strategy"] = self.attrs.baseline_strategy
+                scenarios_calc[scenario]["strategy"] = self.benefit.baseline_strategy
             else:
-                scenarios_calc[scenario]["strategy"] = self.attrs.strategy
+                scenarios_calc[scenario]["strategy"] = self.benefit.strategy
 
         # Get the available scenarios
         scenarios_avail = self.database.scenarios.list_objects()["objects"]
@@ -117,13 +123,14 @@ class Benefit(IBenefit, DatabaseUser):
         for scenario in scenarios_calc.keys():
             scn_dict = scenarios_calc[scenario].copy()
             scn_dict["name"] = scenario
-            scenario_obj = self.database.scenarios._object_class.load_dict(scn_dict)
+            scenario_obj = Scenario(**scn_dict)
             created = [
                 scn_avl for scn_avl in scenarios_avail if scenario_obj == scn_avl
             ]
             if len(created) > 0:
-                scenarios_calc[scenario]["scenario created"] = created[0].attrs.name
-                scenarios_calc[scenario]["scenario run"] = created[0].impacts.has_run
+                runner = ScenarioRunner(self.database, scenario=created[0])
+                scenarios_calc[scenario]["scenario created"] = created[0].name
+                scenarios_calc[scenario]["scenario run"] = runner.impacts.has_run
             else:
                 scenarios_calc[scenario]["scenario created"] = "No"
                 scenarios_calc[scenario]["scenario run"] = False
@@ -206,11 +213,11 @@ class Benefit(IBenefit, DatabaseUser):
             )
 
         # Get years of interest
-        year_start = self.attrs.current_situation.year
-        year_end = self.attrs.future_year
+        year_start = self.benefit.current_situation.year
+        year_end = self.benefit.future_year
 
         # Calculate benefits
-        cba = Benefit._calc_benefits(
+        cba = self._calc_benefits(
             years=[year_start, year_end],
             risk_no_measures=[
                 scenarios.loc["current_no_measures", "EAD"],
@@ -220,7 +227,7 @@ class Benefit(IBenefit, DatabaseUser):
                 scenarios.loc["current_with_strategy", "EAD"],
                 scenarios.loc["future_with_strategy", "EAD"],
             ],
-            discount_rate=self.attrs.discount_rate,
+            discount_rate=self.benefit.discount_rate,
         )
 
         # Save indicators in dictionary
@@ -229,15 +236,15 @@ class Benefit(IBenefit, DatabaseUser):
         results["benefits"] = cba["benefits_discounted"].sum()
 
         # Only if costs are provided do the full cost-benefit analysis
-        cost_calc = (self.attrs.implementation_cost is not None) and (
-            self.attrs.annual_maint_cost is not None
+        cost_calc = (self.benefit.implementation_cost is not None) and (
+            self.benefit.annual_maint_cost is not None
         )
         if cost_calc:
-            cba = Benefit._calc_costs(
+            cba = self._calc_costs(
                 benefits=cba,
-                implementation_cost=self.attrs.implementation_cost,
-                annual_maint_cost=self.attrs.annual_maint_cost,
-                discount_rate=self.attrs.discount_rate,
+                implementation_cost=self.benefit.implementation_cost,
+                annual_maint_cost=self.benefit.annual_maint_cost,
+                discount_rate=self.benefit.discount_rate,
             )
             # Calculate costs
             results["costs"] = cba["costs_discounted"].sum()
@@ -268,21 +275,19 @@ class Benefit(IBenefit, DatabaseUser):
         """Zonal Benefits analysis for the different aggregation areas."""
         results_path = db_path(TopLevelDir.output, ObjectDir.scenario)
         # Get years of interest
-        year_start = self.attrs.current_situation.year
-        year_end = self.attrs.future_year
+        year_start = self.benefit.current_situation.year
+        year_end = self.benefit.future_year
 
         # Get EAD for each scenario and save to new dataframe
         scenarios = self.scenarios.copy(deep=True)
 
         # Read in the names of the aggregation area types
-        aggregations = [
-            aggr.name for aggr in self.site_info.attrs.fiat.config.aggregation
-        ]
+        aggregations = [aggr.name for aggr in self.site_info.fiat.config.aggregation]
 
         # Check if equity information is available to define variables to use
         vars = []
         for i, aggr_name in enumerate(aggregations):
-            if self.site_info.attrs.fiat.config.aggregation[i].equity is not None:
+            if self.site_info.fiat.config.aggregation[i].equity is not None:
                 vars.append(["EAD", "EWEAD"])
             else:
                 vars.append(["EAD"])
@@ -329,7 +334,7 @@ class Benefit(IBenefit, DatabaseUser):
             benefits[aggr_name].index = risk[aggr_name]["EAD"].index
             for var in vars[i]:
                 for index, row in risk[aggr_name][var].iterrows():
-                    cba = Benefit._calc_benefits(
+                    cba = self._calc_benefits(
                         years=[year_start, year_end],
                         risk_no_measures=[
                             row["current_no_measures"],
@@ -339,7 +344,7 @@ class Benefit(IBenefit, DatabaseUser):
                             row["current_with_strategy"],
                             row["future_with_strategy"],
                         ],
-                        discount_rate=self.attrs.discount_rate,
+                        discount_rate=self.benefit.discount_rate,
                     )
                     benefits[aggr_name].loc[row.name, var_output[var]] = cba[
                         "benefits_discounted"
@@ -357,12 +362,12 @@ class Benefit(IBenefit, DatabaseUser):
             # Load aggregation areas
             ind = [
                 i
-                for i, n in enumerate(self.site_info.attrs.fiat.config.aggregation)
+                for i, n in enumerate(self.site_info.fiat.config.aggregation)
                 if n.name == aggr_name
             ][0]
             aggr_areas_path = (
                 db_path(TopLevelDir.static)
-                / self.site_info.attrs.fiat.config.aggregation[ind].file
+                / self.site_info.fiat.config.aggregation[ind].file
             )
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
             # Define output path
@@ -370,7 +375,7 @@ class Benefit(IBenefit, DatabaseUser):
             # Save file
             aggr_areas = aggr_areas.join(
                 benefits[aggr_name],
-                on=self.site_info.attrs.fiat.config.aggregation[ind].field_name,
+                on=self.site_info.fiat.config.aggregation[ind].field_name,
             )
             aggr_areas.to_file(outpath, driver="GPKG")
 

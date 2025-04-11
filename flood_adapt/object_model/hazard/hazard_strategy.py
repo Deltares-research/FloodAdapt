@@ -1,4 +1,4 @@
-from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.measures import Measure
 
 
 class HazardStrategy:
@@ -6,17 +6,17 @@ class HazardStrategy:
 
     Parameters
     ----------
-    measures : list[IMeasure]
+    measures : list[Measure]
     """
 
-    def __init__(self, measures: list[IMeasure]) -> None:
+    def __init__(self, measures: list[Measure]) -> None:
         self.measures = measures
 
     def __eq__(self, other):
         if not isinstance(other, HazardStrategy):
             # don't attempt to compare against unrelated types
             return NotImplemented
-        names_1 = [measure.attrs.name for measure in self.measures]
-        names_2 = [measure.attrs.name for measure in other.measures]
+        names_1 = [measure.name for measure in self.measures]
+        names_2 = [measure.name for measure in other.measures]
 
         return set(names_1) == set(names_2)

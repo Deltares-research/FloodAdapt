@@ -3,10 +3,12 @@ from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.template_event import Event
+from flood_adapt.object_model.hazard.interface.events import Event
 
 
 class DbsEvent(DbsTemplate[Event]):
+    dir_name = "events"
+    display_name = "Event"
     _object_class = Event
 
     def get(self, name: str) -> Event:
@@ -27,9 +29,7 @@ class DbsEvent(DbsTemplate[Event]):
 
         # Check if the object exists
         if not Path(event_path).is_file():
-            raise ValueError(
-                f"{self._object_class.display_name} '{name}' does not exist."
-            )
+            raise ValueError(f"{self.display_name} '{name}' does not exist.")
 
         # Load event
         return EventFactory.load_file(event_path)
@@ -44,7 +44,7 @@ class DbsEvent(DbsTemplate[Event]):
         """
         events = self._get_object_list()
         objects = [self.get(name) for name in events["name"]]
-        events["description"] = [obj.attrs.description for obj in objects]
+        events["description"] = [obj.description for obj in objects]
         events["objects"] = objects
         return events
 
@@ -62,9 +62,9 @@ class DbsEvent(DbsTemplate[Event]):
             True if the event is a standard event, False otherwise
         """
         # Check if event is a standard event
-        if self._database.site.attrs.standard_objects:
-            if self._database.site.attrs.standard_objects.events:
-                if name in self._database.site.attrs.standard_objects.events:
+        if self._database.site.standard_objects:
+            if self._database.site.standard_objects.events:
+                if name in self._database.site.standard_objects.events:
                     return True
         return False
 
@@ -86,8 +86,6 @@ class DbsEvent(DbsTemplate[Event]):
 
         # Check if event is used in a scenario
         used_in_scenario = [
-            scenario.attrs.name
-            for scenario in scenarios
-            if name == scenario.attrs.event
+            scenario.name for scenario in scenarios if name == scenario.event
         ]
         return used_in_scenario
