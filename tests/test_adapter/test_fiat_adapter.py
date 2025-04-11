@@ -3,12 +3,12 @@ import pytest
 from fiat_toolbox import get_fiat_columns
 from pandas.testing import assert_frame_equal
 
-from flood_adapt.adapter.impacts_integrator import Impacts
-from flood_adapt.object_model.interface.path_builder import (
+from flood_adapt.misc.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.scenario_runner import Scenario, ScenarioRunner
+from flood_adapt.workflows.impacts_integrator import Impacts
+from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
 
 _FIAT_COLUMNS = get_fiat_columns()
 

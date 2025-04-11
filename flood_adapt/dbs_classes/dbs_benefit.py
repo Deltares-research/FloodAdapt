@@ -1,7 +1,7 @@
 import shutil
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.benefit_runner import Benefit, BenefitRunner
+from flood_adapt.workflows.benefit_runner import Benefit, BenefitRunner
 
 
 class DbsBenefit(DbsTemplate[Benefit]):

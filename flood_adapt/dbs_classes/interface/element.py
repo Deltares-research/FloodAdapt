@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Generic, TypeVar
 
-from flood_adapt.object_model.interface.object_model import Object
+from flood_adapt.objects.object_model import Object
 
 T_OBJECT_MODEL = TypeVar("T_OBJECT_MODEL", bound=Object)
 

@@ -22,17 +22,12 @@ from shapely import MultiPolygon
 from shapely.geometry import Polygon
 
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
-from flood_adapt.api.events import get_event_mode
-from flood_adapt.api.projections import create_projection, save_projection
-from flood_adapt.api.static import read_database
-from flood_adapt.api.strategies import create_strategy, save_strategy
-from flood_adapt.misc.config import Settings
-from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.forcing.tide_gauge import (
-    TideGauge,
-    TideGaugeSource,
-)
-from flood_adapt.object_model.interface.config.fiat import (
+
+# from flood_adapt.api.events import get_event_mode
+# from flood_adapt.api.projections import create_projection, save_projection
+# from flood_adapt.api.strategies import create_strategy, save_strategy
+from flood_adapt.config.config import Settings
+from flood_adapt.config.fiat import (
     AggregationModel,
     BenefitsModel,
     BFEModel,
@@ -42,7 +37,7 @@ from flood_adapt.object_model.interface.config.fiat import (
     RiskModel,
     SVIModel,
 )
-from flood_adapt.object_model.interface.config.gui import (
+from flood_adapt.config.gui import (
     GuiModel,
     GuiUnitModel,
     MapboxLayersModel,
@@ -50,7 +45,7 @@ from flood_adapt.object_model.interface.config.gui import (
     SyntheticTideModel,
     VisualizationLayersModel,
 )
-from flood_adapt.object_model.interface.config.sfincs import (
+from flood_adapt.config.sfincs import (
     CycloneTrackDatabaseModel,
     DatumModel,
     DemModel,
@@ -64,11 +59,17 @@ from flood_adapt.object_model.interface.config.sfincs import (
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
-from flood_adapt.object_model.interface.config.site import (
+from flood_adapt.config.site import (
     Site,
     StandardObjectModel,
 )
-from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.flood_adapt import FloodAdapt
+from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.forcing.tide_gauge import (
+    TideGauge,
+    TideGaugeSource,
+)
 
 config_path = None
 
@@ -493,25 +494,26 @@ class DatabaseBuilder:
         physical and socio-economic conditions, and saves them to the database.
         """
         # Load database
-        read_database(self.root.parent, self.config.name)
+        fa = FloodAdapt(self.root)
+
         # Create no measures strategy
-        strategy = create_strategy({"name": "no_measures", "measures": []})
-        save_strategy(strategy)
+        strategy = fa.create_strategy({"name": "no_measures", "measures": []})
+        fa.save_strategy(strategy)
         # Create current conditions projection
-        projection = create_projection(
+        projection = fa.create_projection(
             {
                 "name": "current",
                 "physical_projection": {},
                 "socio_economic_change": {},
             }
         )
-        save_projection(projection)
+        fa.save_projection(projection)
         # If provided use probabilistic set
         # TODO better check if configuration of event set is correct?
         if len(self.site_attrs["standard_objects"].events) > 0:
             event_set = self.site_attrs["standard_objects"].events[0]
             if event_set:
-                mode = get_event_mode(event_set)
+                mode = fa.get_event_mode(event_set)
                 if mode != "risk":
                     self.logger.error(
                         f"Provided probabilistic event set '{event_set}' is not configured correctly! This event should have a risk mode."

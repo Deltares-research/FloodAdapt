@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from pathlib import Path
 
-from flood_adapt.object_model.interface.database_user import DatabaseUser
-from flood_adapt.object_model.interface.scenarios import Scenario
+from flood_adapt.misc.database_user import DatabaseUser
+from flood_adapt.objects.scenarios.scenarios import Scenario
 
 
 class IAdapter(DatabaseUser):

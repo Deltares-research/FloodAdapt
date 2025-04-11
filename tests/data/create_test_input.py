@@ -4,54 +4,55 @@ from pathlib import Path
 from typing import List
 
 from flood_adapt import unit_system as us
-from flood_adapt.api.static import read_database
-from flood_adapt.misc.config import Settings
-from flood_adapt.object_model.hazard.event.event_set import (
+from flood_adapt.config.config import Settings
+from flood_adapt.config.sfincs import RiverModel
+from flood_adapt.dbs_classes.database import Database
+from flood_adapt.objects.benefits.benefits import (
+    Benefit,
+    CurrentSituationModel,
+)
+from flood_adapt.objects.events.event_set import (
     EventSet,
     SubEventModel,
 )
-from flood_adapt.object_model.hazard.event.historical import (
+from flood_adapt.objects.events.events import Event
+from flood_adapt.objects.events.historical import (
     HistoricalEvent,
 )
-from flood_adapt.object_model.hazard.event.hurricane import (
+from flood_adapt.objects.events.hurricane import (
     HurricaneEvent,
 )
-from flood_adapt.object_model.hazard.event.synthetic import (
+from flood_adapt.objects.events.synthetic import (
     SyntheticEvent,
 )
-from flood_adapt.object_model.hazard.forcing.discharge import (
+from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.rainfall import (
+from flood_adapt.objects.forcing.forcing import ForcingType
+from flood_adapt.objects.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
     RainfallTrack,
 )
-from flood_adapt.object_model.hazard.forcing.waterlevels import (
+from flood_adapt.objects.forcing.time_frame import TimeFrame
+from flood_adapt.objects.forcing.timeseries import (
+    ShapeType,
+    TimeseriesFactory,
+)
+from flood_adapt.objects.forcing.unit_system import VerticalReference
+from flood_adapt.objects.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.wind import (
+from flood_adapt.objects.forcing.wind import (
     WindConstant,
     WindMeteo,
     WindTrack,
 )
-from flood_adapt.object_model.hazard.interface.events import Event
-from flood_adapt.object_model.hazard.interface.forcing import ForcingType
-from flood_adapt.object_model.hazard.interface.models import TimeFrame
-from flood_adapt.object_model.hazard.interface.timeseries import (
-    ShapeType,
-    TimeseriesFactory,
-)
-from flood_adapt.object_model.interface.benefits import (
-    Benefit,
-    CurrentSituationModel,
-)
-from flood_adapt.object_model.interface.config.sfincs import RiverModel
-from flood_adapt.object_model.interface.measures import (
+from flood_adapt.objects.measures.measures import (
     Buyout,
     Elevate,
     FloodProof,
@@ -61,14 +62,13 @@ from flood_adapt.object_model.interface.measures import (
     Pump,
     SelectionType,
 )
-from flood_adapt.object_model.interface.projections import (
+from flood_adapt.objects.projections.projections import (
     PhysicalProjection,
     Projection,
     SocioEconomicChange,
 )
-from flood_adapt.object_model.interface.scenarios import Scenario
-from flood_adapt.object_model.interface.strategies import Strategy
-from flood_adapt.object_model.io.unit_system import VerticalReference
+from flood_adapt.objects.scenarios.scenarios import Scenario
+from flood_adapt.objects.strategies.strategies import Strategy
 
 DATA_DIR = Path(__file__).parent
 
@@ -86,7 +86,7 @@ def update_database_input(database_path: Path):
         The path to the database directory. This is the directory that contains the `input`, `static` and `output` directories.
 
     """
-    database = read_database(database_path.parent, database_path.name)
+    database = Database(database_path.parent, database_path.name)
     input_dir = database.input_path
     if input_dir.exists():
         shutil.rmtree(input_dir)

@@ -14,42 +14,20 @@ import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.sfincs import ObsPointModel, RiverModel
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.hurricane import TranslationModel
-from flood_adapt.object_model.hazard.event.synthetic import (
+from flood_adapt.objects.events.hurricane import TranslationModel
+from flood_adapt.objects.events.synthetic import (
     SyntheticEvent,
 )
-from flood_adapt.object_model.hazard.forcing.discharge import (
+from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.rainfall import (
-    RainfallConstant,
-    RainfallCSV,
-    RainfallMeteo,
-    RainfallNetCDF,
-    RainfallSynthetic,
-    RainfallTrack,
-)
-from flood_adapt.object_model.hazard.forcing.waterlevels import (
-    SurgeModel,
-    TideModel,
-    WaterlevelCSV,
-    WaterlevelGauged,
-    WaterlevelModel,
-    WaterlevelSynthetic,
-)
-from flood_adapt.object_model.hazard.forcing.wind import (
-    WindConstant,
-    WindCSV,
-    WindMeteo,
-    WindNetCDF,
-    WindSynthetic,
-    WindTrack,
-)
-from flood_adapt.object_model.hazard.interface.forcing import (
+from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,
     IDischarge,
@@ -58,25 +36,47 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWaterlevel,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.models import (
+from flood_adapt.objects.forcing.rainfall import (
+    RainfallConstant,
+    RainfallCSV,
+    RainfallMeteo,
+    RainfallNetCDF,
+    RainfallSynthetic,
+    RainfallTrack,
+)
+from flood_adapt.objects.forcing.time_frame import (
     TimeFrame,
 )
-from flood_adapt.object_model.hazard.interface.timeseries import (
+from flood_adapt.objects.forcing.timeseries import (
     ShapeType,
     TimeseriesFactory,
 )
-from flood_adapt.object_model.interface.config.sfincs import ObsPointModel, RiverModel
-from flood_adapt.object_model.interface.measures import (
+from flood_adapt.objects.forcing.waterlevels import (
+    SurgeModel,
+    TideModel,
+    WaterlevelCSV,
+    WaterlevelGauged,
+    WaterlevelModel,
+    WaterlevelSynthetic,
+)
+from flood_adapt.objects.forcing.wind import (
+    WindConstant,
+    WindCSV,
+    WindMeteo,
+    WindNetCDF,
+    WindSynthetic,
+    WindTrack,
+)
+from flood_adapt.objects.measures.measures import (
     FloodWall,
     GreenInfrastructure,
     Pump,
     SelectionType,
 )
-from flood_adapt.object_model.interface.projections import Projection
-from flood_adapt.object_model.interface.scenarios import Scenario
-from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.objects.projections.projections import Projection
+from flood_adapt.objects.scenarios.scenarios import Scenario
 from tests.fixtures import TEST_DATA_DIR
-from tests.test_object_model.test_events.test_forcing.test_netcdf import (
+from tests.test_objects.test_forcing.test_netcdf import (
     get_test_dataset,
     time_model_2_hr_timestep,
 )
