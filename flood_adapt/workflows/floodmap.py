@@ -1,5 +1,4 @@
 import os
-from enum import Enum
 from pathlib import Path
 
 from flood_adapt.config.sfincs import FloodmapType
@@ -9,16 +8,10 @@ from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Mode
 
 
-class FloodMapType(str, Enum):
-    """Enum class for the type of flood map."""
-
-    WATER_LEVEL = "water_level"  # TODO make caps, but hydromt_fiat expects lowercase
-
-
 class FloodMap(DatabaseUser):
     logger = FloodAdaptLogging.getLogger("FloodMap")
 
-    type: FloodMapType
+    type: FloodmapType
 
     name: str
     path: Path | os.PathLike | list[Path | os.PathLike]

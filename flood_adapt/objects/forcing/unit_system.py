@@ -53,9 +53,6 @@ class ValueUnitPair(ABC, BaseModel, Generic[TUnit]):
     value: float
     units: TUnit
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def convert(self, new_units: TUnit) -> float:
         """Return the value converted to the new units.
 
