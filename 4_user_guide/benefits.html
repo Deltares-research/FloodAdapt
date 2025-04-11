@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.6.43">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Flood Adapt Documentation - Benefits</title>
+<title>Benefits – Flood Adapt Documentation</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -29,7 +29,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../3_setup_guide/index.html" rel="next">
 <link href="../4_user_guide/compare/index.html" rel="prev">
 <link href="../_static/logo.png" rel="icon" type="image/png">
 <script src="../site_libs/quarto-html/quarto.js"></script>
@@ -37,12 +36,12 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-1a436f84f54e105667e607acf9f9d3fa.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-1945d9ea50fcb138a37d86c115812687.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
@@ -53,6 +52,11 @@ ul.task-list li input[type="checkbox"] {
   "panel-placement": "end",
   "type": "textbox",
   "limit": 5,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -61,14 +65,42 @@ ul.task-list li input[type="checkbox"] {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
 }</script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../_static/styles.css">
 </head>
@@ -77,9 +109,9 @@ ul.task-list li input[type="checkbox"] {
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a href="../index.html" class="navbar-brand navbar-brand-logo">
     <img src="../_static/logo.png" alt="" class="navbar-logo">
     </a>
@@ -88,32 +120,54 @@ ul.task-list li input[type="checkbox"] {
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/Deltares-research/FloodAdapt" rel="" target=""><i class="bi bi-github" role="img">
-</i> 
- <span class="menu-text"></span></a>
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../1_introduction/index.html"> 
+<span class="menu-text">Introduction</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../4_user_guide/index.html"> 
+<span class="menu-text">User Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../3_setup_guide/index.html"> 
+<span class="menu-text">Setup Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../5_technical_docs/index.html"> 
+<span class="menu-text">Technical Documentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../api_ref/api_index.html"> 
+<span class="menu-text">API Reference</span></a>
   </li>  
 </ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/Deltares-research/FloodAdapt"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
-          </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../4_user_guide/index.html">User Guide</a></li><li class="breadcrumb-item"><a href="../4_user_guide/benefits.html">Benefits</a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../4_user_guide/benefits.html">Benefits</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -122,7 +176,7 @@ ul.task-list li input[type="checkbox"] {
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation docked overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
         <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
         <div id="quarto-search" class="" title="Search"></div>
@@ -132,49 +186,34 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../1_introduction/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Introduction</span></a>
-  </div>
-</li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../4_user_guide/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">User Guide</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../4_user_guide/getting_started.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Getting Started</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
+        <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../4_user_guide/site_tab.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Site tab</span></a>
   </div>
 </li>
-          <li class="sidebar-item sidebar-item-section">
+        <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../4_user_guide/events/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Events</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../4_user_guide/events/historic_events/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Historical Events</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth3 ">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../4_user_guide/events/historic_events/historic_events_hurricane.html" class="sidebar-item-text sidebar-link">
@@ -209,15 +248,15 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
-          <li class="sidebar-item sidebar-item-section">
+        <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../4_user_guide/projections/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Projections</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../4_user_guide/projections/climate.html" class="sidebar-item-text sidebar-link">
@@ -232,15 +271,15 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
-          <li class="sidebar-item sidebar-item-section">
+        <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../4_user_guide/measures/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Measures</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../4_user_guide/measures/hydraulic.html" class="sidebar-item-text sidebar-link">
@@ -261,140 +300,40 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
-          <li class="sidebar-item">
+        <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../4_user_guide/strategy/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Strategies</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
+        <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../4_user_guide/scenarios/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Scenarios</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
+        <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../4_user_guide/output/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Output</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
+        <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../4_user_guide/compare/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Compare tabs</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
+        <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../4_user_guide/benefits.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Benefits</span></a>
   </div>
 </li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../3_setup_guide/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Setup Guide</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../3_setup_guide/SFINCS/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SFINCS Setup</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../3_setup_guide/SFINCS/hydromt_sfincs_gui.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SFINCS model-builder</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../3_setup_guide/Delft_Fiat/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Delft FIAT Setup</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../3_setup_guide/Delft_Fiat/hydromt_fiat_gui.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Delft-FIAT model-builder</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../3_setup_guide/risk_analysis.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Event Set</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../3_setup_guide/database.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Database-Builder</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../5_technical_docs/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Technical docs</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../5_technical_docs/EventScenario.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Event scenario</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../5_technical_docs/RiskScenario.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Risk Scenario</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../5_technical_docs/EquityCalc.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Equity Calculation</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../5_technical_docs/BenefitCalc.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Benefit Calculation</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api_ref/" class="sidebar-item-text sidebar-link">
- <span class="menu-text">API reference</span></a>
-  </div>
-</li>
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
@@ -406,7 +345,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#viewing-benefit-output-in-the-benefits-tab" id="toc-viewing-benefit-output-in-the-benefits-tab" class="nav-link" data-scroll-target="#viewing-benefit-output-in-the-benefits-tab">Viewing benefit output in the Benefits tab</a></li>
   <li><a href="#benefits-output-folder" id="toc-benefits-output-folder" class="nav-link" data-scroll-target="#benefits-output-folder">Benefits output folder</a></li>
   </ul>
-</nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/4_user_guide/benefits.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -426,15 +365,21 @@ ul.task-list li input[type="checkbox"] {
   </div>
   
 
+
 </header>
+
 
 <p>Flood adaptation measures are designed to reduce flood risk, and are typically evaluated by calculating their risk-reduction <strong>benefits</strong> and the <strong>benefit-cost ratio</strong>, which compares benefits with the implementation and maintenance costs of the measure(s).</p>
 <p>FloodAdapt supports users in evaluating the risk-reduction benefits of strategies by automating the benefit calculation and guiding the user in the creation of the scenarios needed to calculate benefits.</p>
-<p>When you first go to the Benefits tab in FloodAdapt (see <a href="#fig-benefitEmpty">Figure&nbsp;1</a>) you will see an empty list box in the lower panel. Once you create benefit analyses these will appear in the list. To the right of the list box there are buttons to add, edit, or delete a benefit analysis. Before creating your first benefit analysis, only the ‘Add benefit analysis’ button is active.</p>
-<div id="fig-benefitEmpty" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/benefitTab_empty.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Benefit tab before any benefit analyses have been created"><img src="../_static/images/benefitTab_empty.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;1: <strong>Benefit tab before any benefit analyses have been created</strong></figcaption>
+<p>When you first go to the Benefits tab in FloodAdapt (see <a href="#fig-benefitEmpty" class="quarto-xref">Figure&nbsp;1</a>) you will see an empty list box in the lower panel. Once you create benefit analyses these will appear in the list. To the right of the list box there are buttons to add, edit, or delete a benefit analysis. Before creating your first benefit analysis, only the ‘Add benefit analysis’ button is active.</p>
+<div id="fig-benefitEmpty" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-benefitEmpty-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../_static/images/benefitTab_empty.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Benefit tab before any benefit analyses have been created"><img src="../_static/images/benefitTab_empty.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-benefitEmpty-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: <strong>Benefit tab before any benefit analyses have been created</strong>
+</figcaption>
 </figure>
 </div>
 <p>The following sections will describe how to create a benefit analysis, how benefits are calculated, how to view benefit analysis output in the Benefits tab, and where you can find output on your computer for more detailed investigation.</p>
@@ -460,28 +405,36 @@ What is required to run a benefit analysis?
 <section id="creating-a-new-benefit-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="creating-a-new-benefit-analysis">Creating a new benefit analysis</h2>
 <p>FloodAdapt users can evaluate the risk-reduction benefits of any strategy they have created (which can be composed of a single measure or a collection of measures). To do this, go to the Benefits tab in FloodAdapt, and in the bottom panel click on “Add benefit analysis”. A popup window will appear within which you will specify important choices about your benefit analysis.</p>
-<div id="fig-benefitPopup" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/benefitAnalysisWindow.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Benefit analysis popup window"><img src="../_static/images/benefitAnalysisWindow.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;2: <strong>Benefit analysis popup window</strong></figcaption>
+<div id="fig-benefitPopup" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-benefitPopup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../_static/images/benefitAnalysisWindow.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: Benefit analysis popup window"><img src="../_static/images/benefitAnalysisWindow.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-benefitPopup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: <strong>Benefit analysis popup window</strong>
+</figcaption>
 </figure>
 </div>
-<p>For the following description please refer to <a href="#fig-benefitPopup">Figure&nbsp;2</a>. To create a new benefit analysis:</p>
+<p>For the following description please refer to <a href="#fig-benefitPopup" class="quarto-xref">Figure&nbsp;2</a>. To create a new benefit analysis:</p>
 <ul>
 <li><strong>Analysis name</strong>: Enter a name for your analysis. This cannot have any spaces or special characters (underscores are ok). Choose a name that will help you identify your analysis easily in the benefits tab; for example “benefits_floodwall”. You can optionally also add a description.</li>
 <li><strong>Strategy to evaluate</strong>: In the “Strategy to evaluate” panel, select the strategy for which you want to calculate benefits. The baseline strategy is selected for you and consists of the ‘no-measures’ strategy.</li>
 <li><strong>Situation at implementation</strong>: The implementation situation consists of the ‘current’ projection representing current climate and socio-economic conditions (pre-selected). The implementation year can be adjusted but by default is set to the ‘current’ year defined during system setup.</li>
-<li><strong>Situation at end of analysis</strong>: In the end-of-analysis situation, specify the year that corresponds to the duration over which you want to calculate benefits. In <a href="#fig-benefitPopup">Figure&nbsp;2</a>, the year 2060 is specified. That means benefits will be calculated between the current year up to and including 2060. From the “Projection” dropdown menu, select the climate and/or socio-economic conditions you expect at this end-of-analysis year. For example, if you expect sea level rise to be 1 foot at the year specified (e.g.&nbsp;2060 in <a href="#fig-benefitPopup">Figure&nbsp;2</a>), then choose a projection with 1 foot of SLR. Note that you must have already <a href="../4_user_guide/projections/index.html">created such a projection</a> in order to select it here. The projection dropdown menu will contain all projections that have been created in the Projections tab.</li>
+<li><strong>Situation at end of analysis</strong>: In the end-of-analysis situation, specify the year that corresponds to the duration over which you want to calculate benefits. In <a href="#fig-benefitPopup" class="quarto-xref">Figure&nbsp;2</a>, the year 2060 is specified. That means benefits will be calculated between the current year up to and including 2060. From the “Projection” dropdown menu, select the climate and/or socio-economic conditions you expect at this end-of-analysis year. For example, if you expect sea level rise to be 1 foot at the year specified (e.g.&nbsp;2060 in <a href="#fig-benefitPopup" class="quarto-xref">Figure&nbsp;2</a>), then choose a projection with 1 foot of SLR. Note that you must have already <a href="../4_user_guide/projections/index.html">created such a projection</a> in order to select it here. The projection dropdown menu will contain all projections that have been created in the Projections tab.</li>
 <li><strong>Costs</strong>: If you have information on the implementation and maintenance costs of your project, you can set “Add costs” to “Yes” and a “Costs” panel will appear. Here you can enter the costs. If you do not have this information, set “Add costs” to “No” and the “Costs” panel will disappear. When cost information is not available, FloodAdapt will only calculate the risk-reduction benefits. When cost information is available, it will additionally calculate the benefit-cost ratio, net present value, and internal rate of return. These latter two are saved on your computer but not presented in the Benefits tab.</li>
 <li><strong>Discount rate</strong>: Enter a discount rate. A discount rate is used in benefit-cost analysis to discount future benefits and costs. It reflects the idea that benefits and costs are worth more if they are experienced sooner. When discount rates are higher, the overall present value of benefits will be lower than when the discount rate is lower. Users are free to explore different discount rates and the effect these have on the present value of benefits and the benefit-cost ratio.</li>
-<li><strong>Check scenarios</strong>: Once you have entered the above information, click the “Check scenarios” button. FloodAdapt helps you to determine which scenarios need to be run in order to carry out the benefit analysis you specified. The risk-reduction benefit analysis requires risk calculations with and without the selected strategy under current conditions and with and without the strategy under the projection selected for the end of the analysis situation. When you click “Check scenarios”, the scenarios that need to be run will be shown in the table in the popup window (see <a href="#fig-benefitCheckScenarios">Figure&nbsp;3</a>). The column “scenario created” will list the scenario name if the scenario has already been created and will say “No” if the scenario has not been created. The column “scenario run” will indicate whether the scenario has already been run (True) or not (False).</li>
+<li><strong>Check scenarios</strong>: Once you have entered the above information, click the “Check scenarios” button. FloodAdapt helps you to determine which scenarios need to be run in order to carry out the benefit analysis you specified. The risk-reduction benefit analysis requires risk calculations with and without the selected strategy under current conditions and with and without the strategy under the projection selected for the end of the analysis situation. When you click “Check scenarios”, the scenarios that need to be run will be shown in the table in the popup window (see <a href="#fig-benefitCheckScenarios" class="quarto-xref">Figure&nbsp;3</a>). The column “scenario created” will list the scenario name if the scenario has already been created and will say “No” if the scenario has not been created. The column “scenario run” will indicate whether the scenario has already been run (True) or not (False).</li>
 <li><strong>Create missing scenarios</strong>: If any of the required scenarios is missing when you click “Check scenarios”, you can click “Create missing scenarios” and FloodAdapt will automatically create the missing scenarios and place them in the scenarios table in the <a href="../4_user_guide/scenarios/index.html">Scenarios</a> tab.</li>
 <li><strong>Click “OK” to add the analysis to the Benefits tab</strong></li>
 </ul>
-<div id="fig-benefitCheckScenarios" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/benefitAnalysisWindow_checkScenarios.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="The “Check scenarios” feature in the Benefit analysis popup window"><img src="../_static/images/benefitAnalysisWindow_checkScenarios.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;3: <strong>The “Check scenarios” feature in the Benefit analysis popup window</strong></figcaption>
+<div id="fig-benefitCheckScenarios" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-benefitCheckScenarios-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../_static/images/benefitAnalysisWindow_checkScenarios.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: The “Check scenarios” feature in the Benefit analysis popup window"><img src="../_static/images/benefitAnalysisWindow_checkScenarios.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-benefitCheckScenarios-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: <strong>The “Check scenarios” feature in the Benefit analysis popup window</strong>
+</figcaption>
 </figure>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -494,11 +447,15 @@ Required scenarios need to be run before running your benefit analysis
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The “Check scenarios” and “Create missing scenarios” buttons guide users to ensure the required scenarios are created for the benefit analysis. However, scenarios can only be run from the <a href="../4_user_guide/scenarios/index.html">Scenarios</a> tab. If any of the four required scenarios have not been run, you need to go to the Scenarios tab and run them. If any of the required scenarios have not yet been run, the “Calculate benefits” button will be greyed out and you will see text beneath it informing you that “You cannot calculate benefits before running the required scenarios (use Scenarios tab)”, see <a href="#fig-benefitCalcFirst">Figure&nbsp;4</a>.</p>
-<div id="fig-benefitCalcFirst" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/benefits_calcFirst.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="All required scenarios must first be simulated before running a benefit analysis"><img src="../_static/images/benefits_calcFirst.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;4: <strong>All required scenarios must first be simulated before running a benefit analysis</strong></figcaption>
+<p>The “Check scenarios” and “Create missing scenarios” buttons guide users to ensure the required scenarios are created for the benefit analysis. However, scenarios can only be run from the <a href="../4_user_guide/scenarios/index.html">Scenarios</a> tab. If any of the four required scenarios have not been run, you need to go to the Scenarios tab and run them. If any of the required scenarios have not yet been run, the “Calculate benefits” button will be greyed out and you will see text beneath it informing you that “You cannot calculate benefits before running the required scenarios (use Scenarios tab)”, see <a href="#fig-benefitCalcFirst" class="quarto-xref">Figure&nbsp;4</a>.</p>
+<div id="fig-benefitCalcFirst" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-benefitCalcFirst-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../_static/images/benefits_calcFirst.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;4: All required scenarios must first be simulated before running a benefit analysis"><img src="../_static/images/benefits_calcFirst.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-benefitCalcFirst-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: <strong>All required scenarios must first be simulated before running a benefit analysis</strong>
+</figcaption>
 </figure>
 </div>
 </div>
@@ -506,11 +463,15 @@ Required scenarios need to be run before running your benefit analysis
 </section>
 <section id="calculating-benefits" class="level2">
 <h2 class="anchored" data-anchor-id="calculating-benefits">Calculating benefits</h2>
-<p>Once the required scenarios have been simulated, the “Calculate benefits” button will be active, see <a href="#fig-benefitReady">Figure&nbsp;5</a>. When the button is clicked, the benefit calculation happens on-the-fly, but because the risk information is already calculated, the benefit calculation happens very quickly and the results appear instantly.</p>
-<div id="fig-benefitReady" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/benefit_readyToRun.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="When all scenarios have been run, “Calculate benefits” button is active"><img src="../_static/images/benefit_readyToRun.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;5: <strong>When all scenarios have been run, “Calculate benefits” button is active</strong></figcaption>
+<p>Once the required scenarios have been simulated, the “Calculate benefits” button will be active, see <a href="#fig-benefitReady" class="quarto-xref">Figure&nbsp;5</a>. When the button is clicked, the benefit calculation happens on-the-fly, but because the risk information is already calculated, the benefit calculation happens very quickly and the results appear instantly.</p>
+<div id="fig-benefitReady" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-benefitReady-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../_static/images/benefit_readyToRun.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;5: When all scenarios have been run, “Calculate benefits” button is active"><img src="../_static/images/benefit_readyToRun.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-benefitReady-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: <strong>When all scenarios have been run, “Calculate benefits” button is active</strong>
+</figcaption>
 </figure>
 </div>
 <p>The benefit calculation uses output from four scenarios:</p>
@@ -557,7 +518,7 @@ Some metrics are only calculated when cost information is provided!
 </section>
 <section id="viewing-benefit-output-in-the-benefits-tab" class="level2">
 <h2 class="anchored" data-anchor-id="viewing-benefit-output-in-the-benefits-tab">Viewing benefit output in the Benefits tab</h2>
-<p><a href="#fig-benefitTab">Figure&nbsp;6</a> shows the Benefits tab in FloodAdapt once a benefit analysis has been completed. The window is separated into a top panel with a map window on the left and, when using the collapsible frame, a time series of benefits on the right. When a benefit analysis is selected in the list, the measures in the strategy for which benefits are being calculated will appear in the map window. The bottom panel will show a summary of the user-provided input to the benefit analysis, such as discount rate or end-year of the analysis. Once the user clicks the “Calculate benefits” button, output will appear in the panel. This output consists of the (present value of the) benefits and a benefit-cost ratio (if cost information was provided). The collapsible frame contains a graphic with the risk-reduction benefits calculated under current conditions and under future conditions (green dots in the figure), the interpolated benefits over time (black line), the discounted benefits over time (dark green line), and the area under the discounted benefits curve (green shading) representing the present value of the benefits.</p>
+<p><a href="#fig-benefitTab" class="quarto-xref">Figure&nbsp;6</a> shows the Benefits tab in FloodAdapt once a benefit analysis has been completed. The window is separated into a top panel with a map window on the left and, when using the collapsible frame, a time series of benefits on the right. When a benefit analysis is selected in the list, the measures in the strategy for which benefits are being calculated will appear in the map window. The bottom panel will show a summary of the user-provided input to the benefit analysis, such as discount rate or end-year of the analysis. Once the user clicks the “Calculate benefits” button, output will appear in the panel. This output consists of the (present value of the) benefits and a benefit-cost ratio (if cost information was provided). The collapsible frame contains a graphic with the risk-reduction benefits calculated under current conditions and under future conditions (green dots in the figure), the interpolated benefits over time (black line), the discounted benefits over time (dark green line), and the area under the discounted benefits curve (green shading) representing the present value of the benefits.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -571,24 +532,36 @@ Why don’t I see the NPV and IRR in the Benefits tab?
 <p>In addition to the above results which can be viewed in the Output tab, FloodAdapt also calculates - when implementation and/or maintenance cost information is provided - the net present value and the internal rate of return. These are provided in a results text file in the <a href="#benefits-output-folder">benefits output folder</a>.</p>
 </div>
 </div>
-<div id="fig-benefitTab" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/Benefits_tab.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="The FloodAdapt Benefits tab showing a selected benefit analysis"><img src="../_static/images/Benefits_tab.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;6: <strong>The FloodAdapt Benefits tab showing a selected benefit analysis</strong></figcaption>
+<div id="fig-benefitTab" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-benefitTab-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../_static/images/Benefits_tab.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;6: The FloodAdapt Benefits tab showing a selected benefit analysis"><img src="../_static/images/Benefits_tab.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:80.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-benefitTab-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: <strong>The FloodAdapt Benefits tab showing a selected benefit analysis</strong>
+</figcaption>
 </figure>
 </div>
-<p>The benefits can also be viewed spatially; the lower panel contains map visualization options (see <a href="#fig-benefitTab">Figure&nbsp;6</a>). The user can click “Aggregated benefits” to see the spatial distribution of benefits (see <a href="#fig-benefitDist">Figure&nbsp;7</a> for an example). They can choose from the “Aggregation” drop-down menu which aggregation level they would like to view, for example neighborhoods or census blocks.</p>
-<div id="fig-benefitDist" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/Benefits_distributedBenefits.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Visualizing the benefits spatially"><img src="../_static/images/Benefits_distributedBenefits.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;7: <strong>Visualizing the benefits spatially</strong></figcaption>
+<p>The benefits can also be viewed spatially; the lower panel contains map visualization options (see <a href="#fig-benefitTab" class="quarto-xref">Figure&nbsp;6</a>). The user can click “Aggregated benefits” to see the spatial distribution of benefits (see <a href="#fig-benefitDist" class="quarto-xref">Figure&nbsp;7</a> for an example). They can choose from the “Aggregation” drop-down menu which aggregation level they would like to view, for example neighborhoods or census blocks.</p>
+<div id="fig-benefitDist" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-benefitDist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../_static/images/Benefits_distributedBenefits.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;7: Visualizing the benefits spatially"><img src="../_static/images/Benefits_distributedBenefits.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:80.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-benefitDist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: <strong>Visualizing the benefits spatially</strong>
+</figcaption>
 </figure>
 </div>
-<p>In the map visualization options, there is also an equity-weighted button. When this is checked the distributed (aggregated) benefits are displayed using equity weights, see <a href="#fig-benefitEquity">Figure&nbsp;8</a>. The figure shows the benefits without equity weights on the left and with equity weights on the right. In the figure, blue stars have been added (outside of FloodAdapt) to highlight how the equity weighting affects lower-income census-block groups. When equity weights are applied, the benefits of these lower-income areas will be weighted more heavily; in contrast, high-income area benefits will be weighted less heavily. Equity weights are calculated in FloodAdapt using information on income. Risk estimates are multiplied by the equity weights to derive equity-weighted risk estimates, from which equity-weighted benefits are calculated. This visualization is only available at the same scale for which income data is available. This will typically be census block level.</p>
-<div id="fig-benefitEquity" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/benefits_equity.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Visualizing equity-weighted benefits. The blue stars indicate lower-income census block groups. Their benefits are more weighted more heavily when equity-weights are applied (right side versus left side)"><img src="../_static/images/benefits_equity.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;8: <strong>Visualizing equity-weighted benefits. The blue stars indicate lower-income census block groups. Their benefits are more weighted more heavily when equity-weights are applied (right side versus left side)</strong></figcaption>
+<p>In the map visualization options, there is also an equity-weighted button. When this is checked the distributed (aggregated) benefits are displayed using equity weights, see <a href="#fig-benefitEquity" class="quarto-xref">Figure&nbsp;8</a>. The figure shows the benefits without equity weights on the left and with equity weights on the right. In the figure, blue stars have been added (outside of FloodAdapt) to highlight how the equity weighting affects lower-income census-block groups. When equity weights are applied, the benefits of these lower-income areas will be weighted more heavily; in contrast, high-income area benefits will be weighted less heavily. Equity weights are calculated in FloodAdapt using information on income. Risk estimates are multiplied by the equity weights to derive equity-weighted risk estimates, from which equity-weighted benefits are calculated. This visualization is only available at the same scale for which income data is available. This will typically be census block level.</p>
+<div id="fig-benefitEquity" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-benefitEquity-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../_static/images/benefits_equity.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Figure&nbsp;8: Visualizing equity-weighted benefits. The blue stars indicate lower-income census block groups. Their benefits are more weighted more heavily when equity-weights are applied (right side versus left side)"><img src="../_static/images/benefits_equity.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:80.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-benefitEquity-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: <strong>Visualizing equity-weighted benefits. The blue stars indicate lower-income census block groups. Their benefits are more weighted more heavily when equity-weights are applied (right side versus left side)</strong>
+</figcaption>
 </figure>
 </div>
 </section>
@@ -605,16 +578,20 @@ Where can I find the output folder?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><a href="#fig-folderStruct">Figure&nbsp;9</a> shows where the output folder is located within the FloodAdapt database. The database root directory could contain multiple site databases, for different locations, or even variations of databases for the same location. The output folder is located directly inside the site database folder.</p>
-<div id="fig-folderStruct" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/output_folderStructure.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Location of the “output” folder within the FloodAdapt folder structure"><img src="../_static/images/output_folderStructure.png" class="img-fluid figure-img" style="width:15.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;9: <strong>Location of the “output” folder within the FloodAdapt folder structure</strong></figcaption>
+<p><a href="#fig-folderStruct" class="quarto-xref">Figure&nbsp;9</a> shows where the output folder is located within the FloodAdapt database. The database root directory could contain multiple site databases, for different locations, or even variations of databases for the same location. The output folder is located directly inside the site database folder.</p>
+<div id="fig-folderStruct" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-folderStruct-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../_static/images/output_folderStructure.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;9: Location of the “output” folder within the FloodAdapt folder structure"><img src="../_static/images/output_folderStructure.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:15.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-folderStruct-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: <strong>Location of the “output” folder within the FloodAdapt folder structure</strong>
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>The output folder contains a subfolder named “Benefits”. Within this subfolder you will find one folder for each benefit analysis that has been run. The name of the folder will be the name of the benefit analysis. Each folder will contain several files (see <a href="#fig-benefitsOutput">Figure&nbsp;10</a>):</p>
+<p>The output folder contains a subfolder named “Benefits”. Within this subfolder you will find one folder for each benefit analysis that has been run. The name of the folder will be the name of the benefit analysis. Each folder will contain several files (see <a href="#fig-benefitsOutput" class="quarto-xref">Figure&nbsp;10</a>):</p>
 <ul>
 <li>Benefits graphic (HTML file) that contains the same graphic displayed in the collapsible frame in the Benefits tab.</li>
 <li>Benefits per aggregation area, one CSV file for each aggregation scale defined for the site (e.g.&nbsp;neighborhoods or census block groups). For the aggregation scale for which income data is available (usually census block group), the CSV file will contain a column on benefits and one on equity-weighted benefits.</li>
@@ -622,10 +599,14 @@ Where can I find the output folder?
 <li>Summary results of the benefit analysis as a text file (TOML file). This file always contains the total benefits (present value). If cost information was provided when setting up the benefit analysis, this file will also contain costs (present value), net present value (NPV), the benefit cost ratio (BCR), and the internal rate of return (IRR).</li>
 <li>A time series of annual risk with and without the strategy implemented, annual costs and benefits (absolute and discounted), and annual profit as the difference between benefits and costs (absolute and discounted).</li>
 </ul>
-<div id="fig-benefitsOutput" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/benefits_output.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Benefits output folder"><img src="../_static/images/benefits_output.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;10: <strong>Benefits output folder</strong></figcaption>
+<div id="fig-benefitsOutput" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-benefitsOutput-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../_static/images/benefits_output.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Figure&nbsp;10: Benefits output folder"><img src="../_static/images/benefits_output.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-benefitsOutput-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: <strong>Benefits output folder</strong>
+</figcaption>
 </figure>
 </div>
 
@@ -674,6 +655,33 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       } else {
         el.classList.add('notransition');
       }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
     }
   }
   const toggleColorMode = (alternate) => {
@@ -742,13 +750,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       return localAlternateSentinel;
     }
   }
-  let localAlternateSentinel = 'default';
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
   // Dark / light mode switch
   window.quartoToggleColorScheme = () => {
     // Read the current dark / light value 
     let toAlternate = !hasAlternateSentinel();
     toggleColorMode(toAlternate);
     setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
   };
   // Ensure there is a toggle, if there isn't float one in the top right
   if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
@@ -783,18 +793,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -826,11 +825,48 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -840,8 +876,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -853,7 +898,129 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -897,6 +1064,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -922,6 +1090,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -983,29 +1177,60 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../4_user_guide/compare/index.html" class="pagination-link">
+      <a href="../4_user_guide/compare/index.html" class="pagination-link" aria-label="Compare tabs">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Compare tabs</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../3_setup_guide/index.html" class="pagination-link">
-        <span class="nav-page-text">Setup Guide</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></div>   
+    <div class="nav-footer-left">
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></p>
+</div>   
     <div class="nav-footer-center">
       &nbsp;
-    </div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/4_user_guide/benefits.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","openEffect":"zoom","loop":true,"closeEffect":"zoom","selector":".lightbox"});</script>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
 
 
 

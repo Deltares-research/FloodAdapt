@@ -1,0 +1,2266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.43">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>fiatadapter – Flood Adapt Documentation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../api_ref/SfincsAdapter.html" rel="next">
+<link href="../api_ref/Site.html" rel="prev">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-1a436f84f54e105667e607acf9f9d3fa.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-1945d9ea50fcb138a37d86c115812687.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 5,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../_static/styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">FloodAdapt</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../1_introduction/index.html"> 
+<span class="menu-text">Introduction</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../4_user_guide/index.html"> 
+<span class="menu-text">User Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../3_setup_guide/index.html"> 
+<span class="menu-text">Setup Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../5_technical_docs/index.html"> 
+<span class="menu-text">Technical Documentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../api_ref/api_index.html" aria-current="page"> 
+<span class="menu-text">API Reference</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/Deltares-research/FloodAdapt"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../api_ref/api_index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../api_ref/FiatAdapter.html">Adapters</a></li><li class="breadcrumb-item"><a href="../api_ref/FiatAdapter.html">FiatAdapter</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../api_ref/api_index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API Reference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">API</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/benefits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">benefits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/database_builder.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">database_builder</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/events.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">events</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/measures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">measures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/output.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">output</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/projections.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">projections</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/scenarios.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">scenarios</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/static.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">static</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/strategies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">strategies</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">Setup and configuration</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/Settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/FloodAdaptLogging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FloodAdaptLogging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/Site.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Site</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Adapters</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/FiatAdapter.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">FiatAdapter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/SfincsAdapter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SfincsAdapter</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">Database</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/Database.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Database</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/DbsBenefit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DbsBenefit</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/DbsEvent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DbsEvent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/DbsMeasure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DbsMeasure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/DbsProjection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DbsProjection</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/DbsScenario.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DbsScenario</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/DbsStatic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DbsStatic</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/DbsStrategy.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DbsStrategy</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/DbsTemplate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DbsTemplate</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Object models</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/Object.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Object</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+ <span class="menu-text">Measures</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/Measure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Measure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/MeasureType.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MeasureType</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/SelectionType.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SelectionType</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/FloodWall.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FloodWall</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/GreenInfrastructure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">GreenInfrastructure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/Pump.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pump</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/Buyout.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Buyout</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/Elevate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Elevate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/FloodProof.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FloodProof</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
+ <span class="menu-text">Strategies</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth3 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/Strategy.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Strategy</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false">
+ <span class="menu-text">Events</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth3 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/Event.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Event</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/SyntheticEvent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SyntheticEvent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/HistoricalEvent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">HistoricalEvent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/HurricaneEvent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">HurricaneEvent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/EventSet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">EventSet</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false">
+ <span class="menu-text">Projections</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth3 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/Projection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Projection</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false">
+ <span class="menu-text">Scenarios</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth3 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/Scenario.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Scenario</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false">
+ <span class="menu-text">Benefits</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth3 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/object_model/Benefit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Benefit</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false">
+ <span class="menu-text">Unit system</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/ValueUnitPair.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ValueUnitPair</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitfulLength.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitfulLength</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitfulHeight.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitfulHeight</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitfulArea.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitfulArea</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitfulVelocity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitfulVelocity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitfulDirection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitfulDirection</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitfulDischarge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitfulDischarge</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitfulIntensity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitfulIntensity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitfulVolume.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitfulVolume</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitfulTime.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitfulTime</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitfulLengthRefValue.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitfulLengthRefValue</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitTypesLength.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitTypesLength</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitTypesArea.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitTypesArea</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitTypesVolume.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitTypesVolume</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitTypesVelocity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitTypesVelocity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitTypesDirection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitTypesDirection</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitTypesTime.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitTypesTime</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitTypesDischarge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitTypesDischarge</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/UnitTypesIntensity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitTypesIntensity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api_ref/VerticalReference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">VerticalReference</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#flood_adapt.adapter.FiatAdapter" id="toc-flood_adapt.adapter.FiatAdapter" class="nav-link active" data-scroll-target="#flood_adapt.adapter.FiatAdapter">FiatAdapter</a>
+  <ul class="collapse">
+  <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#flood_adapt.adapter.FiatAdapter.add_equity" id="toc-flood_adapt.adapter.FiatAdapter.add_equity" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.add_equity">add_equity</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.add_exceedance_probability" id="toc-flood_adapt.adapter.FiatAdapter.add_exceedance_probability" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.add_exceedance_probability">add_exceedance_probability</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.add_measure" id="toc-flood_adapt.adapter.FiatAdapter.add_measure" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.add_measure">add_measure</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.add_projection" id="toc-flood_adapt.adapter.FiatAdapter.add_projection" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.add_projection">add_projection</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.apply_economic_growth" id="toc-flood_adapt.adapter.FiatAdapter.apply_economic_growth" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.apply_economic_growth">apply_economic_growth</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.apply_population_growth_existing" id="toc-flood_adapt.adapter.FiatAdapter.apply_population_growth_existing" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.apply_population_growth_existing">apply_population_growth_existing</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.apply_population_growth_new" id="toc-flood_adapt.adapter.FiatAdapter.apply_population_growth_new" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.apply_population_growth_new">apply_population_growth_new</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.buyout_properties" id="toc-flood_adapt.adapter.FiatAdapter.buyout_properties" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.buyout_properties">buyout_properties</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.close_files" id="toc-flood_adapt.adapter.FiatAdapter.close_files" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.close_files">close_files</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.create_infographics" id="toc-flood_adapt.adapter.FiatAdapter.create_infographics" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.create_infographics">create_infographics</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.create_infometrics" id="toc-flood_adapt.adapter.FiatAdapter.create_infometrics" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.create_infometrics">create_infometrics</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.delete_model" id="toc-flood_adapt.adapter.FiatAdapter.delete_model" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.delete_model">delete_model</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.elevate_properties" id="toc-flood_adapt.adapter.FiatAdapter.elevate_properties" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.elevate_properties">elevate_properties</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.execute" id="toc-flood_adapt.adapter.FiatAdapter.execute" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.execute">execute</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.fiat_completed" id="toc-flood_adapt.adapter.FiatAdapter.fiat_completed" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.fiat_completed">fiat_completed</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.floodproof_properties" id="toc-flood_adapt.adapter.FiatAdapter.floodproof_properties" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.floodproof_properties">floodproof_properties</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.get_all_building_ids" id="toc-flood_adapt.adapter.FiatAdapter.get_all_building_ids" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.get_all_building_ids">get_all_building_ids</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.get_buildings" id="toc-flood_adapt.adapter.FiatAdapter.get_buildings" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.get_buildings">get_buildings</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.get_object_ids" id="toc-flood_adapt.adapter.FiatAdapter.get_object_ids" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.get_object_ids">get_object_ids</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.get_property_types" id="toc-flood_adapt.adapter.FiatAdapter.get_property_types" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.get_property_types">get_property_types</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.has_run" id="toc-flood_adapt.adapter.FiatAdapter.has_run" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.has_run">has_run</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.postprocess" id="toc-flood_adapt.adapter.FiatAdapter.postprocess" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.postprocess">postprocess</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.preprocess" id="toc-flood_adapt.adapter.FiatAdapter.preprocess" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.preprocess">preprocess</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.read" id="toc-flood_adapt.adapter.FiatAdapter.read" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.read">read</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.read_outputs" id="toc-flood_adapt.adapter.FiatAdapter.read_outputs" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.read_outputs">read_outputs</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.run" id="toc-flood_adapt.adapter.FiatAdapter.run" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.run">run</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.save_aggregation_spatial" id="toc-flood_adapt.adapter.FiatAdapter.save_aggregation_spatial" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.save_aggregation_spatial">save_aggregation_spatial</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.save_building_footprints" id="toc-flood_adapt.adapter.FiatAdapter.save_building_footprints" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.save_building_footprints">save_building_footprints</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.save_roads" id="toc-flood_adapt.adapter.FiatAdapter.save_roads" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.save_roads">save_roads</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.set_hazard" id="toc-flood_adapt.adapter.FiatAdapter.set_hazard" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.set_hazard">set_hazard</a></li>
+  <li><a href="#flood_adapt.adapter.FiatAdapter.write" id="toc-flood_adapt.adapter.FiatAdapter.write" class="nav-link" data-scroll-target="#flood_adapt.adapter.FiatAdapter.write">write</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/FiatAdapter.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../api_ref/api_index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../api_ref/FiatAdapter.html">Adapters</a></li><li class="breadcrumb-item"><a href="../api_ref/FiatAdapter.html">FiatAdapter</a></li></ol></nav></header>
+
+
+
+
+<section id="flood_adapt.adapter.FiatAdapter" class="level1">
+<h1>FiatAdapter</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    model_root: Path,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    config: Optional[FiatConfigModel] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    exe_path: Optional[os.PathLike] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    delete_crashed_runs: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    config_base_path: Optional[os.PathLike] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>ImpactAdapter for Delft-FIAT.</p>
+<p>It includes: - preprocessing methods for adding measures, projections and hazards - executing method for running a Delft-FIAT simulation - postprocessing methods for saving impact results</p>
+<section id="attributes" class="level2">
+<h2 class="anchored" data-anchor-id="attributes">Attributes</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.damage_types">damage_types</a></td>
+<td>Get the damage types that are present in the exposure.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="methods" class="level2">
+<h2 class="anchored" data-anchor-id="methods">Methods</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.add_equity">add_equity</a></td>
+<td>Calculate equity-based damages for a given aggregation label.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.add_exceedance_probability">add_exceedance_probability</a></td>
+<td>Calculate exceedance probabilities and append them to the results table.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.add_measure">add_measure</a></td>
+<td>Add and apply a specific impact measure to the properties of the FIAT model.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.add_projection">add_projection</a></td>
+<td>Add the socioeconomic changes part of a projection to the FIAT model.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.apply_economic_growth">apply_economic_growth</a></td>
+<td>Apply economic growth to the FIAT-Model by adjusting the maximum potential damage values in the exposure database.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.apply_population_growth_existing">apply_population_growth_existing</a></td>
+<td>Apply population growth to the FIAT-Model by adjusting the existing max potential damage values for buildings.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.apply_population_growth_new">apply_population_growth_new</a></td>
+<td>Apply population growth in a new area by adding new objects in the model.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.buyout_properties">buyout_properties</a></td>
+<td>Apply the buyout measure to the properties by setting their maximum potential damage to zero.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.close_files">close_files</a></td>
+<td>Close all open files and clean up file handles.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.create_infographics">create_infographics</a></td>
+<td>Create infographic files based on the provided metrics and configuration.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.create_infometrics">create_infometrics</a></td>
+<td>Create infometrics files based on the provided metric configuration paths.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.delete_model">delete_model</a></td>
+<td>Delete the Delft-FIAT simulation folder.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.elevate_properties">elevate_properties</a></td>
+<td>Elevate the ground floor height of properties based on the provided Elevate measure.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.execute">execute</a></td>
+<td>Execute the FIAT model.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.fiat_completed">fiat_completed</a></td>
+<td>Check if fiat has run as expected.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.floodproof_properties">floodproof_properties</a></td>
+<td>Apply floodproofing measures to the properties by truncating the damage function.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.get_all_building_ids">get_all_building_ids</a></td>
+<td>Retrieve the IDs of all buildings in the FIAT model.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.get_buildings">get_buildings</a></td>
+<td>Retrieve the building geometries from the FIAT model’s exposure database.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.get_object_ids">get_object_ids</a></td>
+<td>Retrieve the object IDs for a given impact measure.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.get_property_types">get_property_types</a></td>
+<td>Retrieve the list of property types from the FIAT model’s exposure database.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.has_run">has_run</a></td>
+<td>Check if the impact results file for the given scenario exists.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.postprocess">postprocess</a></td>
+<td>Post-process the results of the Delft-FIAT simulation for a given scenario.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.preprocess">preprocess</a></td>
+<td>Preprocess the FIAT-model given a scenario by setting up projections, measures, and hazards, and then saves any changes made to disk.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.read">read</a></td>
+<td>Read the fiat model from the current model root.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.read_outputs">read_outputs</a></td>
+<td>Read the output FIAT CSV file specified in the model configuration and stores the data in the <code>outputs</code> attribute.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.run">run</a></td>
+<td>Execute the full process for a given scenario, including preprocessing, executing the simulation, and postprocessing steps.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.save_aggregation_spatial">save_aggregation_spatial</a></td>
+<td>Save aggregated metrics to a spatial file.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.save_building_footprints">save_building_footprints</a></td>
+<td>Aggregate impacts at a building footprint level and then saves to an output file.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.save_roads">save_roads</a></td>
+<td>Save the impacts on roads to a spatial file.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.FiatAdapter.set_hazard">set_hazard</a></td>
+<td>Set the hazard map and type for the FIAT model.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.FiatAdapter.write">write</a></td>
+<td>Write the fiat model configuration to a directory.</td>
+</tr>
+</tbody>
+</table>
+<section id="flood_adapt.adapter.FiatAdapter.add_equity" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.add_equity">add_equity</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.add_equity(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    aggr_label: <span class="bu">str</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    metrics_path: os.PathLike,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    damage_column_pattern: <span class="bu">str</span> <span class="op">=</span> <span class="st">'TotalDamageRP</span><span class="sc">{rp}</span><span class="st">'</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    gamma: <span class="bu">float</span> <span class="op">=</span> <span class="fl">1.2</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Calculate equity-based damages for a given aggregation label.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>aggr_label</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dd>
+<p>The label of the aggregation area.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>metrics_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>os</code>.<code>PathLike</code></span></code></dt>
+<dd>
+<p>The path to the metrics file.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>damage_column_pattern</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span> <span class="parameter-default-sep">=</span> <span class="parameter-default">'TotalDamageRP{rp}'</span></code></dt>
+<dd>
+<p>The pattern for the damage column names, by default “TotalDamageRP{rp}”.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>gamma</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>float</code></span> <span class="parameter-default-sep">=</span> <span class="parameter-default">1.2</span></code></dt>
+<dd>
+<p>The equity weight parameter, by default 1.2</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.add_exceedance_probability" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.add_exceedance_probability">add_exceedance_probability</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.add_exceedance_probability(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    column: <span class="bu">str</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    threshold: <span class="bu">float</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    period: <span class="bu">int</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Calculate exceedance probabilities and append them to the results table.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>column</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dd>
+<p>The name of the column to calculate exceedance probabilities for.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>threshold</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>float</code></span></code></dt>
+<dd>
+<p>The threshold value for exceedance probability calculation.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>period</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>int</code></span></code></dt>
+<dd>
+<p>The return period for exceedance probability calculation.</p>
+</dd>
+</dl>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>pd</code>.<code>DataFrame</code></span></code></dt>
+<dd>
+<p>The updated results table with exceedance probabilities appended.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.add_measure" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.add_measure">add_measure</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.add_measure(measure: Measure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Add and apply a specific impact measure to the properties of the FIAT model.</p>
+<section id="parameters-2" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>measure</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Measure.html#flood_adapt.object_model.Measure">Measure</a></span></code></dt>
+<dd>
+<p>The impact measure to be applied. It can be of type Elevate, FloodProof, or Buyout.</p>
+</dd>
+</dl>
+</section>
+<section id="notes" class="level4 doc-section doc-section-notes">
+<h4 class="doc-section doc-section-notes anchored" data-anchor-id="notes">Notes</h4>
+<p>The method logs the application of the measure and calls the appropriate method based on the measure type: - Elevate: Calls elevate_properties(measure) - FloodProof: Calls floodproof_properties(measure) - Buyout: Calls buyout_properties(measure)</p>
+<pre><code>If the measure type is unsupported, a warning is logged.</code></pre>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.add_projection" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.add_projection">add_projection</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.add_projection(projection: Projection)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Add the socioeconomic changes part of a projection to the FIAT model.</p>
+<section id="parameters-3" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>projection</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Projection.html#flood_adapt.object_model.Projection">Projection</a></span></code></dt>
+<dd>
+<p>The projection object containing socioeconomic changes to be applied.</p>
+</dd>
+</dl>
+</section>
+<section id="notes-1" class="level4 doc-section doc-section-notes">
+<h4 class="doc-section doc-section-notes anchored" data-anchor-id="notes-1">Notes</h4>
+<ul>
+<li>Economic growth is applied to all existing buildings if specified.</li>
+<li>New population growth areas are added if specified, taking into account economic growth.</li>
+<li>Population growth is applied to existing objects if specified.</li>
+</ul>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.apply_economic_growth" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.apply_economic_growth">apply_economic_growth</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.apply_economic_growth(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    economic_growth: <span class="bu">float</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    ids: Optional[<span class="bu">list</span>] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Apply economic growth to the FIAT-Model by adjusting the maximum potential damage values in the exposure database.</p>
+<p>This method updates the max potential damage values in the exposure database by applying a given economic growth rate. It can optionally filter the updates to specific objects identified by their IDs.</p>
+<section id="parameters-4" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>economic_growth</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>float</code></span></code></dt>
+<dd>
+<p>The economic growth rate to apply, expressed as a percentage.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>ids</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>Optional</code>[<code>list</code>]</span> <span class="parameter-default-sep">=</span> <span class="parameter-default">None</span></code></dt>
+<dd>
+<p>A list of object IDs to which the economic growth should be applied. If None, the growth is applied to all buildings.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.apply_population_growth_existing" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.apply_population_growth_existing">apply_population_growth_existing</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.apply_population_growth_existing(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    population_growth: <span class="bu">float</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    ids: Optional[<span class="bu">list</span>[<span class="bu">str</span>]] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Apply population growth to the FIAT-Model by adjusting the existing max potential damage values for buildings.</p>
+<p>This method updates the max potential damage values in the exposure database by applying a given population growth rate. It can optionally filter the updates to specific objects identified by their IDs.</p>
+<section id="parameters-5" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>population_growth</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>float</code></span></code></dt>
+<dd>
+<p>The population growth rate as a percentage.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>ids</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>Optional</code>[<code>list</code>[<code>str</code>]]</span> <span class="parameter-default-sep">=</span> <span class="parameter-default">None</span></code></dt>
+<dd>
+<p>A list of object IDs to filter the updates. If None, the updates are applied to all buildings.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.apply_population_growth_new" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.apply_population_growth_new">apply_population_growth_new</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.apply_population_growth_new(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    population_growth: <span class="bu">float</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    ground_floor_height: <span class="bu">float</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    elevation_type: <span class="bu">str</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    area_path: <span class="bu">str</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    ground_elevation: Union[<span class="va">None</span>, <span class="bu">str</span>, Path] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Apply population growth in a new area by adding new objects in the model.</p>
+<section id="parameters-6" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-6">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>population_growth</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>float</code></span></code></dt>
+<dd>
+<p>The percentage of population growth to apply.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>ground_floor_height</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>float</code></span></code></dt>
+<dd>
+<p>The height of the ground floor.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>elevation_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dd>
+<p>The type of elevation reference to use. Must be either ‘floodmap’ or ‘datum’.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>area_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dd>
+<p>The path to the area file.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>ground_elevation</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>Union</code>[None, <code>str</code>, <code>Path</code>]</span> <span class="parameter-default-sep">=</span> <span class="parameter-default">None</span></code></dt>
+<dd>
+<p>The ground elevation reference. Default is None.</p>
+</dd>
+</dl>
+</section>
+<section id="raises" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
+<dd>
+<p>If <code>elevation_type</code> is ‘floodmap’ and base flood elevation (bfe) map is not provided. If <code>elevation_type</code> is not ‘floodmap’ or ‘datum’.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.buyout_properties" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.buyout_properties">buyout_properties</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.buyout_properties(buyout: Buyout)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Apply the buyout measure to the properties by setting their maximum potential damage to zero.</p>
+<section id="parameters-7" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-7">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>buyout</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Buyout.html#flood_adapt.object_model.Buyout">Buyout</a></span></code></dt>
+<dd>
+<p>The Buyout measure containing the details of the properties to be bought out.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.close_files" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.close_files">close_files</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.close_files()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Close all open files and clean up file handles.</p>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.create_infographics" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.create_infographics">create_infographics</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.create_infographics(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    name: <span class="bu">str</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    output_base_path: os.PathLike,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    config_base_path: os.PathLike,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    metrics_path: os.PathLike,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    mode: Mode <span class="op">=</span> Mode.single_event,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Create infographic files based on the provided metrics and configuration.</p>
+<section id="parameters-8" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-8">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dd>
+<p>The name of the scenario.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>output_base_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>os</code>.<code>PathLike</code></span></code></dt>
+<dd>
+<p>The base path where the output files will be saved.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>config_base_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>os</code>.<code>PathLike</code></span></code></dt>
+<dd>
+<p>The base path where the configuration files are located.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>metrics_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>os</code>.<code>PathLike</code></span></code></dt>
+<dd>
+<p>The path to the metrics file.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>mode</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>Mode</code></span> <span class="parameter-default-sep">=</span> <span class="parameter-default">Mode.single_event</span></code></dt>
+<dd>
+<p>The mode of the infographic, by default Mode.single_event.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.create_infometrics" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.create_infometrics">create_infometrics</h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.create_infometrics(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    metric_config_paths: <span class="bu">list</span>[os.PathLike],</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    metrics_output_path: os.PathLike,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Create infometrics files based on the provided metric configuration paths.</p>
+<section id="parameters-9" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-9">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>metric_config_paths</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>list</code>[<code>os</code>.<code>PathLike</code>]</span></code></dt>
+<dd>
+<p>A list of paths to the metric configuration files.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>metrics_output_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>os</code>.<code>PathLike</code></span></code></dt>
+<dd>
+<p>The path where the metrics output file will be saved.</p>
+</dd>
+</dl>
+</section>
+<section id="raises-1" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-1">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>FileNotFoundError</code></span></code></dt>
+<dd>
+<p>If a mandatory metric configuration file does not exist.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.delete_model" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.delete_model">delete_model</h3>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.delete_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Delete the Delft-FIAT simulation folder.</p>
+<p>This method attempts to delete the directory specified by <code>self.model_root</code>.</p>
+<section id="raises-2" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-2">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">OSError: If the directory cannot be deleted.</span></code></dt>
+<dd>
+
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.elevate_properties" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.elevate_properties">elevate_properties</h3>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.elevate_properties(elevate: Elevate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Elevate the ground floor height of properties based on the provided Elevate measure.</p>
+<section id="parameters-10" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-10">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>elevate</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Elevate.html#flood_adapt.object_model.Elevate">Elevate</a></span></code></dt>
+<dd>
+<p>The Elevate measure containing the elevation details.</p>
+</dd>
+</dl>
+</section>
+<section id="raises-3" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-3">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
+<dd>
+<p>If the elevation type is ‘floodmap’ and the base flood elevation (bfe) map is not provided. If the elevation type is not ‘floodmap’ or ‘datum’.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.execute" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.execute">execute</h3>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.execute(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    path: Optional[os.PathLike] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    exe_path: Optional[os.PathLike] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    delete_crashed_runs: Optional[<span class="bu">bool</span>] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    strict,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Execute the FIAT model.</p>
+<section id="parameters-11" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-11">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>Optional</code>[<code>os</code>.<code>PathLike</code>]</span> <span class="parameter-default-sep">=</span> <span class="parameter-default">None</span></code></dt>
+<dd>
+<p>The path to the model directory. If not provided, defaults to <code>self.model_root</code>.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>exe_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>Optional</code>[<code>os</code>.<code>PathLike</code>]</span> <span class="parameter-default-sep">=</span> <span class="parameter-default">None</span></code></dt>
+<dd>
+<p>The path to the FIAT executable. If not provided, defaults to <code>self.exe_path</code>.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>delete_crashed_runs</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>Optional</code>[<code>bool</code>]</span> <span class="parameter-default-sep">=</span> <span class="parameter-default">None</span></code></dt>
+<dd>
+<p>Whether to delete files from crashed runs. If not provided, defaults to <code>self.delete_crashed_runs</code>.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>strict</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>bool</code></span> <span class="parameter-default-sep">=</span> <span class="parameter-default">True</span></code></dt>
+<dd>
+<p>Whether to raise an error if the FIAT model fails to run. Defaults to True.</p>
+</dd>
+</dl>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>bool</code></span></code></dt>
+<dd>
+<p>True if the FIAT model run successfully, False otherwise.</p>
+</dd>
+</dl>
+</section>
+<section id="raises-4" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-4">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
+<dd>
+<p>If <code>exe_path</code> is not provided and <code>self.exe_path</code> is None.</p>
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>RuntimeError</code></span></code></dt>
+<dd>
+<p>If the FIAT model fails to run and <code>strict</code> is True.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.fiat_completed" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.fiat_completed">fiat_completed</h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.fiat_completed()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Check if fiat has run as expected.</p>
+<section id="returns-2" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>boolean</code></span></code></dt>
+<dd>
+<p>True if fiat has run, False if something went wrong</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.floodproof_properties" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.floodproof_properties">floodproof_properties</h3>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.floodproof_properties(floodproof: FloodProof)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Apply floodproofing measures to the properties by truncating the damage function.</p>
+<section id="parameters-12" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-12">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>floodproof</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/FloodProof.html#flood_adapt.object_model.FloodProof">FloodProof</a></span></code></dt>
+<dd>
+<p>The FloodProof measure containing the details of the properties to be floodproofed.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.get_all_building_ids" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.get_all_building_ids">get_all_building_ids</h3>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.get_all_building_ids()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Retrieve the IDs of all buildings in the FIAT model.</p>
+<section id="returns-3" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>list</code></span></code></dt>
+<dd>
+<p>A list of IDs for all buildings in the FIAT model.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.get_buildings" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.get_buildings">get_buildings</h3>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.get_buildings()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Retrieve the building geometries from the FIAT model’s exposure database.</p>
+<section id="returns-4" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>gpd</code>.<code>GeoDataFrame</code></span></code></dt>
+<dd>
+<p>A GeoDataFrame containing the geometries of all buildings in the FIAT model.</p>
+</dd>
+</dl>
+</section>
+<section id="raises-5" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-5">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
+<dd>
+<p>If the FIAT model does not have an exposure database initialized.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.get_object_ids" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.get_object_ids">get_object_ids</h3>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.get_object_ids(measure: Measure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Retrieve the object IDs for a given impact measure.</p>
+<section id="parameters-13" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-13">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>measure</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Measure.html#flood_adapt.object_model.Measure">Measure</a></span></code></dt>
+<dd>
+<p>The impact measure for which to retrieve object IDs.</p>
+</dd>
+</dl>
+</section>
+<section id="returns-5" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>list</code>[<code>Any</code>]</span></code></dt>
+<dd>
+<p>A list of object IDs that match the criteria of the given measure.</p>
+</dd>
+</dl>
+</section>
+<section id="raises-6" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-6">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
+<dd>
+<p>If the measure type is not an impact measure.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.get_property_types" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.get_property_types">get_property_types</h3>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.get_property_types()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Retrieve the list of property types from the FIAT model’s exposure database.</p>
+<section id="returns-6" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>list</code></span></code></dt>
+<dd>
+<p>A list of property types available in the FIAT model.</p>
+</dd>
+</dl>
+</section>
+<section id="raises-7" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-7">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
+<dd>
+<p>If no property types are found in the FIAT model.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.has_run" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.has_run">has_run</h3>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.has_run(scenario: Scenario)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Check if the impact results file for the given scenario exists.</p>
+<section id="parameters-14" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-14">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>scenario</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Scenario.html#flood_adapt.object_model.Scenario">Scenario</a></span></code></dt>
+<dd>
+<p>The scenario for which to check the FIAT results.</p>
+</dd>
+</dl>
+</section>
+<section id="returns-7" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-7">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>bool</code></span></code></dt>
+<dd>
+<p>True if the FIAT results file exists, False otherwise.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.postprocess" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.postprocess">postprocess</h3>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.postprocess(scenario)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Post-process the results of the Delft-FIAT simulation for a given scenario.</p>
+<section id="parameters-15" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-15">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>scenario</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Scenario.html#flood_adapt.object_model.Scenario">Scenario</a></span></code></dt>
+<dd>
+<p>The scenario object containing all relevant data and configurations.</p>
+</dd>
+</dl>
+</section>
+<section id="raises-8" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-8">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>RuntimeError</code></span></code></dt>
+<dd>
+<p>If the Delft-FIAT simulation did not run successfully.</p>
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Post-processing steps include:</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">- Reading the outputs of the Delft-FIAT simulation.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">- Adding exceedance probabilities for risk mode scenarios.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">- Saving detailed impacts per object to a CSV file.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">- Creating infometrics files based on different metric configurations.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">- Generating infographic files if configured.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">- Calculating equity-based damages for risk mode scenarios.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">- Saving aggregated metrics to shapefiles.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">- Merging points data to building footprints.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">- Creating a roads spatial file if configured.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">- Deleting the simulation folder if the site configuration is set to not keep the simulation.</span></code></dt>
+<dd>
+
+</dd>
+</dl>
+</section>
+<section id="logging" class="level4 doc-section doc-section-logging">
+<h4 class="doc-section doc-section-logging anchored" data-anchor-id="logging">Logging</h4>
+<p>Logs the start and completion of the post-processing steps.</p>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.preprocess" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.preprocess">preprocess</h3>
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.preprocess(scenario: Scenario)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Preprocess the FIAT-model given a scenario by setting up projections, measures, and hazards, and then saves any changes made to disk.</p>
+<p>Args: scenario (Scenario): The scenario to preprocess, which includes projection, strategy, and hazard.</p>
+<section id="returns-8" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-8">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">None</span></code></dt>
+<dd>
+
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.read" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.read">read</h3>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.read(path: Path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Read the fiat model from the current model root.</p>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.read_outputs" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.read_outputs">read_outputs</h3>
+<div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.read_outputs()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Read the output FIAT CSV file specified in the model configuration and stores the data in the <code>outputs</code> attribute.</p>
+<section id="attributes-1" class="level4 doc-section doc-section-attributes">
+<h4 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes-1">Attributes</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>outputs</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>dict</code></span></code></dt>
+<dd>
+<p>A dictionary containing the following keys: - “path” : Path The path to the output directory. - “table” : DataFrame The contents of the output CSV file.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.run" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.run">run</h3>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.run(scenario)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Execute the full process for a given scenario, including preprocessing, executing the simulation, and postprocessing steps.</p>
+<p>Args: scenario: An object containing the scenario data.</p>
+<section id="returns-9" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-9">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">None</span></code></dt>
+<dd>
+
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.save_aggregation_spatial" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.save_aggregation_spatial">save_aggregation_spatial</h3>
+<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.save_aggregation_spatial(</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    aggr_label: <span class="bu">str</span>,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    metrics_path: os.PathLike,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    output_path: os.PathLike,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Save aggregated metrics to a spatial file.</p>
+<section id="parameters-16" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-16">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>aggr_label</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dd>
+<p>The label of the aggregation area.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>metrics_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>os</code>.<code>PathLike</code></span></code></dt>
+<dd>
+<p>The path to the metrics file.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>output_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>os</code>.<code>PathLike</code></span></code></dt>
+<dd>
+<p>The path where the output spatial file will be saved.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.save_building_footprints" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.save_building_footprints">save_building_footprints</h3>
+<div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.save_building_footprints(output_path: os.PathLike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Aggregate impacts at a building footprint level and then saves to an output file.</p>
+<section id="parameters-17" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-17">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>output_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>os</code>.<code>PathLike</code></span></code></dt>
+<dd>
+<p>The path where the output spatial file will be saved.</p>
+</dd>
+</dl>
+</section>
+<section id="raises-9" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-9">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
+<dd>
+<p>If no building footprints are provided in the configuration.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.save_roads" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.save_roads">save_roads</h3>
+<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.save_roads(output_path: os.PathLike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Save the impacts on roads to a spatial file.</p>
+<section id="parameters-18" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-18">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>output_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>os</code>.<code>PathLike</code></span></code></dt>
+<dd>
+<p>The path where the output spatial file will be saved.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.set_hazard" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.set_hazard">set_hazard</h3>
+<div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.set_hazard(</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    map_fn: Union[os.PathLike, <span class="bu">list</span>[os.PathLike]],</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    map_type: FloodMapType,</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    var: <span class="bu">str</span>,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    is_risk: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    units: <span class="bu">str</span> <span class="op">=</span> us.UnitTypesLength.meters,</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Set the hazard map and type for the FIAT model.</p>
+<section id="parameters-19" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-19">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>map_fn</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dd>
+<p>The filename of the hazard map.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>map_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>FloodMapType</code></span></code></dt>
+<dd>
+<p>The type of the flood map.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>var</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dd>
+<p>The variable name in the hazard map.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>is_risk</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>bool</code></span> <span class="parameter-default-sep">=</span> <span class="parameter-default">False</span></code></dt>
+<dd>
+<p>Flag indicating if the map is a risk output. Defaults to False.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>units</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span> <span class="parameter-default-sep">=</span> <span class="parameter-default">us.UnitTypesLength.meters</span></code></dt>
+<dd>
+<p>The units of the hazard map. Defaults to us.UnitTypesLength.meters.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.adapter.FiatAdapter.write" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.FiatAdapter.write">write</h3>
+<div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>adapter.FiatAdapter.write(</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    path_out: Union[<span class="bu">str</span>, os.PathLike],</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Write the fiat model configuration to a directory.</p>
+
+
+</section>
+</section>
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../api_ref/Site.html" class="pagination-link" aria-label="Site">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Site</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../api_ref/SfincsAdapter.html" class="pagination-link" aria-label="SfincsAdapter">
+        <span class="nav-page-text">SfincsAdapter</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/FiatAdapter.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
