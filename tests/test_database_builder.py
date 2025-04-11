@@ -26,8 +26,8 @@ from flood_adapt.database_builder.database_builder import (
     TideGaugeConfigModel,
     UnitSystems,
 )
-from flood_adapt.object_model.hazard.interface.forcing import Scstype
-from flood_adapt.object_model.hazard.interface.tide_gauge import TideGaugeSource
+from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGaugeSource
+from flood_adapt.object_model.hazard.interface.timeseries import Scstype
 from flood_adapt.object_model.interface.config.fiat import (
     AggregationModel,
     BenefitsModel,
@@ -125,13 +125,13 @@ class TestDataBaseBuilder:
         builder = DatabaseBuilder(mock_config)
         builder.add_probabilistic_set()
 
-        assert builder.probabilistic_set_name == "test_set"
+        assert builder._probabilistic_set_name == "test_set"
 
     def test_create_benefits_with_test_set(self, mock_config: ConfigModel):
         # Arrange
         mock_config.probabilistic_set = self.db_path / "input" / "events" / "test_set"
         builder = DatabaseBuilder(mock_config)
-        builder.probabilistic_set_name = "test_set"
+        builder._probabilistic_set_name = "test_set"
 
         # Act
         benefits = builder.create_benefit_config()

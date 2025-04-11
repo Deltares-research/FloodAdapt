@@ -28,8 +28,8 @@ from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.event.event_set import EventSet
-from flood_adapt.object_model.hazard.interface.tide_gauge import (
-    TideGaugeModel,
+from flood_adapt.object_model.hazard.forcing.tide_gauge import (
+    TideGauge,
     TideGaugeSource,
 )
 from flood_adapt.object_model.interface.config.fiat import (
@@ -67,17 +67,14 @@ from flood_adapt.object_model.interface.config.sfincs import (
 )
 from flood_adapt.object_model.interface.config.site import (
     Site,
-    SiteModel,
     StandardObjectModel,
 )
 from flood_adapt.object_model.interface.projections import (
-    PhysicalProjectionModel,
-    ProjectionModel,
-    SocioEconomicChangeModel,
+    PhysicalProjection,
+    Projection,
+    SocioEconomicChange,
 )
-from flood_adapt.object_model.interface.strategies import StrategyModel
-from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.interface.strategies import Strategy
 
 
 def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
@@ -435,8 +432,7 @@ class DatabaseBuilder:
             self.setup()
 
             # Prepare site configuration
-            site_model = self.create_site_config()
-            site = Site(site_config=site_model)
+            site = self.create_site_config()
             site.save(self.static_path / "config" / "site.toml")
 
             # Add infometric and infographic configurations
@@ -475,19 +471,15 @@ class DatabaseBuilder:
         db = read_database(self.root.parent, self.config.name)
         # Create no measures strategy
         strategy = Strategy(
-            StrategyModel(
-                name=self._no_measures_strategy_name,
-                measures=[],
-            )
+            name=self._no_measures_strategy_name,
+            measures=[],
         )
         db.strategies.save(strategy)
         # Create current projection
         projection = Projection(
-            ProjectionModel(
-                name=self._current_projection_name,
-                physical_projection=PhysicalProjectionModel(),
-                socio_economic_change=SocioEconomicChangeModel(),
-            )
+            name=self._current_projection_name,
+            physical_projection=PhysicalProjection(),
+            socio_economic_change=SocioEconomicChange(),
         )
         db.projections.save(projection)
         # Check prob set
@@ -1313,7 +1305,7 @@ class DatabaseBuilder:
 
         return rivers
 
-    def create_tide_gauge(self) -> Optional[TideGaugeModel]:
+    def create_tide_gauge(self) -> Optional[TideGauge]:
         if self.config.tide_gauge is None:
             self.logger.warning(
                 "Tide gauge information not provided. Historical events will not have an option to use gauged data in FloodAdapt!"
@@ -1346,7 +1338,7 @@ class DatabaseBuilder:
             self.logger.warning(
                 f"Tide gauge from file {rel_db_path} assumed to be in {self.unit_system.default_length_units}!"
             )
-            tide_gauge = TideGaugeModel(
+            tide_gauge = TideGauge(
                 reference=self.config.tide_gauge.ref,
                 description="Observations from file stored in database",
                 source=TideGaugeSource.file,
@@ -1381,7 +1373,7 @@ class DatabaseBuilder:
             station = self._get_station_metadata(station_id=station_id, ref=ref)
             if station is not None:
                 # Add tide_gauge information in site toml
-                tide_gauge = TideGaugeModel(
+                tide_gauge = TideGauge(
                     name=station["name"],
                     description=f"observations from '{self.config.tide_gauge.source}' api",
                     source=self.config.tide_gauge.source,
@@ -1477,7 +1469,7 @@ class DatabaseBuilder:
         )
 
     ### SITE ###
-    def create_site_config(self) -> SiteModel:
+    def create_site_config(self) -> Site:
         # call this before fiat to ensure the dem is where its expected
         sfincs = self.create_sfincs_config()
 
@@ -1494,7 +1486,7 @@ class DatabaseBuilder:
         # Set standard objects
         std_objs = self.set_standard_objects()
 
-        config = SiteModel(
+        config = Site(
             name=self.config.name,
             description=self.config.description,
             lat=lat,
