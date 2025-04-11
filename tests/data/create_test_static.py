@@ -228,9 +228,7 @@ def create_sfincs_config() -> SfincsModel:
         offshore_model=FloodModel(
             name="offshore",
             reference="MSL",
-            vertical_offset=us.UnitfulLength(
-                value=0.6, units=us.UnitTypesLength.meters
-            ),
+            vertical_offset=us.UnitfulLength(value=0.6, units=us.UnitTypesLength.feet),
         ),
         overland_model=FloodModel(
             name="overland",
