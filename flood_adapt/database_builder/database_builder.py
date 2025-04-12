@@ -457,8 +457,12 @@ class DatabaseBuilder:
         # Define name and create object
         self._no_measures_strategy_name = "no_measures"
         self._current_projection_name = "current"
+        if self._probabilistic_set_name is not None:
+            event_list = [self._probabilistic_set_name]
+        else:
+            event_list = []
         std_obj = StandardObjectModel(
-            events=[self._probabilistic_set_name],
+            events=event_list,
             projections=[self._current_projection_name],
             strategies=[self._no_measures_strategy_name],
         )
@@ -483,18 +487,19 @@ class DatabaseBuilder:
         )
         db.projections.save(projection)
         # Check prob set
-        path_toml = (
-            db.input_path
-            / "events"
-            / self._probabilistic_set_name
-            / f"{self._probabilistic_set_name}.toml"
-        )
-        try:
-            EventSet.load_file(path_toml)
-        except Exception as e:
-            raise ValueError(
-                f"Provided probabilistic event set '{self._probabilistic_set_name}' is not valid. Error: {e}"
+        if self._probabilistic_set_name is not None:
+            path_toml = (
+                db.input_path
+                / "events"
+                / self._probabilistic_set_name
+                / f"{self._probabilistic_set_name}.toml"
             )
+            try:
+                EventSet.load_file(path_toml)
+            except Exception as e:
+                raise ValueError(
+                    f"Provided probabilistic event set '{self._probabilistic_set_name}' is not valid. Error: {e}"
+                )
 
     ### TEMPLATE READERS ###
     def read_template_fiat_model(self):
@@ -593,7 +598,7 @@ class DatabaseBuilder:
         return risk
 
     def create_benefit_config(self) -> Optional[BenefitsModel]:
-        if self.config.probabilistic_set is None:
+        if self._probabilistic_set_name is None:
             self.logger.warning(
                 "No probabilistic set found in the config, benefits will not be available."
             )
