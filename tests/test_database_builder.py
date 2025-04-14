@@ -152,7 +152,7 @@ class TestDataBaseBuilder:
         # Arrange
         mock_config.probabilistic_set = None
         builder = DatabaseBuilder(mock_config)
-
+        self.add_probabilistic_set()
         # Act
         benefits = builder.create_benefit_config()
 
