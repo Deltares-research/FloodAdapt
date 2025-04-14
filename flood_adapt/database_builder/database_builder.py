@@ -22,7 +22,6 @@ from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from pydantic import BaseModel, Field
 from shapely import MultiLineString, MultiPolygon, Polygon
 
-from flood_adapt import unit_system as us
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.config import Settings
@@ -75,6 +74,7 @@ from flood_adapt.object_model.interface.projections import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.interface.strategies import Strategy
+from flood_adapt.object_model.io import unit_system as us
 
 
 def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
