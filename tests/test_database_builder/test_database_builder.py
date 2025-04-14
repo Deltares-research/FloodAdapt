@@ -54,7 +54,7 @@ class TestDataBaseBuilder:
         self.db_path = Settings().database_path
         self.static_path = self.db_path / "static"
         self.templates_path = self.db_path / "static" / "templates"
-        with tempfile.TemporaryDirectory() as tmpdirname:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:
             config = Mock()
             config.database_path = tmpdirname
             config.name = "charleston_db_builder"
@@ -193,6 +193,7 @@ class TestDataBaseBuilder:
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
         builder.read_template_fiat_model()
+
         # Act
         footprints = builder.create_footprints()
 
@@ -213,6 +214,7 @@ class TestDataBaseBuilder:
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
         builder.read_template_fiat_model()
+
         del builder.fiat_model.exposure.exposure_db["BF_FID"]
 
         # Act
@@ -508,7 +510,7 @@ class TestDataBaseBuilder:
         mock_config.sfincs_offshore = None
         builder = DatabaseBuilder(mock_config)
         builder.read_template_sfincs_overland_model()
-        builder.read_template_sfincs_overland_model()
+
         # Act
         sfincs = builder.create_overland_model()
 
@@ -1022,7 +1024,7 @@ class TestDataBaseBuilder:
         builder.build()
 
         # Assert
-        db = read_database(full_config.database_path, full_config.name)
+        db = read_database(str(full_config.database_path), full_config.name)
         assert db is not None
 
     @pytest.fixture(scope="function")
@@ -1030,7 +1032,7 @@ class TestDataBaseBuilder:
         db_path = Settings().database_path
         static_path = db_path / "static"
         templates_path = db_path / "static" / "templates"
-        with tempfile.TemporaryDirectory() as tmpdirname:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:
             config = ConfigModel(
                 #
                 # General

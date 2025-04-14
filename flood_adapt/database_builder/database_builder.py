@@ -24,7 +24,6 @@ from shapely import MultiLineString, MultiPolygon, Polygon
 
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.api.static import read_database
-from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.forcing.tide_gauge import (
@@ -75,6 +74,7 @@ from flood_adapt.object_model.interface.projections import (
 )
 from flood_adapt.object_model.interface.strategies import Strategy
 from flood_adapt.object_model.io import unit_system as us
+from tests.utils import modified_environ
 
 
 def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
@@ -469,37 +469,42 @@ class DatabaseBuilder:
         return std_obj
 
     def create_standard_objects(self):
-        # Create database instance
-        Settings(DATABASE_ROOT=self.root.parent, DATABASE_NAME=self.root.name)
-        self.logger.info("Creating no measures strategy and current projection.")
-        db = read_database(self.root.parent, self.config.name)
-        # Create no measures strategy
-        strategy = Strategy(
-            name=self._no_measures_strategy_name,
-            measures=[],
-        )
-        db.strategies.save(strategy)
-        # Create current projection
-        projection = Projection(
-            name=self._current_projection_name,
-            physical_projection=PhysicalProjection(),
-            socio_economic_change=SocioEconomicChange(),
-        )
-        db.projections.save(projection)
-        # Check prob set
-        if self._probabilistic_set_name is not None:
-            path_toml = (
-                db.input_path
-                / "events"
-                / self._probabilistic_set_name
-                / f"{self._probabilistic_set_name}.toml"
+        with modified_environ(
+            DATABASE_ROOT=str(self.root.parent),
+            DATABASE_NAME=self.root.name,
+        ):
+            self.logger.info(
+                "Creating `no measures` strategy and `current` projection."
             )
-            try:
-                EventSet.load_file(path_toml)
-            except Exception as e:
-                raise ValueError(
-                    f"Provided probabilistic event set '{self._probabilistic_set_name}' is not valid. Error: {e}"
+            # Create database instance
+            db = read_database(self.root.parent, self.config.name)
+            # Create no measures strategy
+            strategy = Strategy(
+                name=self._no_measures_strategy_name,
+                measures=[],
+            )
+            db.strategies.save(strategy)
+            # Create current projection
+            projection = Projection(
+                name=self._current_projection_name,
+                physical_projection=PhysicalProjection(),
+                socio_economic_change=SocioEconomicChange(),
+            )
+            db.projections.save(projection)
+            # Check prob set
+            if self._probabilistic_set_name is not None:
+                path_toml = (
+                    db.input_path
+                    / "events"
+                    / self._probabilistic_set_name
+                    / f"{self._probabilistic_set_name}.toml"
                 )
+                try:
+                    EventSet.load_file(path_toml)
+                except Exception as e:
+                    raise ValueError(
+                        f"Provided probabilistic event set '{self._probabilistic_set_name}' is not valid. Error: {e}"
+                    )
 
     ### TEMPLATE READERS ###
     def read_template_fiat_model(self):
