@@ -2155,7 +2155,7 @@ if __name__ == "__main__":
         )
         try:
             dbs = DatabaseBuilder.from_file(config_path=config_path)
-            dbs.build(overwrite=True)
+            dbs.build()
         except Exception as e:
             print(e)
         quit = input("Do you want to quit? (y/n)")
