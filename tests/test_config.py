@@ -8,7 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from flood_adapt.misc.config import Settings
-from tests.utils import modified_environ
+from flood_adapt.misc.utils import modified_environ
 
 
 class TestSettingsModel:

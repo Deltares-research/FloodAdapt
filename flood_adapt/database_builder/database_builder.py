@@ -25,6 +25,7 @@ from shapely import MultiLineString, MultiPolygon, Polygon
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.misc.utils import modified_environ
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.forcing.tide_gauge import (
     TideGauge,
@@ -74,7 +75,6 @@ from flood_adapt.object_model.interface.projections import (
 )
 from flood_adapt.object_model.interface.strategies import Strategy
 from flood_adapt.object_model.io import unit_system as us
-from tests.utils import modified_environ
 
 
 def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
