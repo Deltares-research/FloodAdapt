@@ -279,7 +279,7 @@ class ConfigModel(BaseModel):
 
     # General
     name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: str = ""
+    description: Optional[str] = None
     database_path: Optional[str] = None
     unit_system: UnitSystems
     gui: GuiConfigModel
@@ -1490,9 +1490,14 @@ class DatabaseBuilder:
         # Set standard objects
         std_objs = self.set_standard_objects()
 
+        # Description of site
+        description = (
+            self.config.description if self.config.description else self.config.name
+        )
+
         config = Site(
             name=self.config.name,
-            description=self.config.description,
+            description=description,
             lat=lat,
             lon=lon,
             fiat=fiat,
