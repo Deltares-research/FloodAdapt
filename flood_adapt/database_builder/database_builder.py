@@ -1296,6 +1296,9 @@ class DatabaseBuilder:
                 )
             else:
                 discharge = 0
+                self.logger.warning(
+                    f"No river discharge conditions were found in the SFINCS model for river {idx}. A default value of 0 will be used."
+                )
 
             river = RiverModel(
                 name=f"river_{idx}",
@@ -1306,6 +1309,10 @@ class DatabaseBuilder:
                 ),
             )
             rivers.append(river)
+
+        self.logger.info(
+            f"{len(river_locs)} river(s) were identified from the SFINCS model and will be available in FloodAdapt for discharge input."
+        )
 
         return rivers
 
