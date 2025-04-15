@@ -1168,7 +1168,7 @@ class DatabaseBuilder:
         else:
             basin = "ALL"
 
-        name = f"IBTrACS.{basin}.v04r01.nc"
+        name = f"IBTrACS.{basin.value}.v04r01.nc"
         url = f"https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r01/access/netcdf/{name}"
         self.logger.info(f"Downloading cyclone track database from {url}")
         fn = Path(self.root) / "static" / "cyclone_track_database" / name
