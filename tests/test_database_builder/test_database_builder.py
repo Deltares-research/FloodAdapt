@@ -811,9 +811,14 @@ class TestDataBaseBuilder:
 
         # Act
         tide_gauge = builder.create_tide_gauge()
-
+        datum_names = [datum.name for datum in builder.water_level_references.datums]
         # Assert
         assert tide_gauge is not None
+        assert tide_gauge.reference == "MSL"
+        assert "NAVD88" in datum_names
+        assert "MSL" in datum_names
+        assert "MHHW" in datum_names
+        assert "MLLW" in datum_names
 
     # TODO split tests of infometrics for imperial and metric types!
     def test_create_infometrics_mandatory_only(
