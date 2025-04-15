@@ -337,7 +337,41 @@ class ConfigModel(BaseModel):
         """
         with open(toml_path, mode="rb") as fp:
             toml = tomli.load(fp)
-        return ConfigModel.model_validate(toml)
+        config = ConfigModel.model_validate(toml)
+
+        # check if database path is provided and use config_file path if not
+        if config.database_path is None:
+            dbs_path = Path(toml_path).parent / "Database"
+            if not dbs_path.exists():
+                dbs_path.mkdir(parents=True)
+            config.database_path = dbs_path.as_posix()
+        # check if paths are relative to the config file and make them absolute
+        config.database_path = path_check(config.database_path, toml_path)
+        config.fiat = path_check(config.fiat, toml_path)
+        config.sfincs_overland.name = path_check(config.sfincs_overland.name, toml_path)
+        if config.sfincs_offshore:
+            config.sfincs_offshore.name = path_check(
+                config.sfincs_offshore.name, toml_path
+            )
+        if isinstance(config.building_footprints, SpatialJoinModel):
+            config.building_footprints.file = path_check(
+                config.building_footprints.file, toml_path
+            )
+        if config.tide_gauge and config.tide_gauge.file:
+            config.tide_gauge.file = path_check(config.tide_gauge.file, toml_path)
+        if config.svi:
+            config.svi.file = path_check(config.svi.file, toml_path)
+        if config.bfe:
+            config.bfe.file = path_check(config.bfe.file, toml_path)
+        if config.slr_scenarios:
+            config.slr_scenarios.file = path_check(config.slr_scenarios.file, toml_path)
+        if config.probabilistic_set:
+            config.probabilistic_set = path_check(config.probabilistic_set, toml_path)
+        if config.aggregation_areas:
+            for aggr in config.aggregation_areas:
+                aggr.file = path_check(aggr.file, toml_path)
+
+        return config
 
 
 class DatabaseBuilder:
@@ -362,46 +396,6 @@ class DatabaseBuilder:
 
         # Read info that needs to be updated with other model info
         self.water_level_references = self.config.references
-
-    @staticmethod
-    def from_file(config_path: Path):
-        config = ConfigModel.read(config_path)
-        # check if database path is provided and use config_file path if not
-        if config.database_path is None:
-            dbs_path = Path(config_path).parent / "Database"
-            if not dbs_path.exists():
-                dbs_path.mkdir(parents=True)
-            config.database_path = dbs_path.as_posix()
-        # check if paths are relative to the config file and make them absolute
-        config.database_path = path_check(config.database_path, config_path)
-        config.fiat = path_check(config.fiat, config_path)
-        config.sfincs_overland.name = path_check(
-            config.sfincs_overland.name, config_path
-        )
-        if config.sfincs_offshore:
-            config.sfincs_offshore.name = path_check(
-                config.sfincs_offshore.name, config_path
-            )
-        if isinstance(config.building_footprints, SpatialJoinModel):
-            config.building_footprints.file = path_check(
-                config.building_footprints.file, config_path
-            )
-        if config.tide_gauge and config.tide_gauge.file:
-            config.tide_gauge.file = path_check(config.tide_gauge.file, config_path)
-        if config.svi:
-            config.svi.file = path_check(config.svi.file, config_path)
-        if config.bfe:
-            config.bfe.file = path_check(config.bfe.file, config_path)
-        if config.slr_scenarios:
-            config.slr_scenarios.file = path_check(
-                config.slr_scenarios.file, config_path
-            )
-        if config.probabilistic_set:
-            config.probabilistic_set = path_check(config.probabilistic_set, config_path)
-        if config.aggregation_areas:
-            for aggr in config.aggregation_areas:
-                aggr.file = path_check(aggr.file, config_path)
-        return DatabaseBuilder(config)
 
     @property
     def static_path(self) -> Path:
@@ -2159,7 +2153,8 @@ if __name__ == "__main__":
             )
         )
         try:
-            dbs = DatabaseBuilder.from_file(config_path=config_path)
+            config = ConfigModel.read(config_path)
+            dbs = DatabaseBuilder(config)
             dbs.build()
         except Exception as e:
             print(e)
