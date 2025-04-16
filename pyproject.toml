@@ -98,7 +98,6 @@ flood_adapt = ["py.typed", "database_builder/**"]
 addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
 testpaths = ["tests"]
 
-
 ### pixi ###
 [tool.pixi.pypi-dependencies]
 flood_adapt = {path = ".", editable = true }
@@ -115,7 +114,7 @@ python = "3.10.*"
 [tool.pixi.project]
 name = "flood-adapt"
 channels = ["conda-forge"]
-platforms = ["win-64"]
+platforms = ["win-64", "linux-64"]
 
 [tool.pixi.environments]
 py312 = { features = ["py312"], solve-group = "py312" }

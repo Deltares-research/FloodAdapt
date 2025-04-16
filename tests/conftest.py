@@ -80,9 +80,10 @@ def session_setup_teardown():
         DATABASE_ROOT=src_dir.parents[1] / "Database",
         DATABASE_NAME="charleston_test",
         DELETE_CRASHED_RUNS=clean,
-        # leave system_folder empty to use the envvar or default system folder
+        SFINCS_BIN_PATH="/usr/local/bin/sfincs",
+        FIAT_BIN_PATH="/home/blom/Projects/system/fiat/fiat",
     )
-
+    
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     FloodAdaptLogging(
         file_path=log_path,

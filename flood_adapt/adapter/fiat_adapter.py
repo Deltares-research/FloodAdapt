@@ -321,7 +321,8 @@ class FiatAdapter(IImpactAdapter):
             with FloodAdaptLogging.to_file(file_path=fiat_log):
                 self.logger.info(f"Running FIAT in {path}")
                 process = subprocess.run(
-                    f'"{exe_path.as_posix()}" run settings.toml',
+                    executable=Path(exe_path).as_posix(),
+                    args='run settings.toml',
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
