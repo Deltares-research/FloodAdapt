@@ -51,7 +51,7 @@ def copy_shapely_libs():
 
 
 def run_pyinstaller() -> None:
-    entry_point = SRC_DIR / "database_builder" / "create_database.py"
+    entry_point = SRC_DIR / "database_builder" / "database_builder.py"
     spec_path = DIST_ROOT
 
     command = [
