@@ -1,6 +1,5 @@
-import os
 from pathlib import Path
-from typing import Any, List, Optional, Type, Union
+from typing import Any, List, Optional, Union
 
 import geopandas as gpd
 import numpy as np
@@ -10,7 +9,6 @@ from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.benefits.benefits import Benefit
@@ -20,21 +18,13 @@ from flood_adapt.objects.events.event_factory import (
 from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import (
     Event,
-    Mode,
-    Template,
 )
-from flood_adapt.objects.forcing import unit_system as us
-from flood_adapt.objects.forcing.csv import read_csv as _read_csv
 from flood_adapt.objects.forcing.forcing import (
     ForcingType,
-    IForcing,
 )
-from flood_adapt.objects.forcing.forcing_factory import ForcingFactory
 from flood_adapt.objects.forcing.plotting import (
     plot_forcing as _plot_forcing,
 )
-from flood_adapt.objects.forcing.tide_gauge import TideGauge
-from flood_adapt.objects.forcing.time_frame import TimeFrame
 from flood_adapt.objects.measures.measures import (
     Buyout,
     Elevate,
@@ -191,52 +181,6 @@ class FloodAdapt:
         """
         self.database.measures.copy(old_name, new_name, new_description)
 
-    def calculate_polygon_area(self, gdf: gpd.GeoDataFrame, site: Site) -> float:
-        """
-        Calculate the area of a polygon from a GeoDataFrame.
-
-        Parameters
-        ----------
-        gdf : gpd.GeoDataFrame
-            A GeoDataFrame containing the polygon geometry.
-        site : Site
-            An instance of Site representing the site information.
-
-        Returns
-        -------
-            float: The area of the polygon in the specified units.
-        """
-        return GreenInfrastructure.calculate_polygon_area(gdf=gdf, site=site)
-
-    def calculate_volume(
-        self,
-        area: us.UnitfulArea,
-        height: us.UnitfulHeight = us.UnitfulHeight(
-            value=0.0, units=us.UnitTypesLength.meters
-        ),
-        percent_area: float = 100.0,
-    ) -> float:
-        """
-        Calculate the volume of green infrastructure based on the given area, height, and percent area.
-
-        Parameters
-        ----------
-        area : float
-            The area of the green infrastructure in square units.
-        height : float
-            The height of the green infrastructure in units. Defaults to 0.0.
-        percent_area : float
-            The percentage of the area to be considered. Defaults to 100.0.
-
-
-        Returns
-        -------
-            float: The calculated volume of the green infrastructure.
-        """
-        return GreenInfrastructure.calculate_volume(
-            area=area, height=height, percent_area=percent_area
-        )
-
     def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:
         """Return a table with different types of green infrastructure measures and their infiltration depths.
 
@@ -342,6 +286,20 @@ class FloodAdapt:
         """
         self.database.strategies.delete(name)
 
+    # def copy_strategy(self, old_name: str, new_name: str, new_description: str) -> None:
+    #     """Copy an event in the database.
+
+    #     Parameters
+    #     ----------
+    #     old_name : str
+    #         The name of the event to copy.
+    #     new_name : str
+    #         The name of the new event.
+    #     new_description : str
+    #         The description of the new event
+    #     """
+    #     self.database.measures.copy(old_name, new_name, new_description)
+
     # Events
     def get_events(self) -> dict[str, Any]:
         """Get all events from the database.
@@ -374,20 +332,6 @@ class FloodAdapt:
             If the event with the given name does not exist.
         """
         return self.database.events.get(name)
-
-    def get_event_mode(self, name: str) -> Mode:
-        """Get the mode of an event from the database by name.
-
-        Parameters
-        ----------
-        name : str
-
-        Returns
-        -------
-        Mode
-            The mode of the event with the given name, either `risk` or `single_event`.
-        """
-        return self.database.events.get(name).mode
 
     def create_event(self, attrs: dict[str, Any] | Event) -> Event:
         """Create a event object from a dictionary of attributes.
@@ -424,14 +368,6 @@ class FloodAdapt:
         """
         return EventSet(**attrs, sub_events=sub_events)
 
-    @staticmethod
-    def list_forcings() -> list[Type[IForcing]]:
-        return ForcingFactory.list_forcings()
-
-    @staticmethod
-    def get_allowed_forcings(template: Template) -> dict[str, List[str]]:
-        return EventFactory.get_allowed_forcings(template)
-
     def save_event(self, event: Event) -> None:
         """Save an event object to the database.
 
@@ -446,20 +382,6 @@ class FloodAdapt:
             If the event object is not valid.
         """
         self.database.events.save(event)
-
-    def save_timeseries_csv(self, name: str, event: Event, df: pd.DataFrame) -> None:
-        """Save timeseries data to a csv file.
-
-        Parameters
-        ----------
-        name : str
-            Name of the event
-        event : Event
-            Event object
-        df : pd.DataFrame
-            Dataframe of timeseries data
-        """
-        self.database.write_to_csv(name, event, df)
 
     def edit_event(self, event: Event) -> None:
         """Edit an event object in the database.
@@ -507,64 +429,7 @@ class FloodAdapt:
         """
         self.database.events.copy(old_name, new_name, new_description)
 
-    def check_higher_level_usage(self, name: str) -> list[str]:
-        """Check if an event is used in a scenario.
-
-        Parameters
-        ----------
-        name : str
-            name of the event to be checked
-
-        Returns
-        -------
-        list[str]
-            list of scenario names where the event is used
-
-        """
-        return self.database.events.check_higher_level_usage(name)
-
-    def download_wl_data(
-        self,
-        tide_gauge: TideGauge,
-        time: TimeFrame,
-        units: us.UnitTypesLength,
-        out_path: str,
-    ) -> pd.DataFrame:
-        """Download water level data from a station or tide gauge.
-
-        Parameters
-        ----------
-        tide_gauge : TideGauge
-            Tide gauge object to download data from
-        time: TimeFrame
-            Time model object containing start and end time
-        units : UnitTypesLength
-            Units that data the returned data will be converted to
-        out_path : str
-            Path to save the data to
-        """
-        return tide_gauge.get_waterlevels_in_time_frame(
-            time=time,
-            units=units,
-            out_path=Path(out_path),
-        )
-
-    def read_csv(self, csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
-        """Read a csv file into a pandas DataFrame.
-
-        Parameters
-        ----------
-        csvpath : Union[str, os.PathLike]
-            Path to the csv file
-
-        Returns
-        -------
-        pd.DataFrame
-            DataFrame containing the data from the csv file
-        """
-        return _read_csv(csvpath)
-
-    def plot_forcing(
+    def plot_event_forcing(
         self, event: Event, forcing_type: ForcingType
     ) -> tuple[str, Optional[List[Exception]]]:
         """Plot forcing data for an event.
@@ -577,18 +442,6 @@ class FloodAdapt:
             The type of forcing data to plot
         """
         return _plot_forcing(event, self.database.site, forcing_type)
-
-    def save_cyclone_track(self, event: Event, track: TropicalCyclone):
-        """Save cyclone track data to the event folder.
-
-        Parameters
-        ----------
-        event : Event
-            The event object
-        track : TropicalCyclone
-            The cyclone track data
-        """
-        self.database.write_cyc(event, track)
 
     def get_cyclone_track_by_index(self, index: int) -> TropicalCyclone:
         return self.database.static.get_cyclone_track_database().get_track(index)
@@ -871,7 +724,7 @@ class FloodAdapt:
         self.database.run_scenario(name)
 
     # Outputs
-    def get_outputs(
+    def get_completed_scenarios(
         self,
     ) -> dict[str, Any]:
         """Get all completed scenarios from the database.
@@ -919,7 +772,7 @@ class FloodAdapt:
         """
         return self.database.get_depth_conversion()
 
-    def get_max_water_level(self, name: str, rp: int = None) -> np.ndarray:
+    def get_max_water_level_map(self, name: str, rp: int = None) -> np.ndarray:
         """
         Return the maximum water level for the given scenario.
 
@@ -937,7 +790,7 @@ class FloodAdapt:
         """
         return self.database.get_max_water_level(name, rp)
 
-    def get_building_footprints(self, name: str) -> gpd.GeoDataFrame:
+    def get_building_footprint_impacts(self, name: str) -> gpd.GeoDataFrame:
         """
         Return a geodataframe of the impacts at the footprint level.
 
@@ -953,7 +806,7 @@ class FloodAdapt:
         """
         return self.database.get_building_footprints(name)
 
-    def get_aggregation(self, name: str) -> dict[str, gpd.GeoDataFrame]:
+    def get_aggregated_impacts(self, name: str) -> dict[str, gpd.GeoDataFrame]:
         """
         Return a dictionary with the aggregated impacts as geodataframes.
 
@@ -969,7 +822,7 @@ class FloodAdapt:
         """
         return self.database.get_aggregation(name)
 
-    def get_roads(self, name: str) -> gpd.GeoDataFrame:
+    def get_road_impacts(self, name: str) -> gpd.GeoDataFrame:
         """
         Return a geodataframe of the impacts at roads.
 
@@ -1093,25 +946,6 @@ class FloodAdapt:
         )
 
     # Static
-    @staticmethod
-    def read_database(
-        database_path: Union[str, os.PathLike], site_name: str
-    ) -> Database:
-        """Given a path and a site name returns a IDatabase object.
-
-        Parameters
-        ----------
-        database_path : Union[str, os.PathLike]
-            path to database
-        site_name : str
-            name of the site
-
-        Returns
-        -------
-        IDatabase
-        """
-        return Database(database_path, site_name)
-
     def get_aggregation_areas(
         self,
     ) -> dict[str, gpd.GeoDataFrame]:
@@ -1207,29 +1041,18 @@ class FloodAdapt:
         gpd.GeoDataFrame
             gpd.GeoDataFrames with the buildings from FIAT exposure
         """
+        # TODO think of a more descriptive name for this function. polygons
         return self.database.static.get_buildings()
 
-    def get_property_types(self) -> list:
-        """Get the property types that are used in the exposure.
+    def get_building_types(self) -> list:
+        """Get the building types that are used in the exposure.
 
         Returns
         -------
         list
-            list of property types
+            list of building types
         """
-        return self.database.static.get_property_types()
-
-    def get_hazard_measure_types(self):
-        """Get list of all implemented hazard measure types."""
-        raise NotImplementedError
-
-    def get_impact_measure_types(self):
-        """Get list of all implemented impact measure types."""
-        raise NotImplementedError
-
-    def get_event_templates(self):
-        """Get list of all implemented event templates."""
-        raise NotImplementedError
+        return self.database.static.get_property_types()  # TODO rename this
 
     # Benefits
     def get_benefits(self) -> dict[str, Any]:
@@ -1355,7 +1178,7 @@ class FloodAdapt:
         """
         self.database.run_benefit(name)
 
-    def get_aggregation_benefits(self, name: str) -> dict[str, gpd.GeoDataFrame]:
+    def get_aggregated_benefits(self, name: str) -> dict[str, gpd.GeoDataFrame]:
         """Get the aggregation benefits for a benefit assessment.
 
         Parameters
