@@ -664,7 +664,7 @@ Figure&nbsp;15: <strong>Snippet showing the attributes of the SLR scenarios conf
 </figcaption>
 </figure>
 </div>
-<p>For SLR scenarios, start the section with [slr.scenarios] and provide the following attributes:</p>
+<p>For SLR scenarios, start the section with [slr_scenarios] and provide the following attributes:</p>
 <ul>
 <li><strong>file</strong> - this is the path to the CSV file that contains the SLR scenario information. <a href="#fig-DB_slr_csv" class="quarto-xref">Figure&nbsp;16</a> shows an example of the CSV file format. The first column should contain the year, the second column the units, and each additional column should contain the projections at the specified years in column 1. Each SLR scenario column should contain a header with the name of the SLR scenario. These are the names that will show up in the Projections window.</li>
 <li><strong>relative_to_year</strong> - this is the year you want the SLR projections relative to. Often SLR scenarios are relative to an older date, for example the year 2000. If you want to know how a recent event would look with SLR, you will want to know the SLR relative to a more recent year. The relative_to_year does not need to be exactly the current year, but should be within a few years of events of interest. When a user selects a SLR scenario and a year, FloodAdapt will then automatically calculate the SLR relative to the date selected here.</li>
