@@ -18,10 +18,12 @@ SYSTEM_SUFFIXES: dict[str, str] = {
     "Darwin": "",
 }
 
+
 def _system_extension() -> str:
     if system() not in SYSTEM_SUFFIXES:
         raise ValueError(f"Unsupported system {system()}")
     return SYSTEM_SUFFIXES[system()]
+
 
 def _system_in_source(model_name: str) -> Path:
     """
@@ -153,7 +155,7 @@ class Settings(BaseSettings):
     def _update_environment_variables(self):
         environ["DATABASE_ROOT"] = str(self.database_root)
         environ["DATABASE_NAME"] = self.database_name
-        environ["SFINCS_BIN_PATH"] = str(self.sfincs_path)	
+        environ["SFINCS_BIN_PATH"] = str(self.sfincs_path)
         environ["FIAT_BIN_PATH"] = str(self.fiat_path)
         environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
         environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
@@ -201,9 +203,7 @@ class Settings(BaseSettings):
             raise ValueError(f"FIAT binary {self.fiat_path} does not exist.")
         return self
 
-    @field_serializer(
-        "database_root", "database_path"
-    )
+    @field_serializer("database_root", "database_path")
     def serialize_path(self, path: Path) -> str:
         return str(path)
 
@@ -258,4 +258,3 @@ class Settings(BaseSettings):
                 ),
                 f,
             )
-

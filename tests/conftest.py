@@ -83,7 +83,7 @@ def session_setup_teardown():
         SFINCS_BIN_PATH="/usr/local/bin/sfincs",
         FIAT_BIN_PATH="/home/blom/Projects/system/fiat/fiat",
     )
-    
+
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     FloodAdaptLogging(
         file_path=log_path,

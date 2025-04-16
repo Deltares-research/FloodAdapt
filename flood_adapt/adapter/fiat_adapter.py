@@ -322,7 +322,7 @@ class FiatAdapter(IImpactAdapter):
                 self.logger.info(f"Running FIAT in {path}")
                 process = subprocess.run(
                     executable=Path(exe_path).as_posix(),
-                    args='run settings.toml',
+                    args="run settings.toml",
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,

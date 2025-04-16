@@ -33,7 +33,7 @@ class TestSettingsModel:
         sfincs_bin.parent.mkdir(parents=True)
         sfincs_bin.touch()
 
-        fiat_bin = (db_root / "system" / "fiat"/ f"fiat{ext}")
+        fiat_bin = db_root / "system" / "fiat" / f"fiat{ext}"
         fiat_bin.parent.mkdir(parents=True)
         fiat_bin.touch()
 
@@ -54,18 +54,16 @@ class TestSettingsModel:
 
         assert settings.database_name == expected_name
         assert os.environ["DATABASE_NAME"] == expected_name
-        
+
         assert settings.database_path == expected_root / expected_name
-        
+
         if expected_sfincs is not None:
-            assert settings.sfincs_path == expected_sfincs 
+            assert settings.sfincs_path == expected_sfincs
             assert os.environ["SFINCS_BIN_PATH"] == str(expected_sfincs)
-        
+
         if expected_fiat is not None:
             assert settings.fiat_path == expected_fiat
             assert os.environ["FIAT_BIN_PATH"] == str(expected_fiat)
-
-
 
     @pytest.fixture()
     def mock_system(self):
@@ -184,6 +182,7 @@ class TestSettingsModel:
                 expected_name=name,
                 expected_root=db_root,
             )
+
     def test_init_from_invalid_db_root_raise_validation_error(self):
         with pytest.raises(ValidationError) as exc_info:
             Settings(DATABASE_NAME="test", DATABASE_ROOT=Path("invalid"))
@@ -198,7 +197,6 @@ class TestSettingsModel:
         assert f"Database {name} at" in str(exc_info.value)
         assert "does not exist." in str(exc_info.value)
 
-
     @pytest.mark.parametrize("system", SYSTEM_SUFFIXES.keys())
     @pytest.mark.parametrize("model", ["fiat", "sfincs"])
     def test_missing_model_binaries_raise_validation_error(
@@ -206,27 +204,27 @@ class TestSettingsModel:
     ):
         mock_system.return_value = system
         db_root, name = create_dummy_db(system=system)
-        non_existant_path = Path("doesnt_exist")
+        non_existent_path = Path("doesnt_exist")
         with pytest.raises(ValidationError) as exc_info:
             if model == "fiat":
                 Settings(
                     DATABASE_ROOT=db_root,
                     DATABASE_NAME=name,
-                    FIAT_BIN_PATH=non_existant_path,
+                    FIAT_BIN_PATH=non_existent_path,
                 )
             elif model == "sfincs":
                 Settings(
                     DATABASE_ROOT=db_root,
                     DATABASE_NAME=name,
-                    SFINCS_BIN_PATH=non_existant_path,
+                    SFINCS_BIN_PATH=non_existent_path,
                 )
             else:
                 raise ValueError("Invalid model")
 
-        assert f"{model.upper()} binary {non_existant_path} does not exist." in str(
+        assert f"{model.upper()} binary {non_existent_path} does not exist." in str(
             exc_info.value
         )
-        
+
     def test_read_settings_no_envvars(self, create_dummy_db, mock_system):
         # Arrange
         db_root, name = create_dummy_db()
