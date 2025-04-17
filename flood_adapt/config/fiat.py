@@ -206,9 +206,10 @@ class FiatModel(BaseModel):
         Configuration for running benefit calculations.
     """
 
+    risk: RiskModel
+
     config: FiatConfigModel
-    risk: Optional[RiskModel] = None
-    benefits: Optional[BenefitsModel] = None
+    benefits: BenefitsModel
 
     @staticmethod
     def read_toml(path: Path) -> "FiatModel":

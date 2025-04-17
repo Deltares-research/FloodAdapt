@@ -1,4 +1,3 @@
-import contextlib
 import os
 import shutil
 from contextlib import contextmanager
@@ -13,7 +12,7 @@ from flood_adapt.misc.path_builder import (
 )
 
 
-@contextlib.contextmanager
+@contextmanager
 def modified_environ(*remove, **update):
     """
     Temporarily updates the ``os.environ`` dictionary in-place.

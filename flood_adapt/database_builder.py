@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from flood_adapt.database_builder.database_builder import DatabaseBuilder
+from flood_adapt.database_builder.database_builder import ConfigModel, DatabaseBuilder
 
 
-def create_database(config: Path) -> None:
+def create_database(config_path: Path) -> None:
     """Create a new database from a configuration file or dictionary.
 
     Parameters
@@ -11,4 +11,6 @@ def create_database(config: Path) -> None:
     config : Path
         The path to the configuration file
     """
-    DatabaseBuilder.from_file(config_path=config).build()
+    config = ConfigModel.read(config_path)
+
+    DatabaseBuilder(config=config).build()
