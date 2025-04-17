@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flood_adapt.database_builder.database_builder import DatabaseBuilder
+from flood_adapt.database_builder.create_database import DatabaseBuilder
 
 
 def create_database(config: Path) -> None:
@@ -11,4 +11,4 @@ def create_database(config: Path) -> None:
     config : Path
         The path to the configuration file
     """
-    DatabaseBuilder.from_file(config_path=config).build()
+    DatabaseBuilder(config_path=config).build()

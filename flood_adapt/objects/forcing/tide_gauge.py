@@ -168,7 +168,6 @@ class TideGauge(BaseModel):
                 id=self.ID,
                 tstart=time.start_time,
                 tstop=time.end_time,
-                datum=self.reference,
             )
             index = pd.date_range(
                 start=time.start_time,

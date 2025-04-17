@@ -196,7 +196,7 @@ class CycloneTrackDatabaseModel(BaseModel):
 
 
 class SlrScenariosModel(BaseModel):
-    """The accepted input for the variable slr_scenarios.
+    """The accepted input for the variable slr.scenarios.
 
     Attributes
     ----------
@@ -208,6 +208,18 @@ class SlrScenariosModel(BaseModel):
 
     file: str
     relative_to_year: int
+
+
+class SlrModel(BaseModel):
+    """The accepted input for the variable slr in Site.
+
+    Attributes
+    ----------
+    scenarios : Optional[SlrScenariosModel], default = None
+        The sea level rise scenarios. If None, the sea level rise scenarios are not specified.
+    """
+
+    scenarios: Optional[SlrScenariosModel] = None
 
 
 class FloodModel(BaseModel):
@@ -293,7 +305,7 @@ class SfincsModel(BaseModel):
     config: SfincsConfigModel
     water_level: WaterlevelReferenceModel
     cyclone_track_database: Optional[CycloneTrackDatabaseModel] = None
-    slr_scenarios: Optional[SlrScenariosModel] = None
+    slr: SlrModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
     dem: DemModel
 

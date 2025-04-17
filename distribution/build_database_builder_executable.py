@@ -1,14 +1,14 @@
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
 try:
     import PyInstaller.__main__  # noQA
-except ImportError as e:
-    raise ImportError(
-        "PyInstaller is not installed. Please install it using 'pip install .[build]'."
-    ) from e
+except Exception:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller==6.7"])
+    import PyInstaller.__main__  # noQA
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -18,13 +18,11 @@ BUILD_DIR = Path(DIST_ROOT, "build")
 DIST_DIR = Path(DIST_ROOT, "dist")
 SRC_DIR = Path(PROJECT_ROOT) / "flood_adapt"
 SITE_PACKAGES_PATH = Path(sys.executable).parent / "Lib" / "site-packages"
-ENTRY_POINT = SRC_DIR / "database_builder" / "database_builder.py"
 
 # Dependencies to include in the executable
 DEPENDENCIES = [
     "flood_adapt",
     "rasterio",
-    "setuptools",
     "pyogrio",
     "xugrid",
     "hydromt",
@@ -53,14 +51,17 @@ def copy_shapely_libs():
 
 
 def run_pyinstaller() -> None:
+    entry_point = SRC_DIR / "database_builder" / "create_database.py"
+    spec_path = DIST_ROOT
+
     command = [
-        str(ENTRY_POINT),
+        str(entry_point),
         "--clean",
         "--noconfirm",
         f"--name={PROJECT_NAME}",
         f"--workpath={BUILD_DIR}",
         f"--distpath={DIST_DIR}",
-        f"--specpath={DIST_ROOT}",
+        f"--specpath={spec_path}",
     ]
 
     for dep in DEPENDENCIES:
@@ -68,7 +69,7 @@ def run_pyinstaller() -> None:
         command.append(f"--recursive-copy-metadata={dep}")
 
     command.append(f"--paths={SITE_PACKAGES_PATH}")
-    templates_path = ENTRY_POINT.parent / "templates"
+    templates_path = entry_point.parent / "templates"
     command.append(f"--add-data={templates_path}:templates")
     PyInstaller.__main__.run(command)
 

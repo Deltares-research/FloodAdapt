@@ -32,6 +32,7 @@ from flood_adapt.config.sfincs import (
     Scstype,
     SfincsConfigModel,
     SfincsModel,
+    SlrModel,
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
@@ -277,7 +278,9 @@ def create_sfincs_config() -> SfincsModel:
     sfincs = SfincsModel(
         config=config,
         water_level=waterlevel_reference,
-        slr_scenarios=SlrScenariosModel(relative_to_year=2020, file="slr/slr.csv"),
+        slr=SlrModel(
+            scenarios=SlrScenariosModel(relative_to_year=2020, file="slr/slr.csv"),
+        ),
         dem=DemModel(filename="charleston_14m.tif", units=us.UnitTypesLength.meters),
         scs=SCSModel(file="scs_rainfall.csv", type=Scstype.type3),
         cyclone_track_database=CycloneTrackDatabaseModel(file="IBTrACS.NA.v04r00.nc"),

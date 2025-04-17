@@ -127,7 +127,7 @@ class RiskModel(BaseModel):
         The return periods for the risk model.
     """
 
-    return_periods: list = [1, 2, 5, 10, 25, 50, 100]
+    return_periods: list
 
 
 class DamageType(str, Enum):
@@ -206,9 +206,10 @@ class FiatModel(BaseModel):
         Configuration for running benefit calculations.
     """
 
+    risk: RiskModel
+
     config: FiatConfigModel
-    risk: Optional[RiskModel] = None
-    benefits: Optional[BenefitsModel] = None
+    benefits: BenefitsModel
 
     @staticmethod
     def read_toml(path: Path) -> "FiatModel":

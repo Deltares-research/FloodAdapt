@@ -216,7 +216,7 @@ The attributes needed to include SLR scenarios are shown in @fig-DB_slr. The inc
 
 ![**Snippet showing the attributes of the SLR scenarios configuration**](../_static/images/database_SLR_snippet.png){width=100% fig-align=left #fig-DB_slr}
 
-For SLR scenarios, start the section with [slr_scenarios] and provide the following attributes:
+For SLR scenarios, start the section with [slr.scenarios] and provide the following attributes:
 
 * **file** - this is the path to the CSV file that contains the SLR scenario information. @fig-DB_slr_csv shows an example of the CSV file format. The first column should contain the year, the second column the units, and each additional column should contain the projections at the specified years in column 1. Each SLR scenario column should contain a header with the name of the SLR scenario. These are the names that will show up in the Projections window.
 * **relative_to_year** - this is the year you want the SLR projections relative to. Often SLR scenarios are relative to an older date, for example the year 2000. If you want to know how a recent event would look with SLR, you will want to know the SLR relative to a more recent year. The relative_to_year does not need to be exactly the current year, but should be within a few years of events of interest. When a user selects a SLR scenario and a year, FloodAdapt will then automatically calculate the SLR relative to the date selected here.
