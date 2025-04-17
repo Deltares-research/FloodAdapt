@@ -1032,7 +1032,9 @@ class FloodAdapt:
         """
         # Get the impacts objects from the scenario
         database = self.database
-        impact = Impacts(scenario=database.scenarios.get(name))
+        scn = database.scenarios.get(name)
+        impact = Impacts(scenario=scn)
+        event_mode = self.database.events.get(scn.event).mode
 
         # Check if the scenario has run
         if not impact.has_run_check():
@@ -1045,7 +1047,7 @@ class FloodAdapt:
         metrics_outputs_path = output_path.joinpath(f"Infometrics_{impact.name}.csv")
 
         infographic_path = InforgraphicFactory.create_infographic_file_writer(
-            infographic_mode=impact.mode,
+            infographic_mode=event_mode,
             scenario_name=impact.name,
             metrics_full_path=metrics_outputs_path,
             config_base_path=config_path,

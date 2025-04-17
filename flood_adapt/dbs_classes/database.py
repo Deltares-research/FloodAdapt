@@ -202,6 +202,9 @@ class Database(IDatabase):
         ValueError
             if the year to evaluate is outside of the time range in the slr.csv file
         """
+        if self.site.sfincs.slr_scenarios is None:
+            raise ValueError("No SLR scenarios defined in the site configuration.")
+
         input_file = self.static_path / self.site.sfincs.slr_scenarios.file
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
@@ -226,6 +229,8 @@ class Database(IDatabase):
 
     # TODO: should probably be moved to frontend
     def plot_slr_scenarios(self) -> str:
+        if self.site.sfincs.slr_scenarios is None:
+            raise ValueError("No SLR scenarios defined in the site configuration.")
         input_file = self.input_path.parent.joinpath(
             "static", self.site.sfincs.slr_scenarios.file
         )

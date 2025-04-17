@@ -21,9 +21,6 @@ class Impacts(DatabaseUser):
 
     logger = FloodAdaptLogging.getLogger("Impacts")
     name: str
-    hazard: FloodMap
-    socio_economic_change: SocioEconomicChange
-    impact_strategy: Strategy
 
     def __init__(self, scenario: Scenario):
         self.name = scenario.name

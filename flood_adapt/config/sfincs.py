@@ -276,7 +276,7 @@ class SfincsModel(BaseModel):
         The digital elevation model.
     flood_frequency : FloodFrequencyModel, default = FloodFrequencyModel()
         The flood frequency model.
-    slr : SlrModel
+    slr : SlrScenariosModel
         Specification of the sea level rise scenarios.
     cyclone_track_database : CycloneTrackDatabaseModel, optional, default = None
         The cyclone track database model.
