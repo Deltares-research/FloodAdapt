@@ -4,20 +4,20 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from flood_adapt.object_model.hazard.interface.models import TimeFrame
-from flood_adapt.object_model.interface.measures import (
+from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.forcing.time_frame import TimeFrame
+from flood_adapt.objects.measures.measures import (
     Buyout,
     MeasureType,
     Pump,
     SelectionType,
 )
-from flood_adapt.object_model.interface.projections import (
+from flood_adapt.objects.projections.projections import (
     PhysicalProjection,
     Projection,
     SocioEconomicChange,
 )
-from flood_adapt.object_model.interface.strategies import Strategy
-from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.objects.strategies.strategies import Strategy
 
 __all__ = [
     "dummy_time_model",

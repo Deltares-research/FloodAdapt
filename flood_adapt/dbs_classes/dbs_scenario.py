@@ -2,9 +2,9 @@ import shutil
 from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.benefit_runner import BenefitRunner
-from flood_adapt.object_model.interface.scenarios import Scenario
-from flood_adapt.object_model.utils import finished_file_exists
+from flood_adapt.misc.utils import finished_file_exists
+from flood_adapt.objects.scenarios.scenarios import Scenario
+from flood_adapt.workflows.benefit_runner import BenefitRunner
 
 
 class DbsScenario(DbsTemplate[Scenario]):

@@ -15,6 +15,8 @@ from geopandas import GeoDataFrame
 from plotly.express import line
 from plotly.express.colors import sample_colorscale
 
+from flood_adapt.config.config import Settings
+from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
 from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
@@ -23,18 +25,18 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.benefit_runner import Benefit, BenefitRunner
-from flood_adapt.object_model.hazard.interface.events import Event
-from flood_adapt.object_model.interface.config.site import Site
-from flood_adapt.object_model.interface.path_builder import (
+from flood_adapt.misc.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.scenario_runner import Scenario, ScenarioRunner
-from flood_adapt.object_model.utils import finished_file_exists
+from flood_adapt.misc.utils import finished_file_exists
+from flood_adapt.objects.benefits.benefits import Benefit
+from flood_adapt.objects.events.events import Event
+from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.scenarios.scenarios import Scenario
+from flood_adapt.workflows.benefit_runner import BenefitRunner
+from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
 
 class Database(IDatabase):
@@ -200,6 +202,9 @@ class Database(IDatabase):
         ValueError
             if the year to evaluate is outside of the time range in the slr.csv file
         """
+        if self.site.sfincs.slr_scenarios is None:
+            raise ValueError("No SLR scenarios defined in the site configuration.")
+
         input_file = self.static_path / self.site.sfincs.slr_scenarios.file
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
@@ -224,6 +229,8 @@ class Database(IDatabase):
 
     # TODO: should probably be moved to frontend
     def plot_slr_scenarios(self) -> str:
+        if self.site.sfincs.slr_scenarios is None:
+            raise ValueError("No SLR scenarios defined in the site configuration.")
         input_file = self.input_path.parent.joinpath(
             "static", self.site.sfincs.slr_scenarios.file
         )
@@ -376,12 +383,12 @@ class Database(IDatabase):
             runner.run_cost_benefit()
 
     def update(self) -> None:
-        self.projections = self._projections.list_objects()
-        self.events = self._events.list_objects()
-        self.measures = self._measures.list_objects()
-        self.strategies = self._strategies.list_objects()
-        self.scenarios = self._scenarios.list_objects()
-        self.benefits = self._benefits.list_objects()
+        self.projections_list = self._projections.list_objects()
+        self.events_list = self._events.list_objects()
+        self.measures_list = self._measures.list_objects()
+        self.strategies_list = self._strategies.list_objects()
+        self.scenarios_list = self._scenarios.list_objects()
+        self.benefits_list = self._benefits.list_objects()
 
     def get_outputs(self) -> dict[str, Any]:
         """Return a dictionary with info on the outputs that currently exist in the database.

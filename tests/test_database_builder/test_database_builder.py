@@ -13,7 +13,23 @@ from shapely import Polygon
 
 from flood_adapt import Settings
 from flood_adapt import unit_system as us
-from flood_adapt.api.static import read_database
+from flood_adapt.config.fiat import (
+    AggregationModel,
+    BenefitsModel,
+    BFEModel,
+    EquityModel,
+    RiskModel,
+    SVIModel,
+)
+from flood_adapt.config.sfincs import (
+    DatumModel,
+    DemModel,
+    FloodModel,
+    ObsPointModel,
+    SCSModel,
+    SlrScenariosModel,
+    WaterlevelReferenceModel,
+)
 from flood_adapt.database_builder.database_builder import (
     Basins,
     ConfigModel,
@@ -26,25 +42,9 @@ from flood_adapt.database_builder.database_builder import (
     TideGaugeConfigModel,
     UnitSystems,
 )
-from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGaugeSource
-from flood_adapt.object_model.hazard.interface.timeseries import Scstype
-from flood_adapt.object_model.interface.config.fiat import (
-    AggregationModel,
-    BenefitsModel,
-    BFEModel,
-    EquityModel,
-    RiskModel,
-    SVIModel,
-)
-from flood_adapt.object_model.interface.config.sfincs import (
-    DatumModel,
-    DemModel,
-    FloodModel,
-    ObsPointModel,
-    SCSModel,
-    SlrScenariosModel,
-    WaterlevelReferenceModel,
-)
+from flood_adapt.dbs_classes.database import Database
+from flood_adapt.objects.forcing.tide_gauge import TideGaugeSource
+from flood_adapt.objects.forcing.timeseries import Scstype
 
 
 class TestDataBaseBuilder:
@@ -1029,7 +1029,7 @@ class TestDataBaseBuilder:
         builder.build()
 
         # Assert
-        db = read_database(str(full_config.database_path), full_config.name)
+        db = Database(str(full_config.database_path), full_config.name)
         assert db is not None
 
     @pytest.fixture(scope="function")
