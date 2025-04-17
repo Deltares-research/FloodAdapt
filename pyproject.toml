@@ -1,5 +1,5 @@
 [build-system]
-requires      = ["setuptools>=61"]
+requires      = ["setuptools>=61,<=75.8.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -25,39 +25,39 @@ requires-python = ">=3.8,<3.13"
 # Any package below will be taken from pypi.
 # These are ignored if any packages is also defined in the section: [tool.pixi.dependencies]
 dependencies = [
-    "cht-cyclones",
-    "cht-meteo==0.3.1",
-    "cht-observations",
-    "cht-tide",
-    "dask==2024.11.2",  # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
-    "fiat-toolbox==0.1.17",
-    "fiona",
-    "geojson",
-    "geopandas",
-    "jellyfish<1.0",  # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
+    "cht-cyclones       ==1.0.3",
+    "cht-meteo          ==0.3.1",
+    "cht-observations   ==0.2.1",
+    "cht-tide           ==0.1.1",
+    "dask               ==2024.11.2",
+    "fiat-toolbox       ==0.1.17",
+    "fiona              >=1.0,<2.0",
+    "geojson            >=3.0,<4.0",
+    "geopandas          >=1.0,<2.0",
+    "jellyfish          <1.0",
+    # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
     # jellyfish v1.0 starts requiring rust as a dependency, which is fine if there are built .whl files. BUT THERE ARE NO BUILDS FOR WINDOWS YET.
-    "hydromt-fiat==0.5.4",
+    "hydromt-fiat       ==0.5.4",
     "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git",
-    "numpy < 2.0",
-    "numpy-financial",
-    "pandas",
-    "plotly",
-    "pydantic",
-    "pydantic-settings",
-    "pyogrio",
-    "setuptools",
-    "tomli",
-    "tomli-w",
+    "numpy              >=1.0,<2.0",
+    "numpy-financial    >=1.0,<2.0",
+    "pandas             >=2.0,<3.0",
+    "plotly             >=6.0,<7.0",
+    "pydantic           >=2.0,<3.0",
+    "pydantic-settings  >=2.0,<3.0",
+    "pyogrio            <1.0",
+    "tomli              >=2.0,<3.0",
+    "tomli-w            >=1.0,<2.0",
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "pytest-cov",
-    "pre-commit == 3.8.0",
-    "ruff       == 0.5.5",
-    "typos      == 1.23.6",
+    "pytest             >=8.0,<9.0",
+    "pytest-cov         >=6.0,<7.0",
+    "pre-commit         ==3.8.0",
+    "ruff               ==0.5.5",
+    "typos              ==1.23.6",
 ]
 
 build = [
