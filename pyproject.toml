@@ -63,8 +63,8 @@ dev = [
 build = [
     "build",
     "twine",
-    "pyinstaller == 6.7.0",
-    "pefile<2024.8.26", # This version introduces a significant slowdown in binary vs data reclassification step of pyinstaller. Pyinstaller is aware. https://github.com/pyinstaller/pyinstaller/issues/8762
+    "pyinstaller        ==6.7.0",
+    "pefile             <2024.8.26", # This version introduces a significant slowdown in binary vs data reclassification step of pyinstaller. Pyinstaller is aware. https://github.com/pyinstaller/pyinstaller/issues/8762
 ]
 docs = [
     "jupyter",
