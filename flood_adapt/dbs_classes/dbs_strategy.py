@@ -1,14 +1,22 @@
 from itertools import combinations
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.interface.measures import MeasureType
-from flood_adapt.object_model.interface.strategies import Strategy
+from flood_adapt.objects.measures.measures import MeasureType
+from flood_adapt.objects.strategies.strategies import Strategy
 
 
 class DbsStrategy(DbsTemplate[Strategy]):
     dir_name = "strategies"
     display_name = "Strategy"
     _object_class = Strategy
+
+    def get(self, name: str) -> Strategy:
+        strategy = super().get(name)
+        measures = [
+            self._database.measures.get(measure) for measure in strategy.measures
+        ]
+        strategy.initialize_measure_objects(measures)
+        return strategy
 
     def save(
         self,
