@@ -135,6 +135,34 @@ class GuiUnitModel(BaseModel):
     default_intensity_units: us.UnitTypesIntensity
     default_cumulative_units: us.UnitTypesLength
 
+    @staticmethod
+    def imperial() -> "GuiUnitModel":
+        return GuiUnitModel(
+            default_length_units=us.UnitTypesLength.feet,
+            default_distance_units=us.UnitTypesLength.miles,
+            default_area_units=us.UnitTypesArea.sf,
+            default_volume_units=us.UnitTypesVolume.cf,
+            default_velocity_units=us.UnitTypesVelocity.mph,
+            default_direction_units=us.UnitTypesDirection.degrees,
+            default_discharge_units=us.UnitTypesDischarge.cfs,
+            default_intensity_units=us.UnitTypesIntensity.inch_hr,
+            default_cumulative_units=us.UnitTypesLength.inch,
+        )
+
+    @staticmethod
+    def metric() -> "GuiUnitModel":
+        return GuiUnitModel(
+            default_length_units=us.UnitTypesLength.meters,
+            default_distance_units=us.UnitTypesLength.meters,
+            default_area_units=us.UnitTypesArea.m2,
+            default_volume_units=us.UnitTypesVolume.m3,
+            default_velocity_units=us.UnitTypesVelocity.mps,
+            default_direction_units=us.UnitTypesDirection.degrees,
+            default_discharge_units=us.UnitTypesDischarge.cms,
+            default_intensity_units=us.UnitTypesIntensity.mm_hr,
+            default_cumulative_units=us.UnitTypesLength.millimeters,
+        )
+
 
 class SyntheticTideModel(BaseModel):
     """Configuration for the synthetic tide.
