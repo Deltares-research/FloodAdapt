@@ -375,6 +375,7 @@ def create_strategies():
 
     NO_MEASURES = Strategy(
         name="no_measures",
+        measures=[],
     )
 
     PUMP = Strategy(

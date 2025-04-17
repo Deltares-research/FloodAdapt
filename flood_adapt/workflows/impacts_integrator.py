@@ -9,7 +9,7 @@ from flood_adapt.misc.path_builder import (
 )
 from flood_adapt.objects.projections.projections import SocioEconomicChange
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.objects.strategies.impact_strategy import ImpactStrategy
+from flood_adapt.objects.strategies.strategies import Strategy
 from flood_adapt.workflows.floodmap import FloodMap
 
 
@@ -23,7 +23,7 @@ class Impacts(DatabaseUser):
     name: str
     hazard: FloodMap
     socio_economic_change: SocioEconomicChange
-    impact_strategy: ImpactStrategy
+    impact_strategy: Strategy
 
     def __init__(self, scenario: Scenario):
         self.name = scenario.name
@@ -44,7 +44,7 @@ class Impacts(DatabaseUser):
         ).socio_economic_change
 
     @property
-    def impact_strategy(self) -> ImpactStrategy:
+    def impact_strategy(self) -> Strategy:
         return self.database.strategies.get(
             self.scenario.strategy
         ).get_impact_strategy()

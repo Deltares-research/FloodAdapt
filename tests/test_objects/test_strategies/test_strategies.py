@@ -8,11 +8,11 @@ from flood_adapt.objects.measures.measures import (
     FloodProof,
     FloodWall,
     GreenInfrastructure,
+    HazardMeasure,
+    ImpactMeasure,
     MeasureType,
     SelectionType,
 )
-from flood_adapt.objects.strategies.hazard_strategy import HazardStrategy
-from flood_adapt.objects.strategies.impact_strategy import ImpactStrategy
 from flood_adapt.objects.strategies.strategies import Strategy
 
 
@@ -100,76 +100,67 @@ def test_floodproof():
 
 @pytest.fixture()
 def test_strategy(test_db) -> Strategy:
-    test_toml = (
-        test_db.input_path / "strategies" / "strategy_comb" / "strategy_comb.toml"
-    )
-    assert test_toml.is_file()
-
-    return Strategy.load_file(test_toml)
+    return test_db.strategies.get("strategy_comb")
 
 
 def test_strategy_comb_read(test_db, test_strategy: Strategy):
     strategy = test_strategy
     assert strategy.name == "strategy_comb"
     assert len(strategy.measures) == 4
-    assert isinstance(strategy.get_hazard_strategy(), HazardStrategy)
-    assert isinstance(strategy.get_impact_strategy(), ImpactStrategy)
-    assert all(
-        measure
-        for measure in strategy.get_impact_strategy().measures
-        if MeasureType.is_impact(measure.type)
-    ), strategy.get_impact_strategy().measures
-    assert all(
-        measure
-        for measure in strategy.get_hazard_strategy().measures
-        if MeasureType.is_hazard(measure.type)
-    ), strategy.get_hazard_strategy().measures
-    assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
-    assert isinstance(strategy.get_impact_strategy().measures[1], Buyout)
-    assert isinstance(strategy.get_impact_strategy().measures[2], FloodProof)
-    assert isinstance(strategy.get_hazard_strategy().measures[0], FloodWall)
+
+    impact_strategy = strategy.get_impact_strategy()
+    impact_measures = strategy.get_impact_measures()
+    assert isinstance(impact_strategy, Strategy)
+    assert isinstance(impact_measures, list)
+    for measure in impact_measures:
+        assert MeasureType.is_impact(measure.type)
+        assert isinstance(measure, ImpactMeasure)
+    assert isinstance(impact_measures[0], Elevate)
+    assert isinstance(impact_measures[1], Buyout)
+    assert isinstance(impact_measures[2], FloodProof)
+
+    hazard_strategy = strategy.get_hazard_strategy()
+    hazard_measures = strategy.get_hazard_measures()
+    assert isinstance(hazard_strategy, Strategy)
+    assert isinstance(hazard_measures, list)
+    for measure in strategy.get_hazard_measures():
+        assert MeasureType.is_hazard(measure.type)
+        assert isinstance(measure, HazardMeasure)
+    assert isinstance(hazard_measures[0], FloodWall)
 
 
 def test_strategy_no_measures(test_db):
-    test_toml = test_db.input_path / "strategies" / "no_measures" / "no_measures.toml"
-    assert test_toml.is_file()
-
-    strategy = Strategy.load_file(test_toml)
+    strategy: Strategy = test_db.strategies.get("no_measures")
     assert len(strategy.measures) == 0
-    assert isinstance(strategy.get_hazard_strategy(), HazardStrategy)
-    assert isinstance(strategy.get_impact_strategy(), ImpactStrategy)
+    assert isinstance(strategy.get_hazard_strategy(), Strategy)
+    assert isinstance(strategy.get_impact_strategy(), Strategy)
     assert len(strategy.get_hazard_strategy().measures) == 0
     assert len(strategy.get_impact_strategy().measures) == 0
 
 
 def test_elevate_comb_correct(test_db):
-    test_toml = (
-        test_db.input_path
-        / "strategies"
-        / "elevate_comb_correct"
-        / "elevate_comb_correct.toml"
-    )
-    assert test_toml.is_file()
-
-    strategy = Strategy.load_file(test_toml)
+    strategy: Strategy = test_db.strategies.get("elevate_comb_correct")
+    impact_measures = strategy.get_impact_measures()
 
     assert strategy.name == "elevate_comb_correct"
+    assert isinstance(impact_measures, list)
     assert isinstance(strategy.measures, list)
-    assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
-    assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)
+    assert isinstance(impact_measures[0], Elevate)
+    assert isinstance(impact_measures[1], Elevate)
 
 
 def test_green_infra(test_db):
-    test_toml = test_db.input_path / "strategies" / "greeninfra" / "greeninfra.toml"
-    assert test_toml.is_file()
-
-    strategy = Strategy.load_file(test_toml)
+    strategy: Strategy = test_db.strategies.get("greeninfra")
 
     assert strategy.name == "greeninfra"
     assert isinstance(strategy.measures, list)
-    assert isinstance(strategy.get_hazard_strategy().measures[0], GreenInfrastructure)
-    assert isinstance(strategy.get_hazard_strategy().measures[1], GreenInfrastructure)
-    assert isinstance(strategy.get_hazard_strategy().measures[2], GreenInfrastructure)
+
+    hazard_measures = strategy.get_hazard_measures()
+    assert isinstance(hazard_measures, list)
+
+    assert isinstance(hazard_measures[0], GreenInfrastructure)
+    assert isinstance(hazard_measures[1], GreenInfrastructure)
+    assert isinstance(hazard_measures[2], GreenInfrastructure)
 
 
 @pytest.fixture()

@@ -6,6 +6,7 @@ from flood_adapt.misc.database_user import DatabaseUser
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Mode
+from flood_adapt.objects.strategies.strategies import Strategy
 
 
 class FloodMap(DatabaseUser):
@@ -69,13 +70,10 @@ class FloodMap(DatabaseUser):
         return self._crs
 
     @property
-    def hazard_strategy(self):
-        if hasattr(self, "_hazard_strategy"):
-            return self._hazard_strategy
-        self._hazard_strategy = self.database.strategies.get(
+    def hazard_strategy(self) -> Strategy:
+        return self.database.strategies.get(
             self.scenario.strategy
         ).get_hazard_strategy()
-        return self._hazard_strategy
 
     @property
     def physical_projection(self):

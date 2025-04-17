@@ -10,6 +10,14 @@ class DbsStrategy(DbsTemplate[Strategy]):
     display_name = "Strategy"
     _object_class = Strategy
 
+    def get(self, name: str) -> Strategy:
+        strategy = super().get(name)
+        measures = [
+            self._database.measures.get(measure) for measure in strategy.measures
+        ]
+        strategy.initialize_measure_objects(measures)
+        return strategy
+
     def save(
         self,
         object_model: Strategy,

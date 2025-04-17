@@ -1,17 +1,9 @@
-from flood_adapt.misc.path_builder import (
-    ObjectDir,
-    db_path,
-)
-from flood_adapt.objects.measures.measure_factory import (
-    MeasureFactory,
-)
 from flood_adapt.objects.measures.measures import (
+    HazardMeasure,
+    ImpactMeasure,
     Measure,
-    MeasureType,
 )
 from flood_adapt.objects.object_model import Object
-from flood_adapt.objects.strategies.hazard_strategy import HazardStrategy
-from flood_adapt.objects.strategies.impact_strategy import ImpactStrategy
 
 
 class Strategy(Object):
@@ -27,31 +19,50 @@ class Strategy(Object):
 
     """
 
-    measures: list[str] = []
+    measures: list[str]
+
+    _measure_objects: list[Measure] | None = None
+
+    def initialize_measure_objects(self, measures: list[Measure]) -> None:
+        self._measure_objects = measures
 
     def get_measures(self) -> list[Measure]:
         """Get the measures paths and types."""
         # Get measure paths using a database structure
-        measure_paths = [
-            db_path(object_dir=ObjectDir.measure, obj_name=measure) / f"{measure}.toml"
-            for measure in self.measures
-        ]
-        return [MeasureFactory.get_measure_object(path) for path in measure_paths]
+        if self._measure_objects is None:
+            raise ValueError(
+                "Measure objects have not been initialized. Call `initialize_measure_objects()` first."
+            )
+        return self._measure_objects
 
-    def get_impact_strategy(self) -> ImpactStrategy:
-        impact_measures = [
+    def get_impact_measures(self) -> list[ImpactMeasure]:
+        return [
             measure
             for measure in self.get_measures()
-            if MeasureType.is_impact(measure.type)
+            if isinstance(measure, ImpactMeasure)
         ]
-        return ImpactStrategy(
-            measures=impact_measures,
+
+    def get_impact_strategy(self) -> "Strategy":
+        impact_measures = self.get_impact_measures()
+        impact_strategy = Strategy(
+            name=self.name,
+            measures=[m.name for m in impact_measures],
         )
+        impact_strategy.initialize_measure_objects(impact_measures)
+        return impact_strategy
 
-    def get_hazard_strategy(self) -> HazardStrategy:
-        hazard_measures = [
+    def get_hazard_measures(self) -> list[HazardMeasure]:
+        return [
             measure
             for measure in self.get_measures()
-            if MeasureType.is_hazard(measure.type)
+            if isinstance(measure, HazardMeasure)
         ]
-        return HazardStrategy(measures=hazard_measures)
+
+    def get_hazard_strategy(self) -> "Strategy":
+        hazard_measures = self.get_hazard_measures()
+        hazard_strategy = Strategy(
+            name=self.name,
+            measures=[m.name for m in hazard_measures],
+        )
+        hazard_strategy.initialize_measure_objects(hazard_measures)
+        return hazard_strategy

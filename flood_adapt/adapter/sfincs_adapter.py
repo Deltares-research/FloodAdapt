@@ -284,7 +284,7 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
             # Measures
-            for measure in model._strategy.get_hazard_strategy().measures:
+            for measure in model._strategy.get_hazard_measures():
                 model.add_measure(measure)
 
             # Projection

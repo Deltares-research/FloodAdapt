@@ -5,8 +5,7 @@ from flood_adapt.objects.projections.projections import (
     PhysicalProjection,
     SocioEconomicChange,
 )
-from flood_adapt.objects.strategies.hazard_strategy import HazardStrategy
-from flood_adapt.objects.strategies.impact_strategy import ImpactStrategy
+from flood_adapt.objects.strategies.strategies import Strategy
 from flood_adapt.workflows.floodmap import FloodMap
 from flood_adapt.workflows.impacts_integrator import Impacts
 from flood_adapt.workflows.scenario_runner import Scenario
@@ -35,7 +34,7 @@ def test_init_valid_input(test_db, test_scenarios: dict[str, Scenario]):
     assert isinstance(impacts, Impacts)
     assert isinstance(impacts.site_info, Site)
     assert isinstance(impacts.socio_economic_change, SocioEconomicChange)
-    assert isinstance(impacts.impact_strategy, ImpactStrategy)
+    assert isinstance(impacts.impact_strategy, Strategy)
     assert isinstance(impacts.hazard, FloodMap)
-    assert isinstance(impacts.hazard.hazard_strategy, HazardStrategy)
+    assert isinstance(impacts.hazard.hazard_strategy, Strategy)
     assert isinstance(impacts.hazard.physical_projection, PhysicalProjection)

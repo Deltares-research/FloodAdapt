@@ -236,7 +236,7 @@ class FiatAdapter(IImpactAdapter):
 
         # Measures
         strategy = self.database.strategies.get(scenario.strategy)
-        for measure in strategy.get_impact_strategy().measures:
+        for measure in strategy.get_impact_measures():
             self.add_measure(measure)
 
         # Hazard
