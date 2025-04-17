@@ -61,19 +61,19 @@ dev = [
 ]
 
 build = [
-    "build",
-    "twine",
+    "build              >=1.2,<2.0",
+    "twine              >=6.0,<7.0",
     "pyinstaller        ==6.7.0",
     "pefile             <2024.8.26", # This version introduces a significant slowdown in binary vs data reclassification step of pyinstaller. Pyinstaller is aware. https://github.com/pyinstaller/pyinstaller/issues/8762
 ]
 docs = [
-    "jupyter",
-    "jupyter-cache",
-    "matplotlib",
-    "quartodoc",
-    "sphinx",
-    "sphinx-rtd-theme",
-    "regex",
+    "jupyter            >=1.0,<2.0",
+    "jupyter-cache      >=1.0,<2.0",
+    "matplotlib         >=3.0,<4.0",
+    "quartodoc          >=0.9.0,<1.0",
+    "sphinx             >=8.0,<9.0",
+    "sphinx-rtd-theme   >=3.0,<4.0",
+    "regex              >=2024.11,<2025.0",
 ]
 all = ["flood-adapt[build,dev,docs]"]
 
