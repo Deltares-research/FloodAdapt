@@ -98,8 +98,11 @@ timeout = 600 # hard max of 10 minutes per test to avoid hanging tests
 timeout_func_only = true # only timeout the test function, not the setup/teardown
 
 ### pixi ###
-[tool.pixi.pypi-dependencies]
+[tool.pixi.feature.dev.pypi-dependencies]
 flood_adapt = {path = ".", editable = true }
+
+[tool.pixi.feature.build.pypi-dependencies]
+flood_adapt = {path = "."}
 
 [tool.pixi.feature.py312.dependencies]
 python = "3.12.*"
