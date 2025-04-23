@@ -99,7 +99,6 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.8.5
         with:
           pixi-version: "v0.41.1"
-          environments: build
 
       - name: Build source and wheel distribution
         run: |
