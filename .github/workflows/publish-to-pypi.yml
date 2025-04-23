@@ -99,10 +99,11 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.8.5
         with:
           pixi-version: "v0.41.1"
+          frozen: true
 
       - name: Build source and wheel distribution
         run: |
-          pixi run -e build python -s -m build
+          pixi run -e build --frozen python -s -m build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
