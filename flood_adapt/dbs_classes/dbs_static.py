@@ -7,9 +7,9 @@ from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
-from flood_adapt.misc.config import Settings
 
 
 def cache_method_wrapper(func: Callable) -> Callable:
@@ -51,7 +51,7 @@ class DbsStatic(IDbsStatic):
             list of gpd.GeoDataFrames with the polygons defining the aggregation areas
         """
         aggregation_areas = {}
-        for aggr_dict in self._database.site.attrs.fiat.config.aggregation:
+        for aggr_dict in self._database.site.fiat.config.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
                 self._database.static_path / aggr_dict.file,
                 engine="pyogrio",
@@ -91,8 +91,8 @@ class DbsStatic(IDbsStatic):
         descriptions = []
         lat = []
         lon = []
-        if self._database.site.attrs.sfincs.obs_point is not None:
-            obs_points = self._database.site.attrs.sfincs.obs_point
+        if self._database.site.sfincs.obs_point is not None:
+            obs_points = self._database.site.sfincs.obs_point
             for pt in obs_points:
                 names.append(pt.name)
                 descriptions.append(pt.description)
@@ -144,7 +144,7 @@ class DbsStatic(IDbsStatic):
             List of scenario names
         """
         input_file = self._database.static_path.joinpath(
-            self._database.site.attrs.sfincs.slr.scenarios.file
+            self._database.site.sfincs.slr_scenarios.file
         )
         df = pd.read_csv(input_file)
         names = df.columns[2:].to_list()
@@ -215,32 +215,32 @@ class DbsStatic(IDbsStatic):
         overland_path = (
             self._database.static_path
             / "templates"
-            / self._database.site.attrs.sfincs.config.overland_model
+            / self._database.site.sfincs.config.overland_model.name
         )
         with SfincsAdapter(model_root=overland_path) as overland_model:
             return overland_model
 
     def get_offshore_sfincs_model(self) -> SfincsAdapter:
         """Get the template overland Sfincs model."""
-        if self._database.site.attrs.sfincs.config.offshore_model is None:
+        if self._database.site.sfincs.config.offshore_model is None:
             raise ValueError("No offshore model defined in the site configuration.")
 
         offshore_path = (
             self._database.static_path
             / "templates"
-            / self._database.site.attrs.sfincs.config.offshore_model
+            / self._database.site.sfincs.config.offshore_model.name
         )
         with SfincsAdapter(model_root=offshore_path) as offshore_model:
             return offshore_model
 
     def get_fiat_model(self) -> FiatAdapter:
         """Get the path to the FIAT model."""
-        if self._database.site.attrs.fiat is None:
+        if self._database.site.fiat is None:
             raise ValueError("No FIAT model defined in the site configuration.")
         template_path = self._database.static_path / "templates" / "fiat"
         with FiatAdapter(
             model_root=template_path,
-            config=self._database.site.attrs.fiat.config,
+            config=self._database.site.fiat.config,
             exe_path=Settings().fiat_path,
             delete_crashed_runs=Settings().delete_crashed_runs,
             config_base_path=self._database.static_path,
@@ -249,13 +249,13 @@ class DbsStatic(IDbsStatic):
 
     @cache_method_wrapper
     def get_cyclone_track_database(self) -> CycloneTrackDatabase:
-        if self._database.site.attrs.sfincs.cyclone_track_database is None:
+        if self._database.site.sfincs.cyclone_track_database is None:
             raise ValueError(
                 "No cyclone track database defined in the site configuration."
             )
         database_file = str(
             self._database.static_path
             / "cyclone_track_database"
-            / self._database.site.attrs.sfincs.cyclone_track_database.file
+            / self._database.site.sfincs.cyclone_track_database.file
         )
         return CycloneTrackDatabase("ibtracs", file_name=database_file)

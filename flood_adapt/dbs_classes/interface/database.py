@@ -8,11 +8,11 @@ import numpy as np
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
+from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
-from flood_adapt.object_model.hazard.interface.events import IEvent
-from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.config.site import Site
+from flood_adapt.objects.benefits.benefits import Benefit
+from flood_adapt.objects.events.events import Event
 
 
 class IDatabase(ABC):
@@ -67,19 +67,19 @@ class IDatabase(ABC):
         pass
 
     @abstractmethod
-    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame) -> None:
+    def write_to_csv(self, name: str, event: Event, df: pd.DataFrame) -> None:
         pass
 
     @abstractmethod
-    def write_cyc(self, event: IEvent, track: TropicalCyclone) -> None:
+    def write_cyc(self, event: Event, track: TropicalCyclone) -> None:
         pass
 
     @abstractmethod
-    def check_benefit_scenarios(self, benefit: IBenefit) -> pd.DataFrame:
+    def check_benefit_scenarios(self, benefit: Benefit) -> pd.DataFrame:
         pass
 
     @abstractmethod
-    def create_benefit_scenarios(self, benefit: IBenefit) -> None:
+    def create_benefit_scenarios(self, benefit: Benefit) -> None:
         pass
 
     @abstractmethod

@@ -4,17 +4,17 @@ from typing import Any
 import geopandas as gpd
 
 from flood_adapt.adapter.interface.model_adapter import IAdapter
-from flood_adapt.object_model.hazard.interface.forcing import IForcing
-from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.interface.measures import IMeasure
-from flood_adapt.object_model.interface.projections import IProjection
+from flood_adapt.objects.forcing.forcing import IForcing
+from flood_adapt.objects.forcing.time_frame import TimeFrame
+from flood_adapt.objects.measures.measures import Measure
+from flood_adapt.objects.projections.projections import Projection
 
 
 class IHazardAdapter(IAdapter):
     @abstractmethod
-    def set_timing(self, time: TimeModel):
+    def set_timing(self, time: TimeFrame):
         """
-        Implement this to handle the timing of the event from the EventModel.
+        Implement this to handle the timing of the event from the Event.
 
         Access the events timing by `event.timing`, which contains the start and end time of the event, and the time step.
         """
@@ -33,7 +33,7 @@ class IHazardAdapter(IAdapter):
         pass
 
     @abstractmethod
-    def add_measure(self, measure: IMeasure):
+    def add_measure(self, measure: Measure):
         """
         Implement this to handle each supported measure type for this Hazard model.
 
@@ -46,7 +46,7 @@ class IHazardAdapter(IAdapter):
         pass
 
     @abstractmethod
-    def add_projection(self, projection: IProjection):
+    def add_projection(self, projection: Projection):
         """
         Implement this to handle each supported projection type for this Hazard model.
 

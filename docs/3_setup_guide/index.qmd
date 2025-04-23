@@ -1,5 +1,6 @@
 ---
 title: Setup Guide
+sidebar: setup_guide
 filters:
   - lightbox
 lightbox: auto

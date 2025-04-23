@@ -1,14 +1,14 @@
 from abc import abstractmethod
 
 from flood_adapt.adapter.interface.model_adapter import IAdapter
-from flood_adapt.object_model.hazard.floodmap import FloodMap
-from flood_adapt.object_model.interface.measures import IMeasure
-from flood_adapt.object_model.interface.projections import IProjection
+from flood_adapt.objects.measures.measures import Measure
+from flood_adapt.objects.projections.projections import Projection
+from flood_adapt.workflows.floodmap import FloodMap
 
 
 class IImpactAdapter(IAdapter):
     @abstractmethod
-    def add_measure(self, measure: IMeasure):
+    def add_measure(self, measure: Measure):
         """
         Implement this to handle each supported measure type for this Impact model.
 
@@ -21,7 +21,7 @@ class IImpactAdapter(IAdapter):
         pass
 
     @abstractmethod
-    def add_projection(self, projection: IProjection):
+    def add_projection(self, projection: Projection):
         """
         Implement this to handle each supported projection type for this Impact model.
 

@@ -1,5 +1,7 @@
+import gc
 import os
 import shutil
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional, Union
@@ -13,6 +15,8 @@ from geopandas import GeoDataFrame
 from plotly.express import line
 from plotly.express.colors import sample_colorscale
 
+from flood_adapt.config.config import Settings
+from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
 from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
@@ -21,18 +25,18 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.interface.events import IEvent
-from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.config.site import Site
-from flood_adapt.object_model.interface.path_builder import (
+from flood_adapt.misc.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.utils import finished_file_exists
+from flood_adapt.misc.utils import finished_file_exists
+from flood_adapt.objects.benefits.benefits import Benefit
+from flood_adapt.objects.events.events import Event
+from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.scenarios.scenarios import Scenario
+from flood_adapt.workflows.benefit_runner import BenefitRunner
+from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
 
 class Database(IDatabase):
@@ -88,7 +92,7 @@ class Database(IDatabase):
             if not self._init_done:
                 raise ValueError(
                     """Database path and name must be provided for the first initialization.
-                    To do this, run api_static.read_database(database_path, site_name) first."""
+                    To do this, run `flood_adapt.api.static.read_database(database_path, site_name)` first."""
                 )
             else:
                 return  # Skip re-initialization
@@ -177,12 +181,12 @@ class Database(IDatabase):
         return self._benefits
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
-        r"""Interpolate SLR value and reference it to the SLR reference year from the site toml.
+        """Interpolate SLR value and reference it to the SLR reference year from the site toml.
 
         Parameters
         ----------
         slr_scenario : str
-            SLR scenario name from the coulmn names in static\slr\slr.csv
+            SLR scenario name from the coulmn names in static/slr/slr.csv
         year : float
             year to evaluate
 
@@ -198,9 +202,10 @@ class Database(IDatabase):
         ValueError
             if the year to evaluate is outside of the time range in the slr.csv file
         """
-        input_file = self.input_path.parent.joinpath(
-            "static", self.site.attrs.sfincs.slr.scenarios.file
-        )
+        if self.site.sfincs.slr_scenarios is None:
+            raise ValueError("No SLR scenarios defined in the site configuration.")
+
+        input_file = self.static_path / self.site.sfincs.slr_scenarios.file
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
             raise ValueError(
@@ -208,7 +213,7 @@ class Database(IDatabase):
             )
         else:
             slr = np.interp(year, df["year"], df[slr_scenario])
-            ref_year = self.site.attrs.sfincs.slr.scenarios.relative_to_year
+            ref_year = self.site.sfincs.slr_scenarios.relative_to_year
             if ref_year > df["year"].max() or ref_year < df["year"].min():
                 raise ValueError(
                     f"The reference year {ref_year} is outside the range of the available SLR scenarios"
@@ -219,13 +224,15 @@ class Database(IDatabase):
                     value=slr - ref_slr,
                     units=df["units"][0],
                 )
-                gui_units = self.site.attrs.gui.units.default_length_units
+                gui_units = self.site.gui.units.default_length_units
                 return np.round(new_slr.convert(gui_units), decimals=2)
 
     # TODO: should probably be moved to frontend
     def plot_slr_scenarios(self) -> str:
+        if self.site.sfincs.slr_scenarios is None:
+            raise ValueError("No SLR scenarios defined in the site configuration.")
         input_file = self.input_path.parent.joinpath(
-            "static", self.site.attrs.sfincs.slr.scenarios.file
+            "static", self.site.sfincs.slr_scenarios.file
         )
         df = pd.read_csv(input_file)
         ncolors = len(df.columns) - 2
@@ -241,7 +248,7 @@ class Database(IDatabase):
             else:
                 df = df.rename(columns={"year": "Year"})
 
-        ref_year = self.site.attrs.sfincs.slr.scenarios.relative_to_year
+        ref_year = self.site.sfincs.slr_scenarios.relative_to_year
         if ref_year > df["Year"].max() or ref_year < df["Year"].min():
             raise ValueError(
                 f"The reference year {ref_year} is outside the range of the available SLR scenarios"
@@ -256,7 +263,7 @@ class Database(IDatabase):
         # convert to units used in GUI
         slr_current_units = us.UnitfulLength(value=1.0, units=units)
         conversion_factor = slr_current_units.convert(
-            self.site.attrs.gui.units.default_length_units
+            self.site.gui.units.default_length_units
         )
         df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
 
@@ -264,7 +271,7 @@ class Database(IDatabase):
         df = df.rename(
             columns={
                 "variable": "Scenario",
-                "value": f"Sea level rise [{self.site.attrs.gui.units.default_length_units.value}]",
+                "value": f"Sea level rise [{self.site.gui.units.default_length_units.value}]",
             }
         )
 
@@ -274,7 +281,7 @@ class Database(IDatabase):
         fig = line(
             df,
             x="Year",
-            y=f"Sea level rise [{self.site.attrs.gui.units.default_length_units.value}]",
+            y=f"Sea level rise [{self.site.gui.units.default_length_units.value}]",
             color="Scenario",
             color_discrete_sequence=colors,
         )
@@ -305,41 +312,39 @@ class Database(IDatabase):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
+    def write_to_csv(self, name: str, event: Event, df: pd.DataFrame):
         df.to_csv(
-            self.events.input_path.joinpath(event.attrs.name, f"{name}.csv"),
+            self.events.input_path.joinpath(event.name, f"{name}.csv"),
             header=False,
         )
 
-    def write_cyc(self, event: IEvent, track: TropicalCyclone):
-        cyc_file = (
-            self.events.input_path / event.attrs.name / f"{event.attrs.track_name}.cyc"
-        )
+    def write_cyc(self, event: Event, track: TropicalCyclone):
+        cyc_file = self.events.input_path / event.name / f"{event.track_name}.cyc"
         # cht_cyclone function to write TropicalCyclone as .cyc file
         track.write_track(filename=cyc_file, fmt="ddb_cyc")
 
-    def check_benefit_scenarios(self, benefit: IBenefit) -> pd.DataFrame:
+    def check_benefit_scenarios(self, benefit: Benefit) -> pd.DataFrame:
         """Return a dataframe with the scenarios needed for this benefit assessment run.
 
         Parameters
         ----------
-        benefit : IBenefit
+        benefit : Benefit
         """
-        return benefit.check_scenarios()
+        runner = BenefitRunner(self, benefit=benefit)
+        return runner.check_scenarios()
 
-    def create_benefit_scenarios(self, benefit: IBenefit) -> None:
+    def create_benefit_scenarios(self, benefit: Benefit) -> None:
         """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already.
 
         Parameters
         ----------
-        benefit : IBenefit
+        benefit : Benefit
         """
-        # If the check has not been run yet, do it now
-        if not hasattr(benefit, "scenarios"):
-            benefit.check_scenarios()
+        runner = BenefitRunner(self, benefit=benefit)
+        runner.check_scenarios()
 
         # Iterate through the scenarios needed and create them if not existing
-        for index, row in benefit.scenarios.iterrows():
+        for index, row in runner.scenarios.iterrows():
             if row["scenario created"] == "No":
                 scenario_dict = {}
                 scenario_dict["event"] = row["event"]
@@ -349,7 +354,7 @@ class Database(IDatabase):
                     [row["projection"], row["event"], row["strategy"]]
                 )
 
-                scenario_obj = Scenario.load_dict(scenario_dict)
+                scenario_obj = Scenario(**scenario_dict)
                 # Check if scenario already exists (because it was created before in the loop)
                 try:
                     self.scenarios.save(scenario_obj)
@@ -360,7 +365,7 @@ class Database(IDatabase):
                     # otherwise, if it already exists and we dont need to save it, we can just continue
 
         # Update the scenarios check
-        benefit.check_scenarios()
+        runner.check_scenarios()
 
     def run_benefit(self, benefit_name: Union[str, list[str]]) -> None:
         """Run a (cost-)benefit analysis.
@@ -373,16 +378,17 @@ class Database(IDatabase):
         if not isinstance(benefit_name, list):
             benefit_name = [benefit_name]
         for name in benefit_name:
-            benefit = self._benefits.get(name)
-            benefit.run_cost_benefit()
+            benefit = self.benefits.get(name)
+            runner = BenefitRunner(self, benefit=benefit)
+            runner.run_cost_benefit()
 
     def update(self) -> None:
-        self.projections = self._projections.list_objects()
-        self.events = self._events.list_objects()
-        self.measures = self._measures.list_objects()
-        self.strategies = self._strategies.list_objects()
-        self.scenarios = self._scenarios.list_objects()
-        self.benefits = self._benefits.list_objects()
+        self.projections_list = self._projections.list_objects()
+        self.events_list = self._events.list_objects()
+        self.measures_list = self._measures.list_objects()
+        self.strategies_list = self._strategies.list_objects()
+        self.scenarios_list = self._scenarios.list_objects()
+        self.benefits_list = self._benefits.list_objects()
 
     def get_outputs(self) -> dict[str, Any]:
         """Return a dictionary with info on the outputs that currently exist in the database.
@@ -432,7 +438,7 @@ class Database(IDatabase):
         """
         # Get conresion factor need to get from the sfincs units to the gui units
         units = us.UnitfulLength(
-            value=1, units=self.site.attrs.gui.units.default_length_units
+            value=1, units=self.site.gui.units.default_length_units
         )
         unit_cor = units.convert(new_units=us.UnitTypesLength.meters)
 
@@ -599,26 +605,26 @@ class Database(IDatabase):
             name of the scenario to check if needs to be rerun for hazard
         """
         scenario = self._scenarios.get(scenario_name)
+        runner = ScenarioRunner(self, scenario=scenario)
 
         # Dont do anything if the hazard model has already been run in itself
-        if scenario.impacts.hazard.has_run:
+        if runner.impacts.hazard.has_run:
             return
 
         scns_simulated = [
-            self._scenarios.get(sim.attrs.name)
+            sim
             for sim in self.scenarios.list_objects()["objects"]
-            if self.scenarios.output_path.joinpath(sim.attrs.name, "Flooding").is_dir()
+            if self.scenarios.output_path.joinpath(sim.name, "Flooding").is_dir()
         ]
 
         for scn in scns_simulated:
-            if scn.equal_hazard_components(scenario):
-                existing = self.scenarios.output_path.joinpath(
-                    scn.attrs.name, "Flooding"
-                )
+            if self.scenarios.equal_hazard_components(scn, scenario):
+                existing = self.scenarios.output_path.joinpath(scn.name, "Flooding")
                 path_new = self.scenarios.output_path.joinpath(
-                    scenario.attrs.name, "Flooding"
+                    scenario.name, "Flooding"
                 )
-                if scn.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                runner._load_objects(scn)
+                if runner.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,
@@ -626,7 +632,7 @@ class Database(IDatabase):
                         ignore=shutil.ignore_patterns("simulations"),
                     )
                     self.logger.info(
-                        f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
+                        f"Hazard simulation is used from the '{scn.name}' scenario"
                     )
 
     def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
@@ -646,14 +652,16 @@ class Database(IDatabase):
             scenario_name = [scenario_name]
 
         errors = []
+
         for scn in scenario_name:
             try:
                 self.has_run_hazard(scn)
                 scenario = self.scenarios.get(scn)
-                scenario.run()
-            except RuntimeError:
+                runner = ScenarioRunner(self, scenario=scenario)
+                runner.run(scenario)
+            except RuntimeError as e:
                 errors.append(scn)
-
+                self.logger.error(f"Error running scenario {scn}: {e}")
         if errors:
             raise RuntimeError(
                 "FloodAdapt failed to run for the following scenarios: "
@@ -685,10 +693,24 @@ class Database(IDatabase):
             for dir in os.listdir(self.scenarios.output_path)
         ]
 
+        def _call_garbage_collector(func, path, exc_info, retries=5, delay=0.1):
+            """Retry deletion up to 5 times if the file is locked."""
+            for attempt in range(retries):
+                gc.collect()
+                time.sleep(delay)
+                try:
+                    func(path)  # Retry deletion
+                    return  # Exit if successful
+                except Exception as e:
+                    print(
+                        f"Attempt {attempt + 1}/{retries} failed to delete {path}: {e}"
+                    )
+
+            print(f"Giving up on deleting {path} after {retries} attempts.")
+
         for dir in output_scenarios:
-            if dir.name not in [path.name for path in input_scenarios]:
-                # input was deleted
-                shutil.rmtree(dir)
-            elif not finished_file_exists(dir):
-                # corrupted output due to unfinished run
-                shutil.rmtree(dir)
+            # Delete if: input was deleted or corrupted output due to unfinished run
+            if dir.name not in [
+                path.name for path in input_scenarios
+            ] or not finished_file_exists(dir):
+                shutil.rmtree(dir, onerror=_call_garbage_collector)

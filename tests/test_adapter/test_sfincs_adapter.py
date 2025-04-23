@@ -11,44 +11,23 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
+from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.sfincs import ObsPointModel, RiverModel
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.synthetic import (
+from flood_adapt.objects.events.hurricane import TranslationModel
+from flood_adapt.objects.events.synthetic import (
     SyntheticEvent,
-    SyntheticEventModel,
 )
-from flood_adapt.object_model.hazard.forcing.discharge import (
+from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.rainfall import (
-    RainfallConstant,
-    RainfallCSV,
-    RainfallMeteo,
-    RainfallNetCDF,
-    RainfallSynthetic,
-    RainfallTrack,
-)
-from flood_adapt.object_model.hazard.forcing.waterlevels import (
-    SurgeModel,
-    TideModel,
-    WaterlevelCSV,
-    WaterlevelGauged,
-    WaterlevelModel,
-    WaterlevelSynthetic,
-)
-from flood_adapt.object_model.hazard.forcing.wind import (
-    WindConstant,
-    WindCSV,
-    WindMeteo,
-    WindNetCDF,
-    WindSynthetic,
-    WindTrack,
-)
-from flood_adapt.object_model.hazard.interface.forcing import (
+from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,
     IDischarge,
@@ -57,32 +36,49 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWaterlevel,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
+from flood_adapt.objects.forcing.rainfall import (
+    RainfallConstant,
+    RainfallCSV,
+    RainfallMeteo,
+    RainfallNetCDF,
+    RainfallSynthetic,
+    RainfallTrack,
 )
-from flood_adapt.object_model.hazard.interface.timeseries import (
+from flood_adapt.objects.forcing.time_frame import (
+    TimeFrame,
+)
+from flood_adapt.objects.forcing.timeseries import (
     ShapeType,
-    SyntheticTimeseriesModel,
+    TimeseriesFactory,
 )
-from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
-from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+from flood_adapt.objects.forcing.waterlevels import (
+    SurgeModel,
+    TideModel,
+    WaterlevelCSV,
+    WaterlevelGauged,
+    WaterlevelModel,
+    WaterlevelSynthetic,
+)
+from flood_adapt.objects.forcing.wind import (
+    WindConstant,
+    WindCSV,
+    WindMeteo,
+    WindNetCDF,
+    WindSynthetic,
+    WindTrack,
+)
+from flood_adapt.objects.measures.measures import (
+    FloodWall,
     GreenInfrastructure,
-)
-from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.interface.config.sfincs import ObsPointModel, RiverModel
-from flood_adapt.object_model.interface.measures import (
-    FloodWallModel,
-    GreenInfrastructureModel,
-    PumpModel,
+    Pump,
     SelectionType,
 )
-from flood_adapt.object_model.interface.scenarios import ScenarioModel
-from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.objects.projections.projections import Projection
+from flood_adapt.objects.scenarios.scenarios import Scenario
 from tests.fixtures import TEST_DATA_DIR
-from tests.test_object_model.test_events.test_forcing.test_netcdf import (
+from tests.test_objects.test_forcing.test_netcdf import (
     get_test_dataset,
+    time_model_2_hr_timestep,
 )
 
 
@@ -94,13 +90,13 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
         duration = timedelta(hours=3)
 
         adapter.set_timing(
-            TimeModel(
+            TimeFrame(
                 start_time=start_time,
                 end_time=start_time + duration,
                 time_step=timedelta(hours=1),
             )
         )
-        adapter.ensure_no_existing_forcings()
+        adapter._ensure_no_existing_forcings()
 
         return adapter
 
@@ -110,10 +106,10 @@ def sfincs_adapter_with_dummy_scn(default_sfincs_adapter):
     # Mock scenario to get a rainfall multiplier
     dummy_scn = mock.Mock()
     dummy_event = mock.Mock()
-    dummy_event.attrs.rainfall_multiplier = 2
-    dummy_event.attrs.time = TimeModel()
+    dummy_event.rainfall_multiplier = 2
+    dummy_event.time = TimeFrame()
     dummy_scn.event = dummy_event
-    default_sfincs_adapter._current_scenario = dummy_scn
+    default_sfincs_adapter._scenario = dummy_scn
 
     yield default_sfincs_adapter
 
@@ -139,21 +135,21 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
                     y_coordinate=y,
                 )
             )
-    test_db.site.attrs.sfincs.river = rivers
+    test_db.site.sfincs.river = rivers
 
     with SfincsAdapter(model_root=(overland_2_rivers)) as adapter:
-        adapter.set_timing(TimeModel())
-        adapter.ensure_no_existing_forcings()
+        adapter.set_timing(TimeFrame())
+        adapter._ensure_no_existing_forcings()
 
         return adapter, test_db
 
 
 @pytest.fixture()
 def synthetic_discharge():
-    if river := Database().site.attrs.sfincs.river:
+    if river := Database().site.sfincs.river:
         return DischargeSynthetic(
             river=river[0],
-            timeseries=SyntheticTimeseriesModel[us.UnitfulDischarge](
+            timeseries=TimeseriesFactory.from_args(
                 shape_type=ShapeType.triangle,
                 duration=us.UnitfulTime(value=3, units=us.UnitTypesTime.hours),
                 peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -176,13 +172,13 @@ def test_river() -> RiverModel:
 
 @pytest.fixture()
 def river_in_db() -> RiverModel:
-    return Database().site.attrs.sfincs.river[0]
+    return Database().site.sfincs.river[0]
 
 
 @pytest.fixture()
 def synthetic_rainfall():
     return RainfallSynthetic(
-        timeseries=SyntheticTimeseriesModel[us.UnitfulIntensity](
+        timeseries=TimeseriesFactory.from_args(
             shape_type=ShapeType.triangle,
             duration=us.UnitfulTime(value=3, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -194,13 +190,13 @@ def synthetic_rainfall():
 @pytest.fixture()
 def synthetic_wind():
     return WindSynthetic(
-        magnitude=SyntheticTimeseriesModel[us.UnitfulVelocity](
+        magnitude=TimeseriesFactory.from_args(
             shape_type=ShapeType.triangle,
             duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
             peak_value=us.UnitfulVelocity(value=1, units=us.UnitTypesVelocity.mps),
         ),
-        direction=SyntheticTimeseriesModel[us.UnitfulDirection](
+        direction=TimeseriesFactory.from_args(
             shape_type=ShapeType.triangle,
             duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
@@ -215,7 +211,7 @@ def synthetic_wind():
 def synthetic_waterlevels():
     return WaterlevelSynthetic(
         surge=SurgeModel(
-            timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+            timeseries=TimeseriesFactory.from_args(
                 shape_type=ShapeType.triangle,
                 duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                 peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
@@ -239,9 +235,9 @@ def test_event_all_synthetic(
     synthetic_waterlevels,
 ):
     return SyntheticEvent(
-        SyntheticEventModel(
+        SyntheticEvent(
             name="all_synthetic",
-            time=TimeModel(),
+            time=TimeFrame(),
             forcings={
                 ForcingType.DISCHARGE: [synthetic_discharge],
                 ForcingType.RAINFALL: [synthetic_rainfall],
@@ -256,9 +252,9 @@ def database_with_synthetic_scenario(test_db, test_event_all_synthetic):
     test_db.events.save(test_event_all_synthetic)
 
     scn = Scenario(
-        ScenarioModel(
+        Scenario(
             name="synthetic",
-            event=test_event_all_synthetic.attrs.name,
+            event=test_event_all_synthetic.name,
             projection="current",
             strategy="no_measures",
         )
@@ -269,14 +265,14 @@ def database_with_synthetic_scenario(test_db, test_event_all_synthetic):
 
 
 def _mock_meteohandler_read(
-    time: TimeModel,
+    time: TimeFrame,
     test_db: IDatabase,
     *args,
     **kwargs,
 ) -> xr.Dataset | xr.DataArray:
     gen = np.random.default_rng(42)
-    lat = [test_db.site.attrs.lat - 10, test_db.site.attrs.lat + 10]
-    lon = [test_db.site.attrs.lon - 10, test_db.site.attrs.lon + 10]
+    lat = [test_db.site.lat - 10, test_db.site.lat + 10]
+    lon = [test_db.site.lon - 10, test_db.site.lon + 10]
     _time = pd.date_range(
         start=time.start_time,
         end=time.end_time,
@@ -370,6 +366,19 @@ def _unsupported_forcing_source(type: ForcingType):
     return unsupported
 
 
+@pytest.fixture()
+def spw_file() -> Path:
+    cyc_file = TEST_DATA_DIR / "IAN.cyc"
+    spw_file = TEST_DATA_DIR / "IAN.spw"
+    if spw_file.exists():
+        return spw_file
+    tc = TropicalCyclone()
+    tc.include_rainfall = True
+    tc.read_track(cyc_file, fmt="ddb_cyc")
+    tc.to_spiderweb(spw_file)
+    return spw_file
+
+
 class TestAddForcing:
     """Class to test the add_forcing method of the SfincsAdapter class."""
 
@@ -426,13 +435,14 @@ class TestAddForcing:
             # Arrange
             path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
 
-            time = TimeModel(time_step=timedelta(hours=1))
+            time = time_model_2_hr_timestep()
+
             default_sfincs_adapter.set_timing(time)
 
             ds = get_test_dataset(
                 time=time,
-                lat=int(test_db.site.attrs.lat),
-                lon=int(test_db.site.attrs.lon),
+                lat=int(test_db.site.lat),
+                lon=int(test_db.site.lon),
             )
             ds.to_netcdf(path)
             forcing = WindNetCDF(path=path)
@@ -443,28 +453,48 @@ class TestAddForcing:
             # Assert
             assert default_sfincs_adapter.wind is not None
 
-        def test_add_forcing_wind_from_track(
+        def test_add_forcing_wind_from_track_cyc(
             self, test_db, tmp_path, default_sfincs_adapter: SfincsAdapter
         ):
-            from cht_cyclones.tropical_cyclone import TropicalCyclone
-
             # Arrange
             track_file = TEST_DATA_DIR / "IAN.cyc"
-            spw_file = tmp_path / "IAN.spw"
-            default_sfincs_adapter._sim_path = tmp_path / "sim_path"
+            default_sfincs_adapter._event = mock.Mock()
+            default_sfincs_adapter._event.hurricane_translation = TranslationModel(
+                eastwest_translation=us.UnitfulLength(
+                    value=0, units=us.UnitTypesLength.meters
+                ),
+                northsouth_translation=us.UnitfulLength(
+                    value=0, units=us.UnitTypesLength.meters
+                ),
+            )
 
-            tc = TropicalCyclone()
-            tc.read_track(track_file, fmt="ddb_cyc")
-            tc.to_spiderweb(spw_file)
+            forcing = WindTrack(path=track_file)
 
+            # Act
+            default_sfincs_adapter.add_forcing(forcing)
+
+            # Assert
+            spw_name = track_file.with_suffix(".spw").name
+            assert default_sfincs_adapter.wind is None
+            assert default_sfincs_adapter._model.config.get("spwfile") == spw_name
+            assert (default_sfincs_adapter.get_model_root() / spw_name).exists()
+
+        def test_add_forcing_wind_from_track_spw(
+            self,
+            test_db,
+            tmp_path,
+            default_sfincs_adapter: SfincsAdapter,
+            spw_file: Path,
+        ):
+            # Arrange
             forcing = WindTrack(path=spw_file)
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
 
             # Assert
-            assert default_sfincs_adapter.wind is None
             assert default_sfincs_adapter._model.config.get("spwfile") == spw_file.name
+            assert (default_sfincs_adapter.get_model_root() / spw_file.name).exists()
 
         def test_add_forcing_waterlevels_csv(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_wind: WindSynthetic
@@ -472,7 +502,7 @@ class TestAddForcing:
             # Arrange
             tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
             t0, t1 = default_sfincs_adapter._model.get_model_time()
-            time_frame = TimeModel(start_time=t0, end_time=t1)
+            time_frame = TimeFrame(start_time=t0, end_time=t1)
             synthetic_wind.to_dataframe(time_frame).to_csv(tmp_path)
 
             forcing = WindCSV(path=tmp_path)
@@ -569,13 +599,13 @@ class TestAddForcing:
             adapter = sfincs_adapter_with_dummy_scn
             path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
 
-            time = TimeModel(time_step=timedelta(hours=1))
+            time = time_model_2_hr_timestep()
             adapter.set_timing(time)
 
             ds = get_test_dataset(
                 time=time,
-                lat=int(test_db.site.attrs.lat),
-                lon=int(test_db.site.attrs.lon),
+                lat=int(test_db.site.lat),
+                lon=int(test_db.site.lon),
             )
             ds.to_netcdf(path)
             forcing = RainfallNetCDF(path=path)
@@ -586,20 +616,38 @@ class TestAddForcing:
             # Assert
             assert adapter.rainfall is not None
 
-        def test_add_forcing_rainfall_track(
-            self, test_db, tmp_path, default_sfincs_adapter: SfincsAdapter
+        def test_add_forcing_rainfall_track_cyc(
+            self, test_db, default_sfincs_adapter: SfincsAdapter
         ):
-            from cht_cyclones.tropical_cyclone import TropicalCyclone
-
             # Arrange
             track_file = TEST_DATA_DIR / "IAN.cyc"
-            spw_file = tmp_path / "IAN.spw"
-            default_sfincs_adapter._sim_path = tmp_path / "sim_path"
+            default_sfincs_adapter._event = mock.Mock()
+            default_sfincs_adapter._event.hurricane_translation = TranslationModel(
+                eastwest_translation=us.UnitfulLength(
+                    value=10, units=us.UnitTypesLength.miles
+                ),
+                northsouth_translation=us.UnitfulLength(
+                    value=10, units=us.UnitTypesLength.miles
+                ),
+            )
 
-            tc = TropicalCyclone()
-            tc.read_track(track_file, fmt="ddb_cyc")
-            tc.to_spiderweb(spw_file)
+            forcing = RainfallTrack(path=track_file)
 
+            # Act
+            default_sfincs_adapter.add_forcing(forcing)
+
+            # Assert
+            spw_name = track_file.with_suffix(".spw").name
+            assert default_sfincs_adapter._model.config.get("spwfile") == spw_name
+            assert (default_sfincs_adapter.get_model_root() / spw_name).exists()
+
+        def test_add_forcing_rainfall_track_spw(
+            self,
+            test_db,
+            default_sfincs_adapter: SfincsAdapter,
+            spw_file: Path,
+        ):
+            # Arrange
             forcing = RainfallTrack(path=spw_file)
 
             # Act
@@ -607,6 +655,7 @@ class TestAddForcing:
 
             # Assert
             assert default_sfincs_adapter._model.config.get("spwfile") == spw_file.name
+            assert (default_sfincs_adapter.get_model_root() / spw_file.name).exists()
 
         def test_add_forcing_rainfall_unsupported(
             self, sfincs_adapter_with_dummy_scn: SfincsAdapter
@@ -660,7 +709,7 @@ class TestAddForcing:
             self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
         ):
             # Arrange
-            default_sfincs_adapter.set_timing(TimeModel())
+            default_sfincs_adapter.set_timing(TimeFrame())
 
             # Act
             default_sfincs_adapter.add_forcing(synthetic_discharge)
@@ -711,10 +760,10 @@ class TestAddForcing:
             # Arrange
             num_rivers = 2
             sfincs_adapter, db = sfincs_adapter_2_rivers
-            assert db.site.attrs.sfincs.river is not None
-            assert len(db.site.attrs.sfincs.river) == num_rivers
+            assert db.site.sfincs.river is not None
+            assert len(db.site.sfincs.river) == num_rivers
 
-            for i, river in enumerate(db.site.attrs.sfincs.river):
+            for i, river in enumerate(db.site.sfincs.river):
                 discharge = DischargeConstant(
                     river=river,
                     discharge=us.UnitfulDischarge(
@@ -729,7 +778,7 @@ class TestAddForcing:
             river_locations = sfincs_adapter.discharge.vector.to_gdf()
             river_discharges = sfincs_adapter.discharge.to_dataframe()["dis"]
 
-            for i, river in enumerate(db.site.attrs.sfincs.river):
+            for i, river in enumerate(db.site.sfincs.river):
                 assert river_locations.geometry[i].x == river.x_coordinate
                 assert river_locations.geometry[i].y == river.y_coordinate
                 assert river_discharges[i] == i * 1000
@@ -814,7 +863,8 @@ class TestAddForcing:
         ):
             # Arrange
             default_sfincs_adapter._turn_off_bnd_press_correction = mock.Mock()
-            default_sfincs_adapter._current_scenario = mock.Mock()
+            default_sfincs_adapter._scenario = mock.Mock()
+            default_sfincs_adapter._event = mock.Mock()
             forcing = WaterlevelModel()
 
             # Act
@@ -849,13 +899,11 @@ class TestAddMeasure:
         @pytest.fixture()
         def floodwall(self, test_db) -> FloodWall:
             floodwall = FloodWall(
-                FloodWallModel(
-                    name="test_seawall",
-                    description="seawall",
-                    selection_type=SelectionType.polyline,
-                    elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
-                    polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
-                )
+                name="test_seawall",
+                description="seawall",
+                selection_type=SelectionType.polyline,
+                elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
+                polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
             )
 
             test_db.measures.save(floodwall)
@@ -875,15 +923,13 @@ class TestAddMeasure:
         @pytest.fixture()
         def pump(self, test_db) -> Pump:
             pump = Pump(
-                PumpModel(
-                    name="test_pump",
-                    description="pump",
-                    discharge=us.UnitfulDischarge(
-                        value=100, units=us.UnitTypesDischarge.cfs
-                    ),
-                    selection_type=SelectionType.polyline,
-                    polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
-                )
+                name="test_pump",
+                description="pump",
+                discharge=us.UnitfulDischarge(
+                    value=100, units=us.UnitTypesDischarge.cfs
+                ),
+                selection_type=SelectionType.polyline,
+                polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
             )
             test_db.measures.save(pump)
             return pump
@@ -900,15 +946,13 @@ class TestAddMeasure:
         @pytest.fixture()
         def water_square(self, test_db) -> GreenInfrastructure:
             green_infra = GreenInfrastructure(
-                GreenInfrastructureModel(
-                    name="test_greeninfra",
-                    description="greeninfra",
-                    selection_type=SelectionType.polygon,
-                    polygon_file=str(TEST_DATA_DIR / "green_infra.geojson"),
-                    volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
-                    height=us.UnitfulHeight(value=2, units=us.UnitTypesLength.meters),
-                    percent_area=0.5,
-                )
+                name="test_greeninfra",
+                description="greeninfra",
+                selection_type=SelectionType.polygon,
+                polygon_file=str(TEST_DATA_DIR / "green_infra.geojson"),
+                volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
+                height=us.UnitfulHeight(value=2, units=us.UnitTypesLength.meters),
+                percent_area=0.5,
             )
 
             test_db.measures.save(green_infra)
@@ -940,7 +984,7 @@ class TestAddProjection:
             )
         )
         slr = us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters)
-        dummy_projection.attrs.physical_projection.sea_level_rise = slr
+        dummy_projection.physical_projection.sea_level_rise = slr
 
         wl_df_expected = adapter.waterlevels + slr.convert(us.UnitTypesLength.meters)
 
@@ -961,11 +1005,10 @@ class TestAddProjection:
 
         adapter.add_forcing(rainfall)
         rainfall_before = adapter._model.forcing["precip"]
-        dummy_projection.get_physical_projection().attrs.rainfall_multiplier = 2
+        dummy_projection.physical_projection.rainfall_multiplier = 2
 
         rainfall_expected = (
-            rainfall_before
-            * dummy_projection.get_physical_projection().attrs.rainfall_multiplier
+            rainfall_before * dummy_projection.physical_projection.rainfall_multiplier
         )
 
         # Act
@@ -978,8 +1021,8 @@ class TestAddProjection:
 
 class TestAddObsPoint:
     def test_add_obs_points(self, test_db: IDatabase):
-        if test_db.site.attrs.sfincs.obs_point is None:
-            test_db.site.attrs.sfincs.obs_point = [
+        if test_db.site.sfincs.obs_point is None:
+            test_db.site.sfincs.obs_point = [
                 ObsPointModel(
                     name="obs1",
                     description="Ashley River - James Island Expy",
@@ -993,7 +1036,7 @@ class TestAddObsPoint:
         path_in = (
             test_db.static_path
             / "templates"
-            / test_db.site.attrs.sfincs.config.overland_model
+            / test_db.site.sfincs.config.overland_model.name
         )
 
         # Act
@@ -1016,7 +1059,7 @@ class TestAddObsPoint:
         lat = []
         lon = []
 
-        site_points = test_db.site.attrs.sfincs.obs_point
+        site_points = test_db.site.sfincs.obs_point
         for pt in site_points:
             names.append(pt.name)
             lat.append(pt.lat)
@@ -1052,14 +1095,14 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
 
     # Ensure template is clean
     adapter = SfincsAdapter(SFINCS_PATH)
-    adapter.ensure_no_existing_forcings()
+    adapter._ensure_no_existing_forcings()
 
     # Mock scenario to get a rainfall multiplier
     mock_scn = mock.Mock()
     mock_event = mock.Mock()
-    mock_event.attrs.rainfall_multiplier = 1.5
+    mock_event.rainfall_multiplier = 1.5
     mock_scn.event = mock_event
-    adapter._current_scenario = mock_scn
+    adapter._scenario = mock_scn
 
     # Add forcing to the template
     adapter.add_forcing(forcing)
@@ -1068,7 +1111,7 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
     # Act
     adapter = SfincsAdapter(COPY_PATH)
     with pytest.raises(ValueError) as e:
-        adapter.ensure_no_existing_forcings()
+        adapter._ensure_no_existing_forcings()
 
     # Assert
     assert (
@@ -1081,7 +1124,7 @@ class TestPostProcessing:
     @pytest.fixture(scope="class")
     def synthetic_rainfall_class(self):
         return RainfallSynthetic(
-            timeseries=SyntheticTimeseriesModel[us.UnitfulIntensity](
+            timeseries=TimeseriesFactory.from_args(
                 shape_type=ShapeType.triangle,
                 duration=us.UnitfulTime(value=3, units=us.UnitTypesTime.hours),
                 peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -1093,10 +1136,10 @@ class TestPostProcessing:
 
     @pytest.fixture(scope="class")
     def synthetic_discharge_class(self):
-        if river := Database().site.attrs.sfincs.river:
+        if river := Database().site.sfincs.river:
             return DischargeSynthetic(
                 river=river[0],
-                timeseries=SyntheticTimeseriesModel[us.UnitfulDischarge](
+                timeseries=TimeseriesFactory.from_args(
                     shape_type=ShapeType.triangle,
                     duration=us.UnitfulTime(value=3, units=us.UnitTypesTime.hours),
                     peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -1110,7 +1153,7 @@ class TestPostProcessing:
     def synthetic_waterlevels_class(self):
         return WaterlevelSynthetic(
             surge=SurgeModel(
-                timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                timeseries=TimeseriesFactory.from_args(
                     shape_type=ShapeType.triangle,
                     duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                     peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
@@ -1138,15 +1181,13 @@ class TestPostProcessing:
         synthetic_waterlevels_class,
     ):
         return SyntheticEvent(
-            SyntheticEventModel(
-                name="all_synthetic",
-                time=TimeModel(),
-                forcings={
-                    ForcingType.DISCHARGE: [synthetic_discharge_class],
-                    ForcingType.RAINFALL: [synthetic_rainfall_class],
-                    ForcingType.WATERLEVEL: [synthetic_waterlevels_class],
-                },
-            )
+            name="all_synthetic",
+            time=TimeFrame(),
+            forcings={
+                ForcingType.DISCHARGE: [synthetic_discharge_class],
+                ForcingType.RAINFALL: [synthetic_rainfall_class],
+                ForcingType.WATERLEVEL: [synthetic_waterlevels_class],
+            },
         )
 
     @pytest.fixture(scope="class")
@@ -1169,19 +1210,17 @@ class TestPostProcessing:
         event = test_event_all_synthetic_class
         start_time = datetime(2023, 1, 1, 0, 0, 0)
         duration = timedelta(hours=3)
-        time = TimeModel(
+        time = TimeFrame(
             start_time=start_time,
             end_time=start_time + duration,
         )
-        event.attrs.time = time
+        event.time = time
         test_db_class.events.save(event)
         scn = Scenario(
-            ScenarioModel(
-                name="synthetic",
-                event=event.attrs.name,
-                projection="current",
-                strategy="no_measures",
-            )
+            name="synthetic",
+            event=event.name,
+            projection="current",
+            strategy="no_measures",
         )
         test_db_class.scenarios.save(scn)
 
@@ -1190,10 +1229,10 @@ class TestPostProcessing:
             test_db_class.static.get_overland_sfincs_model().get_model_root()
         )
         with SfincsAdapter(model_root=overland_path) as adapter:
-            adapter.ensure_no_existing_forcings()
+            adapter._ensure_no_existing_forcings()
 
-            adapter.preprocess(scn)
-            adapter.process(scn)
+            adapter.preprocess(scn, event)
+            adapter.process(scn, event)
             yield adapter, scn
 
     def test_write_geotiff(
@@ -1202,7 +1241,7 @@ class TestPostProcessing:
     ):
         # Arrange
         adapter, scn = adapter_preprocess_process_scenario_class
-        floodmap_path = adapter._get_result_path(scn) / f"FloodMap_{scn.attrs.name}.tif"
+        floodmap_path = adapter._get_result_path(scn) / f"FloodMap_{scn.name}.tif"
 
         # Act
         adapter.write_floodmap_geotiff(scenario=scn)

@@ -191,10 +191,11 @@ def create_tree(
     tree = {
         "website": {
             "sidebar": {
+                "title": "API Reference",
                 "collapse-level": 2,
                 "contents": {
                     "section": "API Reference",
-                    "href": "api/index.qmd",
+                    "href": "api_ref/api_index.qmd",
                     "contents": content,
                 },
                 "id": rel_dir,

@@ -1,6 +1,9 @@
 project:
   type: website
   output-dir: "_site"
+  pre-render:
+    - version.py
+    - api.py
   render:
     - "*.qmd"
     - "*.ipynb"
@@ -11,57 +14,173 @@ project:
 filters:
   - include-code-files
   - interlinks
-  #  - section-bibliographies
 
 interlinks:
   sources:
+    geopandas:
+      url: https://geopandas.org/en/stable/
+    pandas:
+      url: https://pandas.pydata.org/docs/
     python:
       url: https://docs.python.org/3/
     numpy:
       url: https://numpy.org/doc/stable/
 
 metadata-files:
-  - api/_sidebar.yml
-
+  - user_documentation.yml # user guide + sidebar
+  - api_ref/_sidebar.yml  # api reference + sidebar
+  - _version.yml          # version information
 number-sections: false
-quartodoc:
-  dir: api_ref
-  # dynamic: true
-  sections:
-    - title: flood_adapt
-      desc: ""
-      contents:
-        - name: api.benefits
-        - name: api.database_builder
-        - name: api.events
-        - name: api.measures
-        - name: api.output
-        - name: api.projections
-        - name: api.scenarios
-        - name: api.static
-        - name: api.strategies
-        - name: adapter.fiat_adapter
-        - name: adapter.sfincs_adapter
-        - name: dbs_classes.dbs_benefit.DbsBenefit
-        - name: dbs_classes.dbs_event.DbsEvent
-        - name: dbs_classes.dbs_measure.DbsMeasure
-        - name: dbs_classes.dbs_projection.DbsProjection
-        - name: dbs_classes.dbs_scenario.DbsScenario
-        - name: dbs_classes.dbs_static.DbsStatic
-        - name: dbs_classes.dbs_strategy.DbsStrategy
-        - name: dbs_classes.dbs_template.DbsTemplate
-        - name: dbs_classes.database.Database
-        - name: object_model.benefit.Benefit
-        - name: adapter.impacts_integrator.Impacts
-        - name: object_model.scenario.Scenario
-        - name: object_model.strategy.Strategy
-        - name: misc.log.FloodAdaptLogging
-        - name: misc.config.Settings
 
+quartodoc:
+  title: "Flood Adapt v{{< meta version >}}"
+  style: pkgdown
   package: flood_adapt
+  dir: api_ref
+  out_index: api_index.qmd # generates index at: api_ref/api_index.qmd
+  render_interlinks: true
+  options: # default options for all sections
+    include_attributes: true
+    include_functions: true
+    include_classes: true
+    include_inherited: false
+    signature_name: "relative"
+
+  renderer:
+    style: markdown
+    table_style: description-list
+    show_signature_annotations: true
+    # show_source: true # enable when merged: https://github.com/machow/quartodoc/issues/354
+    display_name: name
+
+  sections:
+    - title: "FloodAdapt"
+      package: flood_adapt
+      desc: "Class that contains the main functionality of FloodAdapt."
+      contents:
+        - FloodAdapt
+
+    - title: "Setup and configuration"
+      package: flood_adapt
+      desc: "Configuration settings and logging utilities for Flood Adapt."
+      contents:
+        - Settings
+        - FloodAdaptLogging
+        - Site
+
+    - title: "Adapters"
+      package: flood_adapt.adapter
+      desc: "Implementations of the adapters that make the connection between FloodAdapt and its models and databases."
+      contents:
+        - FiatAdapter
+        - SfincsAdapter
+
+    - title: "Database"
+      desc: "Database classes that define the structure of the database used in FloodAdapt."
+      package: flood_adapt.dbs_classes
+      contents:
+        - Database
+        - DbsBenefit
+        - DbsEvent
+        - DbsMeasure
+        - DbsProjection
+        - DbsScenario
+        - DbsStatic
+        - DbsStrategy
+        - DbsTemplate
+
+    - title: "Object models"
+      package: flood_adapt.objects.object_model
+      desc: "Object models in FloodAdapt are the components that are saved in the database. They define the configuration, input and output of the model kernels. The database stores Objects, and returns Objects when queried. "
+      contents:
+        # General
+        - Object
+
+    - subtitle: "Measures"
+      package: flood_adapt.objects
+      desc: "Various flood protection and mitigation measures available that can interact with the models. Can be impact measures or a hazard measures, where impact measures do not affect the hazard model at all, and hazard measures do."
+      contents:
+        # General
+        - Measure
+        - MeasureType
+        - SelectionType
+
+        # Hazard
+        - FloodWall
+        - GreenInfrastructure
+        - Pump
+
+        # Impact
+        - Buyout
+        - Elevate
+        - FloodProof
+
+    - subtitle: "Strategies"
+      package: flood_adapt.objects
+      desc: "A collection of measures that can be used to define a strategy for flood risk management."
+      contents:
+        - Strategy
+
+    - subtitle: "Events"
+      package: flood_adapt.objects
+      desc: "Event types including historical, synthetic, and hurricane events."
+      contents:
+        - Event
+        - SyntheticEvent
+        - HistoricalEvent
+        - HurricaneEvent
+        - EventSet
+    - subtitle: "Projections"
+      package: flood_adapt.objects
+      desc: "Climate and socio-economic projections for future scenario analysis."
+      contents:
+        - Projection
+
+    - subtitle: "Scenarios"
+      package: flood_adapt.objects
+      desc: "Scenario modeling for assessing different flood risk management approaches. Scenarios consist of a combination of event, projection, and strategy."
+      contents:
+        - Scenario
+
+    - subtitle: "Benefits"
+      package: flood_adapt.objects
+      desc: "Benefit calculation for different flood risk management strategies. Benefits can be used to perform cost benefit analysis on a strategy, which is calculated based on the impact of the event on the population and infrastructure."
+      contents:
+        - Benefit
+
+    - title: "Unit system"
+      package: flood_adapt.unit_system
+      desc: "Unit system for FloodAdapt. The unit system is used to convert between different units of measurement, and to define the units of the input and output of the models."
+      contents:
+        # Unitful classes
+        - ValueUnitPair
+        - UnitfulLength
+        - UnitfulHeight
+        - UnitfulArea
+        - UnitfulVelocity
+        - UnitfulDirection
+        - UnitfulDischarge
+        - UnitfulIntensity
+        - UnitfulVolume
+        - UnitfulTime
+        - UnitfulLengthRefValue
+
+        # Unit enums
+        - UnitTypesLength
+        - UnitTypesArea
+        - UnitTypesVolume
+        - UnitTypesVelocity
+        - UnitTypesDirection
+        - UnitTypesTime
+        - UnitTypesDischarge
+        - UnitTypesIntensity
+        - VerticalReference
 
 website:
   title: "Flood Adapt Documentation"
+  repo-url: https://github.com/Deltares-research/FloodAdapt
+  repo-actions: [source, issue]
+  issue-url: https://github.com/Deltares-research/FloodAdapt/issues/new/choose
   page-navigation: true
   favicon: _static/logo.png
   search:
@@ -80,78 +199,26 @@ website:
           />
         </a>
 
-  navbar: # Create navigation bar on
+  navbar:
     logo: _static/logo.png
     title: FloodAdapt
     pinned: true
+    left:
+      - text: Introduction
+        href: 1_introduction/index.qmd
+      - text: User Guide
+        href: 4_user_guide/index.qmd
+      - text: Setup Guide
+        href: 3_setup_guide/index.qmd
+      - text: Technical Documentation
+        href: 5_technical_docs/index.qmd
+      - text: API Reference
+        href: api_ref/api_index.qmd
+
     right:
       - icon: github
         url: https://github.com/Deltares-research/FloodAdapt
 
-  sidebar:
-    border: true
-    collapse-level: 1
-    style: "docked"
-    background: light
-    search: true
-
-    contents:
-      - text: "Introduction"
-        file: 1_introduction/index.qmd
-      - section: "User Guide"
-        file: 4_user_guide/index.qmd # This contains text before sections start
-        contents:
-          - "4_user_guide/getting_started.qmd"
-          - "4_user_guide/site_tab.qmd"
-          - section: "Events"
-            file: "4_user_guide/events/index.qmd"
-            contents:
-              - section: "Historical Events"
-                file: "4_user_guide/events/historic_events/index.qmd"
-                contents:
-                  - "4_user_guide/events/historic_events/historic_events_hurricane.qmd"
-                  - "4_user_guide/events/historic_events/historic_events_gauged.qmd"
-                  - "4_user_guide/events/historic_events/historic_events_ungauged.qmd"
-              - "4_user_guide/events/synthetic_events.qmd"
-              - "4_user_guide/events/probabilistic_events.qmd"
-          - section: "Projections"
-            file: "4_user_guide/projections/index.qmd"
-            contents:
-              - "4_user_guide/projections/climate.qmd"
-              - "4_user_guide/projections/socioEconomic.qmd"
-          - section: "Measures"
-            file: "4_user_guide/measures/index.qmd"
-            contents:
-              - "4_user_guide/measures/hydraulic.qmd"
-              - "4_user_guide/measures/green_infra.qmd"
-              - "4_user_guide/measures/buildings.qmd"
-          - "4_user_guide/strategy/index.qmd"
-          - "4_user_guide/scenarios/index.qmd"
-          - "4_user_guide/output/index.qmd"
-          - "4_user_guide/compare/index.qmd"
-          - "4_user_guide/benefits.qmd"
-      - section: "Setup Guide"
-        file: 3_setup_guide/index.qmd
-        contents:
-          - section: "SFINCS Setup"
-            file: "3_setup_guide/SFINCS/index.qmd"
-            contents:
-              - "3_setup_guide/SFINCS/hydromt_sfincs_gui.qmd"
-          - section: "Delft FIAT Setup"
-            file: "3_setup_guide/Delft_Fiat/index.qmd"
-            contents:
-              - "3_setup_guide/Delft_Fiat/hydromt_fiat_gui.qmd"
-          - "3_setup_guide/risk_analysis.qmd"
-          - "3_setup_guide/database.qmd"
-      - section: "Technical docs"
-        file: "5_technical_docs/index.qmd"
-        contents:
-          - "5_technical_docs/EventScenario.qmd"
-          - "5_technical_docs/RiskScenario.qmd"
-          - "5_technical_docs/EquityCalc.qmd"
-          - "5_technical_docs/BenefitCalc.qmd"
-      - text: "API reference"
-        href: "api_ref/"
 
 format:
   html:
@@ -164,9 +231,6 @@ format:
     page-layout: article
     grid:
       content-mode: standard
-
-# bibliography: references.bib
-# citeproc: false
 
 execute:
   freeze: auto
