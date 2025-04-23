@@ -71,7 +71,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#52e9fce9aa54ce2432aff99e2c66104933601453
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -243,7 +243,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#52e9fce9aa54ce2432aff99e2c66104933601453
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
       - pypi: https://files.pythonhosted.org/packages/9f/cb/18326d2d89ad3b0dd143da971e77afd1e6ca6674f1b1c3df4b6bec6279fc/id-1.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -430,7 +430,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#52e9fce9aa54ce2432aff99e2c66104933601453
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -601,7 +601,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#52e9fce9aa54ce2432aff99e2c66104933601453
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
       - pypi: https://files.pythonhosted.org/packages/74/a1/68a395c17eeefb04917034bd0a1bfa765e7654fa150cca473d669aa3afb5/identify-2.6.6-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -662,6 +662,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/11/92/76a1c94d3afee238333bc0a42b82935dd8f9cf8ce9e336ff87ee14d9e1cf/pytest-8.3.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/36/3b/48e79f2cd6a61dbbd4807b4ed46cb564b4fd50a76166b1c4ea5c1d9e2371/pytest_cov-6.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f2/3b/b26f90f74e2986a82df6e7ac7e319b8ea7ccece1caec9f8ab6104dc70603/pytest_mock-3.14.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/7c/ff/3266c8a73b9b93c4b14160a7e2b31d1e1088e28ed29f4c2d93ae34093bfd/pytest_retry-1.7.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/03/27/14af9ef8321f5edc7527e47def2a21d8118c6f329a9342cc61387a0c0599/pytest_timeout-2.3.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/3e/b68c118422ec867fa7ab88444e1274aa40681c606d59ac27de5a5588f082/python_dotenv-1.0.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/eb/38/ac33370d784287baa1c3d538978b5e2ea064d4c1b93ffbd12826c190dd10/pytz-2025.1-py2.py3-none-any.whl
@@ -799,7 +801,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#52e9fce9aa54ce2432aff99e2c66104933601453
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ff/62/85c4c919272577931d407be5ba5d71c20f0b616d31a0befe0ae45bb79abd/imagesize-1.4.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -1052,7 +1054,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#52e9fce9aa54ce2432aff99e2c66104933601453
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -1219,7 +1221,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#52e9fce9aa54ce2432aff99e2c66104933601453
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -1387,7 +1389,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#52e9fce9aa54ce2432aff99e2c66104933601453
+      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -2559,7 +2561,7 @@ packages:
 - pypi: .
   name: flood-adapt
   version: 0.2.0
-  sha256: 0a74d4ba3e7902eb605daa6ab9b244f6334b1975bff121f4d38fde3251c98772
+  sha256: b1b14dffce89a8ceee1fffe1ff0a7d3ff9dd25f474da36dd8ef61e8684659d8b
   requires_dist:
   - cht-cyclones
   - cht-meteo==0.3.1
@@ -2585,6 +2587,8 @@ packages:
   - tomli-w
   - pytest ; extra == 'dev'
   - pytest-cov ; extra == 'dev'
+  - pytest-timeout ; extra == 'dev'
+  - pytest-retry ; extra == 'dev'
   - pre-commit==3.8.0 ; extra == 'dev'
   - ruff==0.5.5 ; extra == 'dev'
   - typos==1.23.6 ; extra == 'dev'
@@ -3048,7 +3052,7 @@ packages:
   - sphinx-rtd-theme ; extra == 'doc'
   - ruff==0.6.8 ; extra == 'doc'
   requires_python: '>=3.8'
-- pypi: git+https://github.com/Deltares/hydromt_sfincs.git#52e9fce9aa54ce2432aff99e2c66104933601453
+- pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
   name: hydromt-sfincs
   version: 1.1.0
   requires_dist:
@@ -5562,6 +5566,24 @@ packages:
   - pytest-asyncio ; extra == 'dev'
   - tox ; extra == 'dev'
   requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/7c/ff/3266c8a73b9b93c4b14160a7e2b31d1e1088e28ed29f4c2d93ae34093bfd/pytest_retry-1.7.0-py3-none-any.whl
+  name: pytest-retry
+  version: 1.7.0
+  sha256: a2dac85b79a4e2375943f1429479c65beb6c69553e7dae6b8332be47a60954f4
+  requires_dist:
+  - pytest>=7.0.0
+  - black ; extra == 'dev'
+  - isort ; extra == 'dev'
+  - mypy ; extra == 'dev'
+  - flake8 ; extra == 'dev'
+  requires_python: '>=3.9'
+- pypi: https://files.pythonhosted.org/packages/03/27/14af9ef8321f5edc7527e47def2a21d8118c6f329a9342cc61387a0c0599/pytest_timeout-2.3.1-py3-none-any.whl
+  name: pytest-timeout
+  version: 2.3.1
+  sha256: 68188cb703edfc6a18fad98dc25a3c61e9f24d644b0b70f33af545219fc7813e
+  requires_dist:
+  - pytest>=7.0.0
+  requires_python: '>=3.7'
 - conda: https://conda.anaconda.org/conda-forge/win-64/python-3.10.16-h37870fc_1_cpython.conda
   build_number: 1
   sha256: 3392db6a7a90864d3fd1ce281859a49e27ee68121b63eece2ae6f1dbb2a8aaf1
