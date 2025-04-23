@@ -117,7 +117,7 @@ python = "3.10.*"
 [tool.pixi.project]
 name = "flood-adapt"
 channels = ["conda-forge"]
-platforms = ["win-64"]
+platforms = ["win-64", "linux-64", "osx-64"]
 
 [tool.pixi.environments]
 py312 = { features = ["py312"], solve-group = "py312" }
