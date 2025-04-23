@@ -54,19 +54,11 @@ quartodoc:
     display_name: name
 
   sections:
-    - title: "API"
-      package: flood_adapt.api
-      desc: "Core API modules that contain functions to interact with the main functionality of FloodAdapt."
+    - title: "FloodAdapt"
+      package: flood_adapt
+      desc: "Class that contains the main functionality of FloodAdapt."
       contents:
-        - benefits
-        - database_builder
-        - events
-        - measures
-        - output
-        - projections
-        - scenarios
-        - static
-        - strategies
+        - FloodAdapt
 
     - title: "Setup and configuration"
       package: flood_adapt
@@ -98,14 +90,14 @@ quartodoc:
         - DbsTemplate
 
     - title: "Object models"
-      package: flood_adapt.object_model.interface.object_model
+      package: flood_adapt.objects.object_model
       desc: "Object models in FloodAdapt are the components that are saved in the database. They define the configuration, input and output of the model kernels. The database stores Objects, and returns Objects when queried. "
       contents:
         # General
         - Object
 
     - subtitle: "Measures"
-      package: flood_adapt.object_model
+      package: flood_adapt.objects
       desc: "Various flood protection and mitigation measures available that can interact with the models. Can be impact measures or a hazard measures, where impact measures do not affect the hazard model at all, and hazard measures do."
       contents:
         # General
@@ -124,13 +116,13 @@ quartodoc:
         - FloodProof
 
     - subtitle: "Strategies"
-      package: flood_adapt.object_model
+      package: flood_adapt.objects
       desc: "A collection of measures that can be used to define a strategy for flood risk management."
       contents:
         - Strategy
 
     - subtitle: "Events"
-      package: flood_adapt.object_model
+      package: flood_adapt.objects
       desc: "Event types including historical, synthetic, and hurricane events."
       contents:
         - Event
@@ -139,25 +131,25 @@ quartodoc:
         - HurricaneEvent
         - EventSet
     - subtitle: "Projections"
-      package: flood_adapt.object_model
+      package: flood_adapt.objects
       desc: "Climate and socio-economic projections for future scenario analysis."
       contents:
         - Projection
 
     - subtitle: "Scenarios"
-      package: flood_adapt.object_model
+      package: flood_adapt.objects
       desc: "Scenario modeling for assessing different flood risk management approaches. Scenarios consist of a combination of event, projection, and strategy."
       contents:
         - Scenario
 
     - subtitle: "Benefits"
-      package: flood_adapt.object_model
+      package: flood_adapt.objects
       desc: "Benefit calculation for different flood risk management strategies. Benefits can be used to perform cost benefit analysis on a strategy, which is calculated based on the impact of the event on the population and infrastructure."
       contents:
         - Benefit
 
     - title: "Unit system"
-      package: flood_adapt.object_model.io.unit_system
+      package: flood_adapt.unit_system
       desc: "Unit system for FloodAdapt. The unit system is used to convert between different units of measurement, and to define the units of the input and output of the models."
       contents:
         # Unitful classes

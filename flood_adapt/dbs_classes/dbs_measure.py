@@ -3,9 +3,9 @@ from typing import Any
 import geopandas as gpd
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.interface.measures import Measure
-from flood_adapt.object_model.measure_factory import MeasureFactory
-from flood_adapt.object_model.utils import resolve_filepath
+from flood_adapt.misc.utils import resolve_filepath
+from flood_adapt.objects.measures.measure_factory import MeasureFactory
+from flood_adapt.objects.measures.measures import Measure
 
 
 class DbsMeasure(DbsTemplate[Measure]):
