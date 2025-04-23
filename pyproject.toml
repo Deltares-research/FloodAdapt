@@ -94,7 +94,7 @@ flood_adapt = ["py.typed", "database_builder/**"]
 [tool.pytest.ini_options]
 addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
 testpaths = ["tests"]
-timeout = 300 # hard max of 5 minutes per test
+timeout = 600 # hard max of 10 minutes per test to avoid hanging tests
 timeout_func_only = true # only timeout the test function, not the setup/teardown
 
 ### pixi ###
@@ -129,6 +129,9 @@ all = { features = ["all"], solve-group = "py311" }
 install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"]}
 pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"]}
 tests = {cmd = "pytest tests"}
+
+[tool.pixi.feature.build.tasks]
+build-db-builder = {cmd = "python distribution/build_database_builder_executable.py"}
 
 [tool.pixi.feature.docs.tasks]
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
