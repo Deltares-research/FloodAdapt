@@ -23,15 +23,7 @@ from pydantic import BaseModel, Field
 from shapely import MultiLineString, MultiPolygon, Polygon
 
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
-from flood_adapt.api.static import read_database
-from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.misc.utils import modified_environ
-from flood_adapt.object_model.hazard.event.event_set import EventSet
-from flood_adapt.object_model.hazard.forcing.tide_gauge import (
-    TideGauge,
-    TideGaugeSource,
-)
-from flood_adapt.object_model.interface.config.fiat import (
+from flood_adapt.config.fiat import (
     AggregationModel,
     BenefitsModel,
     BFEModel,
@@ -41,7 +33,7 @@ from flood_adapt.object_model.interface.config.fiat import (
     RiskModel,
     SVIModel,
 )
-from flood_adapt.object_model.interface.config.gui import (
+from flood_adapt.config.gui import (
     GuiModel,
     GuiUnitModel,
     MapboxLayersModel,
@@ -49,7 +41,7 @@ from flood_adapt.object_model.interface.config.gui import (
     SyntheticTideModel,
     VisualizationLayersModel,
 )
-from flood_adapt.object_model.interface.config.sfincs import (
+from flood_adapt.config.sfincs import (
     Cstype,
     CycloneTrackDatabaseModel,
     DatumModel,
@@ -64,17 +56,25 @@ from flood_adapt.object_model.interface.config.sfincs import (
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
-from flood_adapt.object_model.interface.config.site import (
+from flood_adapt.config.site import (
     Site,
     StandardObjectModel,
 )
-from flood_adapt.object_model.interface.projections import (
+from flood_adapt.dbs_classes.database import Database
+from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.misc.utils import modified_environ
+from flood_adapt.objects.events.event_set import EventSet
+from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.forcing.tide_gauge import (
+    TideGauge,
+    TideGaugeSource,
+)
+from flood_adapt.objects.projections.projections import (
     PhysicalProjection,
     Projection,
     SocioEconomicChange,
 )
-from flood_adapt.object_model.interface.strategies import Strategy
-from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.objects.strategies.strategies import Strategy
 
 
 def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
@@ -471,7 +471,7 @@ class DatabaseBuilder:
                 "Creating `no measures` strategy and `current` projection."
             )
             # Create database instance
-            db = read_database(self.root.parent, self.config.name)
+            db = Database(self.root.parent, self.config.name)
             # Create no measures strategy
             strategy = Strategy(
                 name=self._no_measures_strategy_name,

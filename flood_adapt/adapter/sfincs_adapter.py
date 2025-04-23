@@ -25,41 +25,26 @@ from numpy import matlib
 from shapely.affinity import translate
 
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
-from flood_adapt.misc.config import Settings
+from flood_adapt.config.config import Settings
+from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.event.event_set import EventSet
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-from flood_adapt.object_model.hazard.event.hurricane import TranslationModel
-from flood_adapt.object_model.hazard.forcing.discharge import (
+from flood_adapt.misc.path_builder import (
+    ObjectDir,
+    TopLevelDir,
+    db_path,
+)
+from flood_adapt.misc.utils import cd, resolve_filepath
+from flood_adapt.objects.events.event_set import EventSet
+from flood_adapt.objects.events.events import Event, Mode, Template
+from flood_adapt.objects.events.historical import HistoricalEvent
+from flood_adapt.objects.events.hurricane import TranslationModel
+from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
-from flood_adapt.object_model.hazard.forcing.rainfall import (
-    RainfallConstant,
-    RainfallCSV,
-    RainfallMeteo,
-    RainfallNetCDF,
-    RainfallSynthetic,
-    RainfallTrack,
-)
-from flood_adapt.object_model.hazard.forcing.waterlevels import (
-    WaterlevelCSV,
-    WaterlevelGauged,
-    WaterlevelModel,
-    WaterlevelSynthetic,
-)
-from flood_adapt.object_model.hazard.forcing.wind import (
-    WindConstant,
-    WindCSV,
-    WindMeteo,
-    WindNetCDF,
-    WindSynthetic,
-    WindTrack,
-)
-from flood_adapt.object_model.hazard.interface.events import Event, Mode, Template
-from flood_adapt.object_model.hazard.interface.forcing import (
+from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,
     IDischarge,
@@ -68,26 +53,41 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWaterlevel,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeFrame
-from flood_adapt.object_model.interface.config.site import Site
-from flood_adapt.object_model.interface.measures import (
+from flood_adapt.objects.forcing.meteo_handler import MeteoHandler
+from flood_adapt.objects.forcing.rainfall import (
+    RainfallConstant,
+    RainfallCSV,
+    RainfallMeteo,
+    RainfallNetCDF,
+    RainfallSynthetic,
+    RainfallTrack,
+)
+from flood_adapt.objects.forcing.time_frame import TimeFrame
+from flood_adapt.objects.forcing.waterlevels import (
+    WaterlevelCSV,
+    WaterlevelGauged,
+    WaterlevelModel,
+    WaterlevelSynthetic,
+)
+from flood_adapt.objects.forcing.wind import (
+    WindConstant,
+    WindCSV,
+    WindMeteo,
+    WindNetCDF,
+    WindSynthetic,
+    WindTrack,
+)
+from flood_adapt.objects.measures.measures import (
     FloodWall,
     GreenInfrastructure,
     Measure,
     Pump,
 )
-from flood_adapt.object_model.interface.path_builder import (
-    ObjectDir,
-    TopLevelDir,
-    db_path,
-)
-from flood_adapt.object_model.interface.projections import (
+from flood_adapt.objects.projections.projections import (
     PhysicalProjection,
     Projection,
 )
-from flood_adapt.object_model.interface.scenarios import Scenario
-from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.utils import cd, resolve_filepath
+from flood_adapt.objects.scenarios.scenarios import Scenario
 
 
 class SfincsAdapter(IHazardAdapter):
@@ -122,10 +122,7 @@ class SfincsAdapter(IHazardAdapter):
         self.units = self.database.site.gui.units
         self.sfincs_logger = self._setup_sfincs_logger(model_root)
         self._model = HydromtSfincsModel(
-            root=str(model_root.resolve()),
-            mode="r",
-            logger=self.sfincs_logger,
-            write_gis=False,
+            root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
         )
         self._model.read()
 
@@ -287,7 +284,7 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
             # Measures
-            for measure in model._strategy.get_hazard_strategy().measures:
+            for measure in model._strategy.get_hazard_measures():
                 model.add_measure(measure)
 
             # Projection
