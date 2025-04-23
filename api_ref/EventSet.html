@@ -170,13 +170,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.object_model.EventSet" id="toc-flood_adapt.object_model.EventSet" class="nav-link active" data-scroll-target="#flood_adapt.object_model.EventSet">EventSet</a>
+  <li><a href="#flood_adapt.objects.EventSet" id="toc-flood_adapt.objects.EventSet" class="nav-link active" data-scroll-target="#flood_adapt.objects.EventSet">EventSet</a>
   <ul class="collapse">
   <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
-  <li><a href="#flood_adapt.object_model.EventSet.load_file" id="toc-flood_adapt.object_model.EventSet.load_file" class="nav-link" data-scroll-target="#flood_adapt.object_model.EventSet.load_file">load_file</a></li>
-  <li><a href="#flood_adapt.object_model.EventSet.load_sub_events" id="toc-flood_adapt.object_model.EventSet.load_sub_events" class="nav-link" data-scroll-target="#flood_adapt.object_model.EventSet.load_sub_events">load_sub_events</a></li>
+  <li><a href="#flood_adapt.objects.EventSet.load_file" id="toc-flood_adapt.objects.EventSet.load_file" class="nav-link" data-scroll-target="#flood_adapt.objects.EventSet.load_file">load_file</a></li>
+  <li><a href="#flood_adapt.objects.EventSet.load_sub_events" id="toc-flood_adapt.objects.EventSet.load_sub_events" class="nav-link" data-scroll-target="#flood_adapt.objects.EventSet.load_sub_events">load_sub_events</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -188,9 +188,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="flood_adapt.object_model.EventSet" class="level1">
+<section id="flood_adapt.objects.EventSet" class="level1">
 <h1>EventSet</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.EventSet()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>objects.EventSet()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>BaseModel describing the expected variables and data types for parameters of EventSet.</p>
 <p>An EventSet is a collection of events that can be used to create a scenario and perform a probabilistoc risk assessment.</p>
 <section id="attributes" class="level2 doc-section doc-section-attributes">
@@ -225,23 +225,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#flood_adapt.object_model.EventSet.load_file">load_file</a></td>
+<td><a href="#flood_adapt.objects.EventSet.load_file">load_file</a></td>
 <td>Load object from file.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.object_model.EventSet.load_sub_events">load_sub_events</a></td>
+<td><a href="#flood_adapt.objects.EventSet.load_sub_events">load_sub_events</a></td>
 <td>Load sub events from a list or from a file path.</td>
 </tr>
 </tbody>
 </table>
-<section id="flood_adapt.object_model.EventSet.load_file" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.EventSet.load_file">load_file</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>object_model.EventSet.load_file(file_path: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="flood_adapt.objects.EventSet.load_file" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.EventSet.load_file">load_file</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.EventSet.load_file(file_path: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Load object from file.</p>
 </section>
-<section id="flood_adapt.object_model.EventSet.load_sub_events" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.EventSet.load_sub_events">load_sub_events</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>object_model.EventSet.load_sub_events(</span>
+<section id="flood_adapt.objects.EventSet.load_sub_events" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.EventSet.load_sub_events">load_sub_events</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>objects.EventSet.load_sub_events(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    sub_events: Optional[List[Event]] <span class="op">=</span> <span class="va">None</span>,</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    file_path: Optional[Path] <span class="op">=</span> <span class="va">None</span>,</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>

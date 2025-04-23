@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>events – Flood Adapt Documentation</title>
+<title>floodproof – Flood Adapt Documentation</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -57,26 +57,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../">
-<link href="../api_ref/measures.html" rel="next">
-<link href="../api_ref/database_builder.html" rel="prev">
-<link href="../_static/logo.png" rel="icon" type="image/png">
-<script src="../site_libs/quarto-html/quarto.js"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-1a436f84f54e105667e607acf9f9d3fa.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-1945d9ea50fcb138a37d86c115812687.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../api_ref/objects/Strategy.html" rel="next">
+<link href="../../api_ref/objects/Elevate.html" rel="prev">
+<link href="../../_static/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-1a436f84f54e105667e607acf9f9d3fa.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-1945d9ea50fcb138a37d86c115812687.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -105,7 +105,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<link rel="stylesheet" href="../_static/styles.css">
+<link rel="stylesheet" href="../../_static/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed">
@@ -115,10 +115,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="../index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">FloodAdapt</span>
     </a>
   </div>
@@ -129,23 +129,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../1_introduction/index.html"> 
+    <a class="nav-link" href="../../1_introduction/index.html"> 
 <span class="menu-text">Introduction</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../4_user_guide/index.html"> 
+    <a class="nav-link" href="../../4_user_guide/index.html"> 
 <span class="menu-text">User Guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../3_setup_guide/index.html"> 
+    <a class="nav-link" href="../../3_setup_guide/index.html"> 
 <span class="menu-text">Setup Guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../5_technical_docs/index.html"> 
+    <a class="nav-link" href="../../5_technical_docs/index.html"> 
 <span class="menu-text">Technical Documentation</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../api_ref/api_index.html" aria-current="page"> 
+    <a class="nav-link active" href="../../api_ref/api_index.html" aria-current="page"> 
 <span class="menu-text">API Reference</span></a>
   </li>  
 </ul>
@@ -167,7 +167,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../api_ref/api_index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../api_ref/benefits.html">API</a></li><li class="breadcrumb-item"><a href="../api_ref/events.html">events</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api_ref/api_index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../api_ref/Object.html">Object models</a></li><li class="breadcrumb-item"><a href="../../api_ref/objects/Measure.html">Measures</a></li><li class="breadcrumb-item"><a href="../../api_ref/objects/FloodProof.html">FloodProof</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -189,7 +189,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../api_ref/api_index.html" class="sidebar-item-text sidebar-link">
+            <a href="../../api_ref/api_index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">API Reference</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -198,65 +198,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
- <span class="menu-text">API</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">FloodAdapt</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/benefits.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">benefits</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api_ref/database_builder.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">database_builder</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api_ref/events.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">events</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api_ref/measures.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">measures</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api_ref/output.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">output</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api_ref/projections.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">projections</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api_ref/scenarios.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">scenarios</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api_ref/static.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">static</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api_ref/strategies.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">strategies</span></a>
+  <a href="../../api_ref/FloodAdapt.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FloodAdapt</span></a>
   </div>
 </li>
       </ul>
@@ -272,19 +224,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/Settings.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/Settings.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Settings</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/FloodAdaptLogging.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/FloodAdaptLogging.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">FloodAdaptLogging</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/Site.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/Site.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Site</span></a>
   </div>
 </li>
@@ -301,13 +253,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/FiatAdapter.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/FiatAdapter.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">FiatAdapter</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/SfincsAdapter.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/SfincsAdapter.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">SfincsAdapter</span></a>
   </div>
 </li>
@@ -324,55 +276,55 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/Database.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/Database.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Database</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/DbsBenefit.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/DbsBenefit.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">DbsBenefit</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/DbsEvent.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/DbsEvent.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">DbsEvent</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/DbsMeasure.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/DbsMeasure.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">DbsMeasure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/DbsProjection.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/DbsProjection.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">DbsProjection</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/DbsScenario.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/DbsScenario.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">DbsScenario</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/DbsStatic.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/DbsStatic.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">DbsStatic</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/DbsStrategy.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/DbsStrategy.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">DbsStrategy</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/DbsTemplate.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/DbsTemplate.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">DbsTemplate</span></a>
   </div>
 </li>
@@ -380,79 +332,79 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
  <span class="menu-text">Object models</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/Object.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/Object.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Object</span></a>
   </div>
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
  <span class="menu-text">Measures</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/Measure.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/Measure.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Measure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/MeasureType.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/MeasureType.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">MeasureType</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/SelectionType.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/SelectionType.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">SelectionType</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/FloodWall.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/FloodWall.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">FloodWall</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/GreenInfrastructure.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/GreenInfrastructure.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">GreenInfrastructure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/Pump.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/Pump.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Pump</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/Buyout.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/Buyout.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Buyout</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/Elevate.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/Elevate.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Elevate</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/FloodProof.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/FloodProof.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">FloodProof</span></a>
   </div>
 </li>
@@ -469,7 +421,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/Strategy.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/Strategy.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Strategy</span></a>
   </div>
 </li>
@@ -486,31 +438,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/Event.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/Event.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Event</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/SyntheticEvent.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/SyntheticEvent.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">SyntheticEvent</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/HistoricalEvent.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/HistoricalEvent.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">HistoricalEvent</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/HurricaneEvent.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/HurricaneEvent.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">HurricaneEvent</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/EventSet.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/EventSet.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">EventSet</span></a>
   </div>
 </li>
@@ -527,7 +479,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/Projection.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/Projection.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Projection</span></a>
   </div>
 </li>
@@ -544,7 +496,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/Scenario.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/Scenario.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Scenario</span></a>
   </div>
 </li>
@@ -561,7 +513,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/object_model/Benefit.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/objects/Benefit.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Benefit</span></a>
   </div>
 </li>
@@ -580,121 +532,121 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/ValueUnitPair.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/ValueUnitPair.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">ValueUnitPair</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitfulLength.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitfulLength.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitfulLength</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitfulHeight.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitfulHeight.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitfulHeight</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitfulArea.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitfulArea.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitfulArea</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitfulVelocity.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitfulVelocity.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitfulVelocity</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitfulDirection.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitfulDirection.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitfulDirection</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitfulDischarge.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitfulDischarge.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitfulDischarge</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitfulIntensity.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitfulIntensity.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitfulIntensity</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitfulVolume.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitfulVolume.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitfulVolume</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitfulTime.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitfulTime.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitfulTime</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitfulLengthRefValue.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitfulLengthRefValue.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitfulLengthRefValue</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitTypesLength.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitTypesLength.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitTypesLength</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitTypesArea.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitTypesArea.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitTypesArea</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitTypesVolume.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitTypesVolume.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitTypesVolume</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitTypesVelocity.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitTypesVelocity.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitTypesVelocity</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitTypesDirection.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitTypesDirection.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitTypesDirection</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitTypesTime.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitTypesTime.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitTypesTime</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitTypesDischarge.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitTypesDischarge.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitTypesDischarge</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/UnitTypesIntensity.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/UnitTypesIntensity.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">UnitTypesIntensity</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api_ref/VerticalReference.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api_ref/VerticalReference.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">VerticalReference</span></a>
   </div>
 </li>
@@ -712,461 +664,65 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.api.events" id="toc-flood_adapt.api.events" class="nav-link active" data-scroll-target="#flood_adapt.api.events">events</a>
+  <li><a href="#flood_adapt.objects.FloodProof" id="toc-flood_adapt.objects.FloodProof" class="nav-link active" data-scroll-target="#flood_adapt.objects.FloodProof">FloodProof</a>
   <ul class="collapse">
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a>
-  <ul class="collapse">
-  <li><a href="#flood_adapt.api.events.check_higher_level_usage" id="toc-flood_adapt.api.events.check_higher_level_usage" class="nav-link" data-scroll-target="#flood_adapt.api.events.check_higher_level_usage">check_higher_level_usage</a></li>
-  <li><a href="#flood_adapt.api.events.copy_event" id="toc-flood_adapt.api.events.copy_event" class="nav-link" data-scroll-target="#flood_adapt.api.events.copy_event">copy_event</a></li>
-  <li><a href="#flood_adapt.api.events.create_event" id="toc-flood_adapt.api.events.create_event" class="nav-link" data-scroll-target="#flood_adapt.api.events.create_event">create_event</a></li>
-  <li><a href="#flood_adapt.api.events.create_event_set" id="toc-flood_adapt.api.events.create_event_set" class="nav-link" data-scroll-target="#flood_adapt.api.events.create_event_set">create_event_set</a></li>
-  <li><a href="#flood_adapt.api.events.delete_event" id="toc-flood_adapt.api.events.delete_event" class="nav-link" data-scroll-target="#flood_adapt.api.events.delete_event">delete_event</a></li>
-  <li><a href="#flood_adapt.api.events.download_wl_data" id="toc-flood_adapt.api.events.download_wl_data" class="nav-link" data-scroll-target="#flood_adapt.api.events.download_wl_data">download_wl_data</a></li>
-  <li><a href="#flood_adapt.api.events.edit_event" id="toc-flood_adapt.api.events.edit_event" class="nav-link" data-scroll-target="#flood_adapt.api.events.edit_event">edit_event</a></li>
-  <li><a href="#flood_adapt.api.events.get_event" id="toc-flood_adapt.api.events.get_event" class="nav-link" data-scroll-target="#flood_adapt.api.events.get_event">get_event</a></li>
-  <li><a href="#flood_adapt.api.events.get_event_mode" id="toc-flood_adapt.api.events.get_event_mode" class="nav-link" data-scroll-target="#flood_adapt.api.events.get_event_mode">get_event_mode</a></li>
-  <li><a href="#flood_adapt.api.events.get_events" id="toc-flood_adapt.api.events.get_events" class="nav-link" data-scroll-target="#flood_adapt.api.events.get_events">get_events</a></li>
-  <li><a href="#flood_adapt.api.events.plot_forcing" id="toc-flood_adapt.api.events.plot_forcing" class="nav-link" data-scroll-target="#flood_adapt.api.events.plot_forcing">plot_forcing</a></li>
-  <li><a href="#flood_adapt.api.events.read_csv" id="toc-flood_adapt.api.events.read_csv" class="nav-link" data-scroll-target="#flood_adapt.api.events.read_csv">read_csv</a></li>
-  <li><a href="#flood_adapt.api.events.save_cyclone_track" id="toc-flood_adapt.api.events.save_cyclone_track" class="nav-link" data-scroll-target="#flood_adapt.api.events.save_cyclone_track">save_cyclone_track</a></li>
-  <li><a href="#flood_adapt.api.events.save_event" id="toc-flood_adapt.api.events.save_event" class="nav-link" data-scroll-target="#flood_adapt.api.events.save_event">save_event</a></li>
-  <li><a href="#flood_adapt.api.events.save_timeseries_csv" id="toc-flood_adapt.api.events.save_timeseries_csv" class="nav-link" data-scroll-target="#flood_adapt.api.events.save_timeseries_csv">save_timeseries_csv</a></li>
-  </ul></li>
+  <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/events.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/objects/FloodProof.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../api_ref/api_index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../api_ref/benefits.html">API</a></li><li class="breadcrumb-item"><a href="../api_ref/events.html">events</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api_ref/api_index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../api_ref/Object.html">Object models</a></li><li class="breadcrumb-item"><a href="../../api_ref/objects/Measure.html">Measures</a></li><li class="breadcrumb-item"><a href="../../api_ref/objects/FloodProof.html">FloodProof</a></li></ol></nav></header>
 
 
 
 
-<section id="flood_adapt.api.events" class="level1">
-<h1>events</h1>
-<p><code>api.events</code></p>
-<section id="functions" class="level2">
-<h2 class="anchored" data-anchor-id="functions">Functions</h2>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="#flood_adapt.api.events.check_higher_level_usage">check_higher_level_usage</a></td>
-<td>Check if an event is used in a scenario.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.api.events.copy_event">copy_event</a></td>
-<td>Copy an event in the database.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.api.events.create_event">create_event</a></td>
-<td>Create a event object from a dictionary of attributes.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.api.events.create_event_set">create_event_set</a></td>
-<td>Create a event set object from a dictionary of attributes.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.api.events.delete_event">delete_event</a></td>
-<td>Delete an event from the database.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.api.events.download_wl_data">download_wl_data</a></td>
-<td>Download water level data from a station or tide gauge.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.api.events.edit_event">edit_event</a></td>
-<td>Edit an event object in the database.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.api.events.get_event">get_event</a></td>
-<td>Get an event from the database by name.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.api.events.get_event_mode">get_event_mode</a></td>
-<td>Get the mode of an event from the database by name.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.api.events.get_events">get_events</a></td>
-<td>Get all events from the database.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.api.events.plot_forcing">plot_forcing</a></td>
-<td>Plot forcing data for an event.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.api.events.read_csv">read_csv</a></td>
-<td>Read a csv file into a pandas DataFrame.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.api.events.save_cyclone_track">save_cyclone_track</a></td>
-<td>Save cyclone track data to the event folder.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.api.events.save_event">save_event</a></td>
-<td>Save an event object to the database.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.api.events.save_timeseries_csv">save_timeseries_csv</a></td>
-<td>Save timeseries data to a csv file.</td>
-</tr>
-</tbody>
-</table>
-<section id="flood_adapt.api.events.check_higher_level_usage" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.check_higher_level_usage">check_higher_level_usage</h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>api.events.check_higher_level_usage(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Check if an event is used in a scenario.</p>
-<section id="parameters" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<section id="flood_adapt.objects.FloodProof" class="level1">
+<h1>FloodProof</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>objects.FloodProof()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The expected variables and data types of the “floodproof” impact measure.</p>
+<section id="attributes" class="level2 doc-section doc-section-attributes">
+<h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
 <dl>
 <dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
 <dd>
-<p>name of the event to be checked</p>
+<p>Name of the measure.</p>
 </dd>
-</dl>
-</section>
-<section id="returns" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
-<dl>
-<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>list</code>[<code>str</code>]</span></code></dt>
+<dt><code><span class="parameter-name"><strong>description</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
 <dd>
-<p>list of scenario names where the event is used</p>
+<p>Description of the measure.</p>
 </dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.copy_event" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.copy_event">copy_event</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>api.events.copy_event(old_name: <span class="bu">str</span>, new_name: <span class="bu">str</span>, new_description: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Copy an event in the database.</p>
-<section id="parameters-1" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>old_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dt><code><span class="parameter-name"><strong>type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="../..\api_ref/MeasureType.html#flood_adapt.objects.MeasureType">MeasureType</a></span></code></dt>
 <dd>
-<p>The name of the event to copy.</p>
+<p>Type of measure. Should be “floodproof_properties”.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>new_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dt><code><span class="parameter-name"><strong>selection_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="../..\api_ref/SelectionType.html#flood_adapt.objects.SelectionType">SelectionType</a></span></code></dt>
 <dd>
-<p>The name of the new event.</p>
+<p>Type of selection. Should be “polygon” or “aggregation_area”.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>new_description</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
+<dt><code><span class="parameter-name"><strong>polygon_file</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<code>str</code>, <code>Optional</code>)</span></code></dt>
 <dd>
-<p>The description of the new event</p>
+<p>Path to a polygon file, either absolute or relative to the measure path.</p>
 </dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.create_event" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.create_event">create_event</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>api.events.create_event(attrs: <span class="bu">dict</span>[<span class="bu">str</span>, Any] <span class="op">|</span> Event)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Create a event object from a dictionary of attributes.</p>
-<section id="parameters-2" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>attrs</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Event.html#flood_adapt.object_model.Event">Event</a>[<code>str</code>, <code>Any</code>]</span></code></dt>
+<dt><code><span class="parameter-name"><strong>aggregation_area_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<code>str</code>, <code>Optional</code>)</span></code></dt>
 <dd>
-<p>Dictionary of attributes</p>
+<p>Type of aggregation area. Should be “aggregation_area” or “all”.</p>
 </dd>
-</dl>
-</section>
-<section id="returns-1" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
-<dl>
-<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Event.html#flood_adapt.object_model.Event">Event</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>aggregation_area_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<code>str</code>, <code>Optional</code>)</span></code></dt>
 <dd>
-<p>Depending on attrs.template an event object. Can be of type: Synthetic, Historical, Hurricane.</p>
+<p>Name of the aggregation area.</p>
 </dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.create_event_set" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.create_event_set">create_event_set</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>api.events.create_event_set(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    attrs: <span class="bu">dict</span>[<span class="bu">str</span>, Any] <span class="op">|</span> EventSet,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    sub_events: <span class="bu">list</span>[Event],</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Create a event set object from a dictionary of attributes.</p>
-<section id="parameters-3" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>attrs</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/EventSet.html#flood_adapt.object_model.EventSet">EventSet</a>[<code>str</code>, <code>Any</code>]</span></code></dt>
+<dt><code><span class="parameter-name"><strong>property_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
 <dd>
-<p>Dictionary of attributes</p>
+<p>Type of property. Should be “residential” or “commercial”.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>sub_events</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>list</code>[<a href="..\api_ref/Event.html#flood_adapt.object_model.Event">Event</a>]</span></code></dt>
+<dt><code><span class="parameter-name"><strong>elevation</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>UnitfulLengthRefValue</code></span></code></dt>
 <dd>
-<p>List of events in the event set</p>
-</dd>
-</dl>
-</section>
-<section id="returns-2" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
-<dl>
-<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/EventSet.html#flood_adapt.object_model.EventSet">EventSet</a></span></code></dt>
-<dd>
-<p>EventSet object</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.delete_event" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.delete_event">delete_event</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>api.events.delete_event(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Delete an event from the database.</p>
-<section id="parameters-4" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
-<dd>
-<p>The name of the event to delete.</p>
-</dd>
-</dl>
-</section>
-<section id="raises" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h4>
-<dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
-<dd>
-<p>If the event does not exist. If the event is used in a scenario.</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.download_wl_data" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.download_wl_data">download_wl_data</h3>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>api.events.download_wl_data(</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    tide_gauge: TideGauge,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    time: TimeFrame,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    units: us.UnitTypesLength,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    out_path: <span class="bu">str</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Download water level data from a station or tide gauge.</p>
-<section id="parameters-5" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>tide_gauge</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>TideGauge</code></span></code></dt>
-<dd>
-<p>Tide gauge object to download data from</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>time</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>TimeFrame</code></span></code></dt>
-<dd>
-<p>Time model object containing start and end time</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>units</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>UnitTypesLength</code></span></code></dt>
-<dd>
-<p>Units that data the returned data will be converted to</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>out_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
-<dd>
-<p>Path to save the data to</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.edit_event" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.edit_event">edit_event</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>api.events.edit_event(event: Event)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Edit an event object in the database.</p>
-<section id="parameters-6" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-6">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>event</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Event.html#flood_adapt.object_model.Event">Event</a></span></code></dt>
-<dd>
-<p>The event object to edit.</p>
-</dd>
-</dl>
-</section>
-<section id="raises-1" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-1">Raises</h4>
-<dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
-<dd>
-<p>If the event object does not exist. If the event is used in a scenario.</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.get_event" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.get_event">get_event</h3>
-<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>api.events.get_event(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Get an event from the database by name.</p>
-<section id="parameters-7" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-7">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
-<dd>
-<p>The name of the event to retrieve.</p>
-</dd>
-</dl>
-</section>
-<section id="returns-3" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
-<dl>
-<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Event.html#flood_adapt.object_model.Event">Event</a> | <a href="..\api_ref/EventSet.html#flood_adapt.object_model.EventSet">EventSet</a></span></code></dt>
-<dd>
-<p>The event with the given name.</p>
-</dd>
-</dl>
-</section>
-<section id="raises-2" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-2">Raises</h4>
-<dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
-<dd>
-<p>If the event with the given name does not exist.</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.get_event_mode" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.get_event_mode">get_event_mode</h3>
-<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>api.events.get_event_mode(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Get the mode of an event from the database by name.</p>
-<section id="parameters-8" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-8">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
-<dd>
-
-</dd>
-</dl>
-</section>
-<section id="returns-4" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
-<dl>
-<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>Mode</code></span></code></dt>
-<dd>
-<p>The mode of the event with the given name, either <code>risk</code> or <code>single_event</code>.</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.get_events" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.get_events">get_events</h3>
-<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>api.events.get_events()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Get all events from the database.</p>
-<section id="returns-5" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
-<dl>
-<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>dict</code>[<code>str</code>, <code>Any</code>]</span></code></dt>
-<dd>
-<p>A dictionary containing all events. Includes keys: ‘name’, ‘description’, ‘path’, ‘last_modification_date’, ‘objects’ Each value is a list of the corresponding attribute for each benefit.</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.plot_forcing" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.plot_forcing">plot_forcing</h3>
-<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>api.events.plot_forcing(event: Event, forcing_type: ForcingType)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Plot forcing data for an event.</p>
-<section id="parameters-9" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-9">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>event</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Event.html#flood_adapt.object_model.Event">Event</a></span></code></dt>
-<dd>
-<p>The event object</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>forcing_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ForcingType</code></span></code></dt>
-<dd>
-<p>The type of forcing data to plot</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.read_csv" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.read_csv">read_csv</h3>
-<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>api.events.read_csv(csvpath: Union[<span class="bu">str</span>, os.PathLike])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Read a csv file into a pandas DataFrame.</p>
-<section id="parameters-10" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-10">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>csvpath</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>Union</code>[<code>str</code>, <code>os</code>.<code>PathLike</code>]</span></code></dt>
-<dd>
-<p>Path to the csv file</p>
-</dd>
-</dl>
-</section>
-<section id="returns-6" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h4>
-<dl>
-<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>pd</code>.<code>DataFrame</code></span></code></dt>
-<dd>
-<p>DataFrame containing the data from the csv file</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.save_cyclone_track" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.save_cyclone_track">save_cyclone_track</h3>
-<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>api.events.save_cyclone_track(event: Event, track: TropicalCyclone)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Save cyclone track data to the event folder.</p>
-<section id="parameters-11" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-11">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>event</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Event.html#flood_adapt.object_model.Event">Event</a></span></code></dt>
-<dd>
-<p>The event object</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>track</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>TropicalCyclone</code></span></code></dt>
-<dd>
-<p>The cyclone track data</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.save_event" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.save_event">save_event</h3>
-<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>api.events.save_event(event: Event)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Save an event object to the database.</p>
-<section id="parameters-12" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-12">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>event</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Event.html#flood_adapt.object_model.Event">Event</a></span></code></dt>
-<dd>
-<p>The event object to save.</p>
-</dd>
-</dl>
-</section>
-<section id="raises-3" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-3">Raises</h4>
-<dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>ValueError</code></span></code></dt>
-<dd>
-<p>If the event object is not valid.</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.api.events.save_timeseries_csv" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.events.save_timeseries_csv">save_timeseries_csv</h3>
-<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>api.events.save_timeseries_csv(name: <span class="bu">str</span>, event: Event, df: pd.DataFrame)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Save timeseries data to a csv file.</p>
-<section id="parameters-13" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-13">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>str</code></span></code></dt>
-<dd>
-<p>Name of the event</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>event</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Event.html#flood_adapt.object_model.Event">Event</a></span></code></dt>
-<dd>
-<p>Event object</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>df</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>pd</code>.<code>DataFrame</code></span></code></dt>
-<dd>
-<p>Dataframe of timeseries data</p>
+<p>Elevation of the properties.</p>
 </dd>
 </dl>
 
 
-</section>
-</section>
 </section>
 </section>
 
@@ -1734,13 +1290,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../api_ref/database_builder.html" class="pagination-link" aria-label="database_builder">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">database_builder</span>
+      <a href="../../api_ref/objects/Elevate.html" class="pagination-link" aria-label="Elevate">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Elevate</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../api_ref/measures.html" class="pagination-link" aria-label="measures">
-        <span class="nav-page-text">measures</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../../api_ref/objects/Strategy.html" class="pagination-link" aria-label="Strategy">
+        <span class="nav-page-text">Strategy</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
@@ -1748,11 +1304,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></p>
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/events.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/objects/FloodProof.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>

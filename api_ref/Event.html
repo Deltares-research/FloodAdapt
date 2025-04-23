@@ -170,14 +170,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.object_model.Event" id="toc-flood_adapt.object_model.Event" class="nav-link active" data-scroll-target="#flood_adapt.object_model.Event">Event</a>
+  <li><a href="#flood_adapt.objects.Event" id="toc-flood_adapt.objects.Event" class="nav-link active" data-scroll-target="#flood_adapt.objects.Event">Event</a>
   <ul class="collapse">
   <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
-  <li><a href="#flood_adapt.object_model.Event.get_forcings" id="toc-flood_adapt.object_model.Event.get_forcings" class="nav-link" data-scroll-target="#flood_adapt.object_model.Event.get_forcings">get_forcings</a></li>
-  <li><a href="#flood_adapt.object_model.Event.load_file" id="toc-flood_adapt.object_model.Event.load_file" class="nav-link" data-scroll-target="#flood_adapt.object_model.Event.load_file">load_file</a></li>
-  <li><a href="#flood_adapt.object_model.Event.save_additional" id="toc-flood_adapt.object_model.Event.save_additional" class="nav-link" data-scroll-target="#flood_adapt.object_model.Event.save_additional">save_additional</a></li>
+  <li><a href="#flood_adapt.objects.Event.get_forcings" id="toc-flood_adapt.objects.Event.get_forcings" class="nav-link" data-scroll-target="#flood_adapt.objects.Event.get_forcings">get_forcings</a></li>
+  <li><a href="#flood_adapt.objects.Event.load_file" id="toc-flood_adapt.objects.Event.load_file" class="nav-link" data-scroll-target="#flood_adapt.objects.Event.load_file">load_file</a></li>
+  <li><a href="#flood_adapt.objects.Event.save_additional" id="toc-flood_adapt.objects.Event.save_additional" class="nav-link" data-scroll-target="#flood_adapt.objects.Event.save_additional">save_additional</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -189,9 +189,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="flood_adapt.object_model.Event" class="level1">
+<section id="flood_adapt.objects.Event" class="level1">
 <h1>Event</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.Event()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>objects.Event()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The accepted input for an event in FloodAdapt.</p>
 <section id="attributes" class="level2 doc-section doc-section-attributes">
 <h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
@@ -237,27 +237,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#flood_adapt.object_model.Event.get_forcings">get_forcings</a></td>
+<td><a href="#flood_adapt.objects.Event.get_forcings">get_forcings</a></td>
 <td>Return a list of all forcings in the event.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.object_model.Event.load_file">load_file</a></td>
+<td><a href="#flood_adapt.objects.Event.load_file">load_file</a></td>
 <td>Load object from file.</td>
 </tr>
 <tr class="odd">
-<td><a href="#flood_adapt.object_model.Event.save_additional">save_additional</a></td>
+<td><a href="#flood_adapt.objects.Event.save_additional">save_additional</a></td>
 <td>Save any additional files associated with the event.</td>
 </tr>
 </tbody>
 </table>
-<section id="flood_adapt.object_model.Event.get_forcings" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.Event.get_forcings">get_forcings</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>object_model.Event.get_forcings()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="flood_adapt.objects.Event.get_forcings" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.Event.get_forcings">get_forcings</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.Event.get_forcings()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return a list of all forcings in the event.</p>
 </section>
-<section id="flood_adapt.object_model.Event.load_file" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.Event.load_file">load_file</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>object_model.Event.load_file(file_path: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="flood_adapt.objects.Event.load_file" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.Event.load_file">load_file</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>objects.Event.load_file(file_path: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Load object from file.</p>
 <section id="parameters" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
@@ -269,9 +269,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dl>
 </section>
 </section>
-<section id="flood_adapt.object_model.Event.save_additional" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.Event.save_additional">save_additional</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>object_model.Event.save_additional(output_dir: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="flood_adapt.objects.Event.save_additional" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.Event.save_additional">save_additional</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>objects.Event.save_additional(output_dir: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Save any additional files associated with the event.</p>
 
 

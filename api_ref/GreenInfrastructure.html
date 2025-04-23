@@ -170,13 +170,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.object_model.GreenInfrastructure" id="toc-flood_adapt.object_model.GreenInfrastructure" class="nav-link active" data-scroll-target="#flood_adapt.object_model.GreenInfrastructure">GreenInfrastructure</a>
+  <li><a href="#flood_adapt.objects.GreenInfrastructure" id="toc-flood_adapt.objects.GreenInfrastructure" class="nav-link active" data-scroll-target="#flood_adapt.objects.GreenInfrastructure">GreenInfrastructure</a>
   <ul class="collapse">
   <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
-  <li><a href="#flood_adapt.object_model.GreenInfrastructure.calculate_polygon_area" id="toc-flood_adapt.object_model.GreenInfrastructure.calculate_polygon_area" class="nav-link" data-scroll-target="#flood_adapt.object_model.GreenInfrastructure.calculate_polygon_area">calculate_polygon_area</a></li>
-  <li><a href="#flood_adapt.object_model.GreenInfrastructure.calculate_volume" id="toc-flood_adapt.object_model.GreenInfrastructure.calculate_volume" class="nav-link" data-scroll-target="#flood_adapt.object_model.GreenInfrastructure.calculate_volume">calculate_volume</a></li>
+  <li><a href="#flood_adapt.objects.GreenInfrastructure.calculate_polygon_area" id="toc-flood_adapt.objects.GreenInfrastructure.calculate_polygon_area" class="nav-link" data-scroll-target="#flood_adapt.objects.GreenInfrastructure.calculate_polygon_area">calculate_polygon_area</a></li>
+  <li><a href="#flood_adapt.objects.GreenInfrastructure.calculate_volume" id="toc-flood_adapt.objects.GreenInfrastructure.calculate_volume" class="nav-link" data-scroll-target="#flood_adapt.objects.GreenInfrastructure.calculate_volume">calculate_volume</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -188,9 +188,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="flood_adapt.object_model.GreenInfrastructure" class="level1">
+<section id="flood_adapt.objects.GreenInfrastructure" class="level1">
 <h1>GreenInfrastructure</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.GreenInfrastructure()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>objects.GreenInfrastructure()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The expected variables and data types of the “green infrastructure” hazard measure.</p>
 <section id="attributes" class="level2 doc-section doc-section-attributes">
 <h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
@@ -203,19 +203,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <dd>
 <p>Description of the measure.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/MeasureType.html#flood_adapt.object_model.MeasureType">MeasureType</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/MeasureType.html#flood_adapt.objects.MeasureType">MeasureType</a></span></code></dt>
 <dd>
 <p>Type of measure. Should be “greening”</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>selection_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/SelectionType.html#flood_adapt.object_model.SelectionType">SelectionType</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>selection_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/SelectionType.html#flood_adapt.objects.SelectionType">SelectionType</a></span></code></dt>
 <dd>
 <p>Type of selection. Should be “polygon” or “aggregation_area”.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>height</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<code>us</code>.<a href="..\api_ref/UnitfulHeight.html#flood_adapt.object_model.io.unit_system.UnitfulHeight">UnitfulHeight</a>, <code>Optional</code>)</span></code></dt>
+<dt><code><span class="parameter-name"><strong>height</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<code>us</code>.<a href="..\api_ref/UnitfulHeight.html#flood_adapt.unit_system.UnitfulHeight">UnitfulHeight</a>, <code>Optional</code>)</span></code></dt>
 <dd>
 <p>Height of the green infrastructure.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>volume</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<code>us</code>.<a href="..\api_ref/UnitfulVolume.html#flood_adapt.object_model.io.unit_system.UnitfulVolume">UnitfulVolume</a>, <code>Optional</code>)</span></code></dt>
+<dt><code><span class="parameter-name"><strong>volume</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<code>us</code>.<a href="..\api_ref/UnitfulVolume.html#flood_adapt.unit_system.UnitfulVolume">UnitfulVolume</a>, <code>Optional</code>)</span></code></dt>
 <dd>
 <p>Volume of the green infrastructure.</p>
 </dd>
@@ -248,18 +248,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#flood_adapt.object_model.GreenInfrastructure.calculate_polygon_area">calculate_polygon_area</a></td>
+<td><a href="#flood_adapt.objects.GreenInfrastructure.calculate_polygon_area">calculate_polygon_area</a></td>
 <td>Calculate area of a GeoDataFrame Polygon.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.object_model.GreenInfrastructure.calculate_volume">calculate_volume</a></td>
+<td><a href="#flood_adapt.objects.GreenInfrastructure.calculate_volume">calculate_volume</a></td>
 <td>Determine volume from area of the polygon and infiltration height.</td>
 </tr>
 </tbody>
 </table>
-<section id="flood_adapt.object_model.GreenInfrastructure.calculate_polygon_area" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.GreenInfrastructure.calculate_polygon_area">calculate_polygon_area</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>object_model.GreenInfrastructure.calculate_polygon_area(</span>
+<section id="flood_adapt.objects.GreenInfrastructure.calculate_polygon_area" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.GreenInfrastructure.calculate_polygon_area">calculate_polygon_area</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.GreenInfrastructure.calculate_polygon_area(</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    gdf: gpd.GeoDataFrame,</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    site: Site,</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -287,9 +287,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dl>
 </section>
 </section>
-<section id="flood_adapt.object_model.GreenInfrastructure.calculate_volume" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.GreenInfrastructure.calculate_volume">calculate_volume</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>object_model.GreenInfrastructure.calculate_volume(</span>
+<section id="flood_adapt.objects.GreenInfrastructure.calculate_volume" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.GreenInfrastructure.calculate_volume">calculate_volume</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>objects.GreenInfrastructure.calculate_volume(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    area: us.UnitfulArea,</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    height: us.UnitfulHeight,</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    percent_area: <span class="bu">float</span> <span class="op">=</span> <span class="fl">100.0</span>,</span>
@@ -298,11 +298,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="parameters-1" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
 <dl>
-<dt><code><span class="parameter-name"><strong>area</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>us</code>.<a href="..\api_ref/UnitfulArea.html#flood_adapt.object_model.io.unit_system.UnitfulArea">UnitfulArea</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>area</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>us</code>.<a href="..\api_ref/UnitfulArea.html#flood_adapt.unit_system.UnitfulArea">UnitfulArea</a></span></code></dt>
 <dd>
 <p>Area of polygon with units (calculated using calculate_polygon_area)</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>height</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>us</code>.<a href="..\api_ref/UnitfulHeight.html#flood_adapt.object_model.io.unit_system.UnitfulHeight">UnitfulHeight</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>height</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>us</code>.<a href="..\api_ref/UnitfulHeight.html#flood_adapt.unit_system.UnitfulHeight">UnitfulHeight</a></span></code></dt>
 <dd>
 <p>Water height with units</p>
 </dd>
