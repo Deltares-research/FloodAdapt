@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 
 from flood_adapt import __path__
-from flood_adapt.api.static import read_database
-from flood_adapt.misc.config import Settings
+from flood_adapt.config.config import Settings
+from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.log import FloodAdaptLogging
 from tests.data.create_test_input import update_database_input
 from tests.data.create_test_static import update_database_static
@@ -147,13 +147,13 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        dbs = read_database(Settings().database_root, Settings().database_name)
+        fa = FloodAdapt(Settings().database_path)
 
         # Perform tests
-        yield dbs
+        yield fa.database
 
         # Teardown
-        dbs.shutdown()
+        fa.database.shutdown()
         if clean:
             restore_db_from_snapshot()
 
@@ -171,6 +171,69 @@ test_db_class = make_db_fixture("class")
 test_db_module = make_db_fixture("module")
 test_db_package = make_db_fixture("package")
 test_db_session = make_db_fixture("session")
+
+
+def make_fa_fixture(scope):
+    """
+    Generate a fixture that is used for testing in general.
+
+    Parameters
+    ----------
+    scope : str
+        The scope of the fixture (e.g., "function", "class", "module", "package", "session")
+
+    Returns
+    -------
+    _db_fixture : pytest.fixture
+        The database fixture used for testing
+    """
+    if scope not in ["function", "class", "module", "package", "session"]:
+        raise ValueError(f"Invalid fixture scope: {scope}")
+
+    @pytest.fixture(scope=scope)
+    def _db_fixture():
+        """
+        Fixture for setting up and tearing down the database once per scope.
+
+        Every test session:
+            1) Create a snapshot of the database
+            2) Run all tests
+            3) Restore the database from the snapshot
+
+        Every scope:
+            1) Initialize database controller
+            2) Perform all tests in scope
+            3) Restore the database from the snapshot
+
+        Usage
+        ----------
+        To access the fixture in a test , you need to:
+            1) pass the fixture name as an argument to the test function
+            2) directly use as a the database object:
+                def test_some_test(test_db):
+                    something = test_db.get_something()
+                    some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
+                    assert ...
+        """
+        # Setup
+        fa = FloodAdapt(Settings().database_path)
+
+        # Perform tests
+        yield fa
+
+        # Teardown
+        fa.database.shutdown()
+        if clean:
+            restore_db_from_snapshot()
+
+    return _db_fixture
+
+
+test_fa = make_fa_fixture("function")
+test_fa_class = make_fa_fixture("class")
+test_fa_module = make_fa_fixture("module")
+test_fa_package = make_fa_fixture("package")
+test_fa_session = make_fa_fixture("session")
 
 
 @pytest.fixture

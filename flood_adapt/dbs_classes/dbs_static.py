@@ -7,9 +7,9 @@ from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
-from flood_adapt.misc.config import Settings
 
 
 def cache_method_wrapper(func: Callable) -> Callable:
@@ -144,7 +144,7 @@ class DbsStatic(IDbsStatic):
             List of scenario names
         """
         input_file = self._database.static_path.joinpath(
-            self._database.site.sfincs.slr.scenarios.file
+            self._database.site.sfincs.slr_scenarios.file
         )
         df = pd.read_csv(input_file)
         names = df.columns[2:].to_list()

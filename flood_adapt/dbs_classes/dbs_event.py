@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.interface.events import Event
+from flood_adapt.objects.events.event_factory import EventFactory
+from flood_adapt.objects.events.events import Event
 
 
 class DbsEvent(DbsTemplate[Event]):

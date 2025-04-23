@@ -55,6 +55,7 @@ dynamic = ["version"]
 dev = [
     "pytest",
     "pytest-cov",
+    "pytest-timeout",
     "pre-commit == 3.8.0",
     "ruff       == 0.5.5",
     "typos      == 1.23.6",
@@ -97,6 +98,8 @@ flood_adapt = ["py.typed", "database_builder/**"]
 [tool.pytest.ini_options]
 addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
 testpaths = ["tests"]
+timeout = 300 # hard max of 5 minutes per test
+timeout_func_only = true # only timeout the test function, not the setup/teardown
 
 ### pixi ###
 [tool.pixi.pypi-dependencies]
