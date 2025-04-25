@@ -2,9 +2,8 @@ import gc
 import os
 import shutil
 import time
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 import geopandas as gpd
 import numpy as np
@@ -566,7 +565,12 @@ class Database(IDatabase):
             gdfs[label] = gdfs[label].to_crs(4326)
         return gdfs
 
-    def get_object_list(self, object_type: str) -> dict[str, Any]:
+    def get_object_list(
+        self,
+        object_type: Literal[
+            "projections", "events", "measures", "strategies", "scenarios", "benefits"
+        ],
+    ) -> dict[str, Any]:
         """Get a dictionary with all the toml paths and last modification dates that exist in the database that correspond to object_type.
 
         Parameters
@@ -579,20 +583,23 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'path' and 'last_modification_date' info
         """
-        paths = [
-            path / f"{path.name}.toml"
-            for path in list((self.input_path / object_type).iterdir())
-        ]
-        last_modification_date = [
-            datetime.fromtimestamp(file.stat().st_mtime) for file in paths
-        ]
-
-        objects = {
-            "path": paths,
-            "last_modification_date": last_modification_date,
-        }
-
-        return objects
+        match object_type:
+            case "projections":
+                return self.projections.list_objects()
+            case "events":
+                return self.events.list_objects()
+            case "measures":
+                return self.measures.list_objects()
+            case "strategies":
+                return self.strategies.list_objects()
+            case "scenarios":
+                return self.scenarios.list_objects()
+            case "benefits":
+                return self.benefits.list_objects()
+            case _:
+                raise ValueError(
+                    f"Object type '{object_type}' is not valid. Must be one of 'projections', 'events', 'measures', 'strategies' or 'scenarios'."
+                )
 
     def has_run_hazard(self, scenario_name: str) -> None:
         """Check if there is already a simulation that has the exact same hazard component.

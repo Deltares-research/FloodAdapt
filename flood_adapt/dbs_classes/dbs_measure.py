@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 
 import geopandas as gpd
@@ -26,9 +27,15 @@ class DbsMeasure(DbsTemplate[Measure]):
         Measure
             measure object
         """
-        measure_path = self.input_path / name / f"{name}.toml"
-        measure = MeasureFactory.get_measure_object(measure_path)
-        return measure
+        # Make the full path to the object
+        full_path = self.input_path / name / f"{name}.toml"
+
+        # Check if the object exists
+        if not Path(full_path).is_file():
+            raise ValueError(f"{self.display_name}: '{name}' does not exist.")
+
+        # Load and return the object
+        return MeasureFactory.get_measure_object(full_path)
 
     def list_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the measures that currently exist in the database.
@@ -39,14 +46,15 @@ class DbsMeasure(DbsTemplate[Measure]):
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         measures = self._get_object_list()
-        objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
+        objects = [self.get(name) for name in measures["name"]]
+
         measures["description"] = [obj.description for obj in objects]
         measures["objects"] = objects
 
         geometries = []
-        for path, obj in zip(measures["path"], objects):
+        for obj in objects:
             # If polygon is used read the polygon file
-            if obj.polygon_file:
+            if hasattr(obj, "polygon_file") and obj.polygon_file:
                 src_path = resolve_filepath(
                     object_dir=self.dir_name,
                     obj_name=obj.name,
@@ -54,7 +62,7 @@ class DbsMeasure(DbsTemplate[Measure]):
                 )
                 geometries.append(gpd.read_file(src_path))
             # If aggregation area is used read the polygon from the aggregation area name
-            elif obj.aggregation_area_name:
+            elif hasattr(obj, "aggregation_area_name") and obj.aggregation_area_name:
                 if (
                     obj.aggregation_area_type
                     not in self._database.static.get_aggregation_areas()

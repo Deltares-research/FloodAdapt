@@ -200,7 +200,7 @@ class Event(Object):
                     f"Allowed sources are: {allowed_sources}"
                 )
 
-        if Settings().validate_allowed_forcings:
+        if Settings().validate_allowed_forcings and hasattr(self, "ALLOWED_FORCINGS"):
             # Validate forcings
             for _, concrete_forcings in self.forcings.items():
                 for concrete_forcing in concrete_forcings:

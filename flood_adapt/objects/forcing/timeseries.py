@@ -331,15 +331,21 @@ class BlockTimeseries(SyntheticTimeseries):
             end=(REFERENCE_TIME + self.end_time.to_timedelta()),
             freq=time_step,
         )
-        ts = np.zeros((len(tt),)) + self.peak_value.value
+        if self.peak_value:
+            height_value = self.peak_value.value
+        elif self.cumulative:
+            area = self.cumulative.value
+            base = self.duration.convert(
+                us.UnitTypesTime.hours
+            )  # always expect duration in hours
+            height_value = area / base
+
+        ts = np.zeros((len(tt),)) + height_value
         return ts
 
     @model_validator(mode="after")
     def validate_attrs(self):
-        if not self.peak_value:
-            raise ValueError(
-                f"{self.__class__.__name__} must have `peak_value` specified. {self.peak_value}"
-            )
+        # either peak_value or cumulative must be set, which is already checked in the parent class: `either_value_or_cumulative`
         return self
 
 
@@ -355,17 +361,26 @@ class TriangleTimeseries(SyntheticTimeseries):
             freq=time_step,
         )
         tt_seconds = (tt - REFERENCE_TIME).total_seconds()
+        peak_time = self.peak_time.to_timedelta().total_seconds()
+        start_time = self.start_time.to_timedelta().total_seconds()
+
+        if self.peak_value:
+            height_value = self.peak_value.value
+        elif self.cumulative:
+            area = self.cumulative.value
+            base = self.duration.convert(
+                us.UnitTypesTime.hours
+            )  # always expect duration in hours
+            height_value = (2 * area) / base
 
         ascending_slope = (
-            self.peak_value.value
+            height_value
             / (self.peak_time - self.start_time).to_timedelta().total_seconds()
         )
         descending_slope = (
-            -self.peak_value.value
+            -height_value
             / (self.end_time - self.peak_time).to_timedelta().total_seconds()
         )
-        peak_time = self.peak_time.to_timedelta().total_seconds()
-        start_time = self.start_time.to_timedelta().total_seconds()
 
         ts = np.piecewise(
             tt_seconds,
@@ -373,7 +388,7 @@ class TriangleTimeseries(SyntheticTimeseries):
             [
                 lambda x: np.maximum(ascending_slope * (x - start_time), 0),
                 lambda x: np.maximum(
-                    descending_slope * (x - peak_time) + self.peak_value.value, 0
+                    descending_slope * (x - peak_time) + height_value, 0
                 ),
                 0,
             ],
@@ -382,10 +397,7 @@ class TriangleTimeseries(SyntheticTimeseries):
 
     @model_validator(mode="after")
     def validate_attrs(self):
-        if not self.peak_value:
-            raise ValueError(
-                f"{self.__class__.__name__} must have `peak_value` specified. {self.peak_value}"
-            )
+        # either peak_value or cumulative must be set, which is already checked in the parent class: `either_value_or_cumulative`
         return self
 
 
@@ -549,4 +561,4 @@ class TimeseriesFactory:
 
     @staticmethod
     def from_object(obj: SyntheticTimeseries) -> SyntheticTimeseries:
-        return TimeseriesFactory.from_args(**obj.model_dump())
+        return TimeseriesFactory.from_args(**obj.model_dump(exclude_none=True))
