@@ -19,6 +19,7 @@ from flood_adapt.objects.forcing.timeseries import (
     ScsTimeseries,
     ShapeType,
     TimeseriesFactory,
+    TriangleTimeseries,
 )
 
 
@@ -499,5 +500,117 @@ class TestGaussian:
         assert data.shape[0] > 0, "Time series should have data points"
         assert np.isclose(
             np.amax(data), ts.peak_value.value, atol=1e-3
-        ), f"Integral should be close to cumulative value. {np.trapz(data, time_step)} != {ts.peak_value.value}"
+        ), f"Largest value should be close to peak_value. {np.amax(data)} != {ts.peak_value.value}"
+        assert np.all(data >= 0), "All values should be non-negative"
+
+
+class TestBlock:
+    _TEST_ATTRS = permutations([1, 10, 100, 1000], r=3)
+
+    @pytest.mark.parametrize(
+        "cumulative, duration, time_step",
+        _TEST_ATTRS,
+    )
+    def test_cumulative_is_correct(self, cumulative, duration, time_step):
+        # Act
+        time_step /= 100  # to make sure we have enough data points
+        ts = BlockTimeseries(
+            shape_type=ShapeType.gaussian,
+            duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
+            peak_time=us.UnitfulTime(value=duration / 2, units=us.UnitTypesTime.hours),
+            cumulative=us.UnitfulLength(
+                value=cumulative, units=us.UnitTypesLength.millimeters
+            ),
+        )
+
+        data = ts.calculate_data(time_step=timedelta(seconds=time_step))
+
+        assert data.shape[0] > 0, "Time series should have data points"
+        assert np.isclose(
+            np.trapz(
+                data, dx=time_step / 3600
+            ),  # divide by 3600 to convert seconds to hours, rainfall units are in [inch | mm | ...] / hr
+            ts.cumulative.value,
+            atol=1e-3,
+        ), f"Integral should be close to cumulative value. {np.trapz(data, time_step / 3600)} != {ts.cumulative.value}"
+        assert np.all(data >= 0), "All values should be non-negative"
+
+    @pytest.mark.parametrize(
+        "peak_value, duration, time_step",
+        _TEST_ATTRS,
+    )
+    def test_peak_value_is_correct(self, peak_value, duration, time_step):
+        # Act
+        time_step /= 100  # to make sure we have enough data points
+        ts = BlockTimeseries(
+            shape_type=ShapeType.gaussian,
+            duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
+            peak_time=us.UnitfulTime(value=duration / 2, units=us.UnitTypesTime.hours),
+            peak_value=us.UnitfulIntensity(
+                value=peak_value, units=us.UnitTypesIntensity.mm_hr
+            ),
+        )
+
+        data = ts.calculate_data(time_step=timedelta(seconds=time_step))
+
+        assert data.shape[0] > 0, "Time series should have data points"
+        assert np.all(
+            data == ts.peak_value.value
+        ), f"All values of Block timeseries should be equal to peak value. {np.amax(data)} != {ts.peak_value.value}"
+        assert np.all(data >= 0), "All values should be non-negative"
+
+
+class TestTriangle:
+    _TEST_ATTRS = permutations([1, 10, 100, 1000], r=3)
+
+    @pytest.mark.parametrize(
+        "cumulative, duration, time_step",
+        _TEST_ATTRS,
+    )
+    def test_cumulative_is_correct(self, cumulative, duration, time_step):
+        # Act
+        time_step /= 100  # to make sure we have enough data points
+        ts = TriangleTimeseries(
+            shape_type=ShapeType.gaussian,
+            duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
+            peak_time=us.UnitfulTime(value=duration / 2, units=us.UnitTypesTime.hours),
+            cumulative=us.UnitfulLength(
+                value=cumulative, units=us.UnitTypesLength.millimeters
+            ),
+        )
+
+        data = ts.calculate_data(time_step=timedelta(seconds=time_step))
+
+        assert data.shape[0] > 0, "Time series should have data points"
+        assert np.isclose(
+            np.trapz(
+                data, dx=time_step / 3600
+            ),  # divide by 3600 to convert seconds to hours, rainfall units are in [inch | mm | ...] / hr
+            ts.cumulative.value,
+            atol=1e-3,
+        ), f"Integral should be close to cumulative value. {np.trapz(data, time_step / 3600)} != {ts.cumulative.value}"
+        assert np.all(data >= 0), "All values should be non-negative"
+
+    @pytest.mark.parametrize(
+        "peak_value, duration, time_step",
+        _TEST_ATTRS,
+    )
+    def test_peak_value_is_correct(self, peak_value, duration, time_step):
+        # Act
+        time_step /= 100  # to make sure we have enough data points
+        ts = TriangleTimeseries(
+            shape_type=ShapeType.gaussian,
+            duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
+            peak_time=us.UnitfulTime(value=duration / 2, units=us.UnitTypesTime.hours),
+            peak_value=us.UnitfulIntensity(
+                value=peak_value, units=us.UnitTypesIntensity.mm_hr
+            ),
+        )
+
+        data = ts.calculate_data(time_step=timedelta(seconds=time_step))
+
+        assert data.shape[0] > 0, "Time series should have data points"
+        assert np.isclose(
+            np.amax(data), ts.peak_value.value
+        ), f"The largest value of Triangle timeseries should be equal to peak value. {np.amax(data)} != {ts.peak_value.value}"
         assert np.all(data >= 0), "All values should be non-negative"

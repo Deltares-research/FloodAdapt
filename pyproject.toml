@@ -29,13 +29,14 @@ dependencies = [
     "cht-meteo          ==0.3.1",
     "cht-observations   ==0.2.1",
     "cht-tide           ==0.1.1",
-    "dask               ==2024.11.2",
+    "dask               ==2024.11.2",   # not a dependency, but a we need to use this version
+    "numba_celltree     ==0.2.2",       # not a dependency, but a we need to use this version
     "fiat-toolbox       ==0.1.17",
     "fiona              >=1.0,<2.0",
     "geojson            >=3.0,<4.0",
     "geopandas          >=1.0,<2.0",
     "hydromt-fiat       ==0.5.4",
-    "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git",
+    "hydromt-sfincs     ==1.2.0",
     "numpy              >=1.0,<2.0",
     "numpy-financial    >=1.0,<2.0",
     "pandas             >=2.0,<3.0",
@@ -94,11 +95,14 @@ flood_adapt = ["py.typed", "database_builder/**"]
 [tool.pytest.ini_options]
 addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
 testpaths = ["tests"]
-timeout = 300 # hard max of 5 minutes per test
+timeout = 600 # hard max of 10 minutes per test to avoid hanging tests
 timeout_func_only = true # only timeout the test function, not the setup/teardown
 
 ### pixi ###
 [tool.pixi.pypi-dependencies]
+flood_adapt = {path = "."}
+
+[tool.pixi.feature.dev.pypi-dependencies]
 flood_adapt = {path = ".", editable = true }
 
 [tool.pixi.feature.py312.dependencies]
@@ -129,6 +133,9 @@ all = { features = ["all"], solve-group = "py311" }
 install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"]}
 pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"]}
 tests = {cmd = "pytest tests"}
+
+[tool.pixi.feature.build.tasks]
+build-db-builder = {cmd = "python distribution/build_database_builder_executable.py"}
 
 [tool.pixi.feature.docs.tasks]
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }

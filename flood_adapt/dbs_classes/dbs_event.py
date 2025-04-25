@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.objects.events.event_factory import EventFactory
@@ -33,20 +32,6 @@ class DbsEvent(DbsTemplate[Event]):
 
         # Load event
         return EventFactory.load_file(event_path)
-
-    def list_objects(self) -> dict[str, list[Any]]:
-        """Return a dictionary with info on the events that currently exist in the database.
-
-        Returns
-        -------
-        dict[str, Any]
-            Includes 'name', 'description', 'path' and 'last_modification_date' info
-        """
-        events = self._get_object_list()
-        objects = [self.get(name) for name in events["name"]]
-        events["description"] = [obj.description for obj in objects]
-        events["objects"] = objects
-        return events
 
     def _check_standard_objects(self, name: str) -> bool:
         """Check if an event is a standard event.
