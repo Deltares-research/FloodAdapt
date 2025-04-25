@@ -60,10 +60,9 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         object_list = self._get_object_list()
 
         # Load all objects
-        objects = [self._object_class.load_file(path) for path in object_list["path"]]
+        objects = [self.get(name) for name in object_list["name"]]
 
-        # From the loaded objects, get the name and description and add them to the object_list
-        object_list["name"] = [obj.name for obj in objects]
+        # From the loaded objects, get the description and add them to the object_list
         object_list["description"] = [obj.description for obj in objects]
         object_list["objects"] = objects
         return object_list
@@ -248,7 +247,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         Returns
         -------
         dict[str, Any]
-            A dictionary that contains the keys: `name` to 'path' and 'last_modification_date'
+            A dictionary that contains the keys: `name` to `path` and `last_modification_date`
             Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
         """
         # If the toml doesnt exist, we might be in the middle of saving a new object or could be a broken object.
