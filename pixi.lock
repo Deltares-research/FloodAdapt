@@ -76,7 +76,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -97,7 +97,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/97/c8/8740616c8436c86c1b9a62e72cb891177d2c34c2d24ddcde4c390371bf4c/numba-0.61.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a9/1b/ca2684a58de6ba981d549d70c814fa56ddfdd9ed20796daa3365493bf552/numcodecs-0.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/3a/d0/edc009c27b406c4f9cbc79274d6e46d634d139075492ad055e3d68445925/numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -146,7 +146,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/2f/63d2cacc0e525f8e3398bcf32bd3620385f22cd1600834ec49d7f3597a7b/rioxarray-0.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/32/ea/564bacc26b676c06a00266a3f25fdfe91a9d9a2532ccea7ce6dd394541bc/scipy-1.15.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/92/07/3e2738c542d73182066196b8ce99388cb537d19e300e428d50b1537e3b21/shapely-2.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -236,7 +235,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -257,7 +256,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0f/a4/2b309a6a9f6d4d8cfba583401c7c2f9ff887adb5d54d8e2e130274c0973f/numba-0.61.2-cp311-cp311-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bd/ee/34d119420bd807d96f13d701ced7bc515af493ff1f4fc2b114d827c36b68/numcodecs-0.16.0-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/3f/6b/5610004206cf7f8e7ad91c5a85a8c71b2f2f8051a0c0c4d5916b76d6cbb2/numpy-1.26.4-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -306,7 +305,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/2f/63d2cacc0e525f8e3398bcf32bd3620385f22cd1600834ec49d7f3597a7b/rioxarray-0.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b9/8b/7ec1832b09dbc88f3db411f8cdd47db04505c4b72c99b11c920a8f0479c3/scipy-1.15.2-cp311-cp311-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fd/28/7bb5b1944d4002d4b2f967762018500381c3b532f98e456bbda40c3ded68/shapely-2.1.0-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -413,7 +411,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9f/cb/18326d2d89ad3b0dd143da971e77afd1e6ca6674f1b1c3df4b6bec6279fc/id-1.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -444,7 +442,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/11/a9/1cd3c6964ec51daed7b01ca4686a5c793581bf4492cbd7274b3f544c9abe/nh3-0.2.21-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/97/c8/8740616c8436c86c1b9a62e72cb891177d2c34c2d24ddcde4c390371bf4c/numba-0.61.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a9/1b/ca2684a58de6ba981d549d70c814fa56ddfdd9ed20796daa3365493bf552/numcodecs-0.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/3a/d0/edc009c27b406c4f9cbc79274d6e46d634d139075492ad055e3d68445925/numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -597,7 +595,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9f/cb/18326d2d89ad3b0dd143da971e77afd1e6ca6674f1b1c3df4b6bec6279fc/id-1.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -627,7 +625,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/23/fc/8ce756c032c70ae3dd1d48a3552577a325475af2a2f629604b44f571165c/nh3-0.2.21-cp38-abi3-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0f/a4/2b309a6a9f6d4d8cfba583401c7c2f9ff887adb5d54d8e2e130274c0973f/numba-0.61.2-cp311-cp311-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bd/ee/34d119420bd807d96f13d701ced7bc515af493ff1f4fc2b114d827c36b68/numcodecs-0.16.0-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/3f/6b/5610004206cf7f8e7ad91c5a85a8c71b2f2f8051a0c0c4d5916b76d6cbb2/numpy-1.26.4-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -789,7 +787,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -810,7 +808,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9a/2d/e518df036feab381c23a624dac47f8445ac55686ec7f11083655eb707da3/numba-0.61.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e1/12/fdf9e90a6e6e30f1dafb26da0a96ed2a0db0fafd499dfa0a11f64e830ec5/numcodecs-0.16.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/0f/50/de23fde84e45f5c4fda2488c759b69990fd4512387a8632860f3ac9cd225/numpy-1.26.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -859,7 +857,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/2f/63d2cacc0e525f8e3398bcf32bd3620385f22cd1600834ec49d7f3597a7b/rioxarray-0.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c0/53/eaada1a414c026673eb983f8b4a55fe5eb172725d33d62c1b21f63ff6ca4/scipy-1.15.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/34/49/738e07d10bbc67cae0dcfe5a484c6e518a517f4f90550dda2adf3a78b9f2/shapely-2.1.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -949,7 +946,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -970,7 +967,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/68/1d/ddb3e704c5a8fb90142bf9dc195c27db02a08a99f037395503bfbc1d14b3/numba-0.61.2-cp312-cp312-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/71/1f/8ed7a822c17dd17d63bbb70f74e09a033c9d9a1a85a06ec4a0a29f3e4d1c/numcodecs-0.16.0-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/16/2e/86f24451c2d530c88daf997cb8d6ac622c1d40d19f5a031ed68a4b73a374/numpy-1.26.4-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -1019,7 +1016,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/2f/63d2cacc0e525f8e3398bcf32bd3620385f22cd1600834ec49d7f3597a7b/rioxarray-0.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f5/6f/e6e5aff77ea2a48dd96808bb51d7450875af154ee7cbe72188afb0b37929/scipy-1.15.2-cp312-cp312-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b8/bd/9249bd6dda948441e25e4fb14cbbb5205146b0fff12c66b19331f1ff2141/shapely-2.1.0-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -1125,7 +1121,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2b/d3/85feeba1d097b81a44bcffa6a0beab7b4dfffe78e82fc54978d3ac380736/identify-2.6.10-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -1148,7 +1144,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d2/1d/1b658dbd2b9fa9c4c9f32accbfc0205d532c8c6194dc0f2a4c0428e7128a/nodeenv-1.9.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/97/c8/8740616c8436c86c1b9a62e72cb891177d2c34c2d24ddcde4c390371bf4c/numba-0.61.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a9/1b/ca2684a58de6ba981d549d70c814fa56ddfdd9ed20796daa3365493bf552/numcodecs-0.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/3a/d0/edc009c27b406c4f9cbc79274d6e46d634d139075492ad055e3d68445925/numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -1200,7 +1196,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0e/fd/7a6e01b8098c3375ce694427956a8192c708941051cebd279b988304a753/ruff-0.5.5-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/32/ea/564bacc26b676c06a00266a3f25fdfe91a9d9a2532ccea7ce6dd394541bc/scipy-1.15.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/92/07/3e2738c542d73182066196b8ce99388cb537d19e300e428d50b1537e3b21/shapely-2.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -1295,7 +1290,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2b/d3/85feeba1d097b81a44bcffa6a0beab7b4dfffe78e82fc54978d3ac380736/identify-2.6.10-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -1318,7 +1313,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d2/1d/1b658dbd2b9fa9c4c9f32accbfc0205d532c8c6194dc0f2a4c0428e7128a/nodeenv-1.9.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0f/a4/2b309a6a9f6d4d8cfba583401c7c2f9ff887adb5d54d8e2e130274c0973f/numba-0.61.2-cp311-cp311-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bd/ee/34d119420bd807d96f13d701ced7bc515af493ff1f4fc2b114d827c36b68/numcodecs-0.16.0-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/3f/6b/5610004206cf7f8e7ad91c5a85a8c71b2f2f8051a0c0c4d5916b76d6cbb2/numpy-1.26.4-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -1370,7 +1365,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c9/5b/13288039ea8190c121b70f1a11be2c4830cb3ebb57dc91d91fc5d3c65fc6/ruff-0.5.5-py3-none-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b9/8b/7ec1832b09dbc88f3db411f8cdd47db04505c4b72c99b11c920a8f0479c3/scipy-1.15.2-cp311-cp311-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fd/28/7bb5b1944d4002d4b2f967762018500381c3b532f98e456bbda40c3ded68/shapely-2.1.0-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -1500,7 +1494,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ff/62/85c4c919272577931d407be5ba5d71c20f0b616d31a0befe0ae45bb79abd/imagesize-1.4.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -1559,7 +1553,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/41/c5/47248ed90d263e4c16f9f6b06f094105ce33f384cf135eab5a6452230d46/notebook-7.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f9/33/bd5b9137445ea4b680023eb0469b2bb969d61303dedb2aac6560ff3d14a1/notebook_shim-0.2.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/97/c8/8740616c8436c86c1b9a62e72cb891177d2c34c2d24ddcde4c390371bf4c/numba-0.61.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a9/1b/ca2684a58de6ba981d549d70c814fa56ddfdd9ed20796daa3365493bf552/numcodecs-0.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/3a/d0/edc009c27b406c4f9cbc79274d6e46d634d139075492ad055e3d68445925/numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -1771,7 +1765,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ff/62/85c4c919272577931d407be5ba5d71c20f0b616d31a0befe0ae45bb79abd/imagesize-1.4.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
@@ -1830,7 +1824,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/41/c5/47248ed90d263e4c16f9f6b06f094105ce33f384cf135eab5a6452230d46/notebook-7.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f9/33/bd5b9137445ea4b680023eb0469b2bb969d61303dedb2aac6560ff3d14a1/notebook_shim-0.2.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0f/a4/2b309a6a9f6d4d8cfba583401c7c2f9ff887adb5d54d8e2e130274c0973f/numba-0.61.2-cp311-cp311-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bd/ee/34d119420bd807d96f13d701ced7bc515af493ff1f4fc2b114d827c36b68/numcodecs-0.16.0-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/3f/6b/5610004206cf7f8e7ad91c5a85a8c71b2f2f8051a0c0c4d5916b76d6cbb2/numpy-1.26.4-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -2032,7 +2026,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -2053,7 +2047,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e2/7d/bfb2805bcfbd479f04f835241ecf28519f6e3609912e3a985aed45e21370/numba-0.61.2-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/16/e4/b9ec2f4dfc34ecf724bc1beb96a9f6fa9b91801645688ffadacd485089da/numcodecs-0.13.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/4b/d7/ecf66c1cd12dc28b4040b15ab4d17b773b87fa9d29ca16125de01adb36cd/numpy-1.26.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -2102,7 +2096,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/2f/63d2cacc0e525f8e3398bcf32bd3620385f22cd1600834ec49d7f3597a7b/rioxarray-0.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/de/3c/c96d904b9892beec978562f64d8cc43f9cca0842e65bd3cd1b7f7389b0ba/scipy-1.15.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/16/6f/bcb800b2579b995bb61f429445b7328ae2336155964ca5f6c367ebd3fd17/shapely-2.1.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -2193,7 +2186,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -2214,7 +2207,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b1/c6/c2fb11e50482cb310afae87a997707f6c7d8a48967b9696271347441f650/numba-0.61.2-cp310-cp310-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/90/299952e1477954ec4f92813fa03e743945e3ff711bb4f6c9aace431cb3da/numcodecs-0.13.1-cp310-cp310-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/19/77/538f202862b9183f54108557bfda67e17603fc560c384559e769321c9d92/numpy-1.26.4-cp310-cp310-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -2263,7 +2256,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/2f/63d2cacc0e525f8e3398bcf32bd3620385f22cd1600834ec49d7f3597a7b/rioxarray-0.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d0/d2/f0683b7e992be44d1475cc144d1f1eeae63c73a14f862974b4db64af635e/scipy-1.15.2-cp310-cp310-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/71/0a/2002b39da6935f361da9c6437e45e01f0ebac81f66c08c01da974227036c/shapely-2.1.0-cp310-cp310-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -2366,7 +2358,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -2387,7 +2379,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/97/c8/8740616c8436c86c1b9a62e72cb891177d2c34c2d24ddcde4c390371bf4c/numba-0.61.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a9/1b/ca2684a58de6ba981d549d70c814fa56ddfdd9ed20796daa3365493bf552/numcodecs-0.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/3a/d0/edc009c27b406c4f9cbc79274d6e46d634d139075492ad055e3d68445925/numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -2436,7 +2428,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/2f/63d2cacc0e525f8e3398bcf32bd3620385f22cd1600834ec49d7f3597a7b/rioxarray-0.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/32/ea/564bacc26b676c06a00266a3f25fdfe91a9d9a2532ccea7ce6dd394541bc/scipy-1.15.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/92/07/3e2738c542d73182066196b8ce99388cb537d19e300e428d50b1537e3b21/shapely-2.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -2526,7 +2517,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -2547,7 +2538,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0f/a4/2b309a6a9f6d4d8cfba583401c7c2f9ff887adb5d54d8e2e130274c0973f/numba-0.61.2-cp311-cp311-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bd/ee/34d119420bd807d96f13d701ced7bc515af493ff1f4fc2b114d827c36b68/numcodecs-0.16.0-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/3f/6b/5610004206cf7f8e7ad91c5a85a8c71b2f2f8051a0c0c4d5916b76d6cbb2/numpy-1.26.4-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -2596,7 +2587,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/2f/63d2cacc0e525f8e3398bcf32bd3620385f22cd1600834ec49d7f3597a7b/rioxarray-0.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b9/8b/7ec1832b09dbc88f3db411f8cdd47db04505c4b72c99b11c920a8f0479c3/scipy-1.15.2-cp311-cp311-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fd/28/7bb5b1944d4002d4b2f967762018500381c3b532f98e456bbda40c3ded68/shapely-2.1.0-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -2699,7 +2689,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -2720,7 +2710,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9a/2d/e518df036feab381c23a624dac47f8445ac55686ec7f11083655eb707da3/numba-0.61.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e1/12/fdf9e90a6e6e30f1dafb26da0a96ed2a0db0fafd499dfa0a11f64e830ec5/numcodecs-0.16.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/0f/50/de23fde84e45f5c4fda2488c759b69990fd4512387a8632860f3ac9cd225/numpy-1.26.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -2769,7 +2759,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/2f/63d2cacc0e525f8e3398bcf32bd3620385f22cd1600834ec49d7f3597a7b/rioxarray-0.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c0/53/eaada1a414c026673eb983f8b4a55fe5eb172725d33d62c1b21f63ff6ca4/scipy-1.15.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/34/49/738e07d10bbc67cae0dcfe5a484c6e518a517f4f90550dda2adf3a78b9f2/shapely-2.1.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -2859,7 +2848,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/7d/3ca0cc958fe31657af5287c3bcc260f3159424741daa44bb719c2ca0de41/hydromt_fiat-0.5.4-py3-none-any.whl
-      - pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+      - pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -2880,7 +2869,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1c/21121519247ff05b987dc5293d33302aa8fcdf68ab41626162f03becbd81/noaa_coops-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/68/1d/ddb3e704c5a8fb90142bf9dc195c27db02a08a99f037395503bfbc1d14b3/numba-0.61.2-cp312-cp312-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/71/1f/8ed7a822c17dd17d63bbb70f74e09a033c9d9a1a85a06ec4a0a29f3e4d1c/numcodecs-0.16.0-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/16/2e/86f24451c2d530c88daf997cb8d6ac622c1d40d19f5a031ed68a4b73a374/numpy-1.26.4-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/be/d07585e440d58835bad8f1c9ca7823b5252ffeda4c797e653a20215fca65/numpy_financial-1.0.0-py3-none-any.whl
@@ -2929,7 +2918,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/2f/63d2cacc0e525f8e3398bcf32bd3620385f22cd1600834ec49d7f3597a7b/rioxarray-0.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/64/d2b49620039b82688aeebd510bd62ff4cdcdb86cbf650cc72ae42c5254a3/s3transfer-0.12.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f5/6f/e6e5aff77ea2a48dd96808bb51d7450875af154ee7cbe72188afb0b37929/scipy-1.15.2-cp312-cp312-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/cc/ea/d53f2f8897c46a36df085964d07761ea4c2d1f2cf92019693b6742b7aabb/setuptools-79.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b8/bd/9249bd6dda948441e25e4fb14cbbb5205146b0fff12c66b19331f1ff2141/shapely-2.1.0-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/03/e7/9c2de983a02511c2b18b6188e11c850b7aa8a2f49aac44ca5bda232755c5/siphon-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
@@ -4428,48 +4416,92 @@ packages:
   requires_python: '>=3.9'
 - pypi: .
   name: flood-adapt
-  version: 0.2.0
-  sha256: 538a9c66a27506ebd5031cab76367059f41435a079bb26dd2ade5b6aca10ddf7
+  version: 0.3.1
+  sha256: bb1a4e55afafa17cd0057634496a67d80824dc01937b065b05c5c2b86d21d96a
   requires_dist:
-  - cht-cyclones
+  - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
-  - cht-observations
-  - cht-tide
+  - cht-observations==0.2.1
+  - cht-tide==0.1.1
   - dask==2024.11.2
+  - numba-celltree==0.2.2
   - fiat-toolbox==0.1.17
-  - fiona
-  - geojson
-  - geopandas
-  - jellyfish<1.0
+  - fiona>=1.0,<2.0
+  - geojson>=3.0,<4.0
+  - geopandas>=1.0,<2.0
   - hydromt-fiat==0.5.4
-  - hydromt-sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git
-  - numpy<2.0
-  - numpy-financial
-  - pandas
-  - plotly
-  - pydantic
-  - pydantic-settings
-  - pyogrio
-  - setuptools
-  - tomli
-  - tomli-w
-  - pytest ; extra == 'dev'
-  - pytest-cov ; extra == 'dev'
-  - pytest-timeout ; extra == 'dev'
+  - hydromt-sfincs==1.2.0
+  - numpy>=1.0,<2.0
+  - numpy-financial>=1.0,<2.0
+  - pandas>=2.0,<3.0
+  - plotly>=6.0,<7.0
+  - pydantic>=2.0,<3.0
+  - pydantic-settings>=2.0,<3.0
+  - pyogrio<1.0
+  - tomli>=2.0,<3.0
+  - tomli-w>=1.0,<2.0
+  - pytest>=8.0,<9.0 ; extra == 'dev'
+  - pytest-timeout>=2.0,<3.0 ; extra == 'dev'
+  - pytest-cov>=6.0,<7.0 ; extra == 'dev'
   - pre-commit==3.8.0 ; extra == 'dev'
   - ruff==0.5.5 ; extra == 'dev'
   - typos==1.23.6 ; extra == 'dev'
-  - build ; extra == 'build'
-  - twine ; extra == 'build'
+  - build>=1.2,<2.0 ; extra == 'build'
+  - twine>=6.0,<7.0 ; extra == 'build'
   - pyinstaller==6.7.0 ; extra == 'build'
   - pefile<2024.8.26 ; extra == 'build'
-  - jupyter ; extra == 'docs'
-  - jupyter-cache ; extra == 'docs'
-  - matplotlib ; extra == 'docs'
-  - quartodoc ; extra == 'docs'
-  - sphinx ; extra == 'docs'
-  - sphinx-rtd-theme ; extra == 'docs'
-  - regex ; extra == 'docs'
+  - jupyter>=1.0,<2.0 ; extra == 'docs'
+  - jupyter-cache>=1.0,<2.0 ; extra == 'docs'
+  - matplotlib>=3.0,<4.0 ; extra == 'docs'
+  - quartodoc>=0.9.0,<1.0 ; extra == 'docs'
+  - sphinx>=8.0,<9.0 ; extra == 'docs'
+  - sphinx-rtd-theme>=3.0,<4.0 ; extra == 'docs'
+  - regex>=2024.11,<2025.0 ; extra == 'docs'
+  - flood-adapt[build,dev,docs] ; extra == 'all'
+  requires_python: '>=3.8,<3.13'
+- pypi: .
+  name: flood-adapt
+  version: 0.3.1
+  sha256: bb1a4e55afafa17cd0057634496a67d80824dc01937b065b05c5c2b86d21d96a
+  requires_dist:
+  - cht-cyclones==1.0.3
+  - cht-meteo==0.3.1
+  - cht-observations==0.2.1
+  - cht-tide==0.1.1
+  - dask==2024.11.2
+  - numba-celltree==0.2.2
+  - fiat-toolbox==0.1.17
+  - fiona>=1.0,<2.0
+  - geojson>=3.0,<4.0
+  - geopandas>=1.0,<2.0
+  - hydromt-fiat==0.5.4
+  - hydromt-sfincs==1.2.0
+  - numpy>=1.0,<2.0
+  - numpy-financial>=1.0,<2.0
+  - pandas>=2.0,<3.0
+  - plotly>=6.0,<7.0
+  - pydantic>=2.0,<3.0
+  - pydantic-settings>=2.0,<3.0
+  - pyogrio<1.0
+  - tomli>=2.0,<3.0
+  - tomli-w>=1.0,<2.0
+  - pytest>=8.0,<9.0 ; extra == 'dev'
+  - pytest-timeout>=2.0,<3.0 ; extra == 'dev'
+  - pytest-cov>=6.0,<7.0 ; extra == 'dev'
+  - pre-commit==3.8.0 ; extra == 'dev'
+  - ruff==0.5.5 ; extra == 'dev'
+  - typos==1.23.6 ; extra == 'dev'
+  - build>=1.2,<2.0 ; extra == 'build'
+  - twine>=6.0,<7.0 ; extra == 'build'
+  - pyinstaller==6.7.0 ; extra == 'build'
+  - pefile<2024.8.26 ; extra == 'build'
+  - jupyter>=1.0,<2.0 ; extra == 'docs'
+  - jupyter-cache>=1.0,<2.0 ; extra == 'docs'
+  - matplotlib>=3.0,<4.0 ; extra == 'docs'
+  - quartodoc>=0.9.0,<1.0 ; extra == 'docs'
+  - sphinx>=8.0,<9.0 ; extra == 'docs'
+  - sphinx-rtd-theme>=3.0,<4.0 ; extra == 'docs'
+  - regex>=2024.11,<2025.0 ; extra == 'docs'
   - flood-adapt[build,dev,docs] ; extra == 'all'
   requires_python: '>=3.8,<3.13'
   editable: true
@@ -5036,9 +5068,10 @@ packages:
   - sphinx-rtd-theme ; extra == 'doc'
   - ruff==0.6.8 ; extra == 'doc'
   requires_python: '>=3.8'
-- pypi: git+https://github.com/Deltares/hydromt_sfincs.git#b2fb3a1fb23f66015e558f199370b3569eb62108
+- pypi: https://files.pythonhosted.org/packages/58/ad/4648af4a544f809d2b15cc7a002c3cf6613ff08e343dbe90d42210031849/hydromt_sfincs-1.2.0-py3-none-any.whl
   name: hydromt-sfincs
-  version: 1.1.0
+  version: 1.2.0
+  sha256: 16513b54e61c28df785f9c072164e6f4710bd3660c166915e1483a94b2cdd2f1
   requires_dist:
   - affine
   - geopandas>1.0
@@ -6783,10 +6816,10 @@ packages:
   - llvmlite>=0.44.0.dev0,<0.45
   - numpy>=1.24,<2.3
   requires_python: '>=3.10'
-- pypi: https://files.pythonhosted.org/packages/ea/5c/4f473af97b69736eff1f1ba3df77dae9fd2a3176327cf8a83952e0fd38f5/numba_celltree-0.4.1-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/0d/b0/c3e8810ae280bb6c757de6acdfdbb9b7bfd020b2adf3445a2ab3c1b3bb64/numba_celltree-0.2.2-py3-none-any.whl
   name: numba-celltree
-  version: 0.4.1
-  sha256: 847a91793182d1d9992d276bf3cb9d60d047c32cda44413eaaab95d738007d64
+  version: 0.2.2
+  sha256: b5e5fc874cc078b3a2a931cf3e3c360b505a80b0581599fb768f8dc424a5c77a
   requires_dist:
   - numba
   - numpy

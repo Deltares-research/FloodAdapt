@@ -319,6 +319,8 @@ class FiatAdapter(IImpactAdapter):
         fiat_log = path / "fiat.log"
         with cd(path):
             with FloodAdaptLogging.to_file(file_path=fiat_log):
+                FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
+
                 self.logger.info(f"Running FIAT in {path}")
                 process = subprocess.run(
                     executable=Path(exe_path).as_posix(),
@@ -1501,3 +1503,35 @@ class FiatAdapter(IImpactAdapter):
         )
         # Save as geopackage
         roads.to_file(output_path, driver="GPKG")
+
+    @staticmethod
+    def _ensure_correct_hash_spacing_in_csv(
+        model_root: Path, hash_spacing: int = 1
+    ) -> None:
+        """
+        Ensure that the CSV file has the correct number of spaces between hashes.
+
+        When writing csv files, FIAT does not add spaces between the hashes and the line, which leads to errors on linux.
+
+
+        Parameters
+        ----------
+        file_path : Path
+            The path to the model root.
+        hash_spacing : int, optional
+            The number of spaces between hashes, by default 1.
+        """
+        for dirpath, _, filenames in os.walk(model_root):
+            for filename in filenames:
+                if not filename.lower().endswith(".csv"):
+                    continue
+                file_path = os.path.join(dirpath, filename)
+
+                with open(file_path, "r") as file:
+                    lines = file.readlines()
+
+                with open(file_path, "w") as file:
+                    for line in lines:
+                        if line.startswith("#"):
+                            line = "#" + " " * hash_spacing + line.lstrip("#")
+                        file.write(line)
