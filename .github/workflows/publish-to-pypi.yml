@@ -42,7 +42,6 @@ env:
   PYTHON_VERSION: "3.10"
 
 jobs:
-
   details:
     runs-on: ubuntu-latest
     outputs:
@@ -69,6 +68,8 @@ jobs:
   check_pypi:
     needs: details
     runs-on: ubuntu-latest
+    outputs:
+      latest_version: ${{ steps.check_pypi.outputs.latest_version }}
     steps:
       - name: Fetch information from PyPI
         run: |
@@ -79,7 +80,7 @@ jobs:
             latest_previous_version="0.0.0"
           fi
           echo "Latest version on PyPI: $latest_previous_version"
-          echo "latest_previous_version=$latest_previous_version" >> $GITHUB_ENV
+          echo "latest_version=$latest_previous_version" >> "$GITHUB_OUTPUT"
 
       - name: Compare versions and exit if not newer
         run: |
@@ -106,7 +107,7 @@ jobs:
       - name: Create environment
         shell: bash -el {0}
         run: |
-          conda create -n publish python=${{ env.PYTHON_VERSION }}
+          conda create -n publish python=${{ env.PYTHON_VERSION }} -y
 
       - name: Install Build tools
         shell: bash -el {0}
@@ -149,13 +150,13 @@ jobs:
 
   github_release:
     name: Create GitHub Release
-    needs: [setup_and_build, details]
+    needs: [setup_and_build, details, check_pypi]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -165,9 +166,19 @@ jobs:
           name: dist
           path: dist/
 
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v3
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: --verbose v${{ needs.check_pypi.outputs.latest_version }}..${{ needs.details.outputs.tag_name }}
+        env:
+          OUTPUT: RELEASE_NOTES.md
+          GITHUB_REPO: ${{ github.repository }}
+
       - name: Create GitHub Release
         id: create_release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create ${{ needs.details.outputs.tag_name }} dist/* --title ${{ needs.details.outputs.tag_name }} --generate-notes
+          gh release create ${{ needs.details.outputs.tag_name }} dist/* --title ${{ needs.details.outputs.tag_name }} --notes-file ${{ steps.git-cliff.outputs.changelog }}
