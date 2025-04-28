@@ -8,6 +8,9 @@ from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,
 )
+from flood_adapt.objects.forcing.time_frame import TimeFrame
+
+__all__ = ["HurricaneEvent", "TranslationModel", "TimeFrame"]
 
 
 class TranslationModel(BaseModel):
@@ -28,16 +31,16 @@ class HurricaneEvent(Event):
     ----------
     name : str
         The name of the event.
-    description : str, default=""
-        The description of the event.
+    description :
+        The description of the event. Defaults to "".
     time : TimeFrame
         The time frame of the event.
-    template : Template, default=Template.Hurricane
-        The template of the event.
-    mode : Mode, default=Mode.single_event
-        The mode of the event.
-    rainfall_multiplier : float, default=1.0
-        The rainfall multiplier of the event.
+    template : Template
+        The template of the event. Defaults to Template.Hurricane.
+    mode : Mode
+        The mode of the event. Defaults to Mode.single_event.
+    rainfall_multiplier : float
+        The rainfall multiplier of the event. Defaults to 1.0.
     forcings : dict[ForcingType, list[IForcing]]
         The forcings of the event.
     track_name : str

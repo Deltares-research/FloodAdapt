@@ -2,9 +2,11 @@ from typing import ClassVar, List
 
 from flood_adapt.objects.events.events import (
     Event,
+    Template,
+)
+from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,
-    Template,
 )
 
 
@@ -15,12 +17,12 @@ class SyntheticEvent(Event):
     ----------
     time : TimeFrame
         The time frame of the event.
-    template : Template, default=Template.Synthetic
-        The template of the event.
-    mode : Mode, default=Mode.single_event
-        The mode of the event.
-    rainfall_multiplier : float, default=1.0
-        The rainfall multiplier of the event.
+    template : Template
+        The template of the event. Defaults to Template.Synthetic.
+    mode : Mode
+        The mode of the event. Defaults to Mode.single_event.
+    rainfall_multiplier : float
+        The rainfall multiplier of the event. Defaults to 1.0.
     forcings : dict[ForcingType, list[IForcing]]
         The forcings of the event.
     """

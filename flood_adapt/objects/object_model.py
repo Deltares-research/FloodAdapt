@@ -13,8 +13,8 @@ class Object(BaseModel):
     ----------
     name : str
         Name of the object.
-    description : str (optional)
-        Description of the object.
+    description : str
+        Description of the object. defaults to "".
     """
 
     name: str = Field(

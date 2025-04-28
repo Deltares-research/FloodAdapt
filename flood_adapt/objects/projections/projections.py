@@ -14,14 +14,14 @@ class PhysicalProjection(BaseModel):
 
     Attributes
     ----------
-    sea_level_rise : us.UnitfulLength, default = us.UnitfulLength(0.0, us.UnitTypesLength.meters).
-        The sea level rise in meters.
-    subsidence : us.UnitfulLength, default = us.UnitfulLength(0.0, us.UnitTypesLength.meters).
-        The subsidence in meters.
-    rainfall_multiplier : float, default = 1.0.
-        The rainfall multiplier.
-    storm_frequency_increase : float, default = 0.0.
-        The storm frequency increase as a percentage.
+    sea_level_rise : us.UnitfulLength
+        The sea level rise in meters. Default=us.UnitfulLength(0.0, us.UnitTypesLength.meters).
+    subsidence : us.UnitfulLength
+        The subsidence in meters. Default=us.UnitfulLength(0.0, us.UnitTypesLength.meters).
+    rainfall_multiplier : float
+        The rainfall multiplier. Default = 1.0.
+    storm_frequency_increase : float
+        The storm frequency increase as a percentage. Default = 0.0.
     """
 
     sea_level_rise: us.UnitfulLength = us.UnitfulLength(
@@ -39,16 +39,16 @@ class SocioEconomicChange(BaseModel):
 
     Attributes
     ----------
-    population_growth_existing : float, default = 0.0.
-        The existing population growth rate.
-    economic_growth : float, default = 0.0.
-        The economic growth rate.
-    population_growth_new : float, default = 0.0.
-        The population growth rate for new developments.
-    new_development_elevation : us.UnitfulLengthRefValue, default = None.
-        The elevation of new developments.
-    new_development_shapefile : str, default = None.
-        The path to the shapefile of new developments.
+    population_growth_existing : float
+        The existing population growth rate. default=0.0
+    economic_growth : float
+        The economic growth rate. default=0.0.
+    population_growth_new : float
+        The population growth rate for new developments. default=0.0.
+    new_development_elevation : Optional[us.UnitfulLengthRefValue]
+        The elevation of new developments. default=None.
+    new_development_shapefile : Optional[str]
+        The path to the shapefile of new developments. default=None.
     """
 
     population_growth_existing: Optional[float] = 0.0

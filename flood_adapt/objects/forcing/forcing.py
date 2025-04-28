@@ -14,7 +14,15 @@ from flood_adapt.misc.log import FloodAdaptLogging
 
 ### ENUMS ###
 class ForcingType(str, Enum):
-    """Enum class for the different types of forcing parameters."""
+    """Enum class for the different types of forcing parameters.
+
+    Attributes
+    ----------
+    RAINFALL : The type of forcing parameter for rainfall.
+    WIND : The type of forcing parameter for wind.
+    DISCHARGE : The type of forcing parameter for discharge.
+    WATERLEVEL : The type of forcing parameter for water level.
+    """
 
     WIND = "WIND"
     RAINFALL = "RAINFALL"

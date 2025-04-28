@@ -128,11 +128,9 @@ class DbsStatic(IDbsStatic):
         """
         # Read the map
         full_path = self._database.static_path / path
-        if full_path.is_file():
-            return gpd.read_file(full_path, engine="pyogrio").to_crs(4326)
-
-        # If the file is not found, throw an error
-        raise FileNotFoundError(f"File {full_path} not found")
+        if not full_path.is_file():
+            raise FileNotFoundError(f"File {full_path} not found")
+        return gpd.read_file(full_path, engine="pyogrio").to_crs(4326)
 
     @cache_method_wrapper
     def get_slr_scn_names(self) -> list:

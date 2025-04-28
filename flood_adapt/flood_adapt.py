@@ -63,7 +63,7 @@ class FloodAdapt:
 
         Returns
         -------
-        dict[str, Any]
+        measures : dict[str, Any]
             A dictionary containing all measures.
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each measure.
@@ -81,7 +81,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Measure
+        measure : Measure
             The measure object with the given name.
 
         Raises
@@ -103,7 +103,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Measure
+        measure : Measure
             Measure object.
         """
         if type == "elevate_properties":
@@ -122,7 +122,7 @@ class FloodAdapt:
             raise ValueError(f"Invalid measure type: {type}")
 
     def save_measure(self, measure: Measure, overwrite: bool = False) -> None:
-        """Save an event object to the database.
+        """Save a measure object to the database.
 
         Parameters
         ----------
@@ -132,52 +132,51 @@ class FloodAdapt:
         Raises
         ------
         ValueError
-            If the event object is not valid.
+            If the measure object is not valid.
         """
         self.database.measures.save(measure, overwrite=overwrite)
 
     def edit_measure(self, measure: Measure) -> None:
-        """Edit an event object in the database.
+        """Edit a measure object in the database.
 
         Parameters
         ----------
         measure : Measure
             The measure object to edit.
 
-
         Raises
         ------
         ValueError
-            If the event object does not exist.
+            If the measure object does not exist.
         """
         self.database.measures.edit(measure)
 
     def delete_measure(self, name: str) -> None:
-        """Delete an event from the database.
+        """Delete an measure from the database.
 
         Parameters
         ----------
         name : str
-            The name of the event to delete.
+            The name of the measure to delete.
 
         Raises
         ------
         ValueError
-            If the event does not exist.
+            If the measure does not exist.
         """
         self.database.measures.delete(name)
 
     def copy_measure(self, old_name: str, new_name: str, new_description: str) -> None:
-        """Copy an event in the database.
+        """Copy a measure in the database.
 
         Parameters
         ----------
         old_name : str
-            The name of the event to copy.
+            The name of the measure to copy.
         new_name : str
-            The name of the new event.
+            The name of the new measure.
         new_description : str
-            The description of the new event
+            The description of the new measure
         """
         self.database.measures.copy(old_name, new_name, new_description)
 
@@ -191,7 +190,7 @@ class FloodAdapt:
 
         Returns
         -------
-        pd.DataFrame
+        table : pd.DataFrame
             A table with different types of green infrastructure measures and their infiltration depths.
 
         """
@@ -204,7 +203,7 @@ class FloodAdapt:
 
         Returns
         -------
-        dict[str, Any]
+        strategies : dict[str, Any]
             A dictionary containing all strategies.
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each strategy.
@@ -222,7 +221,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Strategy
+        strategy : Strategy
             The strategy object with the given name.
 
         Raises
@@ -242,7 +241,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Strategy
+        strategy : Strategy
             The strategy object
 
         Raises
@@ -286,19 +285,19 @@ class FloodAdapt:
         """
         self.database.strategies.delete(name)
 
-    # def copy_strategy(self, old_name: str, new_name: str, new_description: str) -> None:
-    #     """Copy an event in the database.
+    def copy_strategy(self, old_name: str, new_name: str, new_description: str) -> None:
+        """Copy a strategy in the database.
 
-    #     Parameters
-    #     ----------
-    #     old_name : str
-    #         The name of the event to copy.
-    #     new_name : str
-    #         The name of the new event.
-    #     new_description : str
-    #         The description of the new event
-    #     """
-    #     self.database.measures.copy(old_name, new_name, new_description)
+        Parameters
+        ----------
+        old_name : str
+            The name of the strategy to copy.
+        new_name : str
+            The name of the new strategy.
+        new_description : str
+            The description of the new strategy
+        """
+        self.database.strategies.copy(old_name, new_name, new_description)
 
     # Events
     def get_events(self) -> dict[str, Any]:
@@ -306,7 +305,7 @@ class FloodAdapt:
 
         Returns
         -------
-        dict[str, Any]
+        events : dict[str, Any]
             A dictionary containing all events.
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each benefit.
@@ -323,7 +322,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Event | EventSet
+        event: Union[Event, EventSet]
             The event with the given name.
 
         Raises
@@ -343,7 +342,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Event
+        event : Event
             Depending on attrs.template an event object.
             Can be of type: Synthetic, Historical, Hurricane.
         """
@@ -363,7 +362,7 @@ class FloodAdapt:
 
         Returns
         -------
-        EventSet
+        event_set : EventSet
             EventSet object
         """
         return EventSet(**attrs, sub_events=sub_events)
@@ -444,6 +443,25 @@ class FloodAdapt:
         return _plot_forcing(event, self.database.site, forcing_type)
 
     def get_cyclone_track_by_index(self, index: int) -> TropicalCyclone:
+        """
+        Get a cyclone track from the database by index.
+
+        Parameters
+        ----------
+        index : int
+            The index of the cyclone track to retrieve.
+
+        Returns
+        -------
+        cyclone : TropicalCyclone
+            The cyclone track object with the given index.
+
+        Raises
+        ------
+        ValueError
+            If the cyclone track database is not defined in the site configuration.
+            If the cyclone track with the given index does not exist.
+        """
         return self.database.static.get_cyclone_track_database().get_track(index)
 
     # Projections
@@ -453,7 +471,7 @@ class FloodAdapt:
 
         Returns
         -------
-        dict[str, Any]
+        projections: dict[str, Any]
             A dictionary containing all projections.
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each projection.
@@ -470,7 +488,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Projection
+        projection : Projection
             The projection object with the given name.
 
         Raises
@@ -490,7 +508,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Projection
+        projection : Projection
             The projection object created from the attributes.
 
         Raises
@@ -570,7 +588,7 @@ class FloodAdapt:
 
         Returns
         -------
-        list
+        names : List[str]
             List of scenario names
         """
         return self.database.static.get_slr_scn_names()
@@ -588,7 +606,7 @@ class FloodAdapt:
 
         Returns
         -------
-        float
+        interpolated : float
             The interpolated sea level rise for the given scenario and year.
         """
         return self.database.interp_slr(slr_scenario, year)
@@ -599,7 +617,7 @@ class FloodAdapt:
 
         Returns
         -------
-        str
+        html_path : str
             The path to the html plot of the sea level rise scenarios.
         """
         return self.database.plot_slr_scenarios()
@@ -610,7 +628,7 @@ class FloodAdapt:
 
         Returns
         -------
-        dict[str, Any]
+        scenarios : dict[str, Any]
             A dictionary containing all scenarios.
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'.
             Each value is a list of the corresponding attribute for each scenario.
@@ -627,7 +645,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Scenario
+        scenario : Scenario
             The scenario object with the given name.
 
         Raises
@@ -647,7 +665,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Scenario
+        scenario : Scenario
             The scenario object created from the attributes.
 
         Raises
@@ -667,9 +685,9 @@ class FloodAdapt:
 
         Returns
         -------
-        bool
+        run_success : bool
             Whether the scenario was saved successfully.
-        str
+        error_msg : str
             The error message if the scenario was not saved successfully.
         """
         try:
@@ -731,7 +749,7 @@ class FloodAdapt:
 
         Returns
         -------
-        dict[str, Any]
+        scenarios : dict[str, Any]
             A dictionary containing all scenarios.
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each output.
@@ -744,7 +762,7 @@ class FloodAdapt:
 
         Returns
         -------
-        str
+        topo_path : str
             The path to the topobathy file.
 
         """
@@ -756,7 +774,7 @@ class FloodAdapt:
 
         Returns
         -------
-        str
+        index_path : str
             The path to the index file.
         """
         return self.database.get_index_path()
@@ -767,7 +785,7 @@ class FloodAdapt:
 
         Returns
         -------
-        float
+        fdc : float
             The flood depth conversion.
         """
         return self.database.get_depth_conversion()
@@ -785,7 +803,7 @@ class FloodAdapt:
 
         Returns
         -------
-        np.ndarray
+        water_level_map : np.ndarray
             2D gridded map with the maximum waterlevels for each cell.
         """
         return self.database.get_max_water_level(name, rp)
@@ -801,7 +819,7 @@ class FloodAdapt:
 
         Returns
         -------
-        gpd.GeoDataFrame
+        footprints : gpd.GeoDataFrame
             The impact footprints for the scenario.
         """
         return self.database.get_building_footprints(name)
@@ -817,7 +835,7 @@ class FloodAdapt:
 
         Returns
         -------
-        dict[str, gpd.GeoDataFrame]
+        aggr_impacts : dict[str, gpd.GeoDataFrame]
             The aggregated impacts for the scenario.
         """
         return self.database.get_aggregation(name)
@@ -833,7 +851,7 @@ class FloodAdapt:
 
         Returns
         -------
-        gpd.GeoDataFrame
+        roads : gpd.GeoDataFrame
             The impacted roads for the scenario.
         """
         return self.database.get_roads(name)
@@ -848,7 +866,7 @@ class FloodAdapt:
 
         Returns
         -------
-        str
+        html_path : str
             The HTML strings of the water level timeseries
         """
         # Get the impacts objects from the scenario
@@ -880,7 +898,7 @@ class FloodAdapt:
 
         Returns
         -------
-        str
+        html: str
             The HTML string of the infographic.
         """
         # Get the impacts objects from the scenario
@@ -919,7 +937,8 @@ class FloodAdapt:
 
         Returns
         -------
-        pd.DataFrame
+        metrics: pd.DataFrame
+            The metrics for the scenario.
 
         Raises
         ------
@@ -955,7 +974,7 @@ class FloodAdapt:
 
         Returns
         -------
-        dict[str, GeoDataFrame]
+        aggregation_areas : dict[str, GeoDataFrame]
             list of geodataframes with the polygons defining the aggregation areas
         """
         return self.database.static.get_aggregation_areas()
@@ -969,7 +988,7 @@ class FloodAdapt:
 
         Returns
         -------
-        gpd.GeoDataFrame
+        observation_points : gpd.GeoDataFrame
             gpd.GeoDataFrame with observation points from the site.toml.
         """
         return self.database.static.get_obs_points()
@@ -981,7 +1000,7 @@ class FloodAdapt:
 
         Returns
         -------
-        GeoDataFrame
+        model_boundary : GeoDataFrame
             GeoDataFrame with the model boundary
         """
         return self.database.static.get_model_boundary()
@@ -993,7 +1012,7 @@ class FloodAdapt:
 
         Returns
         -------
-        QuadtreeGrid
+        grid : QuadtreeGrid
             QuadtreeGrid with the model grid
         """
         return self.database.static.get_model_grid()
@@ -1005,7 +1024,7 @@ class FloodAdapt:
 
         Returns
         -------
-        gpd.GeoDataFrame
+        svi_map : gpd.GeoDataFrame
             gpd.GeoDataFrames with the SVI map, None if not available
         """
         if self.database.site.fiat.config.svi:
@@ -1025,34 +1044,37 @@ class FloodAdapt:
 
         Returns
         -------
-        gpd.gpd.GeoDataFrame
-            gpd.GeoDataFrame with the static map
+        static_map : Union[gpd.GeoDataFrame, None]
+            gpd.GeoDataFrame with the static map if available, None if not found
         """
         try:
             return self.database.static.get_static_map(path)
-        except Exception:
+        except FileNotFoundError:
+            self.logger.warning(f"Static map {path} not found.")
             return None
 
-    def get_buildings(self) -> gpd.GeoDataFrame:
+    def get_building_geometries(self) -> gpd.GeoDataFrame:
         """Get the buildings exposure that are used in Fiat.
 
         Returns
         -------
-        gpd.GeoDataFrame
+        buildings : gpd.GeoDataFrame
             gpd.GeoDataFrames with the buildings from FIAT exposure
         """
-        # TODO think of a more descriptive name for this function. polygons
         return self.database.static.get_buildings()
 
     def get_building_types(self) -> list:
-        """Get the building types that are used in the exposure.
+        """Get the building types/categories that are used in the exposure.
+
+        These are used to filter the buildings in the FIAT model, and can include types like:
+        'Residential', 'Commercial', 'Industrial', etc.
 
         Returns
         -------
-        list
+        building_types: list[str]
             list of building types
         """
-        return self.database.static.get_property_types()  # TODO rename this
+        return self.database.static.get_property_types()
 
     # Benefits
     def get_benefits(self) -> dict[str, Any]:
@@ -1060,7 +1082,7 @@ class FloodAdapt:
 
         Returns
         -------
-        dict[str, Any]
+        benefits : dict[str, Any]
             A dictionary containing all benefits.
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each benefit.
@@ -1078,7 +1100,7 @@ class FloodAdapt:
 
         Returns
         -------
-        Benefit
+        benefit: Benefit
             The benefit object with the given name. See [Benefit](/api_ref/) for details.
 
         Raises
@@ -1095,6 +1117,16 @@ class FloodAdapt:
         ----------
         attrs : dict[str, Any]
             The attributes of the benefit object to create. Should adhere to the Benefit schema.
+
+        Returns
+        -------
+        benefit : Benefit
+            The benefit object created from the attributes.
+
+        Raises
+        ------
+        ValueError
+            If the attributes do not adhere to the Benefit schema.
         """
         return Benefit(**attrs)
 
@@ -1153,7 +1185,7 @@ class FloodAdapt:
 
         Returns
         -------
-        pd.DataFrame
+        scenarios : pd.DataFrame
             A dataframe with the scenarios needed for this benefit assessment run.
         """
         return self.database.check_benefit_scenarios(benefit)
@@ -1188,7 +1220,7 @@ class FloodAdapt:
 
         Returns
         -------
-        gpd.GeoDataFrame
+        aggregated_benefits : gpd.GeoDataFrame
             The aggregation benefits for the benefit assessment.
         """
         return self.database.get_aggregation_benefits(name)

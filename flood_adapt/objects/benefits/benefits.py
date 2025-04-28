@@ -28,8 +28,8 @@ class Benefit(Object):
     ----------
     name: str
         The name of the benefit analysis.
-    description: str, default=""
-        The description of the benefit analysis.
+    description: str
+        The description of the benefit analysis. Defaults to "".
     strategy : str
         The name of the strategy. Should be a strategy saved in the database.
     event_set : str
@@ -44,10 +44,10 @@ class Benefit(Object):
         The name of the baseline strategy.
     discount_rate : float
         The discount rate for the analysis.
-    implementation_cost : Optional[float], default = None
-        The implementation cost of the strategy.
-    annual_maint_cost : Optional[float], default = None
-        The annual maintenance cost of the strategy.
+    implementation_cost : Optional[float]
+        The implementation cost of the strategy. Defaults to None.
+    annual_maint_cost : Optional[float]
+        The annual maintenance cost of the strategy. Defaults to None.
     """
 
     strategy: str
