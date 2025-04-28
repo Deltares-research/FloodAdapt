@@ -21,6 +21,25 @@ class MeasureCategory(str, Enum):
 
 
 class MeasureType(str, Enum):
+    """Class describing the accepted input for the variable 'type' in Measure.
+
+    Each type of measure is associated with a category (hazard or impact) and can be used to determine the type of measure.
+
+    Attributes
+    ----------
+    floodwall : A floodwall measure.
+    thin_dam : A thin dam measure.
+    levee : A levee measure.
+    pump : A pump measure.
+    culvert : A culvert measure.
+    water_square : A water square measure.
+    greening : A greening measure.
+    total_storage : A total storage measure.
+    elevate_properties : An elevate properties measure.
+    buyout_properties : A buyout properties measure.
+    floodproof_properties : A floodproof properties measure.
+    """
+
     # Hazard measures
     floodwall = "floodwall"
     thin_dam = "thin_dam"  # For now, same functionality as floodwall TODO: Add thin dam functionality
@@ -70,7 +89,17 @@ class MeasureType(str, Enum):
 
 
 class SelectionType(str, Enum):
-    """Class describing the accepted input for the variable 'selection_type' in ImpactMeasure."""
+    """Class describing the accepted input for the variable 'selection_type' in Measures.
+
+    It is used to determine where to apply the measure to a model.
+
+    Attributes
+    ----------
+    aggregation_area : Use aggregation area as geometry for the measure.
+    polygon : Use polygon as geometry for the measure.
+    polyline : Use polyline as geometry for the measure.
+    all : Apply the measure to all geometries in the database.
+    """
 
     aggregation_area = "aggregation_area"
     polygon = "polygon"
@@ -267,7 +296,7 @@ class Buyout(ImpactMeasure):
         Name of the aggregation area.
     property_type : str
         Type of property. Should be "residential" or "commercial".
-    elevation : UnitfulLengthRefValue
+    elevation : us.UnitfulLengthRefValue
         Elevation of the properties.
 
     """
@@ -297,9 +326,8 @@ class FloodProof(ImpactMeasure):
         Name of the aggregation area.
     property_type : str
         Type of property. Should be "residential" or "commercial".
-    elevation : UnitfulLengthRefValue
+    elevation : us.UnitfulLengthRefValue
         Elevation of the properties.
-
     """
 
     type: MeasureType = MeasureType.floodproof_properties
@@ -316,11 +344,11 @@ class FloodWall(HazardMeasure):
         Name of the measure.
     description: str
         Description of the measure.
-    type : MeasureType, default MeasureType.floodwall
-        Type of measure. Should be "floodwall"
+    type : MeasureType
+        Type of measure. Should be "MeasureType.floodwall"
     selection_type : SelectionType
-        Type of selection. Should be "polygon" or "aggregation_area".
-    polygon_file : str, Optional
+        Type of selection. Should be "SelectionType.polygon" or "SelectionType.aggregation_area".
+    polygon_file : Optional[str]
         Path to a polygon file, either absolute or relative to the measure path.
     elevation : us.UnitfulLength
         Height of the floodwall.
@@ -465,11 +493,6 @@ class GreenInfrastructure(HazardMeasure):
         Returns
         -------
         float
-
-
-        Returns
-        -------
-        float
             Volume [m3]
         """
         volume = (
@@ -492,8 +515,8 @@ class GreenInfrastructure(HazardMeasure):
 
         Returns
         -------
-        floatd
-            Area [m2]
+        area : float
+            Area of the given polygon
         """
         # Determine local CRS
         crs = pyproj.CRS.from_string(site.sfincs.config.csname)

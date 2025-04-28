@@ -69,7 +69,7 @@ class BenefitRunner:
 
         Returns
         -------
-        bool
+        has_run : bool
             True if the analysis has already been run, else False
         """
         # Output files to check

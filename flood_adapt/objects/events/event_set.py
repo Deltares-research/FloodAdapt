@@ -33,10 +33,10 @@ class EventSet(Object):
     ----------
     name : str
         The name of the event.
-    description : str, default=""
-        The description of the event.
-    mode : Mode, default=Mode.risk
-        The mode of the event.
+    description : str
+        The description of the event. Defaults to "".
+    mode : Mode
+        The mode of the event. Defaults to Mode.risk.
     sub_events : List[SubEventModel]
         The sub events of the event set.
     """

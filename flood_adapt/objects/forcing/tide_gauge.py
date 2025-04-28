@@ -27,24 +27,24 @@ class TideGauge(BaseModel):
 
     Attributes
     ----------
-    name : Optional[int | str], default=None
-        Name of the tide gauge.
-    description : Optional[str], default=""
-        Description of the tide gauge.
+    name : Optional[int, str]
+        Name of the tide gauge. Default is None.
+    description : Optional[str]
+        Description of the tide gauge. Default is "".
     source : TideGaugeSource
         Source of the tide gauge data.
     reference : str
         Reference of the tide gauge data. Should be defined in site.sfincs.water_level
-    ID : Optional[int], default=None
-        ID of the tide gauge data.
-    file : Optional[Path], default=None
-        Only for file based tide gauges. Should be a path relative to the static folder.
-    lat : Optional[float], default=None
-        Latitude of the tide gauge data.
-    lon : Optional[float], default=None
-        Longitude of the tide gauge data.
-    units : us.UnitTypesLength, default=us.UnitTypesLength.meters
-        Units of the water levels in the downloaded file.
+    ID : Optional[int]
+        ID of the tide gauge data. Default is None.
+    file : Optional[Path]
+        Only for file based tide gauges. Should be a path relative to the static folder. Default is None.
+    lat : Optional[float]
+        Latitude of the tide gauge data. Default is None.
+    lon : Optional[float]
+        Longitude of the tide gauge data. Default is None.
+    units : us.UnitTypesLength
+        Units of the water levels in the downloaded file. Default is us.UnitTypesLength.meters.
 
     """
 

@@ -39,6 +39,7 @@ from flood_adapt.objects.forcing.wind import (
     WindSynthetic,
 )
 
+# TODO remove from frontend
 UNPLOTTABLE_SOURCES = [ForcingSource.TRACK, ForcingSource.METEO, ForcingSource.MODEL]
 logger = FloodAdaptLogging.getLogger("Plotting")
 

@@ -24,10 +24,31 @@ class Strategy(Object):
     _measure_objects: list[Measure] | None = None
 
     def initialize_measure_objects(self, measures: list[Measure]) -> None:
+        """Initialize the measure objects associated with this strategy.
+
+        Parameters
+        ----------
+        measures : list[Measure]
+            A list of measure objects to be associated with this strategy. Should be a list of measure objects that are saved in the database.
+        """
         self._measure_objects = measures
 
     def get_measures(self) -> list[Measure]:
-        """Get the measures paths and types."""
+        """Get the measures associated with this strategy.
+
+        Note that this method will return the measure objects, not just their names.
+        The measure objects are initialized using the `initialize_measure_objects` method.
+
+        Returns
+        -------
+        measures : list[Measure]
+            The list of measure objects associated with this strategy.
+
+        Raises
+        ------
+        ValueError
+            If the measure objects have not been initialized.
+        """
         # Get measure paths using a database structure
         if self._measure_objects is None:
             raise ValueError(

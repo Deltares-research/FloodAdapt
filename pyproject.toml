@@ -142,4 +142,5 @@ clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_r
 clean-notebooks = { cmd = "python docs/examples/clear_notebooks.py" }
 clean-docs = {depends-on=["clean-generated-docs", "clean-notebooks"]}
 build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
-render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs"] }
+build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
+render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs", "build-interlinks"] }

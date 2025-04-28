@@ -12,6 +12,19 @@ REFERENCE_TIME = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
 
 
 class TimeFrame(BaseModel):
+    """
+    Class representing a time frame for a simulation.
+
+    Attributes
+    ----------
+    start_time : datetime
+        The start time of the simulation.
+    end_time : datetime
+        The end time of the simulation.
+    time_step : timedelta
+        The time step of the simulation. Default is calculated as 1/1000 of the duration.
+    """
+
     start_time: datetime = REFERENCE_TIME
     end_time: datetime = REFERENCE_TIME + timedelta(days=1)
 
