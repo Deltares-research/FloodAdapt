@@ -176,6 +176,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
   <li><a href="#flood_adapt.objects.Strategy.get_measures" id="toc-flood_adapt.objects.Strategy.get_measures" class="nav-link" data-scroll-target="#flood_adapt.objects.Strategy.get_measures">get_measures</a></li>
+  <li><a href="#flood_adapt.objects.Strategy.initialize_measure_objects" id="toc-flood_adapt.objects.Strategy.initialize_measure_objects" class="nav-link" data-scroll-target="#flood_adapt.objects.Strategy.initialize_measure_objects">initialize_measure_objects</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -195,7 +196,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="attributes" class="level2 doc-section doc-section-attributes">
 <h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
 <dl>
-<dt><code><span class="parameter-name"><strong>measures</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>list</code>[<code>str</code>]</span></code></dt>
+<dt><code><span class="parameter-name"><strong>measures</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</span></code></dt>
 <dd>
 <p>A list of measures associated with the strategy. Should be a list of measure names that are saved in the database.</p>
 </dd>
@@ -213,16 +214,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><a href="#flood_adapt.objects.Strategy.get_measures">get_measures</a></td>
-<td>Get the measures paths and types.</td>
+<td>Get the measures associated with this strategy.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.objects.Strategy.initialize_measure_objects">initialize_measure_objects</a></td>
+<td>Initialize the measure objects associated with this strategy.</td>
 </tr>
 </tbody>
 </table>
 <section id="flood_adapt.objects.Strategy.get_measures" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.objects.Strategy.get_measures">get_measures</h3>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.Strategy.get_measures()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Get the measures paths and types.</p>
+<p>Get the measures associated with this strategy.</p>
+<p>Note that this method will return the measure objects, not just their names. The measure objects are initialized using the <code>initialize_measure_objects</code> method.</p>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>measures</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a href="..\api_ref/Measure.html#flood_adapt.objects.Measure">Measure</a>]</span></code></dt>
+<dd>
+<p>The list of measure objects associated with this strategy.</p>
+</dd>
+</dl>
+</section>
+<section id="raises" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dd>
+<p>If the measure objects have not been initialized.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.objects.Strategy.initialize_measure_objects" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.Strategy.initialize_measure_objects">initialize_measure_objects</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>objects.Strategy.initialize_measure_objects(measures: <span class="bu">list</span>[Measure])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Initialize the measure objects associated with this strategy.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>measures</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a href="..\api_ref/Measure.html#flood_adapt.objects.Measure">Measure</a>]</span></code></dt>
+<dd>
+<p>A list of measure objects to be associated with this strategy. Should be a list of measure objects that are saved in the database.</p>
+</dd>
+</dl>
 
 
+</section>
 </section>
 </section>
 </section>

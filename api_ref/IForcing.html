@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>projection – Flood Adapt Documentation</title>
+<title>iforcing – Flood Adapt Documentation</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -170,12 +170,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.objects.Projection" id="toc-flood_adapt.objects.Projection" class="nav-link active" data-scroll-target="#flood_adapt.objects.Projection">Projection</a>
+  <li><a href="#flood_adapt.objects.IForcing" id="toc-flood_adapt.objects.IForcing" class="nav-link active" data-scroll-target="#flood_adapt.objects.IForcing">IForcing</a>
   <ul class="collapse">
-  <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#flood_adapt.objects.IForcing.model_dump" id="toc-flood_adapt.objects.IForcing.model_dump" class="nav-link" data-scroll-target="#flood_adapt.objects.IForcing.model_dump">model_dump</a></li>
+  <li><a href="#flood_adapt.objects.IForcing.save_additional" id="toc-flood_adapt.objects.IForcing.save_additional" class="nav-link" data-scroll-target="#flood_adapt.objects.IForcing.save_additional">save_additional</a></li>
+  <li><a href="#flood_adapt.objects.IForcing.serialize_path" id="toc-flood_adapt.objects.IForcing.serialize_path" class="nav-link" data-scroll-target="#flood_adapt.objects.IForcing.serialize_path">serialize_path</a></li>
+  </ul></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/Projection.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/IForcing.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
@@ -183,25 +188,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="flood_adapt.objects.Projection" class="level1">
-<h1>Projection</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>objects.Projection()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The accepted input for a projection in FloodAdapt.</p>
-<p>A projection is a combination of a physical projection and a socio-economic change.</p>
-<section id="attributes" class="level2 doc-section doc-section-attributes">
-<h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
-<dl>
-<dt><code><span class="parameter-name"><strong>physical_projection</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/PhysicalProjection.html#flood_adapt.objects.PhysicalProjection">PhysicalProjection</a></span></code></dt>
-<dd>
-<p>The physical projection model. Contains information about hazard drivers.</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>socio_economic_change</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/SocioEconomicChange.html#flood_adapt.objects.SocioEconomicChange">SocioEconomicChange</a></span></code></dt>
-<dd>
-<p>The socio-economic change model. Contains information about impact drivers.</p>
-</dd>
-</dl>
+<section id="flood_adapt.objects.IForcing" class="level1">
+<h1>IForcing</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>BaseModel describing the expected variables and data types for forcing parameters of hazard model.</p>
+<section id="methods" class="level2">
+<h2 class="anchored" data-anchor-id="methods">Methods</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#flood_adapt.objects.IForcing.model_dump">model_dump</a></td>
+<td>Override the default model_dump to include class variables <code>type</code> and <code>source</code>.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.objects.IForcing.save_additional">save_additional</a></td>
+<td>Save additional data of the forcing.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.objects.IForcing.serialize_path">serialize_path</a></td>
+<td>Serialize filepath-like fields by saving only the filename. It is assumed that the file will be saved in the same directory.</td>
+</tr>
+</tbody>
+</table>
+<section id="flood_adapt.objects.IForcing.model_dump" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.IForcing.model_dump">model_dump</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing.model_dump(<span class="op">**</span>kwargs: Any)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Override the default model_dump to include class variables <code>type</code> and <code>source</code>.</p>
+</section>
+<section id="flood_adapt.objects.IForcing.save_additional" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.IForcing.save_additional">save_additional</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing.save_additional(output_dir: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Save additional data of the forcing.</p>
+</section>
+<section id="flood_adapt.objects.IForcing.serialize_path" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.IForcing.serialize_path">serialize_path</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing.serialize_path(value: Path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Serialize filepath-like fields by saving only the filename. It is assumed that the file will be saved in the same directory.</p>
 
 
+</section>
 </section>
 </section>
 
@@ -775,7 +806,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/Projection.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/IForcing.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>

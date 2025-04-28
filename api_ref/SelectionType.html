@@ -170,7 +170,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.objects.SelectionType" id="toc-flood_adapt.objects.SelectionType" class="nav-link active" data-scroll-target="#flood_adapt.objects.SelectionType">SelectionType</a></li>
+  <li><a href="#flood_adapt.objects.SelectionType" id="toc-flood_adapt.objects.SelectionType" class="nav-link active" data-scroll-target="#flood_adapt.objects.SelectionType">SelectionType</a>
+  <ul class="collapse">
+  <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/SelectionType.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -183,9 +186,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="flood_adapt.objects.SelectionType" class="level1">
 <h1>SelectionType</h1>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>objects.SelectionType()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Class describing the accepted input for the variable ‘selection_type’ in ImpactMeasure.</p>
+<p>Class describing the accepted input for the variable ‘selection_type’ in Measures.</p>
+<p>It is used to determine where to apply the measure to a model.</p>
+<section id="attributes" class="level2 doc-section doc-section-attributes">
+<h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
+<dl>
+<dt><code><span class="parameter-name"><strong>aggregation_area</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Use aggregation area as geometry for the measure.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-name"><strong>polygon</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Use polygon as geometry for the measure.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-name"><strong>polyline</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Use polyline as geometry for the measure.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-name"><strong>all</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Apply the measure to all geometries in the database.</span></code></dt>
+<dd>
+
+</dd>
+</dl>
 
 
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->

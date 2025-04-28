@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>projection – Flood Adapt Documentation</title>
+<title>forcingtype – Flood Adapt Documentation</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -170,12 +170,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.objects.Projection" id="toc-flood_adapt.objects.Projection" class="nav-link active" data-scroll-target="#flood_adapt.objects.Projection">Projection</a>
+  <li><a href="#flood_adapt.objects.ForcingType" id="toc-flood_adapt.objects.ForcingType" class="nav-link active" data-scroll-target="#flood_adapt.objects.ForcingType">ForcingType</a>
   <ul class="collapse">
   <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/Projection.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/ForcingType.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
@@ -183,21 +183,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="flood_adapt.objects.Projection" class="level1">
-<h1>Projection</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>objects.Projection()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The accepted input for a projection in FloodAdapt.</p>
-<p>A projection is a combination of a physical projection and a socio-economic change.</p>
+<section id="flood_adapt.objects.ForcingType" class="level1">
+<h1>ForcingType</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>objects.ForcingType()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Enum class for the different types of forcing parameters.</p>
 <section id="attributes" class="level2 doc-section doc-section-attributes">
 <h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
 <dl>
-<dt><code><span class="parameter-name"><strong>physical_projection</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/PhysicalProjection.html#flood_adapt.objects.PhysicalProjection">PhysicalProjection</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>RAINFALL</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">The type of forcing parameter for rainfall.</span></code></dt>
 <dd>
-<p>The physical projection model. Contains information about hazard drivers.</p>
+
 </dd>
-<dt><code><span class="parameter-name"><strong>socio_economic_change</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/SocioEconomicChange.html#flood_adapt.objects.SocioEconomicChange">SocioEconomicChange</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>WIND</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">The type of forcing parameter for wind.</span></code></dt>
 <dd>
-<p>The socio-economic change model. Contains information about impact drivers.</p>
+
+</dd>
+<dt><code><span class="parameter-name"><strong>DISCHARGE</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">The type of forcing parameter for discharge.</span></code></dt>
+<dd>
+
+</dd>
+<dt><code><span class="parameter-name"><strong>WATERLEVEL</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">The type of forcing parameter for water level.</span></code></dt>
+<dd>
+
 </dd>
 </dl>
 
@@ -775,7 +782,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/Projection.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/api_ref/ForcingType.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>
