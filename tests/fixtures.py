@@ -4,24 +4,20 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
-from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.interface.measures import (
-    BuyoutModel,
+from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.forcing.time_frame import TimeFrame
+from flood_adapt.objects.measures.measures import (
+    Buyout,
     MeasureType,
-    PumpModel,
+    Pump,
     SelectionType,
 )
-from flood_adapt.object_model.interface.projections import (
-    PhysicalProjectionModel,
-    ProjectionModel,
-    SocioEconomicChangeModel,
+from flood_adapt.objects.projections.projections import (
+    PhysicalProjection,
+    Projection,
+    SocioEconomicChange,
 )
-from flood_adapt.object_model.interface.strategies import StrategyModel
-from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.objects.strategies.strategies import Strategy
 
 __all__ = [
     "dummy_time_model",
@@ -37,8 +33,8 @@ TEST_DATA_DIR = Path(__file__).parent / "data"
 
 
 @pytest.fixture(scope="function")
-def dummy_time_model() -> TimeModel:
-    return TimeModel()
+def dummy_time_model() -> TimeFrame:
+    return TimeFrame()
 
 
 @pytest.fixture(scope="function")
@@ -53,17 +49,16 @@ def dummy_2d_timeseries_df(dummy_time_model) -> pd.DataFrame:
 
 @pytest.fixture()
 def dummy_projection():
-    model = ProjectionModel(
+    return Projection(
         name="dummy_projection",
-        physical_projection=PhysicalProjectionModel(),
-        socio_economic_change=SocioEconomicChangeModel(),
+        physical_projection=PhysicalProjection(),
+        socio_economic_change=SocioEconomicChange(),
     )
-    return Projection.load_dict(model)
 
 
 @pytest.fixture()
 def dummy_buyout_measure():
-    model = BuyoutModel(
+    return Buyout(
         name="dummy_buyout_measure",
         type=MeasureType.buyout_properties,
         selection_type=SelectionType.aggregation_area,
@@ -71,12 +66,11 @@ def dummy_buyout_measure():
         aggregation_area_name="name1",
         property_type="residential",
     )
-    return Buyout.load_dict(model)
 
 
 @pytest.fixture()
 def dummy_pump_measure():
-    model = PumpModel(
+    return Pump(
         name="dummy_pump_measure",
         type=MeasureType.pump,
         selection_type=SelectionType.polyline,
@@ -84,29 +78,27 @@ def dummy_pump_measure():
         discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cfs),
     )
 
-    return Pump.load_dict(model)
-
 
 @pytest.fixture()
 def dummy_strategy(test_db, dummy_buyout_measure, dummy_pump_measure):
     pump = dummy_pump_measure
     buyout = dummy_buyout_measure
-    model = StrategyModel(
+    model = Strategy(
         name="dummy_strategy",
         description="",
-        measures=[buyout.attrs.name, pump.attrs.name],
+        measures=[buyout.name, pump.name],
     )
 
     for measure in [buyout, pump]:
         test_db.measures.save(measure)
 
-    return Strategy.load_dict(model)
+    return model
 
 
-def _n_dim_dummy_timeseries_df(n_dims: int, time_model: TimeModel) -> pd.DataFrame:
+def _n_dim_dummy_timeseries_df(n_dims: int, time_model: TimeFrame) -> pd.DataFrame:
     time = pd.date_range(
-        start=time_model.start_time,
-        end=time_model.end_time,
+        start=time_model.start_time - 10 * time_model.time_step,
+        end=time_model.end_time + 10 * time_model.time_step,
         freq=time_model.time_step,
         name="time",
     )

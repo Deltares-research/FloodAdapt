@@ -1,5 +1,5 @@
 [build-system]
-requires      = ["setuptools>=61"]
+requires      = ["setuptools>=61,<=75.8.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -20,47 +20,65 @@ classifiers = [
     "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
     "Topic :: Scientific/Engineering :: Hydrology",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.8,<3.13"
+
+# Any package below will be taken from pypi.
+# These are ignored if any packages is also defined in the section: [tool.pixi.dependencies]
 dependencies = [
-    "cht-cyclones",
-    "cht-meteo",
-    "cht-observations",
-    "cht-tide",
-    "dask<2024.7.0",                                                          # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
-    "fiat-toolbox",
-    "geojson",
-    "geopandas",
-    "jellyfish<1.0",                                                          # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
-    # jellyfish v1.0 starts requiring rust as a dependency, which is fine if there are built .whl files. BUT THERE ARE NO BUILDS FOR WINDOWS YET.
-    "hydromt-fiat==0.4.2",
-    "hydromt-sfincs",
-    "numpy < 2.0",
-    "numpy-financial",
-    "pandas",
-    "plotly",
-    "pydantic",
-    "pydantic-settings",
-    "pyogrio",
-    "tomli",
-    "tomli-w",
+    "cht-cyclones       ==1.0.3",
+    "cht-meteo          ==0.3.1",
+    "cht-observations   ==0.2.1",
+    "cht-tide           ==0.1.1",
+    "dask               ==2024.11.2",   # not a dependency, but a we need to use this version
+    "numba_celltree     ==0.2.2",       # not a dependency, but a we need to use this version
+    "fiat-toolbox       ==0.1.17",
+    "fiona              >=1.0,<2.0",
+    "geojson            >=3.0,<4.0",
+    "geopandas          >=1.0,<2.0",
+    "hydromt-fiat       ==0.5.4",
+    "hydromt-sfincs     ==1.2.0",
+    "numpy              >=1.0,<2.0",
+    "numpy-financial    >=1.0,<2.0",
+    "pandas             >=2.0,<3.0",
+    "plotly             >=6.0,<7.0",
+    "pydantic           >=2.0,<3.0",
+    "pydantic-settings  >=2.0,<3.0",
+    "pyogrio            <1.0",
+    "tomli              >=2.0,<3.0",
+    "tomli-w            >=1.0,<2.0",
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "pytest-cov",
-    "pre-commit == 3.8.0",
-    "ruff       == 0.5.5",
-    "typos      == 1.23.6",
+    "pytest             >=8.0,<9.0",
+    "pytest-timeout     >=2.0,<3.0",
+    "pytest-cov         >=6.0,<7.0",
+    "pre-commit         ==3.8.0",
+    "ruff               ==0.5.5",
+    "typos              ==1.23.6",
 ]
-build = ["build", "twine"]
-docs = ["jupyter", "jupyter-cache", "matplotlib", "quartodoc", "regex"]
+build = [
+    "build              >=1.2,<2.0",
+    "twine              >=6.0,<7.0",
+    "pyinstaller        ==6.7.0",
+    "pefile             <2024.8.26", # This version introduces a significant slowdown in binary vs data reclassification step of pyinstaller. Pyinstaller is aware. https://github.com/pyinstaller/pyinstaller/issues/8762
+]
+docs = [
+    "jupyter            >=1.0,<2.0",
+    "jupyter-cache      >=1.0,<2.0",
+    "matplotlib         >=3.0,<4.0",
+    "quartodoc          >=0.9.0,<1.0",
+    "sphinx             >=8.0,<9.0",
+    "sphinx-rtd-theme   >=3.0,<4.0",
+    "regex              >=2024.11,<2025.0",
+]
 all = ["flood-adapt[build,dev,docs]"]
 
 [project.urls]
 Source = "https://github.com/Deltares-research/FloodAdapt"
 
+### setuptools ###
 [tool.setuptools]
 zip-safe = false
 
@@ -71,7 +89,58 @@ attr = "flood_adapt.__version__"
 include = ["flood_adapt", "flood_adapt.*"]
 
 [tool.setuptools.package-data]
-flood_adapt = ["py.typed"]
+flood_adapt = ["py.typed", "database_builder/**"]
 
+### pytest ###
 [tool.pytest.ini_options]
-pythonpath = "flood_adapt" # so that we can import in the `tests` dir as if you are in the `flood_adapt` dir
+addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
+testpaths = ["tests"]
+timeout = 600 # hard max of 10 minutes per test to avoid hanging tests
+timeout_func_only = true # only timeout the test function, not the setup/teardown
+
+### pixi ###
+[tool.pixi.pypi-dependencies]
+flood_adapt = {path = "."}
+
+[tool.pixi.feature.dev.pypi-dependencies]
+flood_adapt = {path = ".", editable = true }
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
+
+[tool.pixi.feature.py310.dependencies]
+python = "3.10.*"
+
+[tool.pixi.project]
+name = "flood-adapt"
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64"]
+
+[tool.pixi.environments]
+py312 = { features = ["py312"], solve-group = "py312" }
+py311 = { features = ["py311"], solve-group = "py311" }
+py310 = { features = ["py310"], solve-group = "py310" }
+
+build = { features = ["build"], solve-group = "py311" }
+dev = { features = ["dev"], solve-group = "py311" }
+docs = { features = ["docs"], solve-group = "py311" }
+all = { features = ["all"], solve-group = "py311" }
+
+[tool.pixi.feature.dev.tasks]
+install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"]}
+pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"]}
+tests = {cmd = "pytest tests"}
+
+[tool.pixi.feature.build.tasks]
+build-db-builder = {cmd = "python distribution/build_database_builder_executable.py"}
+
+[tool.pixi.feature.docs.tasks]
+clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
+clean-notebooks = { cmd = "python docs/examples/clear_notebooks.py" }
+clean-docs = {depends-on=["clean-generated-docs", "clean-notebooks"]}
+build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
+build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
+render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs", "build-interlinks"] }

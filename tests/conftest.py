@@ -9,9 +9,11 @@ from pathlib import Path
 import pytest
 
 from flood_adapt import __path__
-from flood_adapt.api.static import read_database
-from flood_adapt.misc.config import Settings
+from flood_adapt.config.config import Settings
+from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.log import FloodAdaptLogging
+from tests.data.create_test_input import update_database_input
+from tests.data.create_test_static import update_database_static
 from tests.fixtures import *  # noqa
 
 session_tmp_dir = Path(tempfile.mkdtemp())
@@ -40,31 +42,31 @@ def restore_db_from_snapshot():
         raise FileNotFoundError(
             "Snapshot path does not exist. Create a snapshot first."
         )
+    seen_files = set()
+    db_path = Settings().database_path
 
-    # Copy deleted/changed files from snapshot to database
     for root, _, files in os.walk(snapshot_dir):
+        # Copy deleted/changed files from snapshot to database
         for file in files:
             snapshot_file = Path(root) / file
             relative_path = snapshot_file.relative_to(snapshot_dir)
-            database_file = Settings().database_path / relative_path
+            database_file = db_path / relative_path
+            seen_files.add(database_file)
+
             if not database_file.exists():
                 os.makedirs(os.path.dirname(database_file), exist_ok=True)
                 shutil.copy2(snapshot_file, database_file)
             elif not filecmp.cmp(snapshot_file, database_file):
                 shutil.copy2(snapshot_file, database_file)
 
-    # Remove created files from database
-    for root, _, files in os.walk(Settings().database_path):
+    for root, dirs, files in os.walk(db_path, topdown=False):
+        # Remove created files from database
         for file in files:
             database_file = Path(root) / file
-            relative_path = database_file.relative_to(Settings().database_path)
-            snapshot_file = snapshot_dir / relative_path
-
-            if not snapshot_file.exists():
+            if database_file not in seen_files:
                 os.remove(database_file)
 
-    # Remove empty directories from the database
-    for root, dirs, _ in os.walk(Settings().database_path, topdown=False):
+        # Remove empty directories from the database
         for directory in dirs:
             dir_path = os.path.join(root, directory)
             if not os.listdir(dir_path):
@@ -74,9 +76,10 @@ def restore_db_from_snapshot():
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
-    Settings(
-        database_root=src_dir.parents[1] / "Database",
-        database_name="charleston_test",
+    settings = Settings(
+        DATABASE_ROOT=src_dir.parents[1] / "Database",
+        DATABASE_NAME="charleston_test",
+        DELETE_CRASHED_RUNS=clean,
         # leave system_folder empty to use the envvar or default system folder
     )
 
@@ -89,6 +92,8 @@ def session_setup_teardown():
         ignore_warnings=[DeprecationWarning],
     )
 
+    update_database_static(settings.database_path)
+    update_database_input(settings.database_path)
     create_snapshot()
 
     yield
@@ -141,13 +146,13 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        dbs = read_database(Settings().database_root, Settings().database_name)
+        fa = FloodAdapt(Settings().database_path)
 
         # Perform tests
-        yield dbs
+        yield fa.database
 
         # Teardown
-        dbs.shutdown()
+        fa.database.shutdown()
         if clean:
             restore_db_from_snapshot()
 
@@ -165,6 +170,69 @@ test_db_class = make_db_fixture("class")
 test_db_module = make_db_fixture("module")
 test_db_package = make_db_fixture("package")
 test_db_session = make_db_fixture("session")
+
+
+def make_fa_fixture(scope):
+    """
+    Generate a fixture that is used for testing in general.
+
+    Parameters
+    ----------
+    scope : str
+        The scope of the fixture (e.g., "function", "class", "module", "package", "session")
+
+    Returns
+    -------
+    _db_fixture : pytest.fixture
+        The database fixture used for testing
+    """
+    if scope not in ["function", "class", "module", "package", "session"]:
+        raise ValueError(f"Invalid fixture scope: {scope}")
+
+    @pytest.fixture(scope=scope)
+    def _db_fixture():
+        """
+        Fixture for setting up and tearing down the database once per scope.
+
+        Every test session:
+            1) Create a snapshot of the database
+            2) Run all tests
+            3) Restore the database from the snapshot
+
+        Every scope:
+            1) Initialize database controller
+            2) Perform all tests in scope
+            3) Restore the database from the snapshot
+
+        Usage
+        ----------
+        To access the fixture in a test , you need to:
+            1) pass the fixture name as an argument to the test function
+            2) directly use as a the database object:
+                def test_some_test(test_db):
+                    something = test_db.get_something()
+                    some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
+                    assert ...
+        """
+        # Setup
+        fa = FloodAdapt(Settings().database_path)
+
+        # Perform tests
+        yield fa
+
+        # Teardown
+        fa.database.shutdown()
+        if clean:
+            restore_db_from_snapshot()
+
+    return _db_fixture
+
+
+test_fa = make_fa_fixture("function")
+test_fa_class = make_fa_fixture("class")
+test_fa_module = make_fa_fixture("module")
+test_fa_package = make_fa_fixture("package")
+test_fa_session = make_fa_fixture("session")
 
 
 @pytest.fixture

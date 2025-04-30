@@ -164,17 +164,19 @@ cython_debug/
 /.idea
 /.pytest_cache
 
+
+# Pixi
+.pixi
+*.egg-info
+
+# FloodAdapt
+*.spw
 flood_adapt/system
 flood_adapt/system/
 /tests/test_database
 /tests/system
 system/
 
-# Pixi
-.pixi
-
-# FloodAdapt
-*.spw
-
-# auto generated docs
+# docs
 docs/api_ref
+docs/objects.txt
