@@ -23,14 +23,27 @@ from flood_adapt.objects.object_model import Object
 
 
 class Mode(str, Enum):
-    """Class describing the accepted input for the variable mode in Event."""
+    """Class describing the accepted input for the variable mode in Event.
+
+    Attributes
+    ----------
+    single_event : The single event mode.
+    risk : The risk mode.
+    """
 
     single_event = "single_event"
     risk = "risk"
 
 
 class Template(str, Enum):
-    """Class describing the accepted input for the variable template in Event."""
+    """Class describing the accepted input for the variable template in Event.
+
+    Attributes
+    ----------
+    Synthetic : The synthetic template.
+    Hurricane : The hurricane template.
+    Historical : The historical template.
+    """
 
     Synthetic = "Synthetic"
     Hurricane = "Hurricane"
@@ -66,8 +79,8 @@ class Event(Object):
     ----------
     name : str
         The name of the event.
-    description : str, default=""
-        The description of the event.
+    description : str
+        The description of the event. Defaults to "".
     time : TimeFrame
         The time frame of the event.
     template : Template

@@ -52,7 +52,6 @@ dynamic = ["version"]
 [project.optional-dependencies]
 dev = [
     "pytest             >=8.0,<9.0",
-    "pytest-timeout     >=2.0,<3.0",
     "pytest-cov         >=6.0,<7.0",
     "pre-commit         ==3.8.0",
     "ruff               ==0.5.5",
@@ -95,8 +94,6 @@ flood_adapt = ["py.typed", "database_builder/**"]
 [tool.pytest.ini_options]
 addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
 testpaths = ["tests"]
-timeout = 600 # hard max of 10 minutes per test to avoid hanging tests
-timeout_func_only = true # only timeout the test function, not the setup/teardown
 
 ### pixi ###
 [tool.pixi.pypi-dependencies]
@@ -142,4 +139,5 @@ clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_r
 clean-notebooks = { cmd = "python docs/examples/clear_notebooks.py" }
 clean-docs = {depends-on=["clean-generated-docs", "clean-notebooks"]}
 build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
-render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs"] }
+build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
+render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs", "build-interlinks"] }

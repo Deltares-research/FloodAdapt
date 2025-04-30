@@ -26,8 +26,8 @@ class Site(BaseModel):
     ----------
     name : str
         Name of the site.
-    description : str, default=""
-        Description of the site.
+    description : str
+        Description of the site. Defaults to "".
     lat : float
         Latitude of the site.
     lon : float

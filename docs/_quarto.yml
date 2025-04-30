@@ -12,10 +12,11 @@ project:
     - "examples/clear_notebooks.py"
 
 filters:
-  - include-code-files
   - interlinks
+  - include-code-files
 
 interlinks:
+  fast: true
   sources:
     geopandas:
       url: https://geopandas.org/en/stable/
@@ -62,32 +63,10 @@ quartodoc:
 
     - title: "Setup and configuration"
       package: flood_adapt
-      desc: "Configuration settings and logging utilities for Flood Adapt."
+      desc: "Configuration settings for FloodAdapt."
       contents:
         - Settings
-        - FloodAdaptLogging
         - Site
-
-    - title: "Adapters"
-      package: flood_adapt.adapter
-      desc: "Implementations of the adapters that make the connection between FloodAdapt and its models and databases."
-      contents:
-        - FiatAdapter
-        - SfincsAdapter
-
-    - title: "Database"
-      desc: "Database classes that define the structure of the database used in FloodAdapt."
-      package: flood_adapt.dbs_classes
-      contents:
-        - Database
-        - DbsBenefit
-        - DbsEvent
-        - DbsMeasure
-        - DbsProjection
-        - DbsScenario
-        - DbsStatic
-        - DbsStrategy
-        - DbsTemplate
 
     - title: "Object models"
       package: flood_adapt.objects.object_model
@@ -130,11 +109,20 @@ quartodoc:
         - HistoricalEvent
         - HurricaneEvent
         - EventSet
+        - TimeFrame
+        - IForcing
+        - ForcingType
+        - Template
+        - Mode
+        - SubEventModel
+
     - subtitle: "Projections"
       package: flood_adapt.objects
       desc: "Climate and socio-economic projections for future scenario analysis."
       contents:
         - Projection
+        - PhysicalProjection
+        - SocioEconomicChange
 
     - subtitle: "Scenarios"
       package: flood_adapt.objects
@@ -147,6 +135,7 @@ quartodoc:
       desc: "Benefit calculation for different flood risk management strategies. Benefits can be used to perform cost benefit analysis on a strategy, which is calculated based on the impact of the event on the population and infrastructure."
       contents:
         - Benefit
+        - CurrentSituationModel
 
     - title: "Unit system"
       package: flood_adapt.unit_system
