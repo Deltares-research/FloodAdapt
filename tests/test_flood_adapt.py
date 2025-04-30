@@ -444,18 +444,18 @@ class TestOutput:
 
     def test_impact_footprints(self, completed_scenario: tuple[FloodAdapt, str]):
         test_fa, scn_name = completed_scenario
-        footprints = test_fa.get_building_footprints(scn_name)
+        footprints = test_fa.get_building_footprint_impacts(scn_name)
         assert isinstance(footprints, gpd.GeoDataFrame)
 
     def test_impact_get_aggregation(self, completed_scenario: tuple[FloodAdapt, str]):
         test_fa, scn_name = completed_scenario
-        aggr_areas = test_fa.get_aggregation(scn_name)
+        aggr_areas = test_fa.get_aggregation_areas(scn_name)
         assert isinstance(aggr_areas, dict)
 
 
 class TestStatic:
     def test_buildings(self, test_fa: FloodAdapt):
-        assert isinstance(test_fa.get_buildings(), gpd.GeoDataFrame)
+        assert isinstance(test_fa.get_building_geometries(), gpd.GeoDataFrame)
 
     def test_aggr_areas(self, test_fa: FloodAdapt):
         aggr_areas = test_fa.get_aggregation_areas()
@@ -463,8 +463,8 @@ class TestStatic:
         assert isinstance(aggr_areas, dict)
         assert isinstance(aggr_areas["aggr_lvl_1"], gpd.GeoDataFrame)
 
-    def test_property_types(self, test_fa: FloodAdapt):
-        types = test_fa.get_property_types()
+    def test_building_types(self, test_fa: FloodAdapt):
+        types = test_fa.get_building_types()
         expected_types = ["RES", "COM", "all"]
 
         assert isinstance(types, list)

@@ -50,3 +50,59 @@ description conforms to the standard.
 For changelog generation we use [git cliff](https://github.com/orhun/git-cliff). As long as the conventional commit specification
 is followed as specified above, this should happen automatically with every release. If you wish you can also generate them
 locally by simply running `git cliff` if you have the tool installed.
+
+
+# Releases
+
+This section explains how to create new releases for the Python package and how the release process works.
+
+---
+
+## Workflow Overview
+
+The [release workflow](.github/workflows/publish-to-pypi.yml) is triggered when a new tag is pushed to the repository in the format `v*.*.*` (e.g., `v1.2.3`). It performs the following steps:
+1. Validates that the new version is greater than the latest version on PyPI.
+2. Installs dependencies and builds the package.
+3. Publishes the package to PyPI.
+4. Creates a GitHub release with the tag name and release notes.
+
+---
+
+## Steps to Create a New Release
+
+1. **Create a release branch**
+```bash
+git checkout main
+git pull
+git checkout -b feat/release-v123
+```
+2. **Increase the version in [`__init__.py`](flood_adapt/__init__.py)**
+```python
+__version__ = "1.2.3"
+# Note that the v is excluded here
+```
+
+3. **Commit & Push**
+```bash
+git add .
+git commit -m "bump version 1.2.3"
+git push
+```
+4. **Create a PR, Review and Merge**
+
+- By forcing these changes to go via a PR, we ensure that releases can only be made from code that passes all tests and has valid documentation.
+- After having all status checks pass (tests & docs), you can merge the PR into main
+
+5. **Create and push a new Tag**
+
+Use the following commands to create a tag for the new version:
+```bash
+git tag v1.2.3
+git push --tags
+
+# Note that creating a tag is essentially like labeling a snapshot of your current local repository. So any other information/meta-data will be lost when people view the tag.
+
+# i.e. it does not matter on which branch you are, just what your code looks like at the moment of running the above commands.
+```
+
+From here, the workflow should handle everything. You can find the latest release [here](https://github.com/Deltares/FloodAdapt/releases/latest).
