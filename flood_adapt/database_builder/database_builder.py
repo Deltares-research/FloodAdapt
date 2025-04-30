@@ -579,19 +579,26 @@ class DatabaseBuilder:
     ### FIAT ###
     def create_fiat_model(self) -> FiatModel:
         fiat = FiatModel(
-            risk=self.create_risk_model(),
             config=self.create_fiat_config(),
             benefits=self.create_benefit_config(),
+            risk=self.create_risk_model(),
         )
         return fiat
 
-    def create_risk_model(self) -> RiskModel:
+    def create_risk_model(self) -> Optional[RiskModel]:
         # Check if return periods are provided
         if not self.config.return_periods:
-            risk = RiskModel()
-            self.logger.warning(
-                f"Return periods for risk calculations not provided. Default values of {risk.return_periods} will be used."
-            )
+            if self._probabilistic_set_name:
+                risk = RiskModel()
+                self.logger.warning(
+                    f"No return periods provided, but a probabilistic set is available. Using default return periods {risk.return_periods}."
+                )
+                return risk
+            else:
+                self.logger.warning(
+                    "No return periods provided and no probabilistic set available. Risk calculations will not be performed."
+                )
+                return None
         else:
             risk = RiskModel(return_periods=self.config.return_periods)
         return risk
