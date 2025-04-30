@@ -198,18 +198,18 @@ class FiatModel(BaseModel):
 
     Attributes
     ----------
-    risk : RiskModel
-        Configuration of probabilistic risk runs.
+    risk : Optional[RiskModel]
+        Configuration of probabilistic risk runs. default=None
     config : FiatConfigModel
         Configuration for the FIAT model.
-    benefits : BenefitsModel
-        Configuration for running benefit calculations.
+    benefits : Optional[BenefitsModel]
+        Configuration for running benefit calculations. default=None
     """
 
-    risk: RiskModel
-
     config: FiatConfigModel
-    benefits: BenefitsModel
+
+    benefits: Optional[BenefitsModel] = None
+    risk: Optional[RiskModel] = None
 
     @staticmethod
     def read_toml(path: Path) -> "FiatModel":
