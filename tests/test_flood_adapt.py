@@ -449,7 +449,7 @@ class TestOutput:
 
     def test_impact_get_aggregation(self, completed_scenario: tuple[FloodAdapt, str]):
         test_fa, scn_name = completed_scenario
-        aggr_areas = test_fa.get_aggregation_areas(scn_name)
+        aggr_areas = test_fa.get_aggregated_impacts(scn_name)
         assert isinstance(aggr_areas, dict)
 
 
