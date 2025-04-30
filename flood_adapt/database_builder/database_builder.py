@@ -379,6 +379,7 @@ class DatabaseBuilder:
 
     _has_roads: bool = False
     _aggregation_areas: Optional[list] = None
+    _probabilistic_set_name: Optional[str] = None
 
     def __init__(self, config: ConfigModel, overwrite: bool = True):
         self.config = config
