@@ -47,7 +47,7 @@ jobs:
       new_version: ${{ steps.release.outputs.new_version }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Extract tag and Details
         id: release
@@ -150,19 +150,20 @@ jobs:
           name: dist
           path: dist/
 
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Set up tools
+        run: cargo install git-cliff typos-cli
+
       - name: Generate changelog
-        uses: orhun/git-cliff-action@v3
         id: git-cliff
-        with:
-          config: cliff.toml
-          args: --verbose v${{ needs.check_pypi.outputs.latest_version }}..${{ needs.details.outputs.tag_name }}
-        env:
-          OUTPUT: RELEASE_NOTES.md
-          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          git-cliff --config cliff.toml --verbose v${{ steps.check_pypi.outputs.latest_version }}..${{ needs.details.outputs.tag_name }} --output RELEASE_NOTES.md
 
       - name: Create GitHub Release
         id: create_release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create ${{ needs.details.outputs.tag_name }} dist/* --title ${{ needs.details.outputs.tag_name }} --notes-file ${{ steps.git-cliff.outputs.changelog }}
+          gh release create ${{ needs.details.outputs.tag_name }} dist/* --title ${{ needs.details.outputs.tag_name }} --notes-file RELEASE_NOTES.md
