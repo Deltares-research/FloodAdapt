@@ -473,7 +473,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b6/5f/d6d641b490fd3ec2c4c13b4244d68deea3a1b970a97be64f34fb5504ff72/pydantic_settings-2.9.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e2/52/c2bfe5dec31e228541a3d0c43f75b432bb87d0d35f09b92ac5b643e7e409/pyflwdir-0.5.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8a/0b/9fcc47d19c48b59121088dd6da2488a49d5f72dacf8262e2790a1d2c7d15/pygments-2.19.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/2a/e0/9df946cd387947176f2dd449439f8de1d6f7e41bab0a460750cf19f3ea8d/pyinstaller-6.7.0-py3-none-manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/84/5b/08e0b305ba71e6d7cb247e27d714da7536895b0283132d74d249bf662366/pyinstaller-6.13.0-py3-none-manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/9a/98/0273ffc4f85a4038c8d316a75ef5ac1f10f1bbe5ba50c27871b73da2e3d2/pyinstaller_hooks_contrib-2025.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ee/87/f1bb6a595f14a327e8285b9eb54d41fef76c585a0edef0a45f6fc95de125/PyNaCl-1.5.0-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/ae/15/501aa4823c142232169d54255ab343f28c4ea9e7fa489b8433dcc873a942/pyogrio-0.10.0-cp311-cp311-manylinux_2_28_x86_64.whl
@@ -656,7 +656,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b6/5f/d6d641b490fd3ec2c4c13b4244d68deea3a1b970a97be64f34fb5504ff72/pydantic_settings-2.9.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e2/52/c2bfe5dec31e228541a3d0c43f75b432bb87d0d35f09b92ac5b643e7e409/pyflwdir-0.5.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8a/0b/9fcc47d19c48b59121088dd6da2488a49d5f72dacf8262e2790a1d2c7d15/pygments-2.19.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/d9/01/c5a663940f3e05219db48af7a4e65960921dd71252ee0c81297661e60c39/pyinstaller-6.7.0-py3-none-win_amd64.whl
+      - pypi: https://files.pythonhosted.org/packages/1a/06/15cbe0e25d1e73d5b981fa41ff0bb02b15e924e30b8c61256f4a28c4c837/pyinstaller-6.13.0-py3-none-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/9a/98/0273ffc4f85a4038c8d316a75ef5ac1f10f1bbe5ba50c27871b73da2e3d2/pyinstaller_hooks_contrib-2025.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5e/22/d3db169895faaf3e2eda892f005f433a62db2decbcfbc2f61e6517adfa87/PyNaCl-1.5.0-cp36-abi3-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/94/8d/24f21e6a93ca418231aee3bddade7a0766c89c523832f29e08a8860f83e6/pyogrio-0.10.0-cp311-cp311-win_amd64.whl
@@ -4414,8 +4414,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: .
   name: flood-adapt
-  version: 0.3.1
-  sha256: d6f8b3e9992e8eb2d242e04dcffcc0cbbb03c1844fc72fa22f918cfd08be2e4f
+  version: 0.3.2
+  sha256: 45ba11c9b3ffb1c2d188705c817e5c8b776ead1af36b2981f4ccecdef6c239c4
   requires_dist:
   - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
@@ -4445,7 +4445,7 @@ packages:
   - typos==1.23.6 ; extra == 'dev'
   - build>=1.2,<2.0 ; extra == 'build'
   - twine>=6.0,<7.0 ; extra == 'build'
-  - pyinstaller==6.7.0 ; extra == 'build'
+  - pyinstaller==6.13.0 ; extra == 'build'
   - pefile<2024.8.26 ; extra == 'build'
   - jupyter>=1.0,<2.0 ; extra == 'docs'
   - jupyter-cache>=1.0,<2.0 ; extra == 'docs'
@@ -4458,8 +4458,8 @@ packages:
   requires_python: '>=3.8,<3.13'
 - pypi: .
   name: flood-adapt
-  version: 0.3.1
-  sha256: d6f8b3e9992e8eb2d242e04dcffcc0cbbb03c1844fc72fa22f918cfd08be2e4f
+  version: 0.3.2
+  sha256: 45ba11c9b3ffb1c2d188705c817e5c8b776ead1af36b2981f4ccecdef6c239c4
   requires_dist:
   - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
@@ -4489,7 +4489,7 @@ packages:
   - typos==1.23.6 ; extra == 'dev'
   - build>=1.2,<2.0 ; extra == 'build'
   - twine>=6.0,<7.0 ; extra == 'build'
-  - pyinstaller==6.7.0 ; extra == 'build'
+  - pyinstaller==6.13.0 ; extra == 'build'
   - pefile<2024.8.26 ; extra == 'build'
   - jupyter>=1.0,<2.0 ; extra == 'docs'
   - jupyter-cache>=1.0,<2.0 ; extra == 'docs'
@@ -8308,42 +8308,42 @@ packages:
   requires_dist:
   - colorama>=0.4.6 ; extra == 'windows-terminal'
   requires_python: '>=3.8'
-- pypi: https://files.pythonhosted.org/packages/2a/e0/9df946cd387947176f2dd449439f8de1d6f7e41bab0a460750cf19f3ea8d/pyinstaller-6.7.0-py3-none-manylinux2014_x86_64.whl
+- pypi: https://files.pythonhosted.org/packages/1a/06/15cbe0e25d1e73d5b981fa41ff0bb02b15e924e30b8c61256f4a28c4c837/pyinstaller-6.13.0-py3-none-win_amd64.whl
   name: pyinstaller
-  version: 6.7.0
-  sha256: 4ff8ce04f1e5ab3a65d4a1ee6036cba648d0cdae6a7a33c6f0ca4ace46cdd43c
+  version: 6.13.0
+  sha256: 8d4296236b85aae570379488c2da833b28828b17c57c2cc21fccd7e3811fe372
   requires_dist:
   - setuptools>=42.0.0
   - altgraph
-  - pyinstaller-hooks-contrib>=2024.6
-  - packaging>=22.0
-  - importlib-metadata>=4.6 ; python_full_version < '3.10'
-  - macholib>=1.8 ; sys_platform == 'darwin'
-  - pefile>=2022.5.30 ; sys_platform == 'win32'
+  - pefile>=2022.5.30,!=2024.8.26 ; sys_platform == 'win32'
   - pywin32-ctypes>=0.2.1 ; sys_platform == 'win32'
-  - argcomplete ; extra == 'completion'
+  - macholib>=1.8 ; sys_platform == 'darwin'
+  - pyinstaller-hooks-contrib>=2025.2
+  - importlib-metadata>=4.6 ; python_full_version < '3.10'
+  - packaging>=22.0
   - pytest>=2.7.3 ; extra == 'hook-testing'
   - execnet>=1.5.0 ; extra == 'hook-testing'
   - psutil ; extra == 'hook-testing'
-  requires_python: '>=3.8,<3.13'
-- pypi: https://files.pythonhosted.org/packages/d9/01/c5a663940f3e05219db48af7a4e65960921dd71252ee0c81297661e60c39/pyinstaller-6.7.0-py3-none-win_amd64.whl
+  - argcomplete ; extra == 'completion'
+  requires_python: '>=3.8,<3.14'
+- pypi: https://files.pythonhosted.org/packages/84/5b/08e0b305ba71e6d7cb247e27d714da7536895b0283132d74d249bf662366/pyinstaller-6.13.0-py3-none-manylinux2014_x86_64.whl
   name: pyinstaller
-  version: 6.7.0
-  sha256: a3f85935b40f89e717f1e67377d3bfc953060e5795828ecf5357e2c1f7aa52bf
+  version: 6.13.0
+  sha256: bc09795f5954135dd4486c1535650958c8218acb954f43860e4b05fb515a21c0
   requires_dist:
   - setuptools>=42.0.0
   - altgraph
-  - pyinstaller-hooks-contrib>=2024.6
-  - packaging>=22.0
-  - importlib-metadata>=4.6 ; python_full_version < '3.10'
-  - macholib>=1.8 ; sys_platform == 'darwin'
-  - pefile>=2022.5.30 ; sys_platform == 'win32'
+  - pefile>=2022.5.30,!=2024.8.26 ; sys_platform == 'win32'
   - pywin32-ctypes>=0.2.1 ; sys_platform == 'win32'
-  - argcomplete ; extra == 'completion'
+  - macholib>=1.8 ; sys_platform == 'darwin'
+  - pyinstaller-hooks-contrib>=2025.2
+  - importlib-metadata>=4.6 ; python_full_version < '3.10'
+  - packaging>=22.0
   - pytest>=2.7.3 ; extra == 'hook-testing'
   - execnet>=1.5.0 ; extra == 'hook-testing'
   - psutil ; extra == 'hook-testing'
-  requires_python: '>=3.8,<3.13'
+  - argcomplete ; extra == 'completion'
+  requires_python: '>=3.8,<3.14'
 - pypi: https://files.pythonhosted.org/packages/9a/98/0273ffc4f85a4038c8d316a75ef5ac1f10f1bbe5ba50c27871b73da2e3d2/pyinstaller_hooks_contrib-2025.3-py3-none-any.whl
   name: pyinstaller-hooks-contrib
   version: '2025.3'
