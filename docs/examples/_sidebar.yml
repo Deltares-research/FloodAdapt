@@ -1,0 +1,11 @@
+website:
+  sidebar:
+    - id: examples
+      border: true
+      style: "docked"
+      background: light
+      search: true
+      title: "Examples"
+      href: examples/index.qmd # This contains text before sections start
+      contents:
+        - "examples/example1.ipynb"
