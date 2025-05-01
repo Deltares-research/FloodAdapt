@@ -60,7 +60,7 @@ dev = [
 build = [
     "build              >=1.2,<2.0",
     "twine              >=6.0,<7.0",
-    "pyinstaller        ==6.7.0",
+    "pyinstaller        ==6.13.0",
     "pefile             <2024.8.26", # This version introduces a significant slowdown in binary vs data reclassification step of pyinstaller. Pyinstaller is aware. https://github.com/pyinstaller/pyinstaller/issues/8762
 ]
 docs = [
