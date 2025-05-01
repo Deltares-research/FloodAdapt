@@ -1,31 +1,90 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Introduction",
+    "objectID": "examples/example1.html",
+    "href": "examples/example1.html",
+    "title": "Some title",
     "section": "",
-    "text": "Welcome to the FloodAdapt documentation!\nIn this introduction, you will find an overview of FloodAdapt, information on its intended uses, and reader guidance explaining the information you will find in this documentation."
+    "text": "import os\nprint (os)\n\n&lt;module 'os' (frozen)&gt;\n\n\nsome text\n\n\n\n Back to top",
+    "crumbs": [
+      "Some title"
+    ]
   },
   {
-    "objectID": "index.html#overview",
-    "href": "index.html#overview",
-    "title": "Introduction",
-    "section": "Overview",
-    "text": "Overview\nFloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software"
+    "objectID": "formatting_tips.html",
+    "href": "formatting_tips.html",
+    "title": "Flood Adapt Documentation",
+    "section": "",
+    "text": "I put some styling infos here: but you can check all formatting here:\nhttps://quarto.org/docs/authoring/markdown-basics.html"
   },
   {
-    "objectID": "index.html#intended-uses-of-floodadapt",
-    "href": "index.html#intended-uses-of-floodadapt",
-    "title": "Introduction",
-    "section": "Intended Uses of FloodAdapt",
-    "text": "Intended Uses of FloodAdapt\nFloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to aid in prioritizing investments, and to assess the effectiveness and longevity of different adaptation options.\nFloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.\nFloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt."
+    "objectID": "formatting_tips.html#generate-tables",
+    "href": "formatting_tips.html#generate-tables",
+    "title": "Flood Adapt Documentation",
+    "section": "Generate tables",
+    "text": "Generate tables\nhttps://tablesgenerator.com/markdown_tables"
   },
   {
-    "objectID": "index.html#reader-guidance",
-    "href": "index.html#reader-guidance",
-    "title": "Introduction",
-    "section": "Reader Guidance",
-    "text": "Reader Guidance\nFloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Setting up FloodAdapt in a new location requires additional capabilities.\n\nUser Guide The user guide provides information on how to get started with FloodAdapt, and describes how to use all the FloodAdapt functionalities.\nSetup Guide - The setup guides users in setting up FloodAdapt in their area of interest.\nTechnical docs - The technical docs provide detailed information on the calculation methods within FloodAdapt."
+    "objectID": "formatting_tips.html#headings",
+    "href": "formatting_tips.html#headings",
+    "title": "Flood Adapt Documentation",
+    "section": "Headings",
+    "text": "Headings\nfirst level : # Heading second level : ## Heading third level : ### Heading\n…"
+  },
+  {
+    "objectID": "formatting_tips.html#fonts",
+    "href": "formatting_tips.html#fonts",
+    "title": "Flood Adapt Documentation",
+    "section": "Fonts",
+    "text": "Fonts\nbold: ** word ** (remove tab spaces betweenw asterisk and word)\nitalic: * this will be italic when tab space removed *\n&lt;Make font a different color?&gt;"
+  },
+  {
+    "objectID": "formatting_tips.html#paragraphs",
+    "href": "formatting_tips.html#paragraphs",
+    "title": "Flood Adapt Documentation",
+    "section": "Paragraphs",
+    "text": "Paragraphs\nIf you want to create a paragraph or continue in the next line add 2 tab spaces behind the last word.\nE.g I write and want to continue in the next line.\nIf I only press enter to continue in the next line as I did now this will not show. -&gt; I have to add 2 spaces after line.\nLet’s see what happens when I add the 2 tabs:\nI to continue in the next line. If I only press enter to continue in the next line as I did now this will not show."
+  },
+  {
+    "objectID": "formatting_tips.html#additional-options",
+    "href": "formatting_tips.html#additional-options",
+    "title": "Flood Adapt Documentation",
+    "section": "Additional options",
+    "text": "Additional options\n\nEmphasizing\nCreate different types to emphasize the text eg code\nExample 1: conda install jupyter : Use ` (grave accent) before and after your sentence (without any spacing)\nExample 2: something: just indent one time. for scrolling do the same just write a longer text (see below)\nsomething really long that will needs scrolling so I will just continue writing until the scrolling bar appears.\n\n\nBullet Points\nJust write numbers below one another and use Indentation for the levels.\n\nMerry\nChristmas\nKathryn\n\nand a new year too\n\n\nUse the asterisks for your first level. For the second level in the row below add an indentation and a + per entry.\n\nMerry (* Merry)\n\nChristmas (+ Christmas)\nKathryn (+ Kathryn)"
+  },
+  {
+    "objectID": "formatting_tips.html#urls",
+    "href": "formatting_tips.html#urls",
+    "title": "Flood Adapt Documentation",
+    "section": "URLs",
+    "text": "URLs\nadd a URL and give it a name a\n[here comes the name] (here comes the URL)\nFloodAdapt Deltares webpage"
+  },
+  {
+    "objectID": "formatting_tips.html#embedded-videos",
+    "href": "formatting_tips.html#embedded-videos",
+    "title": "Flood Adapt Documentation",
+    "section": "Embedded videos",
+    "text": "Embedded videos"
+  },
+  {
+    "objectID": "formatting_tips.html#figures",
+    "href": "formatting_tips.html#figures",
+    "title": "Flood Adapt Documentation",
+    "section": "Figures",
+    "text": "Figures\nadd a figure and give it a name add #fig..to cross-reference. Just included here for demonstration purposes):\nFirst an exclamation mark - [here comes the name] (here comes the path to the file){#fig-logo}\nadd “fig-” before the label name to be able to cross reference.\n\n\n\n\n\n\nFigure 1: Floodadapt\n\n\n\n\nCross reference figure\nI want to reference the Figure 1."
+  },
+  {
+    "objectID": "formatting_tips.html#note-warning-blocks",
+    "href": "formatting_tips.html#note-warning-blocks",
+    "title": "Flood Adapt Documentation",
+    "section": "Note/ Warning Blocks",
+    "text": "Note/ Warning Blocks\nCreate info blocks within your test.\nJust use this header (remove quotation mark): “::: {.callout-tip}” write here the Note. and end with the following footer. “:::”\nExample: ::: {.callout-tip} create a tip :::\n\n\n\n\n\n\nWarning\n\n\n\nCreate a warning .\n\n\n\noptions\n\nnote\nwarning\nimportant\ntip\ncaution"
+  },
+  {
+    "objectID": "formatting_tips.html#cross-reference",
+    "href": "formatting_tips.html#cross-reference",
+    "title": "Flood Adapt Documentation",
+    "section": "Cross Reference",
+    "text": "Cross Reference\nCross reference to another page or figure: (remove quotation marks)\n“[Write here the text would want to see]”(“add the reference”)\n\nCross reference page\n“[Setup Guide]”(/3_setup_guide/index.qmd)” Here I use the reference to the Setup Guide\n\n\nCross reference Figure\nuse the @ before the logo Reference and use the name you gave it as reference above: @ fig-logo (remove space)\nExample: Figure 1"
   },
   {
     "objectID": "api_ref/objects/TimeFrame.html",
@@ -3291,80 +3350,59 @@
     ]
   },
   {
-    "objectID": "formatting_tips.html",
-    "href": "formatting_tips.html",
-    "title": "Flood Adapt Documentation",
+    "objectID": "examples/index.html",
+    "href": "examples/index.html",
+    "title": "Examples",
     "section": "",
-    "text": "I put some styling infos here: but you can check all formatting here:\nhttps://quarto.org/docs/authoring/markdown-basics.html"
+    "text": "This section contains executable examples that demonstrate how to use the FloodAdapt API in practice. These notebooks are meant to complement the User Guide and API Reference by showing real-world use cases, recommended workflows, and tips for getting started with your own data.\nEach example focuses on a specific aspect of the FloodAdapt workflow, such as setting up a site, defining events, projections and measures, creating adaptation strategies, or evaluating risk and benefits. The notebooks can be run independently, but they are organized in a logical sequence for those following the full workflow from start to finish."
   },
   {
-    "objectID": "formatting_tips.html#generate-tables",
-    "href": "formatting_tips.html#generate-tables",
-    "title": "Flood Adapt Documentation",
-    "section": "Generate tables",
-    "text": "Generate tables\nhttps://tablesgenerator.com/markdown_tables"
+    "objectID": "examples/index.html#introduction",
+    "href": "examples/index.html#introduction",
+    "title": "Examples",
+    "section": "",
+    "text": "This section contains executable examples that demonstrate how to use the FloodAdapt API in practice. These notebooks are meant to complement the User Guide and API Reference by showing real-world use cases, recommended workflows, and tips for getting started with your own data.\nEach example focuses on a specific aspect of the FloodAdapt workflow, such as setting up a site, defining events, projections and measures, creating adaptation strategies, or evaluating risk and benefits. The notebooks can be run independently, but they are organized in a logical sequence for those following the full workflow from start to finish."
   },
   {
-    "objectID": "formatting_tips.html#headings",
-    "href": "formatting_tips.html#headings",
-    "title": "Flood Adapt Documentation",
-    "section": "Headings",
-    "text": "Headings\nfirst level : # Heading second level : ## Heading third level : ### Heading\n…"
+    "objectID": "examples/index.html#how-to-run",
+    "href": "examples/index.html#how-to-run",
+    "title": "Examples",
+    "section": "How to Run",
+    "text": "How to Run\nAll notebooks in this section are runnable with standard Python tools such as jupyter or quarto preview. They assume that FloodAdapt and its dependencies are correctly installed. Refer to the Setup Guide for help with installation and configuration. To run these locally, make sure to select the correct python interpreter. (if you are using pixi, the correct interpreter is flood-adapt:docs)\nEach notebook includes narrative explanations and inline code cells. You can copy/modify the code to adapt it to your own use cases."
   },
   {
-    "objectID": "formatting_tips.html#fonts",
-    "href": "formatting_tips.html#fonts",
-    "title": "Flood Adapt Documentation",
-    "section": "Fonts",
-    "text": "Fonts\nbold: ** word ** (remove tab spaces betweenw asterisk and word)\nitalic: * this will be italic when tab space removed *\n&lt;Make font a different color?&gt;"
+    "objectID": "examples/index.html#examples",
+    "href": "examples/index.html#examples",
+    "title": "Examples",
+    "section": "Examples",
+    "text": "Examples\n\n0. Example example description"
   },
   {
-    "objectID": "formatting_tips.html#paragraphs",
-    "href": "formatting_tips.html#paragraphs",
-    "title": "Flood Adapt Documentation",
-    "section": "Paragraphs",
-    "text": "Paragraphs\nIf you want to create a paragraph or continue in the next line add 2 tab spaces behind the last word.\nE.g I write and want to continue in the next line.\nIf I only press enter to continue in the next line as I did now this will not show. -&gt; I have to add 2 spaces after line.\nLet’s see what happens when I add the 2 tabs:\nI to continue in the next line. If I only press enter to continue in the next line as I did now this will not show."
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Introduction",
+    "section": "",
+    "text": "Welcome to the FloodAdapt documentation!\nIn this introduction, you will find an overview of FloodAdapt, information on its intended uses, and reader guidance explaining the information you will find in this documentation."
   },
   {
-    "objectID": "formatting_tips.html#additional-options",
-    "href": "formatting_tips.html#additional-options",
-    "title": "Flood Adapt Documentation",
-    "section": "Additional options",
-    "text": "Additional options\n\nEmphasizing\nCreate different types to emphasize the text eg code\nExample 1: conda install jupyter : Use ` (grave accent) before and after your sentence (without any spacing)\nExample 2: something: just indent one time. for scrolling do the same just write a longer text (see below)\nsomething really long that will needs scrolling so I will just continue writing until the scrolling bar appears.\n\n\nBullet Points\nJust write numbers below one another and use Indentation for the levels.\n\nMerry\nChristmas\nKathryn\n\nand a new year too\n\n\nUse the asterisks for your first level. For the second level in the row below add an indentation and a + per entry.\n\nMerry (* Merry)\n\nChristmas (+ Christmas)\nKathryn (+ Kathryn)"
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
+    "title": "Introduction",
+    "section": "Overview",
+    "text": "Overview\nFloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software"
   },
   {
-    "objectID": "formatting_tips.html#urls",
-    "href": "formatting_tips.html#urls",
-    "title": "Flood Adapt Documentation",
-    "section": "URLs",
-    "text": "URLs\nadd a URL and give it a name a\n[here comes the name] (here comes the URL)\nFloodAdapt Deltares webpage"
+    "objectID": "index.html#intended-uses-of-floodadapt",
+    "href": "index.html#intended-uses-of-floodadapt",
+    "title": "Introduction",
+    "section": "Intended Uses of FloodAdapt",
+    "text": "Intended Uses of FloodAdapt\nFloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to aid in prioritizing investments, and to assess the effectiveness and longevity of different adaptation options.\nFloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.\nFloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt."
   },
   {
-    "objectID": "formatting_tips.html#embedded-videos",
-    "href": "formatting_tips.html#embedded-videos",
-    "title": "Flood Adapt Documentation",
-    "section": "Embedded videos",
-    "text": "Embedded videos"
-  },
-  {
-    "objectID": "formatting_tips.html#figures",
-    "href": "formatting_tips.html#figures",
-    "title": "Flood Adapt Documentation",
-    "section": "Figures",
-    "text": "Figures\nadd a figure and give it a name add #fig..to cross-reference. Just included here for demonstration purposes):\nFirst an exclamation mark - [here comes the name] (here comes the path to the file){#fig-logo}\nadd “fig-” before the label name to be able to cross reference.\n\n\n\n\n\n\nFigure 1: Floodadapt\n\n\n\n\nCross reference figure\nI want to reference the Figure 1."
-  },
-  {
-    "objectID": "formatting_tips.html#note-warning-blocks",
-    "href": "formatting_tips.html#note-warning-blocks",
-    "title": "Flood Adapt Documentation",
-    "section": "Note/ Warning Blocks",
-    "text": "Note/ Warning Blocks\nCreate info blocks within your test.\nJust use this header (remove quotation mark): “::: {.callout-tip}” write here the Note. and end with the following footer. “:::”\nExample: ::: {.callout-tip} create a tip :::\n\n\n\n\n\n\nWarning\n\n\n\nCreate a warning .\n\n\n\noptions\n\nnote\nwarning\nimportant\ntip\ncaution"
-  },
-  {
-    "objectID": "formatting_tips.html#cross-reference",
-    "href": "formatting_tips.html#cross-reference",
-    "title": "Flood Adapt Documentation",
-    "section": "Cross Reference",
-    "text": "Cross Reference\nCross reference to another page or figure: (remove quotation marks)\n“[Write here the text would want to see]”(“add the reference”)\n\nCross reference page\n“[Setup Guide]”(/3_setup_guide/index.qmd)” Here I use the reference to the Setup Guide\n\n\nCross reference Figure\nuse the @ before the logo Reference and use the name you gave it as reference above: @ fig-logo (remove space)\nExample: Figure 1"
+    "objectID": "index.html#reader-guidance",
+    "href": "index.html#reader-guidance",
+    "title": "Introduction",
+    "section": "Reader Guidance",
+    "text": "Reader Guidance\nFloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Setting up FloodAdapt in a new location requires additional capabilities.\n\nUser Guide The user guide provides information on how to get started with FloodAdapt, and describes how to use all the FloodAdapt functionalities.\nSetup Guide - The setup guides users in setting up FloodAdapt in their area of interest.\nTechnical docs - The technical docs provide detailed information on the calculation methods within FloodAdapt."
   }
 ]
