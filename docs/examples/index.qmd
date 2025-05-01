@@ -6,8 +6,6 @@ page-layout: article
 
 ## Introduction
 
-FloodAdapt, developed by [Deltares](https://www.deltares.nl), is an open-source Python library for integrated flood risk analysis and adaptation strategy planning. It combines hydrodynamic, hydraulic, and socio-economic modeling components to evaluate the impact of different flood adaptation strategies under a wide range of climate and socio-economic scenarios.
-
 This section contains executable examples that demonstrate how to use the FloodAdapt API in practice. These notebooks are meant to complement the [User Guide](../4_user_guide/index.qmd) and [API Reference](../api_ref/api_index.qmd) by showing real-world use cases, recommended workflows, and tips for getting started with your own data.
 
 Each example focuses on a specific aspect of the FloodAdapt workflow, such as setting up a site, defining events, projections and measures, creating adaptation strategies, or evaluating risk and benefits. The notebooks can be run independently, but they are organized in a logical sequence for those following the full workflow from start to finish.
