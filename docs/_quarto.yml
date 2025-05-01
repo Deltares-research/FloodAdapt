@@ -8,8 +8,6 @@ project:
     - "*.qmd"
     - "*.ipynb"
     - "!PDF_Documentation.qmd"
-  post-render:
-    - "examples/clear_notebooks.py"
 
 filters:
   - interlinks
@@ -29,6 +27,7 @@ interlinks:
 
 metadata-files:
   - user_documentation.yml # user guide + sidebar
+  - examples/_sidebar.yml # examples + sidebar
   - api_ref/_sidebar.yml  # api reference + sidebar
   - _version.yml          # version information
 number-sections: false
@@ -203,6 +202,8 @@ website:
         href: 5_technical_docs/index.qmd
       - text: API Reference
         href: api_ref/api_index.qmd
+      - text: Examples
+        href: examples/index.qmd
 
     right:
       - icon: github
