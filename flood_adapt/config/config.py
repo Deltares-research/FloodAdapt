@@ -15,12 +15,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 DEFAULT_SYSTEM_FOLDER = Path(__file__).parents[1] / "system"
 DEFAULT_EXE_PATHS: dict[str, dict[str, Path]] = {
     "windows": {
-        "sfincs": DEFAULT_SYSTEM_FOLDER / "sfincs" / "sfincs.exe",
-        "fiat": DEFAULT_SYSTEM_FOLDER / "fiat" / "fiat.exe",
+        "sfincs": DEFAULT_SYSTEM_FOLDER / "win-64" / "sfincs" / "sfincs.exe",
+        "fiat": DEFAULT_SYSTEM_FOLDER / "win-64" / "fiat" / "fiat.exe",
     },
     "linux": {
-        "sfincs": DEFAULT_SYSTEM_FOLDER / "sfincs" / "bin" / "sfincs",
-        "fiat": DEFAULT_SYSTEM_FOLDER / "fiat" / "fiat",
+        "sfincs": DEFAULT_SYSTEM_FOLDER / "linux-64" / "sfincs" / "bin" / "sfincs",
+        "fiat": DEFAULT_SYSTEM_FOLDER / "linux-64" / "fiat" / "fiat",
     },
 }
 

@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.config.config import SYSTEM_SUFFIXES, Settings
+from flood_adapt.config.config import DEFAULT_EXE_PATHS, DEFAULT_SYSTEM_FOLDER, Settings
 from flood_adapt.misc.utils import modified_environ
 
 
@@ -27,13 +27,17 @@ class TestSettingsModel:
     def _create_dummy_db(
         self, db_root: Path, name: str = "test", system: str = "Windows"
     ) -> tuple[Path, str]:
-        ext = SYSTEM_SUFFIXES[system]
-
-        sfincs_bin = db_root / "system" / "sfincs" / f"sfincs{ext}"
+        sfincs_rel = DEFAULT_EXE_PATHS[system.lower()]["sfincs"].relative_to(
+            DEFAULT_SYSTEM_FOLDER
+        )
+        sfincs_bin = db_root / "system" / sfincs_rel
         sfincs_bin.parent.mkdir(parents=True)
         sfincs_bin.touch()
 
-        fiat_bin = db_root / "system" / "fiat" / f"fiat{ext}"
+        _fiat_rel = DEFAULT_EXE_PATHS[system.lower()]["fiat"].relative_to(
+            DEFAULT_SYSTEM_FOLDER
+        )
+        fiat_bin = db_root / "system" / _fiat_rel
         fiat_bin.parent.mkdir(parents=True)
         fiat_bin.touch()
 
@@ -100,7 +104,7 @@ class TestSettingsModel:
     @pytest.mark.skip(
         reason="TODO: Add sfincs & fiat binaries for Linux & Darwin to the system folder in the test database"
     )
-    @pytest.mark.parametrize("system", SYSTEM_SUFFIXES.keys())
+    @pytest.mark.parametrize("system", ["windows", "linux"])
     def test_init_from_defaults_no_envvars(self, system: str, mock_system):
         # Arrange
         mock_system.return_value = system
@@ -111,13 +115,21 @@ class TestSettingsModel:
         # Assert
         self._assert_settings(settings=settings)
 
-    @pytest.mark.parametrize("system", SYSTEM_SUFFIXES.keys())
+    @pytest.mark.parametrize("system", ["windows", "linux"])
     def test_init_from_args_no_envvars(self, system: str, create_dummy_db, mock_system):
         # Arrange
         mock_system.return_value = system
         db_root, name = create_dummy_db(system=system)
-        sfincs_bin = db_root / "system" / "sfincs" / f"sfincs{SYSTEM_SUFFIXES[system]}"
-        fiat_bin = db_root / "system" / "fiat" / f"fiat{SYSTEM_SUFFIXES[system]}"
+
+        sfincs_rel = DEFAULT_EXE_PATHS[system.lower()]["sfincs"].relative_to(
+            DEFAULT_SYSTEM_FOLDER
+        )
+        sfincs_bin = db_root / "system" / sfincs_rel
+
+        fiat_rel = DEFAULT_EXE_PATHS[system.lower()]["fiat"].relative_to(
+            DEFAULT_SYSTEM_FOLDER
+        )
+        fiat_bin = db_root / "system" / fiat_rel
 
         # Act
         settings = Settings(
@@ -136,7 +148,7 @@ class TestSettingsModel:
             expected_fiat=fiat_bin,
         )
 
-    @pytest.mark.parametrize("system", SYSTEM_SUFFIXES.keys())
+    @pytest.mark.parametrize("system", ["windows", "linux"])
     def test_init_from_envvars_overwriting_defaults(
         self, system: str, create_dummy_db: Callable, mock_system
     ):
@@ -158,7 +170,7 @@ class TestSettingsModel:
                 expected_root=db_root,
             )
 
-    @pytest.mark.parametrize("system", SYSTEM_SUFFIXES.keys())
+    @pytest.mark.parametrize("system", ["windows", "linux"])
     def test_init_from_args_overwriting_envvars(
         self, system: str, create_dummy_db, mock_system
     ):
@@ -197,7 +209,7 @@ class TestSettingsModel:
         assert f"Database {name} at" in str(exc_info.value)
         assert "does not exist." in str(exc_info.value)
 
-    @pytest.mark.parametrize("system", SYSTEM_SUFFIXES.keys())
+    @pytest.mark.parametrize("system", ["windows", "linux"])
     @pytest.mark.parametrize("model", ["fiat", "sfincs"])
     def test_missing_model_binaries_raise_validation_error(
         self, system: str, model: str, create_dummy_db, mock_system
