@@ -12,40 +12,47 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-SYSTEM_SUFFIXES: dict[str, str] = {
-    "Windows": ".exe",
-    "Linux": "",
-    "Darwin": "",
+DEFAULT_SYSTEM_FOLDER = Path(__file__).parents[1] / "system"
+DEFAULT_EXE_PATHS: dict[str, dict[str, Path]] = {
+    "windows": {
+        "sfincs": DEFAULT_SYSTEM_FOLDER / "sfincs" / "sfincs.exe",
+        "fiat": DEFAULT_SYSTEM_FOLDER / "fiat" / "fiat.exe",
+    },
+    "linux": {
+        "sfincs": DEFAULT_SYSTEM_FOLDER / "sfincs" / "bin" / "sfincs",
+        "fiat": DEFAULT_SYSTEM_FOLDER / "fiat" / "fiat",
+    },
 }
 
 
-def _system_extension() -> str:
-    if system() not in SYSTEM_SUFFIXES:
-        raise ValueError(f"Unsupported system {system()}")
-    return SYSTEM_SUFFIXES[system()]
-
-
-def _system_in_source(model_name: str) -> Path:
+def _default_exe_path(exe_name: str) -> Path:
     """
-    Get the path to the system binary for the given model name.
+    Get the default path for the given executable name based on the system type.
 
     Parameters
     ----------
-    model_name : str
-        The name of the model (e.g., "sfincs", "fiat").
+    exe_name : str
+        The name of the executable (e.g., "sfincs", "fiat").
 
     Returns
     -------
     Path
-        The default path to the system binary for the given model name.
+        The default path to the executable.
 
+    Raises
+    ------
+    ValueError
+        If the system type is not recognized.
     """
-    return (
-        Path(__file__).parents[3]
-        / "system"
-        / model_name
-        / f"{model_name}{_system_extension()}"
-    )
+    if system().lower() not in DEFAULT_EXE_PATHS:
+        raise ValueError(
+            f"System type '{system()}' is not recognized. Supported types are: {', '.join(DEFAULT_EXE_PATHS.keys())}."
+        )
+    if exe_name not in DEFAULT_EXE_PATHS[system().lower()]:
+        raise ValueError(
+            f"Executable name '{exe_name}' is not recognized. Supported names are: {', '.join(DEFAULT_EXE_PATHS[system().lower()].keys())}."
+        )
+    return DEFAULT_EXE_PATHS[system().lower()][exe_name]
 
 
 class Settings(BaseSettings):
@@ -126,14 +133,14 @@ class Settings(BaseSettings):
     )
 
     sfincs_path: Path = Field(
-        default=_system_in_source("sfincs"),
+        default=_default_exe_path("sfincs"),
         alias="SFINCS_BIN_PATH",  # environment variable: SFINCS_BIN_PATH
         description="The path of the sfincs binary.",
         exclude=True,
     )
 
     fiat_path: Path = Field(
-        default=_system_in_source("fiat"),
+        default=_default_exe_path("fiat"),
         alias="FIAT_BIN_PATH",  # environment variable: FIAT_BIN_PATH
         description="The path of the fiat binary.",
         exclude=True,
