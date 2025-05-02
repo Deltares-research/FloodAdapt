@@ -72,6 +72,7 @@ docs = [
     "sphinx             >=8.0,<9.0",
     "sphinx-rtd-theme   >=3.0,<4.0",
     "regex              >=2024.11,<2025.0",
+    "minio              >=7.2.15,<8"
 ]
 all = ["flood-adapt[build,dev,docs]"]
 
@@ -141,6 +142,7 @@ build-db-builder = {cmd = "python distribution/build_database_builder_executable
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
 clean-notebooks = { cmd = "python docs/examples/clear_notebooks.py" }
 clean-docs = {depends-on=["clean-generated-docs", "clean-notebooks"]}
-build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
+fetch-data = { cmd = "python docs/fetch_data.py", outputs=["docs/examples/_database"] }
+build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs", "fetch-data" ] }
 build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
 render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs", "build-interlinks"] }

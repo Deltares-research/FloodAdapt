@@ -1,20 +1,53 @@
 from pathlib import Path
-import boto3
-from botocore.client import Config
+from minio import Minio
+import os
 
-# The access key is created here https://s3-console.deltares.nl/access-keys
-s3 = boto3.resource(
-    's3',
-    endpoint_url='https://s3.deltares.nl',
-    aws_access_key_id='*****',
-    aws_secret_access_key='*****',
-    config=Config(signature_version='s3v4'),
-    region_name='eu-west-1'
-)
+def download_database(output_path: Path, overwrite: bool = False) -> None:
+    MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
+    MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
+    if MINIO_ACCESS_KEY is None or MINIO_SECRET_KEY is None:
+        raise ValueError(
+            "Set the environment variables `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` before running this script."
+        )
 
-bucket_name = 'flood-adapt'
-file_path_in_bucket = 'databases/charleston_test'
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(
+            f"Output path {output_path} already exists. Use `overwrite=True` to overwrite."
+        )
 
-local_save_file = Path(__file__).parent / "data" / 'charleston_test'
-local_save_file.parent.mkdir(parents=True, exist_ok=True)
-s3.Bucket(bucket_name).download_file(file_path_in_bucket , local_save_file)
+    bucket_name="flood-adapt"
+
+    client = Minio(
+        endpoint="s3.deltares.nl",
+        access_key=MINIO_ACCESS_KEY,
+        secret_key=MINIO_SECRET_KEY,
+        region="eu-west-1",
+    )
+
+    if not client.bucket_exists(bucket_name):
+        raise ValueError(
+            f"Bucket {bucket_name} does not exist. Please create it first."
+        )
+
+    prefix_in_bucket = "examples/charleston_test"
+
+    objs = client.list_objects(
+        bucket_name=bucket_name,
+        prefix=prefix_in_bucket,
+        recursive=True,
+    )
+    for obj in objs:
+        rel_path = Path(obj.object_name).relative_to(prefix_in_bucket)
+        client.fget_object(
+            bucket_name=bucket_name,
+            object_name=obj.object_name,
+            file_path=str(output_path / rel_path),
+        )
+        print(
+            f"Downloaded {rel_path} to {output_path / rel_path}"
+        )
+
+
+if __name__ == "__main__":
+    db_path = Path(__file__).parent / "_database" / "charleston_test"
+    download_database(db_path)
