@@ -34,12 +34,17 @@ from flood_adapt.config.fiat import (
     SVIModel,
 )
 from flood_adapt.config.gui import (
+    AggregationDmgLayer,
+    BenefitsLayer,
+    FloodMapLayer,
+    FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
-    MapboxLayersModel,
+    MapboxLayers,
     PlottingModel,
+    SviLayer,
     SyntheticTideModel,
-    VisualizationLayersModel,
+    VisualizationLayers,
 )
 from flood_adapt.config.sfincs import (
     Cstype,
@@ -1554,8 +1559,8 @@ class DatabaseBuilder:
                 f"Unit system {self.config.unit_system} not recognized. Please choose 'imperial' or 'metric'."
             )
 
-    def create_visualization_layers(self) -> VisualizationLayersModel:
-        visualization_layers = VisualizationLayersModel(
+    def create_visualization_layers(self) -> VisualizationLayers:
+        visualization_layers = VisualizationLayers(
             default_bin_number=4,
             default_colors=["#FFFFFF", "#FEE9CE", "#E03720", "#860000"],
             layer_names=[],
@@ -1568,42 +1573,74 @@ class DatabaseBuilder:
 
         return visualization_layers
 
-    def create_mapbox_layers_config(self) -> MapboxLayersModel:
+    def create_mapbox_layers_config(self) -> MapboxLayers:
         # Read default colors from template
         fd_max = self.config.gui.max_flood_depth
         ad_max = self.config.gui.max_aggr_dmg
         ftd_max = self.config.gui.max_footprint_dmg
         b_max = self.config.gui.max_benefits
 
-        svi_bins = None
+        svi_layer = None
         if self.config.svi is not None:
-            svi_bins = [0.05, 0.2, 0.4, 0.6, 0.8]
+            svi_layer = SviLayer(
+                bins=[0.05, 0.2, 0.4, 0.6, 0.8],
+                colors=[
+                    "#FFFFFF",
+                    "#FEE9CE",
+                    "#FDBB84",
+                    "#FC844E",
+                    "#E03720",
+                    "#860000",
+                ],
+            )
 
-        mapbox_layers = MapboxLayersModel(
-            flood_map_depth_min=0.0,  # mask areas with flood depth lower than this (zero = all depths shown) # TODO How to define this?
-            flood_map_zbmax=-9999,  # mask areas with elevation lower than this (very negative = show all calculated flood depths) # TODO How to define this?,
-            flood_map_bins=[0.2 * fd_max, 0.6 * fd_max, fd_max],
-            damage_decimals=0,
-            footprints_dmg_type="absolute",
-            aggregation_dmg_bins=[
-                0.00001,
-                0.1 * ad_max,
-                0.25 * ad_max,
-                0.5 * ad_max,
-                ad_max,
-            ],
-            footprints_dmg_bins=[
-                0.00001,
-                0.06 * ftd_max,
-                0.2 * ftd_max,
-                0.4 * ftd_max,
-                ftd_max,
-            ],
-            benefits_bins=[0, 0.01, 0.02 * b_max, 0.2 * b_max, b_max],
-            svi_bins=svi_bins,
-            **self._get_bin_colors(),
+        benefits_layer = None
+        if self.config.probabilistic_set is not None:
+            benefits_layer = BenefitsLayer(
+                bins=[0, 0.01, 0.02 * b_max, 0.2 * b_max, b_max],
+                colors=[
+                    "#FF7D7D",
+                    "#FFFFFF",
+                    "#DCEDC8",
+                    "#AED581",
+                    "#7CB342",
+                    "#33691E",
+                ],
+                threshold=0.0,
+            )
+
+        mapbox_layers = MapboxLayers(
+            floodmap=FloodMapLayer(
+                bins=[0.2 * fd_max, 0.6 * fd_max, fd_max],
+                colors=["#D7ECFB", "#8ABDDD", "#1C73A4", "#081D58"],
+                zbmax=-9999,
+                depth_min=0.0,
+            ),
+            aggregation_dmg=AggregationDmgLayer(
+                bins=[0.00001, 0.1 * ad_max, 0.25 * ad_max, 0.5 * ad_max, ad_max],
+                colors=[
+                    "#FFFFFF",
+                    "#FEE9CE",
+                    "#FDBB84",
+                    "#FC844E",
+                    "#E03720",
+                    "#860000",
+                ],
+            ),
+            footprints_dmg=FootprintsDmgLayer(
+                bins=[0.00001, 0.06 * ftd_max, 0.2 * ftd_max, 0.4 * ftd_max, ftd_max],
+                colors=[
+                    "#FFFFFF",
+                    "#FEE9CE",
+                    "#FDBB84",
+                    "#FC844E",
+                    "#E03720",
+                    "#860000",
+                ],
+            ),
+            svi=svi_layer,
+            benefits=benefits_layer,
         )
-
         return mapbox_layers
 
     def create_hazard_plotting_config(self) -> PlottingModel:

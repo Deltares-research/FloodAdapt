@@ -8,65 +8,71 @@ from flood_adapt.config.fiat import DamageType
 from flood_adapt.objects.forcing import unit_system as us
 
 
-class MapboxLayersModel(BaseModel):
+class Layer(BaseModel):
+    """
+    Base class for layers in the GUI.
+
+    Attributes
+    ----------
+    bins : list[float]
+        The bins for the layer.
+    colors : list[str]
+        The colors for the layer.
+    """
+
+    bins: list[float]
+    colors: list[str]
+
+
+class FloodMapLayer(Layer):
+    zbmax: float
+    depth_min: float
+
+
+class AggregationDmgLayer(Layer):
+    damage_decimals: Optional[int] = 0
+
+
+class FootprintsDmgLayer(Layer):
+    type: DamageType = DamageType.absolute
+    damage_decimals: Optional[int] = 0
+    buildings_min_zoom_level: int = 13
+
+
+class BenefitsLayer(Layer):
+    threshold: Optional[float] = None
+
+
+class SviLayer(Layer):
+    pass
+
+
+class MapboxLayers(BaseModel):
     """The configuration of the mapbox layers in the gui.
 
     Attributes
     ----------
-    buildings_min_zoom_level : int
-        The minimum zoom level for the buildings layer.
-    flood_map_depth_min : float
-        The minimum depth for the flood map layer.
-    flood_map_zbmax : float
-        The maximum depth for the flood map layer.
-    flood_map_bins : list[float]
-        The bins for the flood map layer.
-    flood_map_colors : list[str]
-        The colors for the flood map layer.
-    aggregation_dmg_bins : list[float]
-        The bins for the aggregation damage layer.
-    aggregation_dmg_colors : list[str]
-        The colors for the aggregation damage layer.
-    footprints_dmg_type : DamageType
-        The type of damage for the footprints layer.
-    footprints_dmg_bins : list[float]
-        The bins for the footprints layer.
-    footprints_dmg_colors : list[str]
-        The colors for the footprints layer.
-    svi_bins : Optional[list[float]]
-        The bins for the SVI layer.
-    svi_colors : Optional[list[str]]
-        The colors for the SVI layer.
-    benefits_bins : list[float]
-        The bins for the benefits layer.
-    benefits_colors : list[str]
-        The colors for the benefits layer.
-    benefits_threshold : Optional[float], default=None
-        The threshold for the benefits layer.
-    damage_decimals : Optional[int], default=0
-        The number of decimals for the damage layer.
-
+    floodmap : FloodMapLayer
+        The configuration of the floodmap layer.
+    aggregation_dmg : AggregationDmgLayer
+        The configuration of the aggregation damage layer.
+    footprints_dmg : FootprintsDmgLayer
+        The configuration of the footprints damage layer.
+    svi : SviLayer
+        The configuration of the SVI layer.
+    benefits : BenefitsLayer
+        The configuration of the benefits layer.
     """
 
-    buildings_min_zoom_level: int = 13
-    flood_map_depth_min: float
-    flood_map_zbmax: float
-    flood_map_bins: list[float]
-    flood_map_colors: list[str]
-    aggregation_dmg_bins: list[float]
-    aggregation_dmg_colors: list[str]
-    footprints_dmg_type: DamageType = DamageType.absolute
-    footprints_dmg_bins: list[float]
-    footprints_dmg_colors: list[str]
-    svi_bins: Optional[list[float]] = Field(default_factory=list)
-    svi_colors: Optional[list[str]] = Field(default_factory=list)
-    benefits_bins: list[float]
-    benefits_colors: list[str]
-    benefits_threshold: Optional[float] = None
-    damage_decimals: Optional[int] = 0
+    floodmap: FloodMapLayer
+    aggregation_dmg: AggregationDmgLayer
+    footprints_dmg: FootprintsDmgLayer
+
+    benefits: Optional[BenefitsLayer] = None
+    svi: Optional[SviLayer] = None
 
 
-class VisualizationLayersModel(BaseModel):
+class VisualizationLayers(Layer):
     """The configuration of the layers you might want to visualize in the gui.
 
     Attributes
@@ -203,17 +209,17 @@ class GuiModel(BaseModel):
     ----------
     units : GuiUnitModel
         The unit system used in the GUI.
-    mapbox_layers : MapboxLayersModel
+    mapbox_layers : MapboxLayers
         The configuration of the mapbox layers in the GUI.
-    visualization_layers : VisualizationLayersModel
+    visualization_layers : VisualizationLayers
         The configuration of the visualization layers in the GUI.
     plotting : PlottingModel
         The configuration for creating hazard forcing plots.
     """
 
     units: GuiUnitModel
-    mapbox_layers: MapboxLayersModel
-    visualization_layers: VisualizationLayersModel
+    mapbox_layers: MapboxLayers
+    visualization_layers: VisualizationLayers
     plotting: PlottingModel
 
     @staticmethod
