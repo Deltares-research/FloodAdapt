@@ -21,6 +21,16 @@ class DbsScenario(DbsTemplate[Scenario]):
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         scenarios = super().summarize_objects()
+        scenarios["Projection"] = [
+            self._read_variable_in_toml("projection", path)
+            for path in scenarios["path"]
+        ]
+        scenarios["Event"] = [
+            self._read_variable_in_toml("event", path) for path in scenarios["path"]
+        ]
+        scenarios["Strategy"] = [
+            self._read_variable_in_toml("strategy", path) for path in scenarios["path"]
+        ]
         scenarios["finished"] = [
             self.has_run_check(benefit)
             for benefit in self._database.benefits.summarize_objects()["name"]
