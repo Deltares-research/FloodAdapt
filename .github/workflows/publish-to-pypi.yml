@@ -47,7 +47,7 @@ jobs:
       new_version: ${{ steps.release.outputs.new_version }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Extract tag and Details
         id: release
@@ -67,6 +67,8 @@ jobs:
   check_pypi:
     needs: details
     runs-on: ubuntu-latest
+    outputs:
+      latest_version: ${{ steps.check_pypi.outputs.latest_version }}
     steps:
       - name: Fetch information from PyPI
         run: |
@@ -77,7 +79,7 @@ jobs:
             latest_previous_version="0.0.0"
           fi
           echo "Latest version on PyPI: $latest_previous_version"
-          echo "latest_previous_version=$latest_previous_version" >> $GITHUB_ENV
+          echo "latest_version=$latest_previous_version" >> "$GITHUB_OUTPUT"
 
       - name: Compare versions and exit if not newer
         run: |
@@ -132,7 +134,7 @@ jobs:
 
   github_release:
     name: Create GitHub Release
-    needs: [setup_and_build, details]
+    needs: [setup_and_build, details, check_pypi]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -148,9 +150,20 @@ jobs:
           name: dist
           path: dist/
 
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Set up tools
+        run: cargo install git-cliff typos-cli
+
+      - name: Generate changelog
+        id: git-cliff
+        run: |
+          git-cliff --config cliff.toml --verbose v${{ needs.check_pypi.outputs.latest_version }}..${{ needs.details.outputs.tag_name }} --output RELEASE_NOTES.md
+
       - name: Create GitHub Release
         id: create_release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create ${{ needs.details.outputs.tag_name }} dist/* --title ${{ needs.details.outputs.tag_name }} --generate-notes
+          gh release create ${{ needs.details.outputs.tag_name }} dist/* --title ${{ needs.details.outputs.tag_name }} --notes-file RELEASE_NOTES.md

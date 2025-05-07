@@ -14,11 +14,13 @@ except ImportError as e:
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DIST_ROOT = Path(__file__).resolve().parents[0]
 PROJECT_NAME = "FloodAdapt_Database_Builder"
-BUILD_DIR = Path(DIST_ROOT, "build")
-DIST_DIR = Path(DIST_ROOT, "dist")
-SRC_DIR = Path(PROJECT_ROOT) / "flood_adapt"
+BUILD_DIR = DIST_ROOT / "build"
+DIST_DIR = DIST_ROOT / "dist"
+EXE_SYSTEM_DIR = DIST_DIR / PROJECT_NAME / "_internal" / "flood_adapt" / "system"
+SRC_DIR = PROJECT_ROOT / "flood_adapt"
 SITE_PACKAGES_PATH = Path(sys.executable).parent / "Lib" / "site-packages"
 ENTRY_POINT = SRC_DIR / "database_builder" / "database_builder.py"
+SYSTEM_FOLDER = SRC_DIR / "system"
 
 # Dependencies to include in the executable
 DEPENDENCIES = [
@@ -32,6 +34,23 @@ DEPENDENCIES = [
     "hydromt_sfincs",
     "scipy",
 ]
+
+
+def copy_system_folder() -> None:
+    """Copy the system folder to the executable."""
+    if not SYSTEM_FOLDER.exists():
+        raise FileNotFoundError(
+            f"System folder not found. Ensure this path exists: {SYSTEM_FOLDER}"
+        )
+    if not (SYSTEM_FOLDER / "fiat").exists():
+        raise FileNotFoundError(
+            f"System folder does not contain the 'fiat' directory. Ensure this path exists: {SYSTEM_FOLDER / 'fiat'}"
+        )
+    if not (SYSTEM_FOLDER / "sfincs").exists():
+        raise FileNotFoundError(
+            f"System folder does not contain the 'sfincs' directory. Ensure this path exists: {SYSTEM_FOLDER / 'sfincs'}"
+        )
+    shutil.copytree(SYSTEM_FOLDER, EXE_SYSTEM_DIR)
 
 
 def copy_shapely_libs():
@@ -71,6 +90,8 @@ def run_pyinstaller() -> None:
     templates_path = ENTRY_POINT.parent / "templates"
     command.append(f"--add-data={templates_path}:templates")
     PyInstaller.__main__.run(command)
+
+    copy_system_folder()
 
     print("\nFinished making the executable for the FloodAdapt database builder!")
     print(f"\nExecutable can be found at: {DIST_DIR / PROJECT_NAME}\n\n")

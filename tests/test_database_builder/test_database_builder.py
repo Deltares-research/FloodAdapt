@@ -108,7 +108,26 @@ class TestDataBaseBuilder:
         # Assert
         assert risk.return_periods == mock_config.return_periods
 
-    def test_create_risk_model_returns_default_risk(self, mock_config: ConfigModel):
+    def test_create_risk_model_returns_default_risk_if_risk_event(
+        self, mock_config: ConfigModel
+    ):
+        # Arrange
+        mock_config.probabilistic_set = str(
+            self.db_path / "input" / "events" / "test_set"
+        )
+        mock_config.return_periods = []
+        builder = DatabaseBuilder(mock_config)
+        builder._probabilistic_set_name = "test_set"
+
+        # Act
+        risk = builder.create_risk_model()
+
+        # Assert
+        assert risk == RiskModel()
+
+    def test_create_risk_model_returns_none_if_no_risk_event_and_no_rp(
+        self, mock_config: ConfigModel
+    ):
         # Arrange
         mock_config.return_periods = []
         builder = DatabaseBuilder(mock_config)
@@ -117,11 +136,13 @@ class TestDataBaseBuilder:
         risk = builder.create_risk_model()
 
         # Assert
-        assert risk == RiskModel()
+        assert risk is None
 
     def test_add_probabilistic_set(self, mock_config: ConfigModel):
         # Arrange
-        mock_config.probabilistic_set = self.db_path / "input" / "events" / "test_set"
+        mock_config.probabilistic_set = str(
+            self.db_path / "input" / "events" / "test_set"
+        )
         builder = DatabaseBuilder(mock_config)
         builder.add_probabilistic_set()
 
@@ -129,7 +150,9 @@ class TestDataBaseBuilder:
 
     def test_create_benefits_with_test_set(self, mock_config: ConfigModel):
         # Arrange
-        mock_config.probabilistic_set = self.db_path / "input" / "events" / "test_set"
+        mock_config.probabilistic_set = str(
+            self.db_path / "input" / "events" / "test_set"
+        )
         builder = DatabaseBuilder(mock_config)
         builder._probabilistic_set_name = "test_set"
 
