@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Optional
+
 from dotenv import load_dotenv
 from minio import Minio
 
@@ -36,18 +36,8 @@ def download_directory(client: Minio, path_in_bucket: str, output_path: Path, ov
             f"Downloaded {rel_path} to {output_path / rel_path}"
         )
 
-def prepare_client(access_key: Optional[str] = None, secret_key: Optional[str] = None ) -> Minio:
+def prepare_client(access_key: str, secret_key: str) -> Minio:
     """Prepare the MinIO client."""
-    load_dotenv()
-
-    access_key = access_key or os.getenv("MINIO_ACCESS_KEY")
-    secret_key = secret_key or os.getenv("MINIO_SECRET_KEY")
-
-    if access_key is None or secret_key is None:
-        raise ValueError(
-            "Set the environment variables `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` before running this script or provide arguments to this function."
-        )
-
     return Minio(
         endpoint="s3.deltares.nl",
         access_key=access_key,
@@ -58,28 +48,17 @@ def prepare_client(access_key: Optional[str] = None, secret_key: Optional[str] =
 if __name__ == "__main__":
     data_dir = Path(__file__).parent / "_data"
 
-    client = prepare_client()
+    load_dotenv()
+
+    access_key = os.getenv("MINIO_ACCESS_KEY") or "AZBGNdxd45VEPFp1IiGe" # read-only access key for the flood-adapt/public
+    secret_key = os.getenv("MINIO_SECRET_KEY") or "nHnbTeZ4iAWlM2i5veikZq9UGvOZogUWzi4tLftZ"# read-only access key for the flood-adapt/public
+
+    client = prepare_client(access_key=access_key, secret_key=secret_key)
 
     # requires just the public access keys
     download_directory(
         client=client,
         path_in_bucket="public",
-        output_path=data_dir / "data",
-        overwrite=True
-    )
-
-    # requires the private access keys
-    download_directory(
-        client=client,
-        path_in_bucket="examples/charleston_test",
-        output_path=data_dir / "charleston_test",
-        overwrite=True
-    )
-
-    # requires the private access keys
-    download_directory(
-        client=client,
-        path_in_bucket="system",
-        output_path=data_dir / "system",
+        output_path=data_dir,
         overwrite=True
     )
