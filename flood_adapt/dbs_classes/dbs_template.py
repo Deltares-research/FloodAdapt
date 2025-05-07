@@ -285,10 +285,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             Raise error if name is already in use.
         """
         # Check if the object exists
-        if object_model.name in self.list_objects()["name"]:
-            raise ValueError(
-                f"{self.display_name}: '{object_model.name}' already exists. Choose a different name."
-            )
         object_exists = object_model.name in self.list_objects()["name"]
 
         # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you

@@ -159,7 +159,7 @@ jobs:
       - name: Generate changelog
         id: git-cliff
         run: |
-          git-cliff --config cliff.toml --verbose v${{ steps.check_pypi.outputs.latest_version }}..${{ needs.details.outputs.tag_name }} --output RELEASE_NOTES.md
+          git-cliff --config cliff.toml --verbose v${{ needs.check_pypi.outputs.latest_version }}..${{ needs.details.outputs.tag_name }} --output RELEASE_NOTES.md
 
       - name: Create GitHub Release
         id: create_release
