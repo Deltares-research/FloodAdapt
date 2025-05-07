@@ -31,10 +31,7 @@ class DbsScenario(DbsTemplate[Scenario]):
         scenarios["Strategy"] = [
             self._read_variable_in_toml("strategy", path) for path in scenarios["path"]
         ]
-        scenarios["finished"] = [
-            self.has_run_check(benefit)
-            for benefit in self._database.benefits.summarize_objects()["name"]
-        ]
+        scenarios["finished"] = [self.has_run_check(scn) for scn in scenarios["name"]]
 
         return scenarios
 

@@ -266,7 +266,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             "path": paths,
             "last_modification_date": last_modification_date,
         }
-
         return objects
 
     @staticmethod
