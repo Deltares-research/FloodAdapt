@@ -16,33 +16,33 @@ _FIAT_COLUMNS = get_fiat_columns()
 
 class TestFiatAdapter:
     @pytest.fixture(scope="class")
-    def run_scenario_no_measures(self, test_db_class):
+    def run_scenario_no_measures(self, test_fa_class):
         scenario_name = "current_extreme12ft_no_measures"
-        test_db_class.run_scenario(scenario_name)
-        scenario_obj: Scenario = test_db_class.scenarios.get(scenario_name)
-        yield test_db_class, scenario_name, scenario_obj
+        test_fa_class.run_scenario(scenario_name)
+        scenario_obj: Scenario = test_fa_class.get_scenario(scenario_name)
+        yield test_fa_class.database, scenario_name, scenario_obj
 
     @pytest.fixture(scope="class")
-    def run_scenario_all_measures(self, test_db_class):
+    def run_scenario_all_measures(self, test_fa_class):
         scenario_name = "all_projections_extreme12ft_strategy_comb"
-        test_db_class.run_scenario(scenario_name)
-        scenario_obj: Scenario = test_db_class.scenarios.get(scenario_name)
-        runner = ScenarioRunner(test_db_class, scenario_obj)
-        yield test_db_class, scenario_name, scenario_obj, runner
+        test_fa_class.run_scenario(scenario_name)
+        scenario_obj: Scenario = test_fa_class.get_scenarios(scenario_name)
+        runner = ScenarioRunner(test_fa_class.database, scenario_obj)
+        yield test_fa_class, scenario_name, scenario_obj, runner
 
     @pytest.fixture(scope="class")
-    def run_scenario_raise_datum(self, test_db_class):
+    def run_scenario_raise_datum(self, test_fa_class):
         scenario_name = "current_extreme12ft_raise_datum"
-        test_db_class.run_scenario(scenario_name)
-        scenario_obj: Scenario = test_db_class.scenarios.get(scenario_name)
-        yield test_db_class, scenario_name, scenario_obj
+        test_fa_class.run_scenario(scenario_name)
+        scenario_obj: Scenario = test_fa_class.get_scenario(scenario_name)
+        yield test_fa_class, scenario_name, scenario_obj
 
     @pytest.fixture(scope="class")
-    def run_scenario_return_periods(self, test_db_class):
+    def run_scenario_return_periods(self, test_fa_class):
         scenario_name = "current_test_set_no_measures"
-        test_db_class.run_scenario(scenario_name)
-        scenario_obj: Scenario = test_db_class.scenarios.get(scenario_name)
-        yield test_db_class, scenario_name, scenario_obj
+        test_fa_class.run_scenario(scenario_name)
+        scenario_obj: Scenario = test_fa_class.get_scenario(scenario_name)
+        yield test_fa_class.database, scenario_name, scenario_obj
 
     def test_no_measures(self, run_scenario_no_measures):
         test_db, scenario_name, scenario_obj = run_scenario_no_measures

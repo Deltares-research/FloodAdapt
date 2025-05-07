@@ -32,7 +32,7 @@ class ScenarioRunner:
 
     def run(self) -> None:
         """Run hazard and impact models for the scenario."""
-        self._database.has_run_hazard(self._scenario)
+        self._database.has_run_hazard(self._scenario.name)
         self._load_objects(self._scenario)
         self.results_path.mkdir(parents=True, exist_ok=True)
 
