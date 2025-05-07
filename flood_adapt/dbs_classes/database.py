@@ -382,12 +382,12 @@ class Database(IDatabase):
             runner.run_cost_benefit()
 
     def update(self) -> None:
-        self.projections_list = self._projections.list_objects()
-        self.events_list = self._events.list_objects()
-        self.measures_list = self._measures.list_objects()
-        self.strategies_list = self._strategies.list_objects()
-        self.scenarios_list = self._scenarios.list_objects()
-        self.benefits_list = self._benefits.list_objects()
+        self.projections_list = self._projections.summarize_objects()
+        self.events_list = self._events.summarize_objects()
+        self.measures_list = self._measures.summarize_objects()
+        self.strategies_list = self._strategies.summarize_objects()
+        self.scenarios_list = self._scenarios.summarize_objects()
+        self.benefits_list = self._benefits.summarize_objects()
 
     def get_outputs(self) -> dict[str, Any]:
         """Return a dictionary with info on the outputs that currently exist in the database.
@@ -397,7 +397,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'path', 'last_modification_date' and "finished" info
         """
-        all_scenarios = pd.DataFrame(self._scenarios.list_objects())
+        all_scenarios = pd.DataFrame(self._scenarios.summarize_objects())
         if len(all_scenarios) > 0:
             df = all_scenarios[all_scenarios["finished"]]
         else:
@@ -585,17 +585,17 @@ class Database(IDatabase):
         """
         match object_type:
             case "projections":
-                return self.projections.list_objects()
+                return self.projections.summarize_objects()
             case "events":
-                return self.events.list_objects()
+                return self.events.summarize_objects()
             case "measures":
-                return self.measures.list_objects()
+                return self.measures.summarize_objects()
             case "strategies":
-                return self.strategies.list_objects()
+                return self.strategies.summarize_objects()
             case "scenarios":
-                return self.scenarios.list_objects()
+                return self.scenarios.summarize_objects()
             case "benefits":
-                return self.benefits.list_objects()
+                return self.benefits.summarize_objects()
             case _:
                 raise ValueError(
                     f"Object type '{object_type}' is not valid. Must be one of 'projections', 'events', 'measures', 'strategies' or 'scenarios'."
@@ -618,9 +618,10 @@ class Database(IDatabase):
         if runner.impacts.hazard.has_run:
             return
 
+        scenarios = [self.scenarios.get(scn) for scn in self.scenarios_list["name"]]
         scns_simulated = [
             sim
-            for sim in self.scenarios.list_objects()["objects"]
+            for sim in scenarios
             if self.scenarios.output_path.joinpath(sim.name, "Flooding").is_dir()
         ]
 

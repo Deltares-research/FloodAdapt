@@ -37,19 +37,16 @@ class DbsMeasure(DbsTemplate[Measure]):
         # Load and return the object
         return MeasureFactory.get_measure_object(full_path)
 
-    def list_objects(self) -> dict[str, list[Any]]:
+    def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the measures that currently exist in the database.
 
         Returns
         -------
         dict[str, Any]
-            Includes 'name', 'description', 'path' and 'last_modification_date' info
+            Includes 'name', 'description', 'path' and 'last_modification_date' and 'geometry' info
         """
-        measures = self._get_object_list()
+        measures = self._get_object_summary()
         objects = [self.get(name) for name in measures["name"]]
-
-        measures["description"] = [obj.description for obj in objects]
-        measures["objects"] = objects
 
         geometries = []
         for obj in objects:
@@ -99,7 +96,10 @@ class DbsMeasure(DbsTemplate[Measure]):
             list of strategies that use the measure
         """
         # Get all the strategies
-        strategies = self._database.strategies.list_objects()["objects"]
+        strategies = [
+            self._database.strategies.get(name)
+            for name in self._database.strategies.summarize_objects()
+        ]
 
         # Check if measure is used in a strategy
         used_in_strategy = [
