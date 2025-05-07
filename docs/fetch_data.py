@@ -15,10 +15,7 @@ To get non-public access keys, please contact us at floodadapt@deltares.nl
 
 
 def download_directory(client: Minio, path_in_bucket: str, output_path: Path, overwrite: bool = False, bucket_name = "flood-adapt") -> None:
-    """Download a directory from a MinIO bucket to a local directory.
-
-
-    """
+    """Download a directory from a MinIO bucket to a local directory."""
     if output_path.exists() and not overwrite:
         raise FileExistsError(
             f"Output path {output_path} already exists. Use `overwrite=True` to overwrite."
