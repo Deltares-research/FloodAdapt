@@ -4,11 +4,20 @@ from pathlib import Path
 from dotenv import load_dotenv
 from minio import Minio
 
+__doc__ = """
+This script downloads the read-only public data from the MinIO bucket `flood-adapt` at `s3.deltares.nl` to the local docs/_data directory.
+
+Uploading files to the bucket can be done at this url (https://s3-console.deltares.nl), when on the Deltares VPN.
+
+To access other data in the bucket, you need to provide your own access and secret keys.
+To get non-public access keys, please contact us at floodadapt@deltares.nl
+"""
+
 
 def download_directory(client: Minio, path_in_bucket: str, output_path: Path, overwrite: bool = False, bucket_name = "flood-adapt") -> None:
     """Download a directory from a MinIO bucket to a local directory.
 
-    Uploading files to the bucket can be done at this url when on the Deltares VPN: https://s3-console.deltares.nl
+
     """
     if output_path.exists() and not overwrite:
         raise FileExistsError(
@@ -50,15 +59,14 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    access_key = os.getenv("MINIO_ACCESS_KEY") or "AZBGNdxd45VEPFp1IiGe" # read-only access key for the flood-adapt/public
-    secret_key = os.getenv("MINIO_SECRET_KEY") or "nHnbTeZ4iAWlM2i5veikZq9UGvOZogUWzi4tLftZ"# read-only access key for the flood-adapt/public
+    access_key = os.getenv("MINIO_ACCESS_KEY") or "AZBGNdxd45VEPFp1IiGe" # read-only access key for flood-adapt/public
+    secret_key = os.getenv("MINIO_SECRET_KEY") or "nHnbTeZ4iAWlM2i5veikZq9UGvOZogUWzi4tLftZ"# read-only access key for flood-adapt/public
 
     client = prepare_client(access_key=access_key, secret_key=secret_key)
 
-    # requires just the public access keys
     download_directory(
         client=client,
-        path_in_bucket="public",
+        path_in_bucket="public", # requires just the public access keys
         output_path=data_dir,
         overwrite=True
     )
