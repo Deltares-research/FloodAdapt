@@ -73,6 +73,7 @@ docs = [
     "regex              >=2024.11,<2025.0",
     "folium",
     "mapclassify",
+    "contextily"
 ]
 all = ["flood-adapt[build,dev,docs]"]
 
