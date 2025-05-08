@@ -13,6 +13,9 @@ jobs:
   docs:
     name: Build and Deploy Documentation
     runs-on: windows-latest
+    env:
+      MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+      MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
     defaults:
       run:
         shell: bash -l {0}
@@ -32,6 +35,9 @@ jobs:
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }} # only save cache on push to main
           environments: docs
           frozen: true
+
+      - name: Fetch data
+        run: pixi run fetch-data
 
       - name: Build docs
         run: pixi run render-docs
