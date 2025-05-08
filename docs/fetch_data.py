@@ -13,6 +13,9 @@ To access other data in the bucket, you need to provide your own access and secr
 To get non-public access keys, please contact us at floodadapt@deltares.nl
 """
 
+READ_ONLY_ACCESS_KEY = "AZBGNdxd45VEPFp1IiGe" # read-only access key for flood-adapt/public
+READ_ONLY_SECRET_KEY = "nHnbTeZ4iAWlM2i5veikZq9UGvOZogUWzi4tLftZ" # read-only access key for flood-adapt/public
+
 
 def download_directory(client: Minio, path_in_bucket: str, output_path: Path, overwrite: bool = False, bucket_name = "flood-adapt") -> None:
     """Download a directory from a MinIO bucket to a local directory."""
@@ -56,14 +59,22 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    access_key = os.getenv("MINIO_ACCESS_KEY") or "AZBGNdxd45VEPFp1IiGe" # read-only access key for flood-adapt/public
-    secret_key = os.getenv("MINIO_SECRET_KEY") or "nHnbTeZ4iAWlM2i5veikZq9UGvOZogUWzi4tLftZ"# read-only access key for flood-adapt/public
+    access_key = os.getenv("MINIO_ACCESS_KEY") or READ_ONLY_ACCESS_KEY
+    secret_key = os.getenv("MINIO_SECRET_KEY") or READ_ONLY_SECRET_KEY
 
     client = prepare_client(access_key=access_key, secret_key=secret_key)
 
     download_directory(
         client=client,
         path_in_bucket="public", # requires just the public access keys
-        output_path=data_dir,
+        output_path=data_dir / "public",
         overwrite=True
     )
+
+    if os.getenv("MINIO_ACCESS_KEY") and os.getenv("MINIO_SECRET_KEY"):
+        download_directory(
+            client=client,
+            path_in_bucket="examples", # requires the non-public access keys
+            output_path=data_dir / "examples",
+            overwrite=True
+        )
