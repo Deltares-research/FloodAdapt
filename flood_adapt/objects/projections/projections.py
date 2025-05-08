@@ -66,6 +66,10 @@ class Projection(Object):
 
     Attributes
     ----------
+    name : str
+        Name of the object.
+    description : str
+        Description of the object. defaults to "".
     physical_projection : PhysicalProjection
         The physical projection model. Contains information about hazard drivers.
     socio_economic_change : SocioEconomicChange
