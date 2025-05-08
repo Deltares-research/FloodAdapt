@@ -87,10 +87,6 @@ class IDatabase(ABC):
         pass
 
     @abstractmethod
-    def update(self) -> None:
-        pass
-
-    @abstractmethod
     def get_outputs(self) -> dict[str, Any]:
         pass
 

@@ -40,7 +40,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
         ValueError
             Raise error if name is already in use.
         """
-        object_exists = object_model.name in self.list_objects()["name"]
+        object_exists = object_model.name in self.summarize_objects()["name"]
 
         # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
         # don't want to overwrite, raise an error.
@@ -137,11 +137,13 @@ class DbsStrategy(DbsTemplate[Strategy]):
         list[str]
             list of scenarios that use the strategy
         """
-        # Check if strategy is used in a scenario
+        scenarios = [
+            self._database.scenarios.get(scn)
+            for scn in self._database.scenarios.summarize_objects()["name"]
+        ]
+
         used_in_scenario = [
-            scenario.name
-            for scenario in self._database.scenarios.list_objects()["objects"]
-            if name == scenario.strategy
+            scenario.name for scenario in scenarios if name == scenario.strategy
         ]
 
         return used_in_scenario

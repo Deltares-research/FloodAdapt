@@ -117,7 +117,10 @@ class BenefitRunner:
                 scenarios_calc[scenario]["strategy"] = self.benefit.strategy
 
         # Get the available scenarios
-        scenarios_avail = self.database.scenarios.list_objects()["objects"]
+        scenarios_avail = [
+            self.database.scenarios.get(scn)
+            for scn in self.database.scenarios.summarize_objects()["name"]
+        ]
 
         # Check if any of the needed scenarios are already there
         for scenario in scenarios_calc.keys():

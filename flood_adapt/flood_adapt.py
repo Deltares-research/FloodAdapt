@@ -68,7 +68,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each measure.
         """
-        return self.database.measures.list_objects()
+        return self.database.measures.summarize_objects()
 
     def get_measure(self, name: str) -> Measure:
         """
@@ -208,7 +208,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each strategy.
         """
-        return self.database.strategies.list_objects()
+        return self.database.strategies.summarize_objects()
 
     def get_strategy(self, name: str) -> Strategy:
         """
@@ -310,7 +310,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each benefit.
         """
-        return self.database.events.list_objects()
+        return self.database.events.summarize_objects()
 
     def get_event(self, name: str) -> Event | EventSet:
         """Get an event from the database by name.
@@ -476,7 +476,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each projection.
         """
-        return self.database.projections.list_objects()
+        return self.database.projections.summarize_objects()
 
     def get_projection(self, name: str) -> Projection:
         """Get a projection from the database by name.
@@ -633,7 +633,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'.
             Each value is a list of the corresponding attribute for each scenario.
         """
-        return self.database.scenarios.list_objects()
+        return self.database.scenarios.summarize_objects()
 
     def get_scenario(self, name: str) -> Scenario:
         """Get a scenario from the database by name.
@@ -1088,7 +1088,7 @@ class FloodAdapt:
             Each value is a list of the corresponding attribute for each benefit.
         """
         # sorting and filtering either with PyQt table or in the API
-        return self.database.benefits.list_objects()
+        return self.database.benefits.summarize_objects()
 
     def get_benefit(self, name: str) -> Benefit:
         """Get a benefit from the database by name.

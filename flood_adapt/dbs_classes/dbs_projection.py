@@ -42,7 +42,10 @@ class DbsProjection(DbsTemplate[Projection]):
             list of scenarios that use the projection
         """
         # Get all the scenarios
-        scenarios = self._database.scenarios.list_objects()["objects"]
+        scenarios = [
+            self._database.scenarios.get(scn)
+            for scn in self._database.scenarios.summarize_objects()["name"]
+        ]
 
         # Check if projection is used in a scenario
         used_in_scenario = [
