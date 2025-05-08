@@ -142,8 +142,7 @@ build-db-builder = {cmd = "python distribution/build_database_builder_executable
 
 [tool.pixi.feature.docs.tasks]
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
-clean-notebooks = { cmd = "python docs/examples/clear_notebooks.py" }
-clean-docs = {depends-on=["clean-generated-docs", "clean-notebooks"]}
+clean-docs = {depends-on=["clean-generated-docs"]}
 fetch-data = { cmd = "python docs/fetch_data.py"}
 build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs", "fetch-data" ] }
 build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
