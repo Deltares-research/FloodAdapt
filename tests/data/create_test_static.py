@@ -12,12 +12,17 @@ from flood_adapt.config.fiat import (
     RiskModel,
 )
 from flood_adapt.config.gui import (
+    AggregationDmgLayer,
+    BenefitsLayer,
+    FloodMapLayer,
+    FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
-    MapboxLayersModel,
+    MapboxLayers,
     PlottingModel,
+    SviLayer,
     SyntheticTideModel,
-    VisualizationLayersModel,
+    VisualizationLayers,
 )
 from flood_adapt.config.sfincs import (
     Cstype,
@@ -131,43 +136,40 @@ def create_gui_config() -> GuiModel:
         default_cumulative_units=us.UnitTypesLength.inch,
     )
 
-    mapbox_layers = MapboxLayersModel(
-        flood_map_depth_min=0.328,
-        flood_map_zbmax=3.28,
-        flood_map_bins=[1, 3, 5],
-        flood_map_colors=["#BED2FF", "#B4D79E", "#1F80B8", "#081D58"],
-        aggregation_dmg_bins=[0.00001, 1000000, 2500000, 5000000, 10000000],
-        aggregation_dmg_colors=[
-            "#FFFFFF",
-            "#FEE9CE",
-            "#FDBB84",
-            "#FC844E",
-            "#E03720",
-            "#860000",
-        ],
-        footprints_dmg_bins=[0.00001, 10, 20, 40, 60],
-        footprints_dmg_colors=[
-            "#FFFFFF",
-            "#FEE9CE",
-            "#FDBB84",
-            "#FC844E",
-            "#E03720",
-            "#860000",
-        ],
-        svi_bins=[0.05, 0.2, 0.4, 0.6, 0.8],
-        svi_colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
-        benefits_bins=[0, 0.01, 1000000, 10000000, 50000000],
-        benefits_colors=[
-            "#FF7D7D",
-            "#FFFFFF",
-            "#DCEDC8",
-            "#AED581",
-            "#7CB342",
-            "#33691E",
-        ],
+    mapbox_layers = MapboxLayers(
+        floodmap=FloodMapLayer(
+            bins=[1, 3, 5],
+            colors=["#BED2FF", "#B4D79E", "#1F80B8", "#081D58"],
+            zbmax=3.28,
+            depth_min=0.328,
+        ),
+        aggregation_dmg=AggregationDmgLayer(
+            bins=[0.00001, 1000000, 2500000, 5000000, 10000000],
+            colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        ),
+        footprints_dmg=FootprintsDmgLayer(
+            bins=[0.00001, 10, 20, 40, 60],
+            colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        ),
+        svi=SviLayer(
+            bins=[0.05, 0.2, 0.4, 0.6, 0.8],
+            colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        ),
+        benefits=BenefitsLayer(
+            bins=[0, 0.01, 1000000, 10000000, 50000000],
+            colors=[
+                "#FF7D7D",
+                "#FFFFFF",
+                "#DCEDC8",
+                "#AED581",
+                "#7CB342",
+                "#33691E",
+            ],
+            threshold=0.0,
+        ),
     )
 
-    visualization_layers = VisualizationLayersModel(
+    visualization_layers = VisualizationLayers(
         default_bin_number=4,
         default_colors=["#FFFFFF", "#FEE9CE", "#E03720", "#860000"],
         layer_names=[],
