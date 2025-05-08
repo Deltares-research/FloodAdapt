@@ -4,6 +4,7 @@ from flood_adapt.objects.forcing.discharge import (
     DischargeSynthetic,
 )
 from flood_adapt.objects.forcing.forcing import ForcingSource, ForcingType, IForcing
+from flood_adapt.objects.forcing.meteo_handler import MeteoHandler
 from flood_adapt.objects.forcing.rainfall import (
     RainfallConstant,
     RainfallCSV,
@@ -86,4 +87,6 @@ __all__ = [
     "WindMeteo",
     "WindNetCDF",
     "WindTrack",
+    # Other
+    "MeteoHandler",
 ]
