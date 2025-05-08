@@ -5,7 +5,12 @@ website:
       style: "docked"
       background: light
       search: true
-      title: "Examples"
-      href: examples/index.qmd # This contains text before sections start
+      title: Examples
+      href: examples/index.qmd
       contents:
-        - "examples/example1.ipynb"
+        - section: Events
+          href: examples/events/index.qmd
+          contents:
+            - examples/events/synthetic_event.ipynb
+            - examples/events/hurricane_event.ipynb
+            - examples/events/historical_event.ipynb
