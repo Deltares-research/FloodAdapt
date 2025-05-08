@@ -630,8 +630,9 @@ class Database(IDatabase):
                 path_new = self.scenarios.output_path.joinpath(
                     scenario.name, "Flooding"
                 )
-                runner._load_objects(scn)
-                if runner.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                _runner = ScenarioRunner(self, scenario=scn)
+
+                if _runner.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,
@@ -641,40 +642,6 @@ class Database(IDatabase):
                     self.logger.info(
                         f"Hazard simulation is used from the '{scn.name}' scenario"
                     )
-
-    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
-        """Run a scenario hazard and impacts.
-
-        Parameters
-        ----------
-        scenario_name : Union[str, list[str]]
-            name(s) of the scenarios to run.
-
-        Raises
-        ------
-        RuntimeError
-            If an error occurs while running one of the scenarios
-        """
-        if not isinstance(scenario_name, list):
-            scenario_name = [scenario_name]
-
-        errors = []
-
-        for scn in scenario_name:
-            try:
-                self.has_run_hazard(scn)
-                scenario = self.scenarios.get(scn)
-                runner = ScenarioRunner(self, scenario=scenario)
-                runner.run(scenario)
-            except RuntimeError as e:
-                errors.append(scn)
-                self.logger.error(f"Error running scenario {scn}: {e}")
-        if errors:
-            raise RuntimeError(
-                "FloodAdapt failed to run for the following scenarios: "
-                + ", ".join(errors)
-                + ". Check the logs for more information."
-            )
 
     def cleanup(self) -> None:
         """
