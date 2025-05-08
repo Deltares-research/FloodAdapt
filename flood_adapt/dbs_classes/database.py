@@ -381,14 +381,6 @@ class Database(IDatabase):
             runner = BenefitRunner(self, benefit=benefit)
             runner.run_cost_benefit()
 
-    def update(self) -> None:
-        self.projections_list = self._projections.summarize_objects()
-        self.events_list = self._events.summarize_objects()
-        self.measures_list = self._measures.summarize_objects()
-        self.strategies_list = self._strategies.summarize_objects()
-        self.scenarios_list = self._scenarios.summarize_objects()
-        self.benefits_list = self._benefits.summarize_objects()
-
     def get_outputs(self) -> dict[str, Any]:
         """Return a dictionary with info on the outputs that currently exist in the database.
 
@@ -611,14 +603,17 @@ class Database(IDatabase):
         scenario_name : str
             name of the scenario to check if needs to be rerun for hazard
         """
-        scenario = self._scenarios.get(scenario_name)
+        scenario = self.scenarios.get(scenario_name)
         runner = ScenarioRunner(self, scenario=scenario)
 
         # Dont do anything if the hazard model has already been run in itself
         if runner.impacts.hazard.has_run:
             return
 
-        scenarios = [self.scenarios.get(scn) for scn in self.scenarios_list["name"]]
+        scenarios = [
+            self.scenarios.get(scn)
+            for scn in self.scenarios.summarize_objects()["name"]
+        ]
         scns_simulated = [
             sim
             for sim in scenarios
