@@ -10,12 +10,16 @@ This script downloads the read-only public data from the MinIO bucket `flood-ada
 Uploading files to the bucket can be done at this url (https://s3-console.deltares.nl), when on the Deltares VPN.
 
 To access other data in the bucket, you need to provide your own access and secret keys.
-To get non-public access keys, please contact us at floodadapt@deltares.nl
+To get access keys, please contact us at floodadapt@deltares.nl or create an issue on GitHub.
+
+To use this script, you can do one of the following:
+    1. set the environment variables manually
+    2. create a `.env` file in the root of this project with the following content:
+        ```
+        MINIO_ACCESS_KEY=your_access_key
+        MINIO_SECRET_KEY=your_secret_key
+        ```
 """
-
-READ_ONLY_ACCESS_KEY = "AZBGNdxd45VEPFp1IiGe" # read-only access key for flood-adapt/public
-READ_ONLY_SECRET_KEY = "nHnbTeZ4iAWlM2i5veikZq9UGvOZogUWzi4tLftZ" # read-only access key for flood-adapt/public
-
 
 def download_directory(client: Minio, path_in_bucket: str, output_path: Path, overwrite: bool = False, bucket_name = "flood-adapt") -> None:
     """Download a directory from a MinIO bucket to a local directory."""
@@ -59,8 +63,13 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    access_key = os.getenv("MINIO_ACCESS_KEY") or READ_ONLY_ACCESS_KEY
-    secret_key = os.getenv("MINIO_SECRET_KEY") or READ_ONLY_SECRET_KEY
+    access_key = os.getenv("MINIO_ACCESS_KEY")
+    secret_key = os.getenv("MINIO_SECRET_KEY")
+    if not (access_key and secret_key):
+        raise ValueError(
+            "Please set the MINIO_ACCESS_KEY and MINIO_SECRET_KEY environment variables. " \
+            "Refer to the __doc__ at the top of this file for more information."
+        )
 
     client = prepare_client(access_key=access_key, secret_key=secret_key)
 
@@ -71,10 +80,9 @@ if __name__ == "__main__":
         overwrite=True
     )
 
-    if os.getenv("MINIO_ACCESS_KEY") and os.getenv("MINIO_SECRET_KEY"):
-        download_directory(
-            client=client,
-            path_in_bucket="examples", # requires the non-public access keys
-            output_path=data_dir / "examples",
-            overwrite=True
-        )
+    download_directory(
+        client=client,
+        path_in_bucket="examples", # requires the non-public access keys
+        output_path=data_dir / "examples",
+        overwrite=True
+    )
