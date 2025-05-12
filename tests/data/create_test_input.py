@@ -1,4 +1,5 @@
 import shutil
+from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -847,9 +848,34 @@ def _create_hurricane_event(name: str) -> HurricaneEvent:
 
 
 if __name__ == "__main__":
+    parser = ArgumentParser(description="Create the static data for the database.")
+    parser.add_argument(
+        "-d",
+        "--database_root",
+        type=Path,
+        default=Path(__file__).parents[3] / "Database",
+        help="Path to the database root folder.",
+    )
+    parser.add_argument(
+        "-n",
+        "--database_name",
+        type=str,
+        default="charleston_test",
+        help="Name of the database.",
+    )
+    parser.add_argument(
+        "-s",
+        "--system_folder",
+        type=Path,
+        default=Path(__file__).parents[2] / "flood_adapt" / "system",
+        help="Path to the system folder.",
+    )
+    args = parser.parse_args()
+
     settings = Settings(
-        DATABASE_ROOT=Path(__file__).parents[3] / "Database",
-        DATABASE_NAME="charleston_test",
+        DATABASE_ROOT=args.database_root,
+        DATABASE_NAME=args.database_name,
+        SYSTEM_FOLDER=args.system_folder,
     )
 
     update_database_input(settings.database_path)
