@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from flood_adapt import unit_system as us
 from flood_adapt.config.config import Settings
@@ -10,6 +11,7 @@ from flood_adapt.config.fiat import (
     FiatConfigModel,
     FiatModel,
     RiskModel,
+    SVIModel,
 )
 from flood_adapt.config.gui import (
     AggregationDmgLayer,
@@ -18,9 +20,8 @@ from flood_adapt.config.gui import (
     FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
-    MapboxLayers,
+    OutputLayers,
     PlottingModel,
-    SviLayer,
     SyntheticTideModel,
     VisualizationLayers,
 )
@@ -59,16 +60,14 @@ def update_database_static(database_path: Path):
 
     sfincs = create_sfincs_config()
 
-    site = create_site_config(sfincs=sfincs)
+    site = create_site_config(database_path=database_path, sfincs=sfincs)
     site.save(config_dir / "site.toml")
 
     sfincs.river = None
-    no_river = create_site_config(sfincs=sfincs)
+    no_river = create_site_config(database_path=database_path, sfincs=sfincs)
     no_river.save(
         config_dir / "site_without_river.toml", sfincs="sfincs_without_river.toml"
     )
-
-    # update_static_data(database_path)
 
 
 def create_fiat_config() -> FiatModel:
@@ -100,6 +99,10 @@ def create_fiat_config() -> FiatModel:
         exposure_crs="EPSG:4326",
         floodmap_type=FloodmapType.water_level,
         bfe=bfe,
+        svi=SVIModel(
+            geom="templates/fiat/svi/CDC_svi_2020.gpkg",
+            field_name="SVI",
+        ),
         non_building_names=["road"],
         damage_unit="$",
         building_footprints="templates/fiat/footprints/Buildings.shp",
@@ -123,7 +126,7 @@ def create_fiat_config() -> FiatModel:
     return fiat
 
 
-def create_gui_config() -> GuiModel:
+def create_gui_config(database_path: Path) -> GuiModel:
     units = GuiUnitModel(
         default_length_units=us.UnitTypesLength.feet,
         default_distance_units=us.UnitTypesLength.miles,
@@ -136,7 +139,7 @@ def create_gui_config() -> GuiModel:
         default_cumulative_units=us.UnitTypesLength.inch,
     )
 
-    mapbox_layers = MapboxLayers(
+    mapbox_layers = OutputLayers(
         floodmap=FloodMapLayer(
             bins=[1, 3, 5],
             colors=["#BED2FF", "#B4D79E", "#1F80B8", "#081D58"],
@@ -149,10 +152,6 @@ def create_gui_config() -> GuiModel:
         ),
         footprints_dmg=FootprintsDmgLayer(
             bins=[0.00001, 10, 20, 40, 60],
-            colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
-        ),
-        svi=SviLayer(
-            bins=[0.05, 0.2, 0.4, 0.6, 0.8],
             colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
         ),
         benefits=BenefitsLayer(
@@ -169,15 +168,15 @@ def create_gui_config() -> GuiModel:
         ),
     )
 
-    visualization_layers = VisualizationLayers(
-        default_bin_number=4,
-        default_colors=["#FFFFFF", "#FEE9CE", "#E03720", "#860000"],
-        layer_names=[],
-        layer_long_names=[],
-        layer_paths=[],
-        field_names=[],
-        bins=[],
-        colors=[],
+    visualization_layers = VisualizationLayers()
+    visualization_layers.add_layer(
+        bins=[0, 0.1, 0.2, 0.3, 0.4],
+        colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        name="svi",
+        long_name="Social Vulnerability Index",
+        path=str(database_path / "static" / "templates/fiat/svi/CDC_svi_2020.gpkg"),
+        field_name="SVI",
+        database_path=database_path,
     )
 
     plotting = PlottingModel(
@@ -291,10 +290,15 @@ def create_sfincs_config() -> SfincsModel:
 
 
 def create_site_config(
-    fiat: FiatModel = create_fiat_config(),
-    gui: GuiModel = create_gui_config(),
-    sfincs: SfincsModel = create_sfincs_config(),
+    database_path: Path,
+    fiat: Optional[FiatModel] = None,
+    gui: Optional[GuiModel] = None,
+    sfincs: Optional[SfincsModel] = None,
 ) -> Site:
+    fiat = fiat or create_fiat_config()
+    gui = gui or create_gui_config(database_path)
+    sfincs = sfincs or create_sfincs_config()
+
     config = Site(
         name="Charleston",
         description="Charleston, SC",

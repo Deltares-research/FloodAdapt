@@ -126,15 +126,13 @@ dev = { features = ["dev"], solve-group = "py311" }
 docs = { features = ["docs"], solve-group = "py311" }
 all = { features = ["all"], solve-group = "py311" }
 
-[tool.pixi.tasks]
-update-test-db-static = { cmd = "python tests/data/create_test_static.py" }
-update-test-db-input = { cmd = "python tests/data/create_test_input.py" }
-update-test-db = { depends-on = ["update-test-db-static", "update-test-db-input"] }
-
 [tool.pixi.feature.dev.tasks]
 install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"]}
 pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"]}
 tests = {cmd = "pytest tests"}
+update-test-db-static = { cmd = "python tests/data/create_test_static.py" }
+update-test-db-input = { cmd = "python tests/data/create_test_input.py" }
+update-test-db = { depends-on = ["update-test-db-static", "update-test-db-input"] }
 
 [tool.pixi.feature.build.tasks]
 build-db-builder = {cmd = "python distribution/build_database_builder_executable.py"}

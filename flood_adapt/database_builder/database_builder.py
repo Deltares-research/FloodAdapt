@@ -40,9 +40,8 @@ from flood_adapt.config.gui import (
     FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
-    MapboxLayers,
+    OutputLayers,
     PlottingModel,
-    SviLayer,
     SyntheticTideModel,
     VisualizationLayers,
 )
@@ -650,6 +649,8 @@ class DatabaseBuilder:
         # Update elevations
         self.update_fiat_elevation()
 
+        self._svi = self.create_svi()
+
         config = FiatConfigModel(
             exposure_crs=self.fiat_model.exposure.crs,
             floodmap_type=self.read_floodmap_type(),
@@ -662,7 +663,7 @@ class DatabaseBuilder:
             save_simulation=False,  # TODO
             infographics=self.config.infographics,
             aggregation=self._aggregation_areas,
-            svi=self.create_svi(),
+            svi=self._svi,
         )
 
         # Update output geoms names
@@ -1494,23 +1495,28 @@ class DatabaseBuilder:
 
     ### SITE ###
     def create_site_config(self) -> Site:
-        # call this before fiat to ensure the dem is where its expected
-        sfincs = self.create_sfincs_config()
+        """Create the site configuration for the FloodAdapt model.
 
-        # call this after sfincs to get waterlevel references
+        The order of these functions is important!
+        1. Create the SFINCS model.
+            needs: water level references
+            provides: updated water level references with optional tide gauge
+        2. Create the FIAT model.
+            needs: water level references and optional probabilistic event set
+            provides: svi and exposure geometries
+        3. Create the GUI model. (requires water level references and FIAT model to be updated)
+            needs: water level references and FIAT model to be updated
+            provides: gui model with output layers, visualization layers and plotting.
+
+        """
+        sfincs = self.create_sfincs_config()
+        self.add_probabilistic_set()
+        fiat = self.create_fiat_model()
         gui = self.create_gui_config()
 
-        # set the probabilistic event set if provided
-        self.add_probabilistic_set()
-
-        # Create the FIAT configuration
-        fiat = self.create_fiat_model()
-        lon, lat = self.read_location()  # Get centroid of site
-
-        # Set standard objects
+        # Order doesnt matter from here
+        lon, lat = self.read_location()
         std_objs = self.set_standard_objects()
-
-        # Description of site
         description = (
             self.config.description if self.config.description else self.config.name
         )
@@ -1560,39 +1566,23 @@ class DatabaseBuilder:
             )
 
     def create_visualization_layers(self) -> VisualizationLayers:
-        visualization_layers = VisualizationLayers(
-            default_bin_number=4,
-            default_colors=["#FFFFFF", "#FEE9CE", "#E03720", "#860000"],
-            layer_names=[],
-            layer_long_names=[],
-            layer_paths=[],
-            field_names=[],
-            bins=[],
-            colors=[],
-        )
-
+        visualization_layers = VisualizationLayers()
+        if self._svi is not None:
+            visualization_layers.add_layer(
+                name="svi",
+                long_name="Social Vulnerability Index (SVI)",
+                path=str(self.static_path / self._svi.geom),
+                field_name="SVI",
+                bins=[0.05, 0.2, 0.4, 0.6, 0.8],
+            )
         return visualization_layers
 
-    def create_mapbox_layers_config(self) -> MapboxLayers:
+    def create_mapbox_layers_config(self) -> OutputLayers:
         # Read default colors from template
         fd_max = self.config.gui.max_flood_depth
         ad_max = self.config.gui.max_aggr_dmg
         ftd_max = self.config.gui.max_footprint_dmg
         b_max = self.config.gui.max_benefits
-
-        svi_layer = None
-        if self.config.svi is not None:
-            svi_layer = SviLayer(
-                bins=[0.05, 0.2, 0.4, 0.6, 0.8],
-                colors=[
-                    "#FFFFFF",
-                    "#FEE9CE",
-                    "#FDBB84",
-                    "#FC844E",
-                    "#E03720",
-                    "#860000",
-                ],
-            )
 
         benefits_layer = None
         if self.config.probabilistic_set is not None:
@@ -1609,7 +1599,7 @@ class DatabaseBuilder:
                 threshold=0.0,
             )
 
-        mapbox_layers = MapboxLayers(
+        mapbox_layers = OutputLayers(
             floodmap=FloodMapLayer(
                 bins=[0.2 * fd_max, 0.6 * fd_max, fd_max],
                 colors=["#D7ECFB", "#8ABDDD", "#1C73A4", "#081D58"],
@@ -1638,7 +1628,6 @@ class DatabaseBuilder:
                     "#860000",
                 ],
             ),
-            svi=svi_layer,
             benefits=benefits_layer,
         )
         return mapbox_layers

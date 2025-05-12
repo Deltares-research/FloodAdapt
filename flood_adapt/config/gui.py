@@ -1,8 +1,11 @@
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel, Field
-from tomli import load as load_toml
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import tomli
+from pydantic import BaseModel, Field, model_validator
 
 from flood_adapt.config.fiat import DamageType
 from flood_adapt.objects.forcing import unit_system as us
@@ -22,6 +25,15 @@ class Layer(BaseModel):
 
     bins: list[float]
     colors: list[str]
+
+    @model_validator(mode="after")
+    def check_bins_and_colors(self) -> "Layer":
+        """Check that the bins and colors have the same length."""
+        if (len(self.bins) + 1) != len(self.colors):
+            raise ValueError(
+                f"Number of bins ({len(self.bins)}) must be one less than number of colors ({len(self.colors)})"
+            )
+        return self
 
 
 class FloodMapLayer(Layer):
@@ -43,11 +55,7 @@ class BenefitsLayer(Layer):
     threshold: Optional[float] = None
 
 
-class SviLayer(Layer):
-    pass
-
-
-class MapboxLayers(BaseModel):
+class OutputLayers(BaseModel):
     """The configuration of the mapbox layers in the gui.
 
     Attributes
@@ -58,8 +66,7 @@ class MapboxLayers(BaseModel):
         The configuration of the aggregation damage layer.
     footprints_dmg : FootprintsDmgLayer
         The configuration of the footprints damage layer.
-    svi : SviLayer
-        The configuration of the SVI layer.
+
     benefits : BenefitsLayer
         The configuration of the benefits layer.
     """
@@ -69,41 +76,135 @@ class MapboxLayers(BaseModel):
     footprints_dmg: FootprintsDmgLayer
 
     benefits: Optional[BenefitsLayer] = None
-    svi: Optional[SviLayer] = None
 
 
-class VisualizationLayers(Layer):
+class VisualizationLayer(Layer):
+    """The configuration of a layer to visualize in the gui.
+
+    name : str
+        The name of the layer to visualize.
+    long_name : str
+        The long name of the layer to visualize.
+    path : str
+        The path to the layer data to visualize.
+    field_name : str
+        The field names of the layer to visualize.
+    decimals : Optional[int]
+        The number of decimals to use for the layer to visualize. default is None.
+    """
+
+    name: str
+    long_name: str
+    path: str
+    field_name: str
+    decimals: Optional[int] = None
+
+
+_DEFAULT_BIN_NR = 4
+
+
+def interpolate_hex_colors(
+    start_hex="#FFFFFF", end_hex="#860000", number_bins=_DEFAULT_BIN_NR
+):
+    """
+    Interpolate between two hex colors and returns a list of number_bins hex color codes.
+
+    Parameters
+    ----------
+        start_hex : str
+            Starting color in hex format (e.g., "#FFFFFF").
+        end_hex : str
+            Ending color in hex format (e.g., "#000000").
+        number_bins : int
+            Number of colors to generate between the start and end colors.
+
+    Returns
+    -------
+        list[str]
+            List of hex color codes interpolated between the start and end colors.
+    """
+
+    def hex_to_rgb(hex_color):
+        hex_color = hex_color.lstrip("#")
+        return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+
+    def rgb_to_hex(rgb_color):
+        return "#{:02X}{:02X}{:02X}".format(*rgb_color)
+
+    start_rgb = hex_to_rgb(start_hex)
+    end_rgb = hex_to_rgb(end_hex)
+
+    interpolated_colors = []
+    for i in range(number_bins):
+        ratio = i / (number_bins - 1) if number_bins > 1 else 0
+        interpolated_rgb = tuple(
+            int(start + (end - start) * ratio) for start, end in zip(start_rgb, end_rgb)
+        )
+        interpolated_colors.append(rgb_to_hex(interpolated_rgb))
+
+    return interpolated_colors
+
+
+class VisualizationLayers(BaseModel):
     """The configuration of the layers you might want to visualize in the gui.
 
     Attributes
     ----------
-    default_bin_number : int
-        The default number of bins for the visualization layers.
-    default_colors : list[str]
-        The default colors for the visualization layers.
-    layer_names : list[str]
-        The names of the layers to visualize.
-    layer_long_names : list[str]
-        The long names of the layers to visualize.
-    layer_paths : list[str]
-        The paths to the layers to visualize.
-    field_names : list[str]
-        The field names of the layers to visualize.
-    bins : Optional[list[list[float]]]
-        The bins for the layers to visualize.
-    colors : Optional[list[list[str]]]
-        The colors for the layers to visualize.
+    default : Layer
+        The default layer settings the visualization layers.
+    layers : list[VisualizationLayer]
+        The layers to visualize.
     """
 
-    # TODO add check for default_bin_number and default_colors to have the same length
-    default_bin_number: int
-    default_colors: list[str]
-    layer_names: list[str] = Field(default_factory=list)
-    layer_long_names: list[str] = Field(default_factory=list)
-    layer_paths: list[str] = Field(default_factory=list)
-    field_names: list[str] = Field(default_factory=list)
-    bins: Optional[list[list[float]]] = Field(default_factory=list)
-    colors: Optional[list[list[str]]] = Field(default_factory=list)
+    layers: list[VisualizationLayer] = Field(default_factory=list)
+
+    def add_layer(
+        self,
+        name: str,
+        long_name: str,
+        path: str,
+        field_name: str,
+        database_path: Path,
+        decimals: Optional[int] = None,
+        bins: Optional[list[float]] = None,
+        colors: Optional[list[str]] = None,
+    ) -> None:
+        if not Path(path).is_absolute():
+            raise ValueError(f"Path {path} must be absolute.")
+
+        data = gpd.read_file(path)
+        if field_name not in data.columns:
+            raise ValueError(
+                f"Field name {field_name} not found in data. Available fields: {data.columns.tolist()}"
+            )
+
+        if bins is None:
+            _, _bins = pd.qcut(
+                data[field_name], _DEFAULT_BIN_NR, retbins=True, duplicates="drop"
+            )
+            bins = _bins.tolist()[1:-1]
+
+        if decimals is None:
+            non_zero_bins = [abs(b) for b in bins if b != 0]
+            min_non_zero = min(non_zero_bins) if non_zero_bins else 1
+            decimals = max(int(-np.floor(np.log10(min_non_zero))), 0)
+
+        if colors is None:
+            nr_bins = len(bins) + 1
+            colors = interpolate_hex_colors(number_bins=nr_bins)
+
+        relative_path = Path(path).relative_to(database_path / "static")
+        self.layers.append(
+            VisualizationLayer(
+                bins=bins,
+                colors=colors,
+                name=name,
+                long_name=long_name,
+                path=relative_path.as_posix(),
+                field_name=field_name,
+                decimals=decimals,
+            )
+        )
 
 
 class GuiUnitModel(BaseModel):
@@ -209,7 +310,7 @@ class GuiModel(BaseModel):
     ----------
     units : GuiUnitModel
         The unit system used in the GUI.
-    mapbox_layers : MapboxLayers
+    mapbox_layers : OutputLayers
         The configuration of the mapbox layers in the GUI.
     visualization_layers : VisualizationLayers
         The configuration of the visualization layers in the GUI.
@@ -218,13 +319,13 @@ class GuiModel(BaseModel):
     """
 
     units: GuiUnitModel
-    mapbox_layers: MapboxLayers
+    mapbox_layers: OutputLayers
     visualization_layers: VisualizationLayers
     plotting: PlottingModel
 
     @staticmethod
     def read_toml(path: Path) -> "GuiModel":
         with open(path, mode="rb") as fp:
-            toml_contents = load_toml(fp)
+            toml_contents = tomli.load(fp)
 
         return GuiModel(**toml_contents)

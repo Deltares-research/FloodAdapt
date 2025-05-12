@@ -179,4 +179,5 @@ system/
 
 # docs
 docs/api_ref
+docs/_data
 docs/objects.txt

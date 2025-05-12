@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from pydantic_core import ValidationError
 
 import flood_adapt.objects.forcing.unit_system as us
+from flood_adapt.config.config import Settings
 from flood_adapt.config.sfincs import (
     AsciiStr,
     DemModel,
@@ -330,7 +331,7 @@ def test_site_builder_load_file():
     if file_path.exists():
         file_path.unlink()
 
-    to_save = create_site_config()
+    to_save = create_site_config(database_path=Settings().database_path)
     to_save.save(file_path)
 
     loaded = Site.load_file(file_path)
