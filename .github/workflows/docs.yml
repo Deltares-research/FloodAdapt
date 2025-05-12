@@ -36,9 +36,6 @@ jobs:
           environments: docs
           frozen: true
 
-      - name: Fetch data
-        run: pixi run fetch-data
-
       - name: Build docs
         run: pixi run render-docs
 
