@@ -139,7 +139,7 @@ def create_gui_config(database_path: Path) -> GuiModel:
         default_cumulative_units=us.UnitTypesLength.inch,
     )
 
-    mapbox_layers = OutputLayers(
+    output_layers = OutputLayers(
         floodmap=FloodMapLayer(
             bins=[1, 3, 5],
             colors=["#BED2FF", "#B4D79E", "#1F80B8", "#081D58"],
@@ -192,7 +192,7 @@ def create_gui_config(database_path: Path) -> GuiModel:
     gui = GuiModel(
         units=units,
         plotting=plotting,
-        mapbox_layers=mapbox_layers,
+        output_layers=output_layers,
         visualization_layers=visualization_layers,
     )
 

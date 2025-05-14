@@ -310,7 +310,7 @@ class GuiModel(BaseModel):
     ----------
     units : GuiUnitModel
         The unit system used in the GUI.
-    mapbox_layers : OutputLayers
+    output_layers : OutputLayers
         The configuration of the mapbox layers in the GUI.
     visualization_layers : VisualizationLayers
         The configuration of the visualization layers in the GUI.
@@ -319,7 +319,7 @@ class GuiModel(BaseModel):
     """
 
     units: GuiUnitModel
-    mapbox_layers: OutputLayers
+    output_layers: OutputLayers
     visualization_layers: VisualizationLayers
     plotting: PlottingModel
 

@@ -1549,7 +1549,7 @@ class DatabaseBuilder:
         gui = GuiModel(
             units=self.unit_system,
             plotting=self.create_hazard_plotting_config(),
-            mapbox_layers=self.create_mapbox_layers_config(),
+            output_layers=self.create_output_layers_config(),
             visualization_layers=self.create_visualization_layers(),
         )
 
@@ -1572,12 +1572,13 @@ class DatabaseBuilder:
                 name="svi",
                 long_name="Social Vulnerability Index (SVI)",
                 path=str(self.static_path / self._svi.geom),
+                database_path=self.root,
                 field_name="SVI",
                 bins=[0.05, 0.2, 0.4, 0.6, 0.8],
             )
         return visualization_layers
 
-    def create_mapbox_layers_config(self) -> OutputLayers:
+    def create_output_layers_config(self) -> OutputLayers:
         # Read default colors from template
         fd_max = self.config.gui.max_flood_depth
         ad_max = self.config.gui.max_aggr_dmg
@@ -1599,7 +1600,7 @@ class DatabaseBuilder:
                 threshold=0.0,
             )
 
-        mapbox_layers = OutputLayers(
+        output_layers = OutputLayers(
             floodmap=FloodMapLayer(
                 bins=[0.2 * fd_max, 0.6 * fd_max, fd_max],
                 colors=["#D7ECFB", "#8ABDDD", "#1C73A4", "#081D58"],
@@ -1630,7 +1631,7 @@ class DatabaseBuilder:
             ),
             benefits=benefits_layer,
         )
-        return mapbox_layers
+        return output_layers
 
     def create_hazard_plotting_config(self) -> PlottingModel:
         datum_names = [datum.name for datum in self.water_level_references.datums]
@@ -2185,7 +2186,7 @@ class DatabaseBuilder:
         """
         templates_path = Path(__file__).parent.resolve().joinpath("templates")
         with open(
-            templates_path.joinpath("mapbox_layers", "bin_colors.toml"), "rb"
+            templates_path.joinpath("output_layers", "bin_colors.toml"), "rb"
         ) as f:
             bin_colors = tomli.load(f)
         return bin_colors
