@@ -38,6 +38,7 @@ from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
 from flood_adapt.workflows.impacts_integrator import Impacts
+from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
 
 class FloodAdapt:
@@ -726,20 +727,26 @@ class FloodAdapt:
         """
         self.database.scenarios.delete(name)
 
-    def run_scenario(self, name: Union[str, list[str]]) -> None:
-        """Run a scenario.
+    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
+        """Run a scenario hazard and impacts.
 
         Parameters
         ----------
-        name : Union[str, list[str]]
-            The name(s) of the scenario to run.
+        scenario_name : Union[str, list[str]]
+            name(s) of the scenarios to run.
 
         Raises
         ------
-        ValueError
-            If the scenario does not exist.
+        RuntimeError
+            If an error occurs while running one of the scenarios
         """
-        self.database.run_scenario(name)
+        if not isinstance(scenario_name, list):
+            scenario_name = [scenario_name]
+
+        for scn in scenario_name:
+            scenario = self.get_scenario(scn)
+            runner = ScenarioRunner(self.database, scenario=scenario)
+            runner.run()
 
     # Outputs
     def get_completed_scenarios(

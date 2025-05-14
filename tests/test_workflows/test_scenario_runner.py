@@ -23,7 +23,7 @@ class Test_scenario_run:
         )
 
         to_run = test_db_class.scenarios.get(run_name)
-        ScenarioRunner(test_db_class, scenario=to_run).run(to_run)
+        ScenarioRunner(test_db_class, scenario=to_run).run()
 
         yield test_db_class, run_name, not_run_name
 
@@ -63,7 +63,7 @@ class Test_scenario_run:
         runner = ScenarioRunner(test_db, scenario=scn)
 
         # Act
-        runner.run(scn)
+        runner.run()
 
         # Assert
         assert finished_file_exists(test_db.scenarios.output_path / scn.name)
@@ -82,5 +82,5 @@ class Test_scenario_run:
 def test_run_on_all_scn(test_db, scn_name):
     scn = test_db.scenarios.get(scn_name)
     runner = ScenarioRunner(test_db, scenario=scn)
-    runner.run(scn)
+    runner.run()
     assert Impacts(scn).hazard.has_run
