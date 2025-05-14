@@ -100,6 +100,12 @@ class Settings(BaseSettings):
         description="Whether to validate the forcing types and sources against the allowed forcings in the event model.",
         exclude=True,
     )
+    validate_bin_paths: bool = Field(
+        alias="VALIDATE_BINARIES",  # environment variable: VALIDATE_BINARIES
+        default=True,
+        description="Whether to validate the existence of the paths to the SFINCS and FIAT binaries.",
+        exclude=True,
+    )
 
     @computed_field
     @property
@@ -119,9 +125,12 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_settings(self):
         self._validate_database_path()
-        self._validate_system_folder()
-        self._validate_fiat_path()
-        self._validate_sfincs_path()
+
+        if self.validate_bin_paths:
+            self._validate_system_folder()
+            self._validate_fiat_path()
+            self._validate_sfincs_path()
+
         self._update_environment_variables()
         return self
 
@@ -131,6 +140,10 @@ class Settings(BaseSettings):
         environ["SYSTEM_FOLDER"] = str(self.system_folder)
         environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
         environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
+        environ["VALIDATE_BINARIES"] = str(self.validate_bin_paths)
+        environ["SFINCS_PATH"] = str(self.sfincs_path)
+        environ["FIAT_PATH"] = str(self.fiat_path)
+
         return self
 
     def _validate_database_path(self):
