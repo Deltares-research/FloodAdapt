@@ -27,7 +27,6 @@ Each notebook includes narrative explanations and inline code cells. You can cop
 
 ## Examples
 
-- [0. Example](example1.ipynb) example description
 - [1. Database Builder]() example description
 - [2. Simple Scenario]() example description
 - [3. Events ](events/index.qmd) How to manage hazard model configuration with Events.
