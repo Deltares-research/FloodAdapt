@@ -135,9 +135,5 @@ class IDatabase(ABC):
         pass
 
     @abstractmethod
-    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
-        pass
-
-    @abstractmethod
     def cleanup(self) -> None:
         pass
