@@ -336,9 +336,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     settings = Settings(
-        DATABASE_ROOT=args.database_root,
+        DATABASE_ROOT=Path(args.database_root).resolve(),
         DATABASE_NAME=args.database_name,
         SYSTEM_FOLDER=args.system_folder,
     )
-
+    print(f"Updating database: {settings.database_path}")
     update_database_static(settings.database_path)
