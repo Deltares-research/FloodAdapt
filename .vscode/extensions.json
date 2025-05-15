@@ -1,12 +1,13 @@
 {
     "recommendations": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "charliermarsh.ruff",
-        "ms-toolsai.jupyter",
-        "github.copilot",
-        "tamasfe.even-better-toml",
-        "aaron-bond.better-comments",
-        "sonarsource.sonarlint-vscode",
+        "ms-python.python", // Python
+        "ms-python.vscode-pylance", // Python Language Server
+        "charliermarsh.ruff", // Python Formatter & Linter
+        "ms-toolsai.jupyter", // Jupyter Notebooks
+        "github.copilot", // GitHub Copilot
+        "tamasfe.even-better-toml", // TOML Language Server
+        "aaron-bond.better-comments", // Better Comments
+        "sonarsource.sonarlint-vscode", // SonarLint
+        "techer.open-in-browser" // Open in Browser
     ]
 }
