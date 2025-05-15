@@ -24,5 +24,6 @@ Each notebook includes narrative explanations and inline code cells. You can cop
 
 - [0. Example](example1.ipynb)
   example description
-
+- [1. Projections](Projections.ipynb)
+  example description
 ---

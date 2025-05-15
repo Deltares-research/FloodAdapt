@@ -9,3 +9,4 @@ website:
       href: examples/index.qmd # This contains text before sections start
       contents:
         - "examples/example1.ipynb"
+        - "examples/Projections.ipynb"
