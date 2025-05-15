@@ -381,14 +381,6 @@ class Database(IDatabase):
             runner = BenefitRunner(self, benefit=benefit)
             runner.run_cost_benefit()
 
-    def update(self) -> None:
-        self.projections_list = self._projections.list_objects()
-        self.events_list = self._events.list_objects()
-        self.measures_list = self._measures.list_objects()
-        self.strategies_list = self._strategies.list_objects()
-        self.scenarios_list = self._scenarios.list_objects()
-        self.benefits_list = self._benefits.list_objects()
-
     def get_outputs(self) -> dict[str, Any]:
         """Return a dictionary with info on the outputs that currently exist in the database.
 
@@ -397,7 +389,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'path', 'last_modification_date' and "finished" info
         """
-        all_scenarios = pd.DataFrame(self._scenarios.list_objects())
+        all_scenarios = pd.DataFrame(self._scenarios.summarize_objects())
         if len(all_scenarios) > 0:
             df = all_scenarios[all_scenarios["finished"]]
         else:
@@ -585,17 +577,17 @@ class Database(IDatabase):
         """
         match object_type:
             case "projections":
-                return self.projections.list_objects()
+                return self.projections.summarize_objects()
             case "events":
-                return self.events.list_objects()
+                return self.events.summarize_objects()
             case "measures":
-                return self.measures.list_objects()
+                return self.measures.summarize_objects()
             case "strategies":
-                return self.strategies.list_objects()
+                return self.strategies.summarize_objects()
             case "scenarios":
-                return self.scenarios.list_objects()
+                return self.scenarios.summarize_objects()
             case "benefits":
-                return self.benefits.list_objects()
+                return self.benefits.summarize_objects()
             case _:
                 raise ValueError(
                     f"Object type '{object_type}' is not valid. Must be one of 'projections', 'events', 'measures', 'strategies' or 'scenarios'."
@@ -611,16 +603,20 @@ class Database(IDatabase):
         scenario_name : str
             name of the scenario to check if needs to be rerun for hazard
         """
-        scenario = self._scenarios.get(scenario_name)
+        scenario = self.scenarios.get(scenario_name)
         runner = ScenarioRunner(self, scenario=scenario)
 
         # Dont do anything if the hazard model has already been run in itself
         if runner.impacts.hazard.has_run:
             return
 
+        scenarios = [
+            self.scenarios.get(scn)
+            for scn in self.scenarios.summarize_objects()["name"]
+        ]
         scns_simulated = [
             sim
-            for sim in self.scenarios.list_objects()["objects"]
+            for sim in scenarios
             if self.scenarios.output_path.joinpath(sim.name, "Flooding").is_dir()
         ]
 
@@ -630,8 +626,9 @@ class Database(IDatabase):
                 path_new = self.scenarios.output_path.joinpath(
                     scenario.name, "Flooding"
                 )
-                runner._load_objects(scn)
-                if runner.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                _runner = ScenarioRunner(self, scenario=scn)
+
+                if _runner.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,
@@ -641,40 +638,6 @@ class Database(IDatabase):
                     self.logger.info(
                         f"Hazard simulation is used from the '{scn.name}' scenario"
                     )
-
-    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
-        """Run a scenario hazard and impacts.
-
-        Parameters
-        ----------
-        scenario_name : Union[str, list[str]]
-            name(s) of the scenarios to run.
-
-        Raises
-        ------
-        RuntimeError
-            If an error occurs while running one of the scenarios
-        """
-        if not isinstance(scenario_name, list):
-            scenario_name = [scenario_name]
-
-        errors = []
-
-        for scn in scenario_name:
-            try:
-                self.has_run_hazard(scn)
-                scenario = self.scenarios.get(scn)
-                runner = ScenarioRunner(self, scenario=scenario)
-                runner.run(scenario)
-            except RuntimeError as e:
-                errors.append(scn)
-                self.logger.error(f"Error running scenario {scn}: {e}")
-        if errors:
-            raise RuntimeError(
-                "FloodAdapt failed to run for the following scenarios: "
-                + ", ".join(errors)
-                + ". Check the logs for more information."
-            )
 
     def cleanup(self) -> None:
         """

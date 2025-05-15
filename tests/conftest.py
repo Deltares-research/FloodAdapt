@@ -80,7 +80,6 @@ def session_setup_teardown():
         DATABASE_ROOT=src_dir.parents[1] / "Database",
         DATABASE_NAME="charleston_test",
         DELETE_CRASHED_RUNS=clean,
-        # leave system_folder empty to use the envvar or default system folder
     )
 
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
