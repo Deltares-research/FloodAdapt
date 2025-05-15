@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "flood-adapt"
 description = "A software package support system which can be used to assess the benefits and costs of flood resilience measures"
 readme = "README.md"
+license = { file = "LICENSE" }
 authors = [
     { name = "Gundula Winter", email = "Gundula.Winter@deltares.nl" },
     { name = "Panos Athanasiou", email = "Panos.Athanasiou@deltares.nl" },
@@ -71,6 +72,7 @@ docs = [
     "sphinx             >=8.0,<9.0",
     "sphinx-rtd-theme   >=3.0,<4.0",
     "regex              >=2024.11,<2025.0",
+    "minio              >=7.2.15,<8"
 ]
 all = ["flood-adapt[build,dev,docs]"]
 
@@ -126,6 +128,11 @@ dev = { features = ["dev"], solve-group = "py311" }
 docs = { features = ["docs"], solve-group = "py311" }
 all = { features = ["all"], solve-group = "py311" }
 
+[tool.pixi.tasks]
+update-test-db-static = { cmd = "python tests/data/create_test_static.py" }
+update-test-db-input = { cmd = "python tests/data/create_test_input.py" }
+update-test-db = { depends-on = ["update-test-db-static", "update-test-db-input"] }
+
 [tool.pixi.feature.dev.tasks]
 install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"]}
 pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"]}
@@ -137,6 +144,7 @@ build-db-builder = {cmd = "python distribution/build_database_builder_executable
 [tool.pixi.feature.docs.tasks]
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
 clean-docs = {depends-on=["clean-generated-docs"]}
-build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
+fetch-data = { cmd = "python docs/fetch_data.py"}
+build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs", "fetch-data" ] }
 build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
 render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs", "build-interlinks"] }

@@ -185,7 +185,7 @@ class TestEventSet:
     ):
         test_db, scn, event_set = setup_eventset_scenario
         runner = ScenarioRunner(test_db, scenario=scn)
-        runner.run(scn)
+        runner.run()
 
         output_path = Path(test_db.scenarios.output_path) / scn.name / "Flooding"
 
