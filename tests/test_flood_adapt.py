@@ -163,7 +163,7 @@ class TestProjections:
         projection = test_fa.create_projection(test_dict)
         # If the name is not used before the measure is save in the database
         test_fa.save_projection(projection)
-        test_fa.database.projections.list_objects()
+        test_fa.database.projections.summarize_objects()
 
         # Try to delete a measure which is already used in a scenario
         # with pytest.raises(ValueError):
@@ -171,7 +171,7 @@ class TestProjections:
 
         # If user presses delete projection the measure is deleted
         test_fa.delete_projection("test_proj_1")
-        test_fa.database.projections.list_objects()
+        test_fa.database.projections.summarize_objects()
 
 
 class TestMeasures:
@@ -423,11 +423,11 @@ class TestScenarios:
         test_dict["name"] = "test1"
         scenario = test_fa.create_scenario(test_dict)
         test_fa.save_scenario(scenario)
-        test_fa.database.scenarios.list_objects()
+        test_fa.database.scenarios.summarize_objects()
 
         # If user presses delete scenario the measure is deleted
         test_fa.delete_scenario("test1")
-        test_fa.database.scenarios.list_objects()
+        test_fa.database.scenarios.summarize_objects()
 
 
 class TestOutput:
