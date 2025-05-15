@@ -29,6 +29,8 @@ website:
               text: "Hurricane Event"
             - href: examples/events/historical_event.ipynb
               text: "Historical Event"
+            - href: examples/events/database_manipulation.ipynb
+              text: "Database Manipulation"
 
         - section: Scenarios
           href: examples/scenarios/index.qmd

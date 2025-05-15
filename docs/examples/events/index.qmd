@@ -37,3 +37,5 @@ To see a full example of how to define an event, refer to the following notebook
 [**Historical Event**](historical_event.ipynb): Built from real-world observations or reanalysis data.
 
 [**Hurricane Event**](hurricane_event.ipynb): Run an offshore hazard model using wind and pressure fields from cyclone tracks to generate the waterlevels for the overland hazard model. Only available when the database has an offshore model.
+
+[**Database Manipulation**](database_manipulation.ipynb): Use the database to programmatically create a range of events to analyze the effects of different forcings.
