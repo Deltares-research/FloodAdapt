@@ -313,7 +313,6 @@ if __name__ == "__main__":
     settings = Settings(
         DATABASE_ROOT=Path(__file__).parents[3] / "Database",
         DATABASE_NAME="charleston_test",
-        SYSTEM_FOLDER=Path(__file__).parents[2] / "flood_adapt" / "system",
     )
 
     update_database_static(settings.database_path)
