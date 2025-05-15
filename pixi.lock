@@ -4568,7 +4568,7 @@ packages:
   requires_python: '>=3.9'
 - pypi: .
   name: flood-adapt
-  version: 0.3.2
+  version: 0.3.3
   sha256: 1eea45c2874aeb801094ee5406a4efd20c5677e12803fdc373810f9df4f8a6c7
   requires_dist:
   - cht-cyclones==1.0.3
@@ -4613,7 +4613,7 @@ packages:
   requires_python: '>=3.8,<3.13'
 - pypi: .
   name: flood-adapt
-  version: 0.3.2
+  version: 0.3.3
   sha256: 1eea45c2874aeb801094ee5406a4efd20c5677e12803fdc373810f9df4f8a6c7
   requires_dist:
   - cht-cyclones==1.0.3

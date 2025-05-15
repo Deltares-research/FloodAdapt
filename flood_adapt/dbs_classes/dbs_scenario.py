@@ -94,8 +94,8 @@ class DbsScenario(DbsTemplate[Scenario]):
                 list of benefits that use the scenario
         """
         benefits = [
-            self._database.benefits.get(scn)
-            for scn in self._database.benefits.summarize_objects()["name"]
+            self._database.benefits.get(benefit)
+            for benefit in self._database.benefits.summarize_objects()["name"]
         ]
         used_in_benefit = []
         for benefit in benefits:

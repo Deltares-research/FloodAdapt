@@ -97,8 +97,8 @@ class DbsMeasure(DbsTemplate[Measure]):
         """
         # Get all the strategies
         strategies = [
-            self._database.strategies.get(name)
-            for name in self._database.strategies.summarize_objects()
+            self._database.strategies.get(strategy)
+            for strategy in self._database.strategies.summarize_objects()
         ]
 
         # Check if measure is used in a strategy
