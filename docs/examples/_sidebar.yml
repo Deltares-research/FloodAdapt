@@ -8,9 +8,30 @@ website:
       title: Examples
       href: examples/index.qmd
       contents:
+        - section: Database Builder
+          href: examples/database_builder/index.qmd
+
+        - section: Projections
+          href: examples/projections/index.qmd
+
+        - section: Measures
+          href: examples/measures/index.qmd
+
+        - section: Strategies
+          href: examples/strategies/index.qmd
+
         - section: Events
           href: examples/events/index.qmd
           contents:
-            - examples/events/synthetic_event.ipynb
-            - examples/events/hurricane_event.ipynb
-            - examples/events/historical_event.ipynb
+            - href: examples/events/synthetic_event.ipynb
+              text: "Synthetic Event"
+            - href: examples/events/hurricane_event.ipynb
+              text: "Hurricane Event"
+            - href: examples/events/historical_event.ipynb
+              text: "Historical Event"
+
+        - section: Scenarios
+          href: examples/scenarios/index.qmd
+
+        - section: Benefits
+          href: examples/benefits/index.qmd
