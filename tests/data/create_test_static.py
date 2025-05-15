@@ -326,19 +326,12 @@ if __name__ == "__main__":
         default="charleston_test",
         help="Name of the database.",
     )
-    parser.add_argument(
-        "-s",
-        "--system_folder",
-        type=Path,
-        default=Path(__file__).parents[2] / "flood_adapt" / "system",
-        help="Path to the system folder.",
-    )
     args = parser.parse_args()
 
     settings = Settings(
         DATABASE_ROOT=Path(args.database_root).resolve(),
         DATABASE_NAME=args.database_name,
-        SYSTEM_FOLDER=args.system_folder,
+        VALIDATE_BINARIES=False,
     )
     print(f"Updating database: {settings.database_path}")
     update_database_static(settings.database_path)

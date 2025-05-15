@@ -875,7 +875,7 @@ if __name__ == "__main__":
     settings = Settings(
         DATABASE_ROOT=args.database_root,
         DATABASE_NAME=args.database_name,
-        SYSTEM_FOLDER=args.system_folder,
+        VALIDATE_BINARIES=False,
     )
 
     update_database_input(settings.database_path)
