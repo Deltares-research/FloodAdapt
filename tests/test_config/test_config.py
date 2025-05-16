@@ -223,12 +223,14 @@ class TestSettingsModel:
                     DATABASE_ROOT=db_root,
                     DATABASE_NAME=name,
                     FIAT_BIN_PATH=non_existent_path,
+                    VALIDATE_BINARIES=True,
                 )
             elif model == "sfincs":
                 Settings(
                     DATABASE_ROOT=db_root,
                     DATABASE_NAME=name,
                     SFINCS_BIN_PATH=non_existent_path,
+                    VALIDATE_BINARIES=True,
                 )
             else:
                 raise ValueError("Invalid model")
@@ -332,3 +334,50 @@ class TestSettingsModel:
             assert from_env1 != from_args
             assert from_env1 != from_env2
             assert from_env2 == from_args
+
+    def test_create_settings_with_persistent_booleans_false(self):
+        # Arrange
+        with modified_environ():
+            settings = Settings(
+                DELETE_CRASHED_RUNS=False,
+                VALIDATE_ALLOWED_FORCINGS=False,
+                VALIDATE_BINARIES=False,
+            )
+
+            assert not settings.delete_crashed_runs
+            assert not settings.validate_allowed_forcings
+            assert not settings.validate_bin_paths
+            assert not os.getenv("DELETE_CRASHED_RUNS")
+            assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
+            assert not os.getenv("VALIDATE_BINARIES")
+
+            settings2 = Settings()
+            assert not settings2.delete_crashed_runs
+            assert not settings2.validate_allowed_forcings
+            assert not settings2.validate_bin_paths
+            assert not os.getenv("DELETE_CRASHED_RUNS")
+            assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
+            assert not os.getenv("VALIDATE_BINARIES")
+
+    def test_create_settings_with_persistent_booleans_true(self):
+        with modified_environ():
+            settings = Settings(
+                DELETE_CRASHED_RUNS=True,
+                VALIDATE_ALLOWED_FORCINGS=True,
+                VALIDATE_BINARIES=True,
+            )
+
+            assert settings.delete_crashed_runs
+            assert settings.validate_allowed_forcings
+            assert settings.validate_bin_paths
+            assert os.getenv("DELETE_CRASHED_RUNS")
+            assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
+            assert os.getenv("VALIDATE_BINARIES")
+
+            settings2 = Settings()
+            assert settings2.delete_crashed_runs
+            assert settings2.validate_allowed_forcings
+            assert settings2.validate_bin_paths
+            assert os.getenv("DELETE_CRASHED_RUNS")
+            assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
+            assert os.getenv("VALIDATE_BINARIES")

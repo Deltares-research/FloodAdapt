@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from pathlib import Path
 from typing import Optional
 
@@ -316,13 +317,26 @@ def update_static_data():
 
 
 if __name__ == "__main__":
-    SYSTEM_FOLDER = Path(__file__).parents[2] / "flood_adapt" / "system" / "win-64"
+    parser = ArgumentParser(description="Create the static data for the database.")
+    parser.add_argument(
+        "-d",
+        "--database_root",
+        type=Path,
+        default=Path(__file__).parents[3] / "Database",
+        help="Path to the database root folder.",
+    )
+    parser.add_argument(
+        "-n",
+        "--database_name",
+        type=str,
+        default="charleston_test",
+        help="Name of the database.",
+    )
+    args = parser.parse_args()
 
     settings = Settings(
-        DATABASE_ROOT=Path(__file__).parents[3] / "Database",
-        DATABASE_NAME="charleston_test",
-        FIAT_BIN_PATH=SYSTEM_FOLDER / "fiat" / "fiat.exe",
-        SFINCS_BIN_PATH=SYSTEM_FOLDER / "sfincs" / "sfincs.exe",
+        DATABASE_ROOT=Path(args.database_root).resolve(),
+        DATABASE_NAME=args.database_name,
     )
-
+    print(f"Updating database: {settings.database_path}")
     update_database_static(settings.database_path)
