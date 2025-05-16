@@ -368,20 +368,22 @@ class FloodAdapt:
         """
         return EventSet(**attrs, sub_events=sub_events)
 
-    def save_event(self, event: Event) -> None:
+    def save_event(self, event: Event, overwrite: bool = False) -> None:
         """Save an event object to the database.
 
         Parameters
         ----------
         event : Event
             The event object to save.
+        overwrite : bool, optional
+            Whether to overwrite an existing event with the same name (default is False).
 
         Raises
         ------
         ValueError
             If the event object is not valid.
         """
-        self.database.events.save(event)
+        self.database.events.save(event, overwrite)
 
     def edit_event(self, event: Event) -> None:
         """Edit an event object in the database.
