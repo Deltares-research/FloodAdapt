@@ -66,7 +66,7 @@ class Settings(BaseSettings):
 
     Usage
     -----
-    from flood_adapt.config import Settings
+    from flood_adapt import Settings
 
     One of the following:
 
@@ -77,7 +77,7 @@ class Settings(BaseSettings):
         `settings = Settings.read(toml_path: Path)`
 
     3) Load settings from keyword arguments, overwriting any environment variables:
-        `settings = Settings(DATABASE_ROOT="path/to/database", DATABASE_NAME="database_name", SYSTEM_FOLDER="path/to/system_folder")`
+        `settings = Settings(DATABASE_ROOT="path/to/database", DATABASE_NAME="database_name")`
 
     Attributes
     ----------
@@ -85,19 +85,21 @@ class Settings(BaseSettings):
         The name of the database.
     database_root : Path
         The root directory of the database.
-    system_folder : Path
-        The root directory of the system folder containing the kernels.
     delete_crashed_runs : bool
         Whether to delete crashed/corrupted runs immediately after they are detected.
+    sfincs_path : Path
+        The path to the SFINCS binary.
+    fiat_path : Path
+        The path to the FIAT binary.
+    validate_allowed_forcings : bool
+        Whether to validate the forcing types and sources against the allowed forcings in the event model.
+    validate_bin_paths : bool
+        Whether to validate the existence of the paths to the SFINCS and FIAT binaries.
 
     Properties
     ----------
     database_path : Path
         The full path to the database.
-    sfincs_path : Path
-        The path to the SFINCS binary.
-    fiat_path : Path
-        The path to the FIAT binary.
 
     Raises
     ------
@@ -172,10 +174,17 @@ class Settings(BaseSettings):
         environ["SFINCS_BIN_PATH"] = str(self.sfincs_path)
         environ["FIAT_BIN_PATH"] = str(self.fiat_path)
         environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
-        environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
-        environ["VALIDATE_BINARIES"] = str(self.validate_bin_paths)
         environ["SFINCS_PATH"] = str(self.sfincs_path)
         environ["FIAT_PATH"] = str(self.fiat_path)
+
+        if self.validate_allowed_forcings:
+            environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
+        else:
+            environ.pop("VALIDATE_ALLOWED_FORCINGS", None)
+        if self.validate_bin_paths:
+            environ["VALIDATE_BINARIES"] = str(self.validate_bin_paths)
+        else:
+            environ.pop("VALIDATE_BINARIES", None)
 
         return self
 
