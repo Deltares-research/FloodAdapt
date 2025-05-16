@@ -847,9 +847,13 @@ def _create_hurricane_event(name: str) -> HurricaneEvent:
 
 
 if __name__ == "__main__":
+    SYSTEM_FOLDER = Path(__file__).parents[2] / "flood_adapt" / "system" / "win-64"
+
     settings = Settings(
         DATABASE_ROOT=Path(__file__).parents[3] / "Database",
         DATABASE_NAME="charleston_test",
+        FIAT_BIN_PATH=SYSTEM_FOLDER / "fiat" / "fiat.exe",
+        SFINCS_BIN_PATH=SYSTEM_FOLDER / "sfincs" / "sfincs.exe",
     )
 
     update_database_input(settings.database_path)

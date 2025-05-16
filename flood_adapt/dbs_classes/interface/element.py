@@ -33,7 +33,7 @@ class AbstractDatabaseElement(ABC, Generic[T_OBJECT_MODEL]):
         pass
 
     @abstractmethod
-    def list_objects(self) -> dict[str, list[Any]]:
+    def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the objects that currently exist in the database.
 
         Returns
