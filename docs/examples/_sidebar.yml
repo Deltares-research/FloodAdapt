@@ -12,7 +12,7 @@ website:
           href: examples/database_builder/index.qmd
 
         - section: Projections
-          href: examples/projections/index.qmd
+          href: projections/projections.ipynb
 
         - section: Measures
           href: examples/measures/index.qmd
