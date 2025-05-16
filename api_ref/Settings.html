@@ -824,12 +824,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>If any required settings are missing or invalid, a ValidationError is raised.</p>
 <section id="usage" class="level2 doc-section doc-section-usage">
 <h2 class="doc-section doc-section-usage anchored" data-anchor-id="usage">Usage</h2>
-<p>from flood_adapt.config import Settings</p>
+<p>from flood_adapt import Settings</p>
 <p>One of the following:</p>
 <ol type="1">
 <li><p>Load settings from environment variables, if no environment variables are set, use defaults defined in the class: <code>settings = Settings()</code></p></li>
 <li><p>Load settings from a .toml file, overwriting any environment variables set: <code>settings = Settings.read(toml_path: Path)</code></p></li>
-<li><p>Load settings from keyword arguments, overwriting any environment variables: <code>settings = Settings(DATABASE_ROOT="path/to/database", DATABASE_NAME="database_name", SYSTEM_FOLDER="path/to/system_folder")</code></p></li>
+<li><p>Load settings from keyword arguments, overwriting any environment variables: <code>settings = Settings(DATABASE_ROOT="path/to/database", DATABASE_NAME="database_name")</code></p></li>
 </ol>
 </section>
 <section id="attributes" class="level2 doc-section doc-section-attributes">
@@ -843,19 +843,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <dd>
 <p>The root directory of the database.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>system_folder</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
-<dd>
-<p>The root directory of the system folder containing the kernels.</p>
-</dd>
 <dt><code><span class="parameter-name"><strong>delete_crashed_runs</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
 <dd>
 <p>Whether to delete crashed/corrupted runs immediately after they are detected.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>sfincs_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
+<dd>
+<p>The path to the SFINCS binary.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>fiat_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
+<dd>
+<p>The path to the FIAT binary.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>validate_allowed_forcings</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
+<dd>
+<p>Whether to validate the forcing types and sources against the allowed forcings in the event model.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>validate_bin_paths</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
+<dd>
+<p>Whether to validate the existence of the paths to the SFINCS and FIAT binaries.</p>
 </dd>
 </dl>
 </section>
 <section id="properties" class="level2 doc-section doc-section-properties">
 <h2 class="doc-section doc-section-properties anchored" data-anchor-id="properties">Properties</h2>
-<p>database_path : Path The full path to the database. sfincs_path : Path The path to the SFINCS binary. fiat_path : Path The path to the FIAT binary.</p>
+<p>database_path : Path The full path to the database.</p>
 </section>
 <section id="raises" class="level2 doc-section doc-section-raises">
 <h2 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h2>
