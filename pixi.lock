@@ -4568,8 +4568,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: .
   name: flood-adapt
-  version: 0.3.2
-  sha256: 123b7729a81814afc61ca1970e8a9d11bb3c205209692b5a88c76ecf15721e32
+  version: 0.3.3
+  sha256: 696f93f3be46e3e8381cbb3e251e79fdffa76bc93abeaea81d6a40f2cbc54798
   requires_dist:
   - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
@@ -4592,6 +4592,7 @@ packages:
   - pyogrio<1.0
   - tomli>=2.0,<3.0
   - tomli-w>=1.0,<2.0
+  - typing-extensions
   - pytest>=8.0,<9.0 ; extra == 'dev'
   - pytest-cov>=6.0,<7.0 ; extra == 'dev'
   - pre-commit==3.8.0 ; extra == 'dev'
@@ -4613,8 +4614,8 @@ packages:
   requires_python: '>=3.8,<3.13'
 - pypi: .
   name: flood-adapt
-  version: 0.3.2
-  sha256: 123b7729a81814afc61ca1970e8a9d11bb3c205209692b5a88c76ecf15721e32
+  version: 0.3.3
+  sha256: 696f93f3be46e3e8381cbb3e251e79fdffa76bc93abeaea81d6a40f2cbc54798
   requires_dist:
   - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
@@ -4637,6 +4638,7 @@ packages:
   - pyogrio<1.0
   - tomli>=2.0,<3.0
   - tomli-w>=1.0,<2.0
+  - typing-extensions
   - pytest>=8.0,<9.0 ; extra == 'dev'
   - pytest-cov>=6.0,<7.0 ; extra == 'dev'
   - pre-commit==3.8.0 ; extra == 'dev'

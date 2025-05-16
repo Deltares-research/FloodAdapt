@@ -47,6 +47,7 @@ dependencies = [
     "pyogrio            <1.0",
     "tomli              >=2.0,<3.0",
     "tomli-w            >=1.0,<2.0",
+    "typing_extensions"
 ]
 dynamic = ["version"]
 
@@ -135,6 +136,7 @@ update-test-db = { depends-on = ["update-test-db-static", "update-test-db-input"
 install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"]}
 pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"]}
 tests = {cmd = "pytest tests"}
+
 
 [tool.pixi.feature.build.tasks]
 build-db-builder = {cmd = "python distribution/build_database_builder_executable.py"}
