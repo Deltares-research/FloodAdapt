@@ -4568,8 +4568,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: .
   name: flood-adapt
-  version: 0.3.3
-  sha256: 696f93f3be46e3e8381cbb3e251e79fdffa76bc93abeaea81d6a40f2cbc54798
+  version: 0.3.4
+  sha256: 46f44719a3681f22361d5dc630db50adb78f36847181aae1fe44ec4bb96af59c
   requires_dist:
   - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
@@ -4610,12 +4610,13 @@ packages:
   - sphinx-rtd-theme>=3.0,<4.0 ; extra == 'docs'
   - regex>=2024.11,<2025.0 ; extra == 'docs'
   - minio>=7.2.15,<8 ; extra == 'docs'
+  - python-dotenv>=1.0,<2.0 ; extra == 'docs'
   - flood-adapt[build,dev,docs] ; extra == 'all'
   requires_python: '>=3.8,<3.13'
 - pypi: .
   name: flood-adapt
-  version: 0.3.3
-  sha256: 696f93f3be46e3e8381cbb3e251e79fdffa76bc93abeaea81d6a40f2cbc54798
+  version: 0.3.4
+  sha256: 46f44719a3681f22361d5dc630db50adb78f36847181aae1fe44ec4bb96af59c
   requires_dist:
   - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
@@ -4656,6 +4657,7 @@ packages:
   - sphinx-rtd-theme>=3.0,<4.0 ; extra == 'docs'
   - regex>=2024.11,<2025.0 ; extra == 'docs'
   - minio>=7.2.15,<8 ; extra == 'docs'
+  - python-dotenv>=1.0,<2.0 ; extra == 'docs'
   - flood-adapt[build,dev,docs] ; extra == 'all'
   requires_python: '>=3.8,<3.13'
   editable: true

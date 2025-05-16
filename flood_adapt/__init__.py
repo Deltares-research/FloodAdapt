@@ -1,5 +1,5 @@
 # has to be here at the start to avoid circular imports
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 
 from flood_adapt import adapter, dbs_classes, objects
 from flood_adapt.config.config import Settings
