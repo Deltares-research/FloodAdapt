@@ -337,7 +337,6 @@ if __name__ == "__main__":
     settings = Settings(
         DATABASE_ROOT=Path(args.database_root).resolve(),
         DATABASE_NAME=args.database_name,
-        VALIDATE_BINARIES=False,
     )
     print(f"Updating database: {settings.database_path}")
     update_database_static(settings.database_path)

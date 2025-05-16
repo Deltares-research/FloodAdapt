@@ -123,19 +123,19 @@ class Settings(BaseSettings):
 
     delete_crashed_runs: bool = Field(
         alias="DELETE_CRASHED_RUNS",  # environment variable: DELETE_CRASHED_RUNS
-        default=True,
+        default=False,
         description="Whether to delete the output of crashed/corrupted runs. Be careful when setting this to False, as it may lead to a broken database that cannot be read in anymore.",
         exclude=True,
     )
     validate_allowed_forcings: bool = Field(
         alias="VALIDATE_ALLOWED_FORCINGS",  # environment variable: VALIDATE_ALLOWED_FORCINGS
-        default=True,
+        default=False,
         description="Whether to validate the forcing types and sources against the allowed forcings in the event model.",
         exclude=True,
     )
     validate_bin_paths: bool = Field(
         alias="VALIDATE_BINARIES",  # environment variable: VALIDATE_BINARIES
-        default=True,
+        default=False,
         description="Whether to validate the existence of the paths to the SFINCS and FIAT binaries.",
         exclude=True,
     )
@@ -173,10 +173,13 @@ class Settings(BaseSettings):
         environ["DATABASE_NAME"] = self.database_name
         environ["SFINCS_BIN_PATH"] = str(self.sfincs_path)
         environ["FIAT_BIN_PATH"] = str(self.fiat_path)
-        environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
         environ["SFINCS_PATH"] = str(self.sfincs_path)
         environ["FIAT_PATH"] = str(self.fiat_path)
 
+        if self.delete_crashed_runs:
+            environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
+        else:
+            environ.pop("DELETE_CRASHED_RUNS", None)
         if self.validate_allowed_forcings:
             environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
         else:
