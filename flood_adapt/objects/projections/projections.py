@@ -40,15 +40,15 @@ class SocioEconomicChange(BaseModel):
     Attributes
     ----------
     population_growth_existing : float
-        The existing population growth rate. default=0.0
+        The population growth percentage of the existing area. default=0.0
     economic_growth : float
-        The economic growth rate. default=0.0.
+        The economic growth percentage. default=0.0.
     population_growth_new : float
-        The population growth rate for new developments. default=0.0.
+        The population growth percentage for the new development areas. default=0.0.
     new_development_elevation : Optional[us.UnitfulLengthRefValue]
-        The elevation of new developments. default=None.
+        The elevation of the new development areas. default=None.
     new_development_shapefile : Optional[str]
-        The path to the shapefile of new developments. default=None.
+        The path to the shapefile of the new development areas. default=None.
     """
 
     population_growth_existing: Optional[float] = 0.0
@@ -77,8 +77,8 @@ class Projection(Object):
 
     """
 
-    physical_projection: PhysicalProjection
-    socio_economic_change: SocioEconomicChange
+    physical_projection: PhysicalProjection = PhysicalProjection()
+    socio_economic_change: SocioEconomicChange = SocioEconomicChange()
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.socio_economic_change.new_development_shapefile:
