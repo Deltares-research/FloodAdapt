@@ -1,8 +1,9 @@
+import math
 import os
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from flood_adapt.misc.utils import resolve_filepath, save_file_to_database
 from flood_adapt.objects.forcing import unit_system as us
@@ -57,6 +58,15 @@ class SocioEconomicChange(BaseModel):
     population_growth_new: Optional[float] = 0.0
     new_development_elevation: Optional[us.UnitfulLengthRefValue] = None
     new_development_shapefile: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_selection_type(self) -> "SocioEconomicChange":
+        if not math.isclose(self.population_growth_new or 0.0, 0.0, abs_tol=1e-8):
+            if self.new_development_shapefile is None:
+                raise ValueError(
+                    "If `population_growth_new` is non-zero, then `new_development_shapefile` must also be provided."
+                )
+        return self
 
 
 class Projection(Object):
