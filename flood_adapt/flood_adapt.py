@@ -130,7 +130,7 @@ class FloodAdapt:
         measure : Measure
             The measure object to save.
         overwrite : bool, optional
-            Whether to overwrite an existing event with the same name (default is False).
+            Whether to overwrite an existing measure with the same name (default is False).
 
         Raises
         ------
@@ -249,7 +249,7 @@ class FloodAdapt:
         strategy : Strategy
             The strategy object to save.
         overwrite : bool, optional
-            Whether to overwrite an existing event with the same name (default is False).
+            Whether to overwrite an existing strategy with the same name (default is False).
 
         Raises
         ------
@@ -502,7 +502,7 @@ class FloodAdapt:
         projection : Projection
             The projection object to save.
         overwrite : bool, optional
-            Whether to overwrite an existing event with the same name (default is False).
+            Whether to overwrite an existing projection with the same name (default is False).
 
         Raises
         ------
@@ -648,7 +648,7 @@ class FloodAdapt:
         scenario : Scenario
             The scenario to save.
         overwrite : bool, optional
-            Whether to overwrite an existing event with the same name (default is False).
+            Whether to overwrite an existing scenario with the same name (default is False).
 
         Returns
         -------
@@ -1096,7 +1096,7 @@ class FloodAdapt:
         benefit : Benefit
             The benefit object to save.
         overwrite : bool, optional
-            Whether to overwrite an existing event with the same name (default is False).
+            Whether to overwrite an existing benefit with the same name (default is False).
 
         Raises
         ------
