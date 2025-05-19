@@ -58,28 +58,6 @@ class DbsScenario(DbsTemplate[Scenario]):
         if (self.output_path / name).exists():
             shutil.rmtree(self.output_path / name, ignore_errors=False)
 
-    def edit(self, scenario: Scenario):
-        """Edits an already existing scenario in the database.
-
-        Parameters
-        ----------
-        scenario : Scenario
-            scenario to be edited in the database
-
-        Raises
-        ------
-        ValueError
-            Raise error if name is already in use.
-        """
-        # Check if it is possible to edit the scenario. This then also covers checking whether the
-        # scenario is already used in a higher level object. If this is the case, it cannot be edited.
-        super().edit(scenario)
-
-        # Delete output if edited
-        output_path = self.output_path / scenario.name
-        if output_path.exists():
-            shutil.rmtree(output_path, ignore_errors=True)
-
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a scenario is used in a benefit.
 
