@@ -1311,15 +1311,11 @@ class SfincsAdapter(IHazardAdapter):
         # Make sure no multipolygons are there
         gdf_green_infra = gdf_green_infra.explode()
 
-        # Volume is always already calculated and is converted to m3 for SFINCS
-        height = None
-        volume = green_infrastructure.volume.convert(
-            us.UnitTypesVolume(us.UnitTypesVolume.m3)
-        )
-
         # HydroMT function: create storage volume
         self._model.setup_storage_volume(
-            storage_locs=gdf_green_infra, volume=volume, height=height, merge=True
+            storage_locs=gdf_green_infra,
+            volume=green_infrastructure.volume.convert(us.UnitTypesVolume.m3),
+            merge=True,
         )
 
     def _add_measure_pump(self, pump: Pump):
@@ -1683,10 +1679,6 @@ class SfincsAdapter(IHazardAdapter):
             else:
                 return spw_file
 
-        self.logger.info(
-            f"Creating spiderweb file for hurricane event `{name}`. This may take a while."
-        )
-
         # Initialize the tropical cyclone
         tc = TropicalCyclone()
         tc.read_track(filename=str(track_forcing.path), fmt="ddb_cyc")
@@ -1700,6 +1692,10 @@ class SfincsAdapter(IHazardAdapter):
         start = "Including" if include_rainfall else "Excluding"
         self.logger.info(f"{start} rainfall in the spiderweb file")
         tc.include_rainfall = include_rainfall
+
+        self.logger.info(
+            f"Creating spiderweb file for hurricane event `{name}`. This may take a while."
+        )
 
         # Create spiderweb file from the track
         tc.to_spiderweb(spw_file)
