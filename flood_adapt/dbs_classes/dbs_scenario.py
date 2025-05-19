@@ -12,7 +12,7 @@ class DbsScenario(DbsTemplate[Scenario]):
     display_name = "Scenario"
     _object_class = Scenario
 
-    def list_objects(self) -> dict[str, list[Any]]:
+    def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the events that currently exist in the database.
 
         Returns
@@ -20,12 +20,18 @@ class DbsScenario(DbsTemplate[Scenario]):
         dict[str, Any]
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
-        scenarios = super().list_objects()
-        objects = scenarios["objects"]
-        scenarios["Projection"] = [obj.projection for obj in objects]
-        scenarios["Event"] = [obj.event for obj in objects]
-        scenarios["Strategy"] = [obj.strategy for obj in objects]
-        scenarios["finished"] = [self.has_run_check(obj.name) for obj in objects]
+        scenarios = super().summarize_objects()
+        scenarios["Projection"] = [
+            self._read_variable_in_toml("projection", path)
+            for path in scenarios["path"]
+        ]
+        scenarios["Event"] = [
+            self._read_variable_in_toml("event", path) for path in scenarios["path"]
+        ]
+        scenarios["Strategy"] = [
+            self._read_variable_in_toml("strategy", path) for path in scenarios["path"]
+        ]
+        scenarios["finished"] = [self.has_run_check(scn) for scn in scenarios["name"]]
 
         return scenarios
 
@@ -87,7 +93,10 @@ class DbsScenario(DbsTemplate[Scenario]):
             list[str]
                 list of benefits that use the scenario
         """
-        benefits = self._database.benefits.list_objects()["objects"]
+        benefits = [
+            self._database.benefits.get(benefit)
+            for benefit in self._database.benefits.summarize_objects()["name"]
+        ]
         used_in_benefit = []
         for benefit in benefits:
             runner = BenefitRunner(database=self._database, benefit=benefit)

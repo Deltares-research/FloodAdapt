@@ -37,7 +37,9 @@ jobs:
           frozen: true
 
       - name: Build docs
-        run: pixi run render-docs
+        run: |
+          pixi run fetch-data
+          pixi run render-docs
 
       - name: Read version
         run: |

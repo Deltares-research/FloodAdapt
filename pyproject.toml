@@ -47,6 +47,7 @@ dependencies = [
     "pyogrio            <1.0",
     "tomli              >=2.0,<3.0",
     "tomli-w            >=1.0,<2.0",
+    "typing_extensions"
 ]
 dynamic = ["version"]
 
@@ -73,6 +74,7 @@ docs = [
     "sphinx-rtd-theme   >=3.0,<4.0",
     "regex              >=2024.11,<2025.0",
     "minio              >=7.2.15,<8",
+    "python-dotenv      >=1.0,<2.0",
     "folium",
     "mapclassify",
     "contextily"
@@ -131,7 +133,7 @@ dev = { features = ["dev"], solve-group = "py311" }
 docs = { features = ["docs"], solve-group = "py311" }
 all = { features = ["all"], solve-group = "py311" }
 
-[tool.pixi.tasks]
+[tool.pixi.feature.dev.tasks]
 update-test-db-static = { cmd = "python tests/data/create_test_static.py" }
 update-test-db-input = { cmd = "python tests/data/create_test_input.py" }
 update-test-db = { depends-on = ["update-test-db-static", "update-test-db-input"] }
@@ -151,7 +153,15 @@ build-db-builder = {cmd = "python distribution/build_database_builder_executable
 [tool.pixi.feature.docs.tasks]
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
 clean-docs = {depends-on=["clean-generated-docs"]}
-fetch-data = { cmd = "python docs/fetch_data.py"}
-build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs", "fetch-data" ] }
+fetch-data = { cmd = "python docs/fetch_data.py" }
+build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
 build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
+render-examples = { cmd = "quarto render ./docs/examples/**/*.ipynb ./docs/examples/**/*.qmd --execute" }
+open-docs = { cmd = "cmd.exe /c start docs/_site/index.html" }
 render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs", "build-interlinks"] }
+
+[tool.pixi.target.win-64.activation]
+scripts = [ "setup.bat" ]
+
+[tool.pixi.target.linux-64.activation]
+scripts = [ "setup.sh" ]

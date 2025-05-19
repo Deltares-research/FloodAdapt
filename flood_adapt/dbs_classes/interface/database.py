@@ -87,10 +87,6 @@ class IDatabase(ABC):
         pass
 
     @abstractmethod
-    def update(self) -> None:
-        pass
-
-    @abstractmethod
     def get_outputs(self) -> dict[str, Any]:
         pass
 
@@ -136,10 +132,6 @@ class IDatabase(ABC):
 
     @abstractmethod
     def has_run_hazard(self, scenario_name: str) -> None:
-        pass
-
-    @abstractmethod
-    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
         pass
 
     @abstractmethod

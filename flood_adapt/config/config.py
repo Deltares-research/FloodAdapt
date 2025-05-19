@@ -1,7 +1,6 @@
 from os import environ, listdir
 from pathlib import Path
 from platform import system
-from typing import ClassVar
 
 import tomli
 import tomli_w
@@ -12,6 +11,48 @@ from pydantic import (
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+DEFAULT_SYSTEM_FOLDER = Path(__file__).parents[1] / "system"
+DEFAULT_EXE_PATHS: dict[str, dict[str, Path]] = {
+    "windows": {
+        "sfincs": DEFAULT_SYSTEM_FOLDER / "win-64" / "sfincs" / "sfincs.exe",
+        "fiat": DEFAULT_SYSTEM_FOLDER / "win-64" / "fiat" / "fiat.exe",
+    },
+    "linux": {
+        "sfincs": DEFAULT_SYSTEM_FOLDER / "linux-64" / "sfincs" / "bin" / "sfincs",
+        "fiat": DEFAULT_SYSTEM_FOLDER / "linux-64" / "fiat" / "fiat",
+    },
+}
+
+
+def _default_exe_path(exe_name: str) -> Path:
+    """
+    Get the default path for the given executable name based on the system type.
+
+    Parameters
+    ----------
+    exe_name : str
+        The name of the executable (e.g., "sfincs", "fiat").
+
+    Returns
+    -------
+    Path
+        The default path to the executable.
+
+    Raises
+    ------
+    ValueError
+        If the system type is not recognized.
+    """
+    if system().lower() not in DEFAULT_EXE_PATHS:
+        raise ValueError(
+            f"System type '{system()}' is not recognized. Supported types are: {', '.join(DEFAULT_EXE_PATHS.keys())}."
+        )
+    if exe_name not in DEFAULT_EXE_PATHS[system().lower()]:
+        raise ValueError(
+            f"Executable name '{exe_name}' is not recognized. Supported names are: {', '.join(DEFAULT_EXE_PATHS[system().lower()].keys())}."
+        )
+    return DEFAULT_EXE_PATHS[system().lower()][exe_name]
 
 
 class Settings(BaseSettings):
@@ -25,7 +66,7 @@ class Settings(BaseSettings):
 
     Usage
     -----
-    from flood_adapt.config import Settings
+    from flood_adapt import Settings
 
     One of the following:
 
@@ -36,7 +77,7 @@ class Settings(BaseSettings):
         `settings = Settings.read(toml_path: Path)`
 
     3) Load settings from keyword arguments, overwriting any environment variables:
-        `settings = Settings(DATABASE_ROOT="path/to/database", DATABASE_NAME="database_name", SYSTEM_FOLDER="path/to/system_folder")`
+        `settings = Settings(DATABASE_ROOT="path/to/database", DATABASE_NAME="database_name")`
 
     Attributes
     ----------
@@ -44,31 +85,27 @@ class Settings(BaseSettings):
         The name of the database.
     database_root : Path
         The root directory of the database.
-    system_folder : Path
-        The root directory of the system folder containing the kernels.
     delete_crashed_runs : bool
         Whether to delete crashed/corrupted runs immediately after they are detected.
+    sfincs_path : Path
+        The path to the SFINCS binary.
+    fiat_path : Path
+        The path to the FIAT binary.
+    validate_allowed_forcings : bool
+        Whether to validate the forcing types and sources against the allowed forcings in the event model.
+    validate_bin_paths : bool
+        Whether to validate the existence of the paths to the SFINCS and FIAT binaries.
 
     Properties
     ----------
     database_path : Path
         The full path to the database.
-    sfincs_path : Path
-        The path to the SFINCS binary.
-    fiat_path : Path
-        The path to the FIAT binary.
 
     Raises
     ------
     ValidationError
         If required settings are missing or invalid.
     """
-
-    SYSTEM_SUFFIXES: ClassVar[dict[str, str]] = {
-        "Windows": ".exe",
-        "Linux": "",
-        "Darwin": "",
-    }
 
     model_config = SettingsConfigDict(env_ignore_empty=True, validate_default=True)
 
@@ -83,33 +120,39 @@ class Settings(BaseSettings):
         default="",
         description="The name of the database site, should be a folder inside the database root. The site must contain an 'input' and 'static' folder.",
     )
-    system_folder: Path = Field(
-        alias="SYSTEM_FOLDER",  # environment variable: SYSTEM_FOLDER
-        default=Path(__file__).parents[1] / "system",
-        description="The path of the system folder containing the kernels that run the calculations. Default is to look for the system folder in `FloodAdapt/flood_adapt/system`",
-    )
+
     delete_crashed_runs: bool = Field(
         alias="DELETE_CRASHED_RUNS",  # environment variable: DELETE_CRASHED_RUNS
-        default=True,
+        default=False,
         description="Whether to delete the output of crashed/corrupted runs. Be careful when setting this to False, as it may lead to a broken database that cannot be read in anymore.",
         exclude=True,
     )
     validate_allowed_forcings: bool = Field(
         alias="VALIDATE_ALLOWED_FORCINGS",  # environment variable: VALIDATE_ALLOWED_FORCINGS
-        default=True,
+        default=False,
         description="Whether to validate the forcing types and sources against the allowed forcings in the event model.",
         exclude=True,
     )
+    validate_bin_paths: bool = Field(
+        alias="VALIDATE_BINARIES",  # environment variable: VALIDATE_BINARIES
+        default=False,
+        description="Whether to validate the existence of the paths to the SFINCS and FIAT binaries.",
+        exclude=True,
+    )
 
-    @computed_field
-    @property
-    def sfincs_path(self) -> Path:
-        return self.system_folder / "sfincs" / f"sfincs{Settings._system_extension()}"
+    sfincs_path: Path = Field(
+        default=_default_exe_path("sfincs"),
+        alias="SFINCS_BIN_PATH",  # environment variable: SFINCS_BIN_PATH
+        description="The path of the sfincs binary.",
+        exclude=True,
+    )
 
-    @computed_field
-    @property
-    def fiat_path(self) -> Path:
-        return self.system_folder / "fiat" / f"fiat{Settings._system_extension()}"
+    fiat_path: Path = Field(
+        default=_default_exe_path("fiat"),
+        alias="FIAT_BIN_PATH",  # environment variable: FIAT_BIN_PATH
+        description="The path of the fiat binary.",
+        exclude=True,
+    )
 
     @computed_field
     @property
@@ -119,18 +162,33 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_settings(self):
         self._validate_database_path()
-        self._validate_system_folder()
-        self._validate_fiat_path()
-        self._validate_sfincs_path()
+        if self.validate_bin_paths:
+            self._validate_fiat_path()
+            self._validate_sfincs_path()
         self._update_environment_variables()
         return self
 
     def _update_environment_variables(self):
         environ["DATABASE_ROOT"] = str(self.database_root)
         environ["DATABASE_NAME"] = self.database_name
-        environ["SYSTEM_FOLDER"] = str(self.system_folder)
-        environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
-        environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
+        environ["SFINCS_BIN_PATH"] = str(self.sfincs_path)
+        environ["FIAT_BIN_PATH"] = str(self.fiat_path)
+        environ["SFINCS_PATH"] = str(self.sfincs_path)
+        environ["FIAT_PATH"] = str(self.fiat_path)
+
+        if self.delete_crashed_runs:
+            environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
+        else:
+            environ.pop("DELETE_CRASHED_RUNS", None)
+        if self.validate_allowed_forcings:
+            environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
+        else:
+            environ.pop("VALIDATE_ALLOWED_FORCINGS", None)
+        if self.validate_bin_paths:
+            environ["VALIDATE_BINARIES"] = str(self.validate_bin_paths)
+        else:
+            environ.pop("VALIDATE_BINARIES", None)
+
         return self
 
     def _validate_database_path(self):
@@ -165,11 +223,6 @@ class Settings(BaseSettings):
 
         return self
 
-    def _validate_system_folder(self):
-        if not self.system_folder.is_dir():
-            raise ValueError(f"System folder {self.system_folder} does not exist.")
-        return self
-
     def _validate_sfincs_path(self):
         if not self.sfincs_path.exists():
             raise ValueError(f"SFINCS binary {self.sfincs_path} does not exist.")
@@ -180,17 +233,9 @@ class Settings(BaseSettings):
             raise ValueError(f"FIAT binary {self.fiat_path} does not exist.")
         return self
 
-    @field_serializer(
-        "database_root", "system_folder", "sfincs_path", "fiat_path", "database_path"
-    )
+    @field_serializer("database_root", "database_path")
     def serialize_path(self, path: Path) -> str:
         return str(path)
-
-    @staticmethod
-    def _system_extension() -> str:
-        if system() not in Settings.SYSTEM_SUFFIXES:
-            raise ValueError(f"Unsupported system {system()}")
-        return Settings.SYSTEM_SUFFIXES[system()]
 
     @staticmethod
     def read(toml_path: Path) -> "Settings":

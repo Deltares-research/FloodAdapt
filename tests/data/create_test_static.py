@@ -1,4 +1,6 @@
+from argparse import ArgumentParser
 from pathlib import Path
+from typing import Optional
 
 from flood_adapt import unit_system as us
 from flood_adapt.config.config import Settings
@@ -10,14 +12,19 @@ from flood_adapt.config.fiat import (
     FiatConfigModel,
     FiatModel,
     RiskModel,
+    SVIModel,
 )
 from flood_adapt.config.gui import (
+    AggregationDmgLayer,
+    BenefitsLayer,
+    FloodMapLayer,
+    FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
-    MapboxLayersModel,
+    OutputLayers,
     PlottingModel,
     SyntheticTideModel,
-    VisualizationLayersModel,
+    VisualizationLayers,
 )
 from flood_adapt.config.sfincs import (
     Cstype,
@@ -54,16 +61,14 @@ def update_database_static(database_path: Path):
 
     sfincs = create_sfincs_config()
 
-    site = create_site_config(sfincs=sfincs)
+    site = create_site_config(database_path=database_path, sfincs=sfincs)
     site.save(config_dir / "site.toml")
 
     sfincs.river = None
-    no_river = create_site_config(sfincs=sfincs)
+    no_river = create_site_config(database_path=database_path, sfincs=sfincs)
     no_river.save(
         config_dir / "site_without_river.toml", sfincs="sfincs_without_river.toml"
     )
-
-    # update_static_data(database_path)
 
 
 def create_fiat_config() -> FiatModel:
@@ -95,6 +100,10 @@ def create_fiat_config() -> FiatModel:
         exposure_crs="EPSG:4326",
         floodmap_type=FloodmapType.water_level,
         bfe=bfe,
+        svi=SVIModel(
+            geom="templates/fiat/svi/CDC_svi_2020.gpkg",
+            field_name="SVI",
+        ),
         non_building_names=["road"],
         damage_unit="$",
         building_footprints="templates/fiat/footprints/Buildings.shp",
@@ -118,7 +127,7 @@ def create_fiat_config() -> FiatModel:
     return fiat
 
 
-def create_gui_config() -> GuiModel:
+def create_gui_config(database_path: Path) -> GuiModel:
     units = GuiUnitModel(
         default_length_units=us.UnitTypesLength.feet,
         default_distance_units=us.UnitTypesLength.miles,
@@ -131,51 +140,44 @@ def create_gui_config() -> GuiModel:
         default_cumulative_units=us.UnitTypesLength.inch,
     )
 
-    mapbox_layers = MapboxLayersModel(
-        flood_map_depth_min=0.328,
-        flood_map_zbmax=3.28,
-        flood_map_bins=[1, 3, 5],
-        flood_map_colors=["#BED2FF", "#B4D79E", "#1F80B8", "#081D58"],
-        aggregation_dmg_bins=[0.00001, 1000000, 2500000, 5000000, 10000000],
-        aggregation_dmg_colors=[
-            "#FFFFFF",
-            "#FEE9CE",
-            "#FDBB84",
-            "#FC844E",
-            "#E03720",
-            "#860000",
-        ],
-        footprints_dmg_bins=[0.00001, 10, 20, 40, 60],
-        footprints_dmg_colors=[
-            "#FFFFFF",
-            "#FEE9CE",
-            "#FDBB84",
-            "#FC844E",
-            "#E03720",
-            "#860000",
-        ],
-        svi_bins=[0.05, 0.2, 0.4, 0.6, 0.8],
-        svi_colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
-        benefits_bins=[0, 0.01, 1000000, 10000000, 50000000],
-        benefits_colors=[
-            "#FF7D7D",
-            "#FFFFFF",
-            "#DCEDC8",
-            "#AED581",
-            "#7CB342",
-            "#33691E",
-        ],
+    output_layers = OutputLayers(
+        floodmap=FloodMapLayer(
+            bins=[1, 3, 5],
+            colors=["#BED2FF", "#B4D79E", "#1F80B8", "#081D58"],
+            zbmax=3.28,
+            depth_min=0.328,
+        ),
+        aggregation_dmg=AggregationDmgLayer(
+            bins=[0.00001, 1000000, 2500000, 5000000, 10000000],
+            colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        ),
+        footprints_dmg=FootprintsDmgLayer(
+            bins=[0.00001, 10, 20, 40, 60],
+            colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        ),
+        benefits=BenefitsLayer(
+            bins=[0, 0.01, 1000000, 10000000, 50000000],
+            colors=[
+                "#FF7D7D",
+                "#FFFFFF",
+                "#DCEDC8",
+                "#AED581",
+                "#7CB342",
+                "#33691E",
+            ],
+            threshold=0.0,
+        ),
     )
 
-    visualization_layers = VisualizationLayersModel(
-        default_bin_number=4,
-        default_colors=["#FFFFFF", "#FEE9CE", "#E03720", "#860000"],
-        layer_names=[],
-        layer_long_names=[],
-        layer_paths=[],
-        field_names=[],
-        bins=[],
-        colors=[],
+    visualization_layers = VisualizationLayers()
+    visualization_layers.add_layer(
+        bins=[0, 0.1, 0.2, 0.3, 0.4],
+        colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        name="svi",
+        long_name="Social Vulnerability Index",
+        path=str(database_path / "static" / "templates/fiat/svi/CDC_svi_2020.gpkg"),
+        field_name="SVI",
+        database_path=database_path,
     )
 
     plotting = PlottingModel(
@@ -191,7 +193,7 @@ def create_gui_config() -> GuiModel:
     gui = GuiModel(
         units=units,
         plotting=plotting,
-        mapbox_layers=mapbox_layers,
+        output_layers=output_layers,
         visualization_layers=visualization_layers,
     )
 
@@ -289,10 +291,15 @@ def create_sfincs_config() -> SfincsModel:
 
 
 def create_site_config(
-    fiat: FiatModel = create_fiat_config(),
-    gui: GuiModel = create_gui_config(),
-    sfincs: SfincsModel = create_sfincs_config(),
+    database_path: Path,
+    fiat: Optional[FiatModel] = None,
+    gui: Optional[GuiModel] = None,
+    sfincs: Optional[SfincsModel] = None,
 ) -> Site:
+    fiat = fiat or create_fiat_config()
+    gui = gui or create_gui_config(database_path)
+    sfincs = sfincs or create_sfincs_config()
+
     config = Site(
         name="Charleston",
         description="Charleston, SC",
@@ -310,10 +317,26 @@ def update_static_data():
 
 
 if __name__ == "__main__":
-    settings = Settings(
-        DATABASE_ROOT=Path(__file__).parents[3] / "Database",
-        DATABASE_NAME="charleston_test",
-        SYSTEM_FOLDER=Path(__file__).parents[2] / "flood_adapt" / "system",
+    parser = ArgumentParser(description="Create the static data for the database.")
+    parser.add_argument(
+        "-d",
+        "--database_root",
+        type=Path,
+        default=Path(__file__).parents[3] / "Database",
+        help="Path to the database root folder.",
     )
+    parser.add_argument(
+        "-n",
+        "--database_name",
+        type=str,
+        default="charleston_test",
+        help="Name of the database.",
+    )
+    args = parser.parse_args()
 
+    settings = Settings(
+        DATABASE_ROOT=Path(args.database_root).resolve(),
+        DATABASE_NAME=args.database_name,
+    )
+    print(f"Updating database: {settings.database_path}")
     update_database_static(settings.database_path)

@@ -30,16 +30,17 @@ class ScenarioRunner:
             scenario=self._scenario,
         )
 
-    def run(self, scenario: Scenario) -> None:
+    def run(self) -> None:
         """Run hazard and impact models for the scenario."""
-        self._load_objects(scenario)
+        self._database.has_run_hazard(self._scenario.name)
+        self._load_objects(self._scenario)
         self.results_path.mkdir(parents=True, exist_ok=True)
 
         # Initiate the logger for all the integrator scripts.
-        log_file = self.results_path.joinpath(f"logfile_{scenario.name}.log")
+        log_file = self.results_path.joinpath(f"logfile_{self._scenario.name}.log")
         with FloodAdaptLogging.to_file(file_path=log_file):
             self.logger.info(f"FloodAdapt version `{__version__}`")
-            self.logger.info(f"Started evaluation of `{scenario.name}`")
+            self.logger.info(f"Started evaluation of `{self._scenario.name}`")
 
             hazard_models = [
                 self._database.static.get_overland_sfincs_model(),
@@ -49,17 +50,17 @@ class ScenarioRunner:
                     hazard.run(self._scenario)
                 else:
                     self.logger.info(
-                        f"Hazard for scenario '{scenario.name}' has already been run."
+                        f"Hazard for scenario '{self._scenario.name}' has already been run."
                     )
 
             if not self.impacts.has_run:
                 self.impacts.run()
             else:
                 self.logger.info(
-                    f"Impacts for scenario `{scenario.name}` has already been run."
+                    f"Impacts for scenario `{self._scenario.name}` has already been run."
                 )
 
-            self.logger.info(f"Finished evaluation of `{scenario.name}`")
+            self.logger.info(f"Finished evaluation of `{self._scenario.name}`")
 
         # write finished file to indicate that the scenario has been run
         write_finished_file(self.results_path)

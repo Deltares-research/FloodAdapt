@@ -38,6 +38,7 @@ from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
 from flood_adapt.workflows.impacts_integrator import Impacts
+from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
 
 class FloodAdapt:
@@ -68,7 +69,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each measure.
         """
-        return self.database.measures.list_objects()
+        return self.database.measures.summarize_objects()
 
     def get_measure(self, name: str) -> Measure:
         """
@@ -208,7 +209,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each strategy.
         """
-        return self.database.strategies.list_objects()
+        return self.database.strategies.summarize_objects()
 
     def get_strategy(self, name: str) -> Strategy:
         """
@@ -310,7 +311,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each benefit.
         """
-        return self.database.events.list_objects()
+        return self.database.events.summarize_objects()
 
     def get_event(self, name: str) -> Event | EventSet:
         """Get an event from the database by name.
@@ -476,7 +477,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each projection.
         """
-        return self.database.projections.list_objects()
+        return self.database.projections.summarize_objects()
 
     def get_projection(self, name: str) -> Projection:
         """Get a projection from the database by name.
@@ -633,7 +634,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'.
             Each value is a list of the corresponding attribute for each scenario.
         """
-        return self.database.scenarios.list_objects()
+        return self.database.scenarios.summarize_objects()
 
     def get_scenario(self, name: str) -> Scenario:
         """Get a scenario from the database by name.
@@ -726,20 +727,26 @@ class FloodAdapt:
         """
         self.database.scenarios.delete(name)
 
-    def run_scenario(self, name: Union[str, list[str]]) -> None:
-        """Run a scenario.
+    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
+        """Run a scenario hazard and impacts.
 
         Parameters
         ----------
-        name : Union[str, list[str]]
-            The name(s) of the scenario to run.
+        scenario_name : Union[str, list[str]]
+            name(s) of the scenarios to run.
 
         Raises
         ------
-        ValueError
-            If the scenario does not exist.
+        RuntimeError
+            If an error occurs while running one of the scenarios
         """
-        self.database.run_scenario(name)
+        if not isinstance(scenario_name, list):
+            scenario_name = [scenario_name]
+
+        for scn in scenario_name:
+            scenario = self.get_scenario(scn)
+            runner = ScenarioRunner(self.database, scenario=scenario)
+            runner.run()
 
     # Outputs
     def get_completed_scenarios(
@@ -1088,7 +1095,7 @@ class FloodAdapt:
             Each value is a list of the corresponding attribute for each benefit.
         """
         # sorting and filtering either with PyQt table or in the API
-        return self.database.benefits.list_objects()
+        return self.database.benefits.summarize_objects()
 
     def get_benefit(self, name: str) -> Benefit:
         """Get a benefit from the database by name.
