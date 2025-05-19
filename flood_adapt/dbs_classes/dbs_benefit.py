@@ -59,27 +59,6 @@ class DbsBenefit(DbsTemplate[Benefit]):
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
 
-    def edit(self, benefit: Benefit):
-        """Edits an already existing benefit in the database.
-
-        Parameters
-        ----------
-        benefit : Benefit
-            benefit to be edited in the database
-
-        Raises
-        ------
-        ValueError
-            Raise error if name is already in use.
-        """
-        # Check if it is possible to edit the benefit.
-        super().edit(benefit)
-
-        # Delete output if edited
-        output_path = self.output_path / benefit.name
-        if output_path.exists():
-            shutil.rmtree(output_path, ignore_errors=True)
-
     def get_runner(self, name: str) -> BenefitRunner:
         return BenefitRunner(self._database, self.get(name))
 

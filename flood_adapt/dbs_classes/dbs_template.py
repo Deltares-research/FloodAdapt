@@ -133,30 +133,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             self.input_path / object_model.name / f"{object_model.name}.toml",
         )
 
-    def edit(self, object_model: T_OBJECTMODEL):
-        """Edit an already existing object in the database.
-
-        Parameters
-        ----------
-        object_model : Object
-            object to be edited in the database
-
-        Raises
-        ------
-        ValueError
-            Raise error if name is already in use.
-        """
-        # Check if the object exists
-        if object_model.name not in self.summarize_objects()["name"]:
-            raise ValueError(
-                f"{self.display_name}: '{object_model.name}' does not exist. You cannot edit an {self.display_name.lower()} that does not exist."
-            )
-
-        # Check if it is possible to delete the object by saving with overwrite. This then
-        # also covers checking whether the object is a standard object, is already used in
-        # a higher level object. If any of these are the case, it cannot be deleted.
-        self.save(object_model, overwrite=True)
-
     def delete(self, name: str, toml_only: bool = False):
         """Delete an already existing object in the database.
 

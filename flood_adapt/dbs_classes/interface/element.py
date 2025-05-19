@@ -86,22 +86,6 @@ class AbstractDatabaseElement(ABC, Generic[T_OBJECT_MODEL]):
         pass
 
     @abstractmethod
-    def edit(self, object_model: T_OBJECT_MODEL):
-        """Edits an already existing object in the database.
-
-        Parameters
-        ----------
-        object : IObject
-            object to be edited in the database
-
-        Raises
-        ------
-        ValueError
-            Raise error if name is already in use.
-        """
-        pass
-
-    @abstractmethod
     def delete(self, name: str, toml_only: bool = False):
         """Delete an already existing object in the database.
 

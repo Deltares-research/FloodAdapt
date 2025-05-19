@@ -609,7 +609,7 @@ class TestBenefits:
         benefit_dict_new["implementation_cost"] = 30000000
         benefit_dict_new["annual_maint_cost"] = 0
         benefit = test_fa.create_benefit(benefit_dict_new)
-        test_fa.edit_benefit(benefit)
+        test_fa.save_benefit(benefit, overwrite=True)
         test_fa.run_benefit("benefit_raise_properties_2080")
 
         benefit = test_fa.get_benefit("benefit_raise_properties_2080")
