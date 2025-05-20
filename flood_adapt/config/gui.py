@@ -51,6 +51,10 @@ class FootprintsDmgLayer(Layer):
     buildings_min_zoom_level: int = 13
 
 
+class MetricsDmgLayer(Layer):
+    damage_decimals: Optional[int] = 0
+
+
 class BenefitsLayer(Layer):
     threshold: Optional[float] = None
 
@@ -74,6 +78,7 @@ class OutputLayers(BaseModel):
     floodmap: FloodMapLayer
     aggregation_dmg: AggregationDmgLayer
     footprints_dmg: FootprintsDmgLayer
+    metrics_dmg: MetricsDmgLayer
 
     benefits: Optional[BenefitsLayer] = None
 
