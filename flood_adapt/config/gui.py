@@ -82,7 +82,7 @@ class OutputLayers(BaseModel):
         The configuration of the metrics house damage layer.
     metrics_people: MetricsPeopLayer
         The configuration of the metrics people damage layer.
-    metrics_dmg: MetricsDmgLayer
+    metrics_damages: MetricsDmgLayer
         The configuration of the metrics damage layer.
 
     benefits : BenefitsLayer
@@ -94,7 +94,7 @@ class OutputLayers(BaseModel):
     footprints_dmg: FootprintsDmgLayer
     metrics_houses: MetricsHousLayer
     metrics_people: MetricsPeopLayer
-    metrics_dmg: MetricsDmgLayer
+    metrics_damages: MetricsDmgLayer
 
     benefits: Optional[BenefitsLayer] = None
 
