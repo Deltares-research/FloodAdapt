@@ -176,9 +176,7 @@ class SfincsAdapter(IHazardAdapter):
             # No need to check postprocessing for risk scenarios
             return all(self.sfincs_completed(sim_path) for sim_path in sim_paths)
         else:
-            return self.sfincs_completed(
-                self._get_simulation_path(scenario)
-            ) and self.run_completed(scenario)
+            return self.sfincs_completed(self._get_simulation_path(scenario))
 
     def execute(self, path: Path, strict: bool = True) -> bool:
         """
