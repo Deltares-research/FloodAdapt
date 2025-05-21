@@ -33,7 +33,7 @@ class AbstractDatabaseElement(ABC, Generic[T_OBJECT_MODEL]):
         pass
 
     @abstractmethod
-    def list_objects(self) -> dict[str, list[Any]]:
+    def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the objects that currently exist in the database.
 
         Returns
@@ -77,22 +77,6 @@ class AbstractDatabaseElement(ABC, Generic[T_OBJECT_MODEL]):
             database, by default False
         toml_only : bool, optional
             whether to only save the toml file or all associated data. By default, save everything
-
-        Raises
-        ------
-        ValueError
-            Raise error if name is already in use.
-        """
-        pass
-
-    @abstractmethod
-    def edit(self, object_model: T_OBJECT_MODEL):
-        """Edits an already existing object in the database.
-
-        Parameters
-        ----------
-        object : IObject
-            object to be edited in the database
 
         Raises
         ------

@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, TypeVar
 
+import tomli
 import tomli_w
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
@@ -47,25 +48,16 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         # Load and return the object
         return self._object_class.load_file(full_path)
 
-    def list_objects(self) -> dict[str, list[Any]]:
+    def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the objects that currently exist in the database.
 
         Returns
         -------
         dict[str, list[Any]]
-            A dictionary that contains the keys: `name`, 'path', 'last_modification_date', 'description', 'objects'
+            A dictionary that contains the keys: `name`, `description`, `path`  and `last_modification_date`.
             Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
         """
-        # Check if all objects exist
-        object_list = self._get_object_list()
-
-        # Load all objects
-        objects = [self.get(name) for name in object_list["name"]]
-
-        # From the loaded objects, get the description and add them to the object_list
-        object_list["description"] = [obj.description for obj in objects]
-        object_list["objects"] = objects
-        return object_list
+        return self._get_object_summary()
 
     def copy(self, old_name: str, new_name: str, new_description: str):
         """Copy (duplicate) an existing object, and give it a new name.
@@ -140,30 +132,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         object_model.save(
             self.input_path / object_model.name / f"{object_model.name}.toml",
         )
-
-    def edit(self, object_model: T_OBJECTMODEL):
-        """Edit an already existing object in the database.
-
-        Parameters
-        ----------
-        object_model : Object
-            object to be edited in the database
-
-        Raises
-        ------
-        ValueError
-            Raise error if name is already in use.
-        """
-        # Check if the object exists
-        if object_model.name not in self.list_objects()["name"]:
-            raise ValueError(
-                f"{self.display_name}: '{object_model.name}' does not exist. You cannot edit an {self.display_name.lower()} that does not exist."
-            )
-
-        # Check if it is possible to delete the object by saving with overwrite. This then
-        # also covers checking whether the object is a standard object, is already used in
-        # a higher level object. If any of these are the case, it cannot be deleted.
-        self.save(object_model, overwrite=True)
 
     def delete(self, name: str, toml_only: bool = False):
         """Delete an already existing object in the database.
@@ -241,13 +209,13 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         # level object. By default, return an empty list
         return []
 
-    def _get_object_list(self) -> dict[str, list[Any]]:
+    def _get_object_summary(self) -> dict[str, list[Any]]:
         """Get a dictionary with all the toml paths and last modification dates that exist in the database of the given object_type.
 
         Returns
         -------
         dict[str, Any]
-            A dictionary that contains the keys: `name` to `path` and `last_modification_date`
+            A dictionary that contains the keys: `name`, `description`, `path`  and `last_modification_date`.
             Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
         """
         # If the toml doesnt exist, we might be in the middle of saving a new object or could be a broken object.
@@ -258,18 +226,29 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             if (dir / f"{dir.name}.toml").is_file()
         ]
         paths = [Path(dir / f"{dir.name}.toml") for dir in directories]
-        names = [dir.name for dir in directories]
+
+        names = [self._read_variable_in_toml("name", path) for path in paths]
+        descriptions = [
+            self._read_variable_in_toml("description", path) for path in paths
+        ]
+
         last_modification_date = [
             datetime.fromtimestamp(file.stat().st_mtime) for file in paths
         ]
 
         objects = {
             "name": names,
+            "description": descriptions,
             "path": paths,
             "last_modification_date": last_modification_date,
         }
-
         return objects
+
+    @staticmethod
+    def _read_variable_in_toml(variable_name: str, toml_path: Path) -> str:
+        with open(toml_path, "rb") as f:
+            data = tomli.load(f)
+        return data.get(variable_name, "")
 
     def _validate_to_save(self, object_model: T_OBJECTMODEL, overwrite: bool) -> None:
         """Validate if the object can be saved.
@@ -285,7 +264,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             Raise error if name is already in use.
         """
         # Check if the object exists
-        object_exists = object_model.name in self.list_objects()["name"]
+        object_exists = object_model.name in self.summarize_objects()["name"]
 
         # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
         # don't want to overwrite, raise an error.

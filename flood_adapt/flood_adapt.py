@@ -69,7 +69,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each measure.
         """
-        return self.database.measures.list_objects()
+        return self.database.measures.summarize_objects()
 
     def get_measure(self, name: str) -> Measure:
         """
@@ -129,6 +129,8 @@ class FloodAdapt:
         ----------
         measure : Measure
             The measure object to save.
+        overwrite : bool, optional
+            Whether to overwrite an existing measure with the same name (default is False).
 
         Raises
         ------
@@ -136,21 +138,6 @@ class FloodAdapt:
             If the measure object is not valid.
         """
         self.database.measures.save(measure, overwrite=overwrite)
-
-    def edit_measure(self, measure: Measure) -> None:
-        """Edit a measure object in the database.
-
-        Parameters
-        ----------
-        measure : Measure
-            The measure object to edit.
-
-        Raises
-        ------
-        ValueError
-            If the measure object does not exist.
-        """
-        self.database.measures.edit(measure)
 
     def delete_measure(self, name: str) -> None:
         """Delete an measure from the database.
@@ -209,7 +196,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each strategy.
         """
-        return self.database.strategies.list_objects()
+        return self.database.strategies.summarize_objects()
 
     def get_strategy(self, name: str) -> Strategy:
         """
@@ -253,7 +240,7 @@ class FloodAdapt:
         """
         return Strategy(**attrs)
 
-    def save_strategy(self, strategy: Strategy) -> None:
+    def save_strategy(self, strategy: Strategy, overwrite: bool = False) -> None:
         """
         Save a strategy object to the database.
 
@@ -261,6 +248,8 @@ class FloodAdapt:
         ----------
         strategy : Strategy
             The strategy object to save.
+        overwrite : bool, optional
+            Whether to overwrite an existing strategy with the same name (default is False).
 
         Raises
         ------
@@ -268,7 +257,7 @@ class FloodAdapt:
             If the strategy object is not valid.
             If the strategy object already exists.
         """
-        self.database.strategies.save(strategy)
+        self.database.strategies.save(strategy, overwrite=overwrite)
 
     def delete_strategy(self, name: str) -> None:
         """
@@ -311,7 +300,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each benefit.
         """
-        return self.database.events.list_objects()
+        return self.database.events.summarize_objects()
 
     def get_event(self, name: str) -> Event | EventSet:
         """Get an event from the database by name.
@@ -368,36 +357,22 @@ class FloodAdapt:
         """
         return EventSet(**attrs, sub_events=sub_events)
 
-    def save_event(self, event: Event) -> None:
+    def save_event(self, event: Event, overwrite: bool = False) -> None:
         """Save an event object to the database.
 
         Parameters
         ----------
         event : Event
             The event object to save.
+        overwrite : bool, optional
+            Whether to overwrite an existing event with the same name (default is False).
 
         Raises
         ------
         ValueError
             If the event object is not valid.
         """
-        self.database.events.save(event)
-
-    def edit_event(self, event: Event) -> None:
-        """Edit an event object in the database.
-
-        Parameters
-        ----------
-        event : Event
-            The event object to edit.
-
-        Raises
-        ------
-        ValueError
-            If the event object does not exist.
-            If the event is used in a scenario.
-        """
-        self.database.events.edit(event)
+        self.database.events.save(event, overwrite=overwrite)
 
     def delete_event(self, name: str) -> None:
         """Delete an event from the database.
@@ -477,7 +452,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
             Each value is a list of the corresponding attribute for each projection.
         """
-        return self.database.projections.list_objects()
+        return self.database.projections.summarize_objects()
 
     def get_projection(self, name: str) -> Projection:
         """Get a projection from the database by name.
@@ -519,35 +494,22 @@ class FloodAdapt:
         """
         return Projection(**attrs)
 
-    def save_projection(self, projection: Projection) -> None:
+    def save_projection(self, projection: Projection, overwrite: bool = False) -> None:
         """Save a projection object to the database.
 
         Parameters
         ----------
         projection : Projection
             The projection object to save.
+        overwrite : bool, optional
+            Whether to overwrite an existing projection with the same name (default is False).
 
         Raises
         ------
         ValueError
             If the projection object is not valid.
         """
-        self.database.projections.save(projection)
-
-    def edit_projection(self, projection: Projection) -> None:
-        """Edit a projection object in the database.
-
-        Parameters
-        ----------
-        projection : Projection
-            The projection object to edit.
-
-        Raises
-        ------
-        ValueError
-            If the projection object does not exist.
-        """
-        self.database.projections.edit(projection)
+        self.database.projections.save(projection, overwrite=overwrite)
 
     def delete_projection(self, name: str) -> None:
         """Delete a projection from the database.
@@ -634,7 +596,7 @@ class FloodAdapt:
             Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'.
             Each value is a list of the corresponding attribute for each scenario.
         """
-        return self.database.scenarios.list_objects()
+        return self.database.scenarios.summarize_objects()
 
     def get_scenario(self, name: str) -> Scenario:
         """Get a scenario from the database by name.
@@ -676,13 +638,17 @@ class FloodAdapt:
         """
         return Scenario(**attrs)
 
-    def save_scenario(self, scenario: Scenario) -> tuple[bool, str]:
+    def save_scenario(
+        self, scenario: Scenario, overwrite: bool = False
+    ) -> tuple[bool, str]:
         """Save the scenario to the database.
 
         Parameters
         ----------
         scenario : Scenario
             The scenario to save.
+        overwrite : bool, optional
+            Whether to overwrite an existing scenario with the same name (default is False).
 
         Returns
         -------
@@ -692,25 +658,10 @@ class FloodAdapt:
             The error message if the scenario was not saved successfully.
         """
         try:
-            self.database.scenarios.save(scenario)
+            self.database.scenarios.save(scenario, overwrite=overwrite)
             return True, ""
         except Exception as e:
             return False, str(e)
-
-    def edit_scenario(self, scenario: Scenario) -> None:
-        """Edit a scenario object in the database.
-
-        Parameters
-        ----------
-        scenario : Scenario
-            The scenario object to edit.
-
-        Raises
-        ------
-        ValueError
-            If the scenario object does not exist.
-        """
-        self.database.scenarios.edit(scenario)
 
     def delete_scenario(self, name: str) -> None:
         """Delete a scenario from the database.
@@ -1095,7 +1046,7 @@ class FloodAdapt:
             Each value is a list of the corresponding attribute for each benefit.
         """
         # sorting and filtering either with PyQt table or in the API
-        return self.database.benefits.list_objects()
+        return self.database.benefits.summarize_objects()
 
     def get_benefit(self, name: str) -> Benefit:
         """Get a benefit from the database by name.
@@ -1137,35 +1088,22 @@ class FloodAdapt:
         """
         return Benefit(**attrs)
 
-    def save_benefit(self, benefit: Benefit) -> None:
+    def save_benefit(self, benefit: Benefit, overwrite: bool = False) -> None:
         """Save a benefit object to the database.
 
         Parameters
         ----------
         benefit : Benefit
             The benefit object to save.
+        overwrite : bool, optional
+            Whether to overwrite an existing benefit with the same name (default is False).
 
         Raises
         ------
         ValueError
             If the benefit object is not valid.
         """
-        self.database.benefits.save(benefit)
-
-    def edit_benefit(self, benefit: Benefit) -> None:
-        """Edit a benefit object in the database.
-
-        Parameters
-        ----------
-        benefit : Benefit
-            The benefit object to edit.
-
-        Raises
-        ------
-        ValueError
-            If the benefit object does not exist.
-        """
-        self.database.benefits.edit(benefit)
+        self.database.benefits.save(benefit, overwrite=overwrite)
 
     def delete_benefit(self, name: str) -> None:
         """Delete a benefit object from the database.

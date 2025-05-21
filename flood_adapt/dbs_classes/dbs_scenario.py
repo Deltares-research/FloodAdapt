@@ -12,7 +12,7 @@ class DbsScenario(DbsTemplate[Scenario]):
     display_name = "Scenario"
     _object_class = Scenario
 
-    def list_objects(self) -> dict[str, list[Any]]:
+    def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the events that currently exist in the database.
 
         Returns
@@ -20,12 +20,18 @@ class DbsScenario(DbsTemplate[Scenario]):
         dict[str, Any]
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
-        scenarios = super().list_objects()
-        objects = scenarios["objects"]
-        scenarios["Projection"] = [obj.projection for obj in objects]
-        scenarios["Event"] = [obj.event for obj in objects]
-        scenarios["Strategy"] = [obj.strategy for obj in objects]
-        scenarios["finished"] = [self.has_run_check(obj.name) for obj in objects]
+        scenarios = super().summarize_objects()
+        scenarios["Projection"] = [
+            self._read_variable_in_toml("projection", path)
+            for path in scenarios["path"]
+        ]
+        scenarios["Event"] = [
+            self._read_variable_in_toml("event", path) for path in scenarios["path"]
+        ]
+        scenarios["Strategy"] = [
+            self._read_variable_in_toml("strategy", path) for path in scenarios["path"]
+        ]
+        scenarios["finished"] = [self.has_run_check(scn) for scn in scenarios["name"]]
 
         return scenarios
 
@@ -52,28 +58,6 @@ class DbsScenario(DbsTemplate[Scenario]):
         if (self.output_path / name).exists():
             shutil.rmtree(self.output_path / name, ignore_errors=False)
 
-    def edit(self, scenario: Scenario):
-        """Edits an already existing scenario in the database.
-
-        Parameters
-        ----------
-        scenario : Scenario
-            scenario to be edited in the database
-
-        Raises
-        ------
-        ValueError
-            Raise error if name is already in use.
-        """
-        # Check if it is possible to edit the scenario. This then also covers checking whether the
-        # scenario is already used in a higher level object. If this is the case, it cannot be edited.
-        super().edit(scenario)
-
-        # Delete output if edited
-        output_path = self.output_path / scenario.name
-        if output_path.exists():
-            shutil.rmtree(output_path, ignore_errors=True)
-
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a scenario is used in a benefit.
 
@@ -87,7 +71,10 @@ class DbsScenario(DbsTemplate[Scenario]):
             list[str]
                 list of benefits that use the scenario
         """
-        benefits = self._database.benefits.list_objects()["objects"]
+        benefits = [
+            self._database.benefits.get(benefit)
+            for benefit in self._database.benefits.summarize_objects()["name"]
+        ]
         used_in_benefit = []
         for benefit in benefits:
             runner = BenefitRunner(database=self._database, benefit=benefit)
