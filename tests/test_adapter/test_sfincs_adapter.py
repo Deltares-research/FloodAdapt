@@ -987,7 +987,7 @@ class TestAddMeasure:
                 description="seawall",
                 selection_type=SelectionType.polyline,
                 elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
-                polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
+                polygon_file=str(TEST_DATA_DIR / "seawall.geojson"),
             )
 
             test_db.measures.save(floodwall)
@@ -1035,7 +1035,7 @@ class TestAddMeasure:
             self, default_sfincs_adapter: SfincsAdapter, pump: Pump, tmp_path: Path
         ):
             # Arrange
-            new_root = tmp_path / "floodwall"
+            new_root = tmp_path / "pump"
             drn_file = default_sfincs_adapter._model.get_config("drnfile")
             with open(default_sfincs_adapter.get_model_root() / drn_file, "r") as f:
                 contents_before = f.readlines()
