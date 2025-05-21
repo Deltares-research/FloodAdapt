@@ -55,6 +55,14 @@ class MetricsDmgLayer(Layer):
     damage_decimals: Optional[int] = 0
 
 
+class MetricsPeopLayer(Layer):
+    damage_decimals: Optional[int] = 0
+
+
+class MetricsHousLayer(Layer):
+    damage_decimals: Optional[int] = 0
+
+
 class BenefitsLayer(Layer):
     threshold: Optional[float] = None
 
@@ -70,6 +78,12 @@ class OutputLayers(BaseModel):
         The configuration of the aggregation damage layer.
     footprints_dmg : FootprintsDmgLayer
         The configuration of the footprints damage layer.
+    metrics_houses: MetricsHousLayer
+        The configuration of the metrics house damage layer.
+    metrics_people: MetricsPeopLayer
+        The configuration of the metrics people damage layer.
+    metrics_dmg: MetricsDmgLayer
+        The configuration of the metrics damage layer.
 
     benefits : BenefitsLayer
         The configuration of the benefits layer.
@@ -78,6 +92,8 @@ class OutputLayers(BaseModel):
     floodmap: FloodMapLayer
     aggregation_dmg: AggregationDmgLayer
     footprints_dmg: FootprintsDmgLayer
+    metrics_houses: MetricsHousLayer
+    metrics_people: MetricsPeopLayer
     metrics_dmg: MetricsDmgLayer
 
     benefits: Optional[BenefitsLayer] = None
