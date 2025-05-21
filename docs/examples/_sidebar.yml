@@ -35,5 +35,8 @@ website:
         - section: Scenarios
           href: examples/scenarios/index.qmd
 
+        - section: Event set for risk assessments
+          href: examples/event_set/create_event_set.ipynb
+
         - section: Benefits
           href: examples/benefits/index.qmd
