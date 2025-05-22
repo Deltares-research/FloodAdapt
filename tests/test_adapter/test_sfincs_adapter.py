@@ -1,3 +1,4 @@
+import platform
 import tempfile
 from copy import copy
 from datetime import datetime, timedelta
@@ -1242,6 +1243,10 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
     )
 
 
+@pytest.mark.skipif(
+    platform.system() == "Linux",
+    reason="Skipped on Linux due to broken sfincs binary",
+)
 class TestPostProcessing:
     @pytest.fixture(scope="class")
     def synthetic_rainfall_class(self):
