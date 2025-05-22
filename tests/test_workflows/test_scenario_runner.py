@@ -1,3 +1,5 @@
+import platform
+
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
@@ -10,6 +12,10 @@ from tests.test_objects.test_events.test_hurricane import setup_hurricane_event
 __all__ = ["setup_hurricane_event"]
 
 
+@pytest.mark.skipif(
+    platform.system() == "Linux",
+    reason="Skipped on Linux due to broken sfincs binary",
+)
 class Test_scenario_run:
     @pytest.fixture(scope="class")
     def test_scenario_before_after_run(self, test_db_class: IDatabase):
@@ -69,6 +75,9 @@ class Test_scenario_run:
         assert finished_file_exists(test_db.scenarios.output_path / scn.name)
 
 
+@pytest.mark.skipif(
+    platform.system() == "Linux", reason="Skipped on Linux due to broken sfincs binary"
+)
 @pytest.mark.parametrize(
     "scn_name",
     [
