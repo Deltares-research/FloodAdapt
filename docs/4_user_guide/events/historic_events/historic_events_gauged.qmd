@@ -1,5 +1,5 @@
 ---
-title: Historical event with gauged water levels
+title: Historical event
 filters:
   - lightbox
 lightbox: auto
