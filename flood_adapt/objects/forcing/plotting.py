@@ -370,9 +370,7 @@ def plot_wind(
         return "", None
 
     # Plot actual thing
-    fig = px.line(
-        x=data.index, y=data.iloc[:, 0], labels={"x": "Time", "y": "Wind speed"}
-    )
+    fig = px.line(x=data.index, y=data.iloc[:, 0])
 
     fig.update_layout(
         autosize=False,
