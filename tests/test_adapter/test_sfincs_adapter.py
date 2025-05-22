@@ -77,6 +77,7 @@ from flood_adapt.objects.forcing.wind import (
 from flood_adapt.objects.measures.measures import (
     FloodWall,
     GreenInfrastructure,
+    Measure,
     Pump,
     SelectionType,
 )
@@ -980,6 +981,14 @@ class TestAddForcing:
 class TestAddMeasure:
     """Class to test the add_measure method of the SfincsAdapter class."""
 
+    @staticmethod
+    def get_measure_gdf(adapter: SfincsAdapter, measure: Measure) -> gpd.GeoDataFrame:
+        measure = adapter.database.measures.get(measure.name)
+        measure_gdf = gpd.read_file(
+            adapter.database.measures.input_path / measure.name / measure.polygon_file
+        )
+        return measure_gdf.to_crs(adapter._model.crs.to_epsg())
+
     class TestFloodwall:
         @pytest.fixture()
         def floodwall(self, test_db) -> FloodWall:
@@ -1002,20 +1011,75 @@ class TestAddMeasure:
         ):
             # Arrange
             new_root = tmp_path / "floodwall"
-            weir_file = default_sfincs_adapter._model.get_config("weirfile")
-            with open(default_sfincs_adapter.get_model_root() / weir_file, "r") as f:
-                contents_before = f.readlines()
+            expected_coords, expected_height = self.get_expected_floodwall_attributes(
+                default_sfincs_adapter, floodwall
+            )
 
             # Act
             default_sfincs_adapter.add_measure(floodwall)
             default_sfincs_adapter.write(path_out=new_root)
 
             # Assert
-            weir_file = default_sfincs_adapter._model.get_config("weirfile")
-            with open(default_sfincs_adapter.get_model_root() / weir_file, "r") as f:
-                contents_after = f.readlines()
+            added_coords, added_heights = self.read_weir_file(
+                default_sfincs_adapter, floodwall.name
+            )
 
-            assert contents_after != contents_before
+            # Check coords
+            assert len(added_coords) == len(expected_coords)
+            for i, (gdf, added) in enumerate(zip(expected_coords, added_coords)):
+                assert (
+                    gdf[0] == pytest.approx(added[0], abs=0.2)
+                ), f"Coordinate {i}.x from file does not match coordinates in hydromt-sfincs: {gdf[0]} vs {added[0]}"
+                assert (
+                    gdf[1] == pytest.approx(added[1], abs=0.2)
+                ), f"Coordinate {i}.y from file does not match coordinates in hydromt-sfincs {gdf[1]} vs {added[1]}"
+
+            # Check heights
+            assert len(added_heights) == len(expected_coords)
+            assert all(
+                height == pytest.approx(expected_height, 1) for height in added_heights
+            ), "Height in file does not match height in polygon file"
+
+        def read_weir_file(self, adapter: SfincsAdapter, floodwall_name: str):
+            weir_file = adapter._model.get_config("weirfile")
+
+            # read weir file
+            added_coords = []
+            added_heights = []
+            with open(adapter.get_model_root() / weir_file, "r") as f:
+                _first_line = f.readline()
+                assert (
+                    floodwall_name in _first_line
+                ), "Expected floodwall name in weir file"
+
+                _second_line = f.readline()
+                num_coords = int(_second_line.split()[0])
+                num_vars = int(_second_line.split()[1])
+                assert (
+                    num_vars == 4
+                ), "Expected 4 variables in weir file: x y z Cd (https://sfincs.readthedocs.io/en/latest/input_structures.html)"
+
+                for _ in range(num_coords):
+                    x, y, height, _ = f.readline().split()
+                    added_coords.append((float(x), float(y)))
+                    added_heights.append(float(height))
+            return added_coords, added_heights
+
+        def get_expected_floodwall_attributes(
+            self, adapter: SfincsAdapter, floodwall: FloodWall
+        ):
+            measure_gdf = TestAddMeasure.get_measure_gdf(adapter, floodwall)
+
+            expected_coords = []
+            for geom in measure_gdf.geometry:
+                for linestring in geom.geoms:
+                    expected_coords.extend(linestring.coords)
+            expected_coords = [(round(x, 1), round(y, 1)) for x, y in expected_coords]
+            expected_height = round(
+                floodwall.elevation.convert(us.UnitTypesLength.meters), 1
+            )
+
+            return expected_coords, expected_height
 
     class TestPump:
         @pytest.fixture()
@@ -1037,20 +1101,94 @@ class TestAddMeasure:
         ):
             # Arrange
             new_root = tmp_path / "pump"
-            drn_file = default_sfincs_adapter._model.get_config("drnfile")
-            with open(default_sfincs_adapter.get_model_root() / drn_file, "r") as f:
-                contents_before = f.readlines()
+            expected_snk_coord, expected_src_coord, expected_discharge = (
+                self.get_expected_pump_attributes(default_sfincs_adapter, pump)
+            )
 
             # Act
             default_sfincs_adapter.add_measure(pump)
             default_sfincs_adapter.write(path_out=new_root)
 
             # Assert
-            drn_file = default_sfincs_adapter._model.get_config("drnfile")
-            with open(default_sfincs_adapter.get_model_root() / drn_file, "r") as f:
-                contents_after = f.readlines()
+            (
+                drn_file,
+                added_snk_coord,
+                added_src_coord,
+                added_type,
+                added_discharge,
+            ) = self.read_drn_file(default_sfincs_adapter)
 
-            assert contents_after != contents_before
+            # Check types
+            assert (
+                added_type == 1 or added_type == 2
+            ), "All entries in drnfile should be pumps (type=1) or culverts (type=2)"
+
+            # Check coords
+            assert expected_snk_coord[0] == pytest.approx(
+                added_snk_coord[0], abs=0.2
+            ), f"Sink x coord mismatch at the first line ({drn_file})"
+            assert expected_snk_coord[1] == pytest.approx(
+                added_snk_coord[1], abs=0.2
+            ), f"Sink y coord mismatch at the first line ({drn_file})"
+
+            assert expected_src_coord[0] == pytest.approx(
+                added_src_coord[0], abs=0.2
+            ), f"Source x coord mismatch at the first line ({drn_file})"
+            assert expected_src_coord[1] == pytest.approx(
+                added_src_coord[1], abs=0.2
+            ), f"Source y coord mismatch at the first line ({drn_file})"
+
+            # Check discharge
+            assert (
+                added_discharge == pytest.approx(expected_discharge, rel=1e-3)
+            ), f"Discharge {added_discharge} does not match expected {expected_discharge}"
+
+        def get_expected_pump_attributes(self, default_sfincs_adapter, pump):
+            measure_gdf = TestAddMeasure.get_measure_gdf(default_sfincs_adapter, pump)
+
+            for geom in measure_gdf.geometry:
+                # It's a LineString, so just one geometry
+                coords = list(geom.coords)
+                assert len(coords) == 2, "Expected 2 coordinates in pump polygon file"
+                expected_snk_coord = (round(coords[0][0], 1), round(coords[0][1], 1))
+                expected_src_coord = (round(coords[-1][0], 1), round(coords[-1][1], 1))
+                break
+
+            expected_discharge = round(
+                pump.discharge.convert(us.UnitTypesDischarge.cms), 6
+            )
+
+            return expected_snk_coord, expected_src_coord, expected_discharge
+
+        def read_drn_file(self, default_sfincs_adapter):
+            drn_file = (
+                default_sfincs_adapter.get_model_root()
+                / default_sfincs_adapter._model.get_config("drnfile")
+            )
+            with open(drn_file, "r") as f:
+                first_line = f.readline()
+
+            # No header to skip here as defined in docs
+            # Also, the pump will be added as the first line of the drn file
+            # Expected: <xsnk1> <ysnk1> <xsrc1> <ysrc1> <type1> <par1-1> par2-1 par3-1 par4-1 par5-1
+            # https://sfincs.readthedocs.io/en/latest/input_structures.html
+            xsnk, ysnk, xsrc, ysrc, typ, dis, *_ = first_line.split()
+            xsnk, ysnk, xsrc, ysrc, typ, dis = (
+                float(xsnk),
+                float(ysnk),
+                float(xsrc),
+                float(ysrc),
+                int(typ),
+                float(dis),
+            )
+
+            return (
+                drn_file,
+                (round(xsnk, 1), round(ysnk, 1)),
+                (round(xsrc, 1), round(ysrc, 1)),
+                typ,
+                dis,
+            )
 
     class TestGreenInfrastructure:
         @pytest.fixture()
