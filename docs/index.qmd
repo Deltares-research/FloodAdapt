@@ -8,6 +8,11 @@ Welcome to the FloodAdapt documentation!
 
 In this introduction, you will find an [overview of FloodAdapt](#overview), information on its [intended uses](#intended-uses-of-floodadapt), and [reader guidance](#reader-guidance) explaining the information you will find in this documentation.
 
+::: {.callout-note}
+## FloodAdapt Introduction Video
+{{< video https://youtu.be/yj_ROYmbIWA?rel=0 >}}
+:::
+
 ## Overview
 FloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful "what-if" scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.
 
