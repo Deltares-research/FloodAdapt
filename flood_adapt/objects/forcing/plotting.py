@@ -374,11 +374,6 @@ def plot_wind(
         x=data.index, y=data.iloc[:, 0], labels={"x": "Time", "y": "Wind speed"}
     )
 
-    # Set y-axes title
-    fig.update_yaxes(
-        title_text=f"Wind speed [{site.gui.units.default_velocity_units.value}]",
-    )
-
     fig.update_layout(
         autosize=False,
         height=100 * 2,
@@ -389,9 +384,12 @@ def plot_wind(
         legend=None,
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis={"range": [event.time.start_time, event.time.end_time]},
         xaxis_title={"text": "Time"},
+        yaxis_title={
+            "text": f"Wind speed [{site.gui.units.default_velocity_units.value}]"
+        },
         showlegend=False,
+        xaxis={"range": [event.time.start_time, event.time.end_time]},
     )
 
     # Only save to the the event folder if that has been created already.
