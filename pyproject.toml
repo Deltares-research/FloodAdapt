@@ -75,6 +75,8 @@ docs = [
     "regex              >=2024.11,<2025.0",
     "minio              >=7.2.15,<8",
     "python-dotenv      >=1.0,<2.0",
+    "folium             >=0.19.0,<1.0",
+    "mapclassify        >=2.8.0,<3.0",
 ]
 all = ["flood-adapt[build,dev,docs]"]
 
