@@ -1,3 +1,5 @@
+import platform
+
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -272,6 +274,10 @@ class TestStrategies:
             test_fa.get_strategy(strategy.name)
 
 
+@pytest.mark.skipif(
+    platform.system() == "Linux",
+    reason="Skipped on Linux due to broken sfincs binary",
+)
 class TestScenarios:
     @pytest.fixture()
     def setup_nearshore_scenario(self, test_fa: FloodAdapt, setup_nearshore_event):
@@ -430,6 +436,10 @@ class TestScenarios:
         test_fa.database.scenarios.summarize_objects()
 
 
+@pytest.mark.skipif(
+    platform.system() == "Linux",
+    reason="Skipped on Linux due to broken sfincs binary",
+)
 class TestOutput:
     @pytest.fixture(scope="class")
     def completed_scenario(self, test_fa_class: FloodAdapt):

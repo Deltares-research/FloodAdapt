@@ -1,3 +1,4 @@
+import platform
 from pathlib import Path
 from tempfile import gettempdir
 
@@ -180,6 +181,10 @@ class TestEventSet:
                 tmp_path.parent / sub_event.name / f"{sub_event.name}.toml"
             ).exists()
 
+    @pytest.mark.skipif(
+        platform.system() == "Linux",
+        reason="Skipped on Linux due to broken sfincs binary",
+    )
     def test_calculate_rp_floodmaps(
         self, setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet]
     ):
