@@ -6,7 +6,7 @@ lightbox: auto
 ---
 
 ::: {.callout-tip}
-## Watch our video - historical event using gauged water levels
+## Watch our video - historical event
 Don't feel like reading? No problem! Check out our video about how to add a historical (gauged) event in FloodAdapt.
 {{< video https://www.youtube.com/watch?v=Tq136q3Ke4o?rel=0 >}}
 :::
