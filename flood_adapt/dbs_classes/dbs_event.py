@@ -33,26 +33,6 @@ class DbsEvent(DbsTemplate[Event]):
         # Load event
         return EventFactory.load_file(event_path)
 
-    def _check_standard_objects(self, name: str) -> bool:
-        """Check if an event is a standard event.
-
-        Parameters
-        ----------
-        name : str
-            name of the event to be checked
-
-        Returns
-        -------
-        bool
-            True if the event is a standard event, False otherwise
-        """
-        # Check if event is a standard event
-        if self._database.site.standard_objects:
-            if self._database.site.standard_objects.events:
-                if name in self._database.site.standard_objects.events:
-                    return True
-        return False
-
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if an event is used in a scenario.
 
