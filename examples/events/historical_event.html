@@ -467,7 +467,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This notebook demonstrates how to create a historical event using FloodAdapt. Historical events are valuable for controlled testing, sensitivity analysis, and understanding the behavior of flood models under simplified or hypothetical scenarios.</p>
+<p>This notebook demonstrates how to create a historical event using FloodAdapt. Historical events are valuable for validation, controlled testing, sensitivity analysis, and what-if scenarios based on historic events.</p>
 <p>A FloodAdapt Event consists of 2 things:</p>
 <ul>
 <li>a TimeFrame describing the start and end time of the hazard simulation(s)</li>
@@ -510,9 +510,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="step-3.-define-water-level-forcing">🌊 Step 3. Define Water Level Forcing</h2>
 <p>Historical water levels can be included in 3 few ways:</p>
 <ul>
-<li><strong>Tide Gauge</strong>: Measured water levels downloaded from noaa_coops. # TODO link</li>
+<li><strong>Tide Gauge</strong>: Measured water levels downloaded from <a href="https://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels">NOAA CO-OPS</a>. The automated download is only available for stations in the US. Outside the US, water level records can be stored in the FloodAdapt database. This avoids having to import the csv for each event, see below.<br>
+</li>
 <li><strong>CSV</strong>: Custom water levels specified in a csv file (perhaps from a tide gauge not connected to the noaa_coops API)</li>
-<li><strong>Model</strong>: Generate the storm surge to be used for the overland simulation from running an offshore model.</li>
+<li><strong>Model</strong>: Generate the storm surge to be used for the overland simulation by running an offshore model. For historic events, this model uses weather re-analysis data (wind and pressure) from the <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA GFS model</a>.</li>
 </ul>
 <div id="6" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Recorded water levels from a CSV file</span></span>
@@ -579,7 +580,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="step-5.-define-meteo-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="step-5.-define-meteo-forcing">🌧️ Step 5. Define Meteo Forcing</h2>
-<p>FloodAdapt provides an easy connection to gfs data, by only requiring the TimeFrame for which to download hindcast data.</p>
+<p>Historic events have several options to define wind and rainfall, see also <a href="../../examples/events/synthetic_event.html">Synthteic event</a>. Additionally, FloodAdapt provides an easy connection to <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA GFS model re-analysis</a> data for rainfall and wind that is automatically downloaded based on the event’s ‘TimeFrame’.</p>
 <div id="10" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>meteo_dataset <span class="op">=</span> f.MeteoHandler().read(time_frame)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(meteo_dataset) <span class="co"># </span><span class="al">TODO</span><span class="co"> make sure the meteo files are already downloaded in the database to circumvent flaky noaa coops API calls</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -601,7 +602,7 @@ Data variables:
 </div>
 <section id="visualizing-meteo-data" class="level3">
 <h3 class="anchored" data-anchor-id="visualizing-meteo-data">Visualizing Meteo data</h3>
-<p>It can be difficult to visualize spatially varying timeseries data. So, below is a simple animation generator to do some basic data validation on the downloaded gfs data.</p>
+<p>It can be difficult to visualize spatially varying timeseries data. So, below is a simple animation generator to do some basic data checks on the downloaded NOAA GFS data.</p>
 <p>Choose any of the available timeseries data variables and generate the animation.</p>
 <div id="12" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -808,36 +809,36 @@ input[type=range].anim-slider {
 </style>
 
 <div class="animation">
-  <img id="_anim_img59bc7afabda243a69ac306a25f2d6989">
+  <img id="_anim_imgad7a916d767a42f5b59e5f166c1bb5ff">
   <div class="anim-controls">
-    <input id="_anim_slider59bc7afabda243a69ac306a25f2d6989" type="range" class="anim-slider" name="points" min="0" max="1" step="1" value="0" oninput="anim59bc7afabda243a69ac306a25f2d6989.set_frame(parseInt(this.value));">
+    <input id="_anim_sliderad7a916d767a42f5b59e5f166c1bb5ff" type="range" class="anim-slider" name="points" min="0" max="1" step="1" value="0" oninput="animad7a916d767a42f5b59e5f166c1bb5ff.set_frame(parseInt(this.value));">
     <div class="anim-buttons">
-      <button title="Decrease speed" aria-label="Decrease speed" onclick="anim59bc7afabda243a69ac306a25f2d6989.slower()">
+      <button title="Decrease speed" aria-label="Decrease speed" onclick="animad7a916d767a42f5b59e5f166c1bb5ff.slower()">
           <i class="fa fa-minus"></i></button>
-      <button title="First frame" aria-label="First frame" onclick="anim59bc7afabda243a69ac306a25f2d6989.first_frame()">
+      <button title="First frame" aria-label="First frame" onclick="animad7a916d767a42f5b59e5f166c1bb5ff.first_frame()">
         <i class="fa fa-fast-backward"></i></button>
-      <button title="Previous frame" aria-label="Previous frame" onclick="anim59bc7afabda243a69ac306a25f2d6989.previous_frame()">
+      <button title="Previous frame" aria-label="Previous frame" onclick="animad7a916d767a42f5b59e5f166c1bb5ff.previous_frame()">
           <i class="fa fa-step-backward"></i></button>
-      <button title="Play backwards" aria-label="Play backwards" onclick="anim59bc7afabda243a69ac306a25f2d6989.reverse_animation()">
+      <button title="Play backwards" aria-label="Play backwards" onclick="animad7a916d767a42f5b59e5f166c1bb5ff.reverse_animation()">
           <i class="fa fa-play fa-flip-horizontal"></i></button>
-      <button title="Pause" aria-label="Pause" onclick="anim59bc7afabda243a69ac306a25f2d6989.pause_animation()">
+      <button title="Pause" aria-label="Pause" onclick="animad7a916d767a42f5b59e5f166c1bb5ff.pause_animation()">
           <i class="fa fa-pause"></i></button>
-      <button title="Play" aria-label="Play" onclick="anim59bc7afabda243a69ac306a25f2d6989.play_animation()">
+      <button title="Play" aria-label="Play" onclick="animad7a916d767a42f5b59e5f166c1bb5ff.play_animation()">
           <i class="fa fa-play"></i></button>
-      <button title="Next frame" aria-label="Next frame" onclick="anim59bc7afabda243a69ac306a25f2d6989.next_frame()">
+      <button title="Next frame" aria-label="Next frame" onclick="animad7a916d767a42f5b59e5f166c1bb5ff.next_frame()">
           <i class="fa fa-step-forward"></i></button>
-      <button title="Last frame" aria-label="Last frame" onclick="anim59bc7afabda243a69ac306a25f2d6989.last_frame()">
+      <button title="Last frame" aria-label="Last frame" onclick="animad7a916d767a42f5b59e5f166c1bb5ff.last_frame()">
           <i class="fa fa-fast-forward"></i></button>
-      <button title="Increase speed" aria-label="Increase speed" onclick="anim59bc7afabda243a69ac306a25f2d6989.faster()">
+      <button title="Increase speed" aria-label="Increase speed" onclick="animad7a916d767a42f5b59e5f166c1bb5ff.faster()">
           <i class="fa fa-plus"></i></button>
     </div>
-    <form title="Repetition mode" aria-label="Repetition mode" action="#n" name="_anim_loop_select59bc7afabda243a69ac306a25f2d6989" class="anim-state">
-      <input type="radio" name="state" value="once" id="_anim_radio1_59bc7afabda243a69ac306a25f2d6989">
-      <label for="_anim_radio1_59bc7afabda243a69ac306a25f2d6989">Once</label>
-      <input type="radio" name="state" value="loop" id="_anim_radio2_59bc7afabda243a69ac306a25f2d6989" checked="">
-      <label for="_anim_radio2_59bc7afabda243a69ac306a25f2d6989">Loop</label>
-      <input type="radio" name="state" value="reflect" id="_anim_radio3_59bc7afabda243a69ac306a25f2d6989">
-      <label for="_anim_radio3_59bc7afabda243a69ac306a25f2d6989">Reflect</label>
+    <form title="Repetition mode" aria-label="Repetition mode" action="#n" name="_anim_loop_selectad7a916d767a42f5b59e5f166c1bb5ff" class="anim-state">
+      <input type="radio" name="state" value="once" id="_anim_radio1_ad7a916d767a42f5b59e5f166c1bb5ff">
+      <label for="_anim_radio1_ad7a916d767a42f5b59e5f166c1bb5ff">Once</label>
+      <input type="radio" name="state" value="loop" id="_anim_radio2_ad7a916d767a42f5b59e5f166c1bb5ff" checked="">
+      <label for="_anim_radio2_ad7a916d767a42f5b59e5f166c1bb5ff">Loop</label>
+      <input type="radio" name="state" value="reflect" id="_anim_radio3_ad7a916d767a42f5b59e5f166c1bb5ff">
+      <label for="_anim_radio3_ad7a916d767a42f5b59e5f166c1bb5ff">Reflect</label>
     </form>
   </div>
 </div>
@@ -847,9 +848,9 @@ input[type=range].anim-slider {
   /* Instantiate the Animation class. */
   /* The IDs given should match those used in the template above. */
   (function() {
-    var img_id = "_anim_img59bc7afabda243a69ac306a25f2d6989";
-    var slider_id = "_anim_slider59bc7afabda243a69ac306a25f2d6989";
-    var loop_select_id = "_anim_loop_select59bc7afabda243a69ac306a25f2d6989";
+    var img_id = "_anim_imgad7a916d767a42f5b59e5f166c1bb5ff";
+    var slider_id = "_anim_sliderad7a916d767a42f5b59e5f166c1bb5ff";
+    var loop_select_id = "_anim_loop_selectad7a916d767a42f5b59e5f166c1bb5ff";
     var frames = new Array(9);
     
   frames[0] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAHgCAYAAAB6jN80AAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90\
@@ -5379,7 +5380,7 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
     /* set a timeout to make sure all the above elements are created before
        the object is initialized. */
     setTimeout(function() {
-        anim59bc7afabda243a69ac306a25f2d6989 = new Animation(frames, img_id, slider_id, 200.0,
+        animad7a916d767a42f5b59e5f166c1bb5ff = new Animation(frames, img_id, slider_id, 200.0,
                                  loop_select_id);
     }, 0);
   })()
@@ -5390,7 +5391,7 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
 </section>
 <section id="step-6.-define-meteo-forcings" class="level2">
 <h2 class="anchored" data-anchor-id="step-6.-define-meteo-forcings">🌬️ Step 6. Define Meteo Forcings</h2>
-<p>To use the downloaded gfs hindcast data in FloodAdapt, you need to create Meteo forcings and add them to your event.</p>
+<p>To use the downloaded NOAA’s GFS hindcast data in FloodAdapt, you need to create Meteo forcings and add them to your event.</p>
 <p>Under the hood, the meteo forcings use the MeteoHandler to download the data, and then return slices of that dataset.</p>
 <div id="14" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>rainfall <span class="op">=</span> f.RainfallMeteo()</span>

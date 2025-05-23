@@ -434,18 +434,18 @@ ul.task-list li input[type="checkbox"] {
 <p>These forcings can be derived from measurements or generated synthetically to support hypothetical or controlled scenarios. All event data is stored in a database, ensuring reproducibility and consistency across simulation workflows.</p>
 <section id="components-of-an-event" class="level2">
 <h2 class="anchored" data-anchor-id="components-of-an-event">Components of an Event</h2>
-<p>An event in FloodAdapt consists of 1. a <a href="../../api_ref/TimeFrame.html">TimeFrame</a>, and 2. a collection of forcing(s).</p>
+<p>An event in FloodAdapt consists of 1. a <a href="../../api_ref/TimeFrame.html">TimeFrame</a>, and 2. a (collection of) forcing(s) depending on the event type.</p>
 <p>A TimeFrame is a combination of the event start and end time.</p>
-<p>Forcings in FloodAdapt are modular and extensible, allowing fine control over how each physical process is represented. For example, synthetic surge and tide can be combined into a single synthetic water level signal using a Gaussian curve for surge and a harmonic function for tide. You can start building your own events by exploring the API reference or following the structure shown in the example. The modular design makes it easy to plug in your own forcing data, synthetic models, or customized logic. You can find a list of all available forcing classes <a href="">here</a> !TODO!</p>
+<p>Forcings in FloodAdapt are modular and extensible, allowing fine control over how each physical process is represented. For example, synthetic surge and tide can be combined into a single synthetic water level signal using a Gaussian curve for surge and a cosine function for tide. You can start building your own events by exploring the API reference or following the structure shown in the example. The modular design makes it easy to plug in your own forcing data, synthetic models, or customized logic. You can find a list of all available forcing classes <a href="">here</a> !TODO!</p>
 </section>
 <section id="event-types" class="level2">
 <h2 class="anchored" data-anchor-id="event-types">Event Types</h2>
 <p>FloodAdapt supports three types of events:</p>
 <p>To see a full example of how to define an event, refer to the following notebooks:</p>
-<p><a href="../../examples/events/synthetic_event.html"><strong>Synthetic Event</strong></a>: Programmatically defined using idealized or user-defined characteristics.</p>
-<p><a href="../../examples/events/historical_event.html"><strong>Historical Event</strong></a>: Built from real-world observations or reanalysis data.</p>
+<p><a href="../../examples/events/synthetic_event.html"><strong>Synthetic Event</strong></a>: Synthetic timeseries built from key parameters.</p>
+<p><a href="../../examples/events/historical_event.html"><strong>Historical Event</strong></a>: Built from real-world observations or meteorological hindcast data.</p>
 <p><a href="../../examples/events/hurricane_event.html"><strong>Hurricane Event</strong></a>: Run an offshore hazard model using wind and pressure fields from cyclone tracks to generate the waterlevels for the overland hazard model. Only available when the database has an offshore model.</p>
-<p><a href="../../examples/events/database_manipulation.html"><strong>Database Manipulation</strong></a>: Use the database to programmatically create a range of events to analyze the effects of different forcings.</p>
+<p><a href="../../examples/events/database_manipulation.html"><strong>Event modification</strong></a>: Modify existing events or build new events from existing ones.</p>
 
 
 </section>

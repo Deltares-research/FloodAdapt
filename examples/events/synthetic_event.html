@@ -568,9 +568,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="step-5.-define-rainfall-forcing">🌧️ Step 5. Define Rainfall Forcing</h2>
 <p>The rainfall options for a synthetic event are:</p>
 <ul>
-<li><strong>Constant</strong>: Constant rainfall intensity to the entire domain throughout the entire simulation period.</li>
-<li><strong>Synthetic</strong>: Custom rainfall intensity to the entire domain throughout a given period.</li>
-<li><strong>CSV</strong>: Custom rainfall intensity to the entire domain throughout a given period, read in from a csv file.</li>
+<li><strong>Constant</strong>: Constant rainfall intensity for the entire simultion period and spatially uniform across the model domain.</li>
+<li><strong>Synthetic</strong>: Custom rainfall intensity timeseries built from key parameters applied spatially uniform across the entire model domain. The key parameters can be used to describe either a gaussian-, block- or triangle-shaped rainfall curve.</li>
+<li><strong>CSV</strong>: Custom rainfall intensity from a csv file applied spatially uniform across the entire model domain.</li>
 </ul>
 <div id="10" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rainfall_constant <span class="op">=</span> f.RainfallConstant(</span>
@@ -617,9 +617,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="step-5.-define-wind-forcing">🌬️ Step 5. Define Wind Forcing</h2>
 <p>The wind options for a synthetic event are:</p>
 <ul>
-<li><strong>CSV</strong>: Custom wind speed and direction is specified in a csv file and applied to the entire simulation.</li>
-<li><strong>Constant</strong>: Constant wind speed and direction is specified to simulate wind-driven effects on the water surface.</li>
+<li><strong>CSV</strong>: Custom wind speed and direction from a csv file applied spatially uniform across the entire model domain.</li>
+<li><strong>Constant</strong>: Constant wind speed and direction is applied spatially uniform across the entire model domain.</li>
 </ul>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> Wind set up in embayments, lagoons etc is only included for the water bodies included in the overland model. Large scale wind effects creating surges and wind set up are typically included in the water level forcing. When the water level forcing is set to “Model” (see <a href="../../examples/events/historical_event.html">‘Historical Event’</a>), this effect can be simulated by FloodAdapt in the offshore model.</p>
+</blockquote>
 <div id="12" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>wind_constant <span class="op">=</span> f.WindConstant(</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    speed<span class="op">=</span>us.UnitfulVelocity(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesVelocity.mps), </span>
@@ -653,12 +656,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="step-6.-define-river-discharge-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="step-6.-define-river-discharge-forcing">🏞️ Step 6. Define River Discharge Forcing</h2>
-<p>Discharge is required to be defined for all pre-configured rivers. These rivers are registered in the hazard model configuration beforehand. The timeseries data provided will determine the in-flow of water at the river’s location.</p>
+<p>Discharge is required to be defined for all pre-configured rivers. These rivers are registered in the hazard model configuration beforehand and it is important that the order of rivers and their source locations are consistent with the setup of the hazard model. The timeseries data provided will determine the in-flow of water at the river’s location.</p>
 <p>Discharge options for a <code>SyntheticEvent</code> are:</p>
 <ul>
-<li><strong>Constant</strong>: Constant discharge</li>
+<li><strong>Constant</strong>: Constant discharge for the entire simulation period.</li>
 <li><strong>CSV</strong>: Custom discharge specified in a csv file.</li>
-<li><strong>Synthetic</strong>: Custom discharge</li>
+<li><strong>Synthetic</strong>: Custom discharge timeseries built from key parameters. The key parameters can be used to describe either a gaussian-, block- or triangle-shaped rainfall curve.</li>
 </ul>
 <div id="14" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The available rivers are defined in the hazard model when creating the database.</span></span>
@@ -716,7 +719,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="step-7.-combine-forcings-and-create-synthetic-event" class="level2">
 <h2 class="anchored" data-anchor-id="step-7.-combine-forcings-and-create-synthetic-event">🧩 Step 7. Combine Forcings and Create Synthetic Event</h2>
-<p>All defined forcings are collected into a single dictionary, which is used to construct a <code>SyntheticEvent</code>. Now construct the forcings dictionary that contains the focings you want to include.</p>
+<p>All defined forcings are collected into a single dictionary, which is used to construct a <code>SyntheticEvent</code>. Now construct the forcings dictionary that contains the forcings you want to include.</p>
 <blockquote class="blockquote">
 <p><strong>NOTE</strong>: each event can only have 1 forcing of the types: <code>water level</code>, <code>rainfall</code> and <code>wind</code>. For <code>discharge</code> however, each river is required to have a forcing associated with it.</p>
 </blockquote>

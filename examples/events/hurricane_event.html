@@ -492,7 +492,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="step-2.-define-the-simulation-time-frame" class="level2">
 <h2 class="anchored" data-anchor-id="step-2.-define-the-simulation-time-frame">🗓️ Step 2. Define the Simulation Time Frame</h2>
-<p>We specify a one-day time frame for the hurricane event, from January 1 to January 2, 2025.</p>
+<p>We specify a one-day time frame for the hurricane event, from January 1 to January 2, 2025. Make sure the time frame covers the tinme specified in your hurricane track file.</p>
 <div id="4" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an time frame for the simulation</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>start_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2025</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">1</span>)</span>
@@ -510,7 +510,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="step-3.-obtain-a-hurricane-track" class="level2">
 <h2 class="anchored" data-anchor-id="step-3.-obtain-a-hurricane-track">🌧️ Step 3. Obtain a hurricane track</h2>
-<p>The FloodAdapt database can store a cyclone track database as well. Depending on your setup and configuration, this functionality may or may not be available.</p>
+<p>You can include an <a href="https://www.ncei.noaa.gov/products/international-best-track-archive">IBTrACS</a> hurricane database with recent and historic tracks in the FloodAdapt database. You can use any track from the database and optionally shift the track north, southh, east or west.</p>
+<blockquote class="blockquote">
+<p><strong>NOTE:</strong> Hurricane events are only available in FloodAdapt when you have an offshore flood hazard model in your database that simulates the surge from the hurricane track.</p>
+</blockquote>
 <div id="8" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the cyclone database</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>cyclone_db <span class="op">=</span> fa.database.static.get_cyclone_track_database()</span>
@@ -530,7 +533,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="step-4.-define-track-forcings" class="level2">
 <h2 class="anchored" data-anchor-id="step-4.-define-track-forcings">🌧️ Step 4. Define Track forcings</h2>
-<p>Given a Hurricane track, it is quite easy to create hurricane events.</p>
+<p>Given a Hurricane track, the wind field is always computer from the track. You can choose to model the rainfall based on a parametric model around the hurricane track or choose any iother rainfall option.</p>
 <div id="10" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># We want to include the rainfall and wind from the hurricane track</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>rainfall <span class="op">=</span> f.RainfallTrack(path<span class="op">=</span>track_file)</span>
@@ -539,7 +542,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="step-5.-define-river-discharge-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="step-5.-define-river-discharge-forcing">🏞️ Step 5. Define River Discharge Forcing</h2>
-<p>Discharge is defined for two pre-configured rivers. These rivers must be registered in the hazard model configuration beforehand.</p>
+<p>Discharge is defined for two pre-configured rivers in this example. These rivers must be registered in the hazard model configuration beforehand, see [Database builder].</p>
 <div id="12" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The available rivers are defined in the hazard model when creating the database.</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># You cannot add new rivers to the model in an event</span></span>
