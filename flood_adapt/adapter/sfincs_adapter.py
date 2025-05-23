@@ -12,7 +12,6 @@ import hydromt_sfincs.utils as utils
 import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import pyproj
 import shapely
 import xarray as xr
@@ -677,7 +676,8 @@ class SfincsAdapter(IHazardAdapter):
             )
 
             event = self.database.events.get(scenario.event)
-            self._add_tide_gauge_plot(fig, event, units=gui_units)
+            if self.settings.obs_point[ii].name == self.settings.tide_gauge.name:
+                self._add_tide_gauge_plot(fig, event, units=gui_units)
 
             # write html to results folder
             station_name = gdf.iloc[ii]["Name"]
@@ -686,26 +686,27 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_obs_points(self):
         """Add observation points provided in the site toml to SFINCS model."""
-        if self.settings.obs_point is not None:
-            self.logger.info("Adding observation points to the overland flood model")
+        if self.settings.obs_point is None:
+            return
+        self.logger.info("Adding observation points to the overland flood model")
 
-            obs_points = self.settings.obs_point
-            names = []
-            lat = []
-            lon = []
-            for pt in obs_points:
-                names.append(pt.name)
-                lat.append(pt.lat)
-                lon.append(pt.lon)
+        obs_points = self.settings.obs_point
+        names = []
+        lat = []
+        lon = []
+        for pt in obs_points:
+            names.append(pt.name)
+            lat.append(pt.lat)
+            lon.append(pt.lon)
 
-            # create GeoDataFrame from obs_points in site file
-            df = pd.DataFrame({"name": names})
-            gdf = gpd.GeoDataFrame(
-                df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
-            )
+        # create GeoDataFrame from obs_points in site file
+        df = pd.DataFrame({"name": names})
+        gdf = gpd.GeoDataFrame(
+            df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+        )
 
-            # Add locations to SFINCS file
-            self._model.setup_observation_points(locations=gdf, merge=False)
+        # Add locations to SFINCS file
+        self._model.setup_observation_points(locations=gdf, merge=False)
 
     def get_wl_df_from_offshore_his_results(self) -> pd.DataFrame:
         """Create a pd.Dataframe with waterlevels from the offshore model at the bnd locations of the overland model.
@@ -1839,13 +1840,7 @@ class SfincsAdapter(IHazardAdapter):
             waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
 
             # If data is available, add to plot
-            fig.add_trace(
-                go.Scatter(
-                    x=pd.DatetimeIndex(df_gauge.index),
-                    y=waterlevel,
-                    line_color="#ea6404",
-                )
-            )
+            fig.add_trace(px.line(waterlevel, color="#ea6404"))
             fig["data"][0]["name"] = "model"
             fig["data"][1]["name"] = "measurement"
             fig.update_layout(showlegend=True)
