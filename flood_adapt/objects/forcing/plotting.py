@@ -5,7 +5,6 @@ from typing import List, Optional
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -371,36 +370,7 @@ def plot_wind(
         return "", None
 
     # Plot actual thing
-    # Create figure with secondary y-axis
-
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-
-    # Add traces
-    fig.add_trace(
-        go.Scatter(
-            x=data.index,
-            y=data.iloc[:, 0],
-            name="Wind speed",
-            mode="lines",
-        ),
-        secondary_y=False,
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=data.index, y=data.iloc[:, 1], name="Wind direction", mode="markers"
-        ),
-        secondary_y=True,
-    )
-
-    # Set y-axes titles
-    fig.update_yaxes(
-        title_text=f"Wind speed [{site.gui.units.default_velocity_units.value}]",
-        secondary_y=False,
-    )
-    fig.update_yaxes(
-        title_text=f"Wind direction {site.gui.units.default_direction_units.value}",
-        secondary_y=True,
-    )
+    fig = px.line(x=data.index, y=data.iloc[:, 0])
 
     fig.update_layout(
         autosize=False,
@@ -412,9 +382,12 @@ def plot_wind(
         legend=None,
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis={"range": [event.time.start_time, event.time.end_time]},
         xaxis_title={"text": "Time"},
+        yaxis_title={
+            "text": f"Wind speed [{site.gui.units.default_velocity_units.value}]"
+        },
         showlegend=False,
+        xaxis={"range": [event.time.start_time, event.time.end_time]},
     )
 
     # Only save to the the event folder if that has been created already.
