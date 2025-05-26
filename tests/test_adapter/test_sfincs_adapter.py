@@ -1,3 +1,4 @@
+import platform
 import tempfile
 from copy import copy
 from datetime import datetime, timedelta
@@ -14,7 +15,13 @@ import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
-from flood_adapt.config.sfincs import ObsPointModel, RiverModel
+from flood_adapt.config.sfincs import (
+    DatumModel,
+    FloodModel,
+    ObsPointModel,
+    RiverModel,
+    WaterlevelReferenceModel,
+)
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.objects.events.hurricane import TranslationModel
@@ -70,6 +77,7 @@ from flood_adapt.objects.forcing.wind import (
 from flood_adapt.objects.measures.measures import (
     FloodWall,
     GreenInfrastructure,
+    Measure,
     Pump,
     SelectionType,
 )
@@ -226,42 +234,6 @@ def synthetic_waterlevels():
             harmonic_phase=us.UnitfulTime(value=0, units=us.UnitTypesTime.hours),
         ),
     )
-
-
-@pytest.fixture()
-def test_event_all_synthetic(
-    synthetic_discharge,
-    synthetic_rainfall,
-    synthetic_waterlevels,
-):
-    return SyntheticEvent(
-        SyntheticEvent(
-            name="all_synthetic",
-            time=TimeFrame(),
-            forcings={
-                ForcingType.DISCHARGE: [synthetic_discharge],
-                ForcingType.RAINFALL: [synthetic_rainfall],
-                ForcingType.WATERLEVEL: [synthetic_waterlevels],
-            },
-        )
-    )
-
-
-@pytest.fixture()
-def database_with_synthetic_scenario(test_db, test_event_all_synthetic):
-    test_db.events.save(test_event_all_synthetic)
-
-    scn = Scenario(
-        Scenario(
-            name="synthetic",
-            event=test_event_all_synthetic.name,
-            projection="current",
-            strategy="no_measures",
-        )
-    )
-
-    test_db.scenarios.save(scn)
-    return test_db, scn
 
 
 def _mock_meteohandler_read(
@@ -818,66 +790,180 @@ class TestAddForcing:
                 sfincs_adapter.add_forcing(synthetic_discharge)
 
     class TestWaterLevel:
+        @pytest.fixture()
+        def adapter_with_datum(self, default_sfincs_adapter: SfincsAdapter):
+            default_sfincs_adapter.database.site.gui.plotting.synthetic_tide.datum = (
+                "MSL"
+            )
+            default_sfincs_adapter.settings.config.offshore_model = FloodModel(
+                name="offshore",
+                reference="MSL",
+            )
+            default_sfincs_adapter.settings.water_level = WaterlevelReferenceModel(
+                reference="NAVD88",
+                datums=[
+                    DatumModel(
+                        name="NAVD88",
+                        height=us.UnitfulLength(
+                            value=0, units=us.UnitTypesLength.meters
+                        ),
+                    ),
+                    DatumModel(
+                        name="MSL",
+                        height=us.UnitfulLength(
+                            value=1, units=us.UnitTypesLength.meters
+                        ),
+                    ),
+                ],
+            )
+            return default_sfincs_adapter
+
         def test_add_forcing_waterlevels_csv(
-            self, default_sfincs_adapter: SfincsAdapter, synthetic_waterlevels
+            self, adapter_with_datum: SfincsAdapter, synthetic_waterlevels
         ):
             # Arrange
             tmp_path = Path(tempfile.gettempdir()) / "waterlevels.csv"
-            time_frame = default_sfincs_adapter.get_model_time()
+            time_frame = adapter_with_datum.get_model_time()
             synthetic_waterlevels.to_dataframe(time_frame).to_csv(tmp_path)
+            forcing = WaterlevelCSV(path=tmp_path, units=us.UnitTypesLength.feet)
 
-            forcing = WaterlevelCSV(path=tmp_path)
+            conversion = us.UnitfulLength(value=1.0, units=forcing.units).convert(
+                us.UnitTypesLength.meters
+            )
+
+            expected = (
+                (forcing.to_dataframe(time_frame=time_frame) * conversion)
+                .to_numpy()
+                .flatten()
+            )
 
             # Act
-            default_sfincs_adapter.add_forcing(forcing)
+            adapter_with_datum.add_forcing(forcing)
 
             # Assert
-            assert default_sfincs_adapter.waterlevels is not None
+            actual = (
+                adapter_with_datum.waterlevels.isel(
+                    index=0
+                )  # pick first bnd point since all are equal anyways
+                .to_numpy()[:, None]
+                .flatten()
+            )
+
+            assert actual == pytest.approx(expected, rel=1e-2)
 
         def test_add_forcing_waterlevels_synthetic(
-            self, default_sfincs_adapter: SfincsAdapter, synthetic_waterlevels
+            self,
+            adapter_with_datum: SfincsAdapter,
+            synthetic_waterlevels: WaterlevelSynthetic,
         ):
             # Arrange
+            time_frame = adapter_with_datum.get_model_time()
+            conversion = us.UnitfulLength(
+                value=1.0, units=synthetic_waterlevels.surge.timeseries.peak_value.units
+            ).convert(us.UnitTypesLength.meters)
+            datum_correction = adapter_with_datum.settings.water_level.get_datum(
+                adapter_with_datum.database.site.gui.plotting.synthetic_tide.datum
+            ).height.convert(us.UnitTypesLength.meters)
+
+            expected = (
+                (
+                    synthetic_waterlevels.to_dataframe(time_frame=time_frame)
+                    * conversion
+                    + datum_correction
+                )
+                .to_numpy()
+                .flatten()
+            )
+
             # Act
-            default_sfincs_adapter.add_forcing(synthetic_waterlevels)
+            adapter_with_datum.add_forcing(synthetic_waterlevels)
 
             # Assert
-            assert default_sfincs_adapter.waterlevels is not None
+            actual = (
+                adapter_with_datum.waterlevels.isel(
+                    index=0
+                )  # pick first bnd point since all are equal anyways
+                .to_numpy()[:, None]
+                .flatten()
+            )
+
+            assert actual == pytest.approx(expected, rel=1e-2)
 
         def test_add_forcing_waterlevels_gauged(
-            self, default_sfincs_adapter: SfincsAdapter
+            self, adapter_with_datum: SfincsAdapter
         ):
             # Arrange
+            time_frame = adapter_with_datum.get_model_time()
             forcing = WaterlevelGauged()
 
+            conversion = us.UnitfulLength(
+                value=1.0, units=adapter_with_datum.settings.tide_gauge.units
+            ).convert(us.UnitTypesLength.meters)
+
+            datum_height = adapter_with_datum.settings.water_level.get_datum(
+                adapter_with_datum.settings.tide_gauge.reference
+            ).height.convert(us.UnitTypesLength.meters)
+
+            expected = (
+                (
+                    adapter_with_datum.settings.tide_gauge.get_waterlevels_in_time_frame(
+                        time=time_frame,
+                    )
+                    * conversion
+                    + datum_height
+                )
+                .to_numpy()
+                .flatten()
+            )
+
             # Act
-            default_sfincs_adapter.add_forcing(forcing)
+            adapter_with_datum.add_forcing(forcing)
 
             # Assert
-            assert default_sfincs_adapter.waterlevels is not None
+            actual = (
+                adapter_with_datum.waterlevels.isel(
+                    index=0
+                )  # pick first bnd point since all are equal anyways
+                .to_numpy()[:, None]
+                .flatten()
+            )
+
+            assert actual == pytest.approx(expected, rel=1e-2)
 
         def test_add_forcing_waterlevels_model(
             self,
             mock_offshorehandler_get_resulting_waterlevels,
-            default_sfincs_adapter: SfincsAdapter,
+            adapter_with_datum: SfincsAdapter,
         ):
             # Arrange
-            default_sfincs_adapter._turn_off_bnd_press_correction = mock.Mock()
-            default_sfincs_adapter._scenario = mock.Mock()
-            default_sfincs_adapter._event = mock.Mock()
+            adapter_with_datum._turn_off_bnd_press_correction = mock.Mock()
+            adapter_with_datum._scenario = mock.Mock()
+            adapter_with_datum._event = mock.Mock()
             forcing = WaterlevelModel()
 
+            datum_correction = adapter_with_datum.settings.water_level.get_datum(
+                adapter_with_datum.settings.config.offshore_model.reference
+            ).height.convert(us.UnitTypesLength.meters)
+
+            expected = (
+                (mock_offshorehandler_get_resulting_waterlevels + datum_correction)
+                .to_numpy()
+                .flatten()
+            )
+
             # Act
-            default_sfincs_adapter.add_forcing(forcing)
+            adapter_with_datum.add_forcing(forcing)
 
             # Assert
-            current_wl = default_sfincs_adapter.waterlevels.to_numpy()[:, 0]
-            expected_wl = mock_offshorehandler_get_resulting_waterlevels.to_numpy()[
-                :, 0
-            ]
-
-            assert all(current_wl == expected_wl)
-            default_sfincs_adapter._turn_off_bnd_press_correction.assert_called_once()
+            actual = (
+                adapter_with_datum.waterlevels.isel(
+                    index=0
+                )  # pick first bnd point since all are equal anyways
+                .to_numpy()[:, None]
+                .flatten()
+            )
+            assert actual == pytest.approx(expected, rel=1e-2)
+            adapter_with_datum._turn_off_bnd_press_correction.assert_called_once()
 
         def test_add_forcing_waterlevels_unsupported(
             self, default_sfincs_adapter: SfincsAdapter
@@ -895,6 +981,14 @@ class TestAddForcing:
 class TestAddMeasure:
     """Class to test the add_measure method of the SfincsAdapter class."""
 
+    @staticmethod
+    def get_measure_gdf(adapter: SfincsAdapter, measure: Measure) -> gpd.GeoDataFrame:
+        measure = adapter.database.measures.get(measure.name)
+        measure_gdf = gpd.read_file(
+            adapter.database.measures.input_path / measure.name / measure.polygon_file
+        )
+        return measure_gdf.to_crs(adapter._model.crs.to_epsg())
+
     class TestFloodwall:
         @pytest.fixture()
         def floodwall(self, test_db) -> FloodWall:
@@ -903,21 +997,89 @@ class TestAddMeasure:
                 description="seawall",
                 selection_type=SelectionType.polyline,
                 elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
-                polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
+                polygon_file=str(TEST_DATA_DIR / "seawall.geojson"),
             )
 
             test_db.measures.save(floodwall)
             return floodwall
 
         def test_add_measure_floodwall(
-            self, default_sfincs_adapter: SfincsAdapter, floodwall
+            self,
+            default_sfincs_adapter: SfincsAdapter,
+            floodwall: FloodWall,
+            tmp_path: Path,
         ):
             # Arrange
+            new_root = tmp_path / "floodwall"
+            expected_coords, expected_height = self.get_expected_floodwall_attributes(
+                default_sfincs_adapter, floodwall
+            )
 
             # Act
             default_sfincs_adapter.add_measure(floodwall)
+            default_sfincs_adapter.write(path_out=new_root)
 
             # Assert
+            added_coords, added_heights = self.read_weir_file(
+                default_sfincs_adapter, floodwall.name
+            )
+
+            # Check coords
+            assert len(added_coords) == len(expected_coords)
+            for i, (gdf, added) in enumerate(zip(expected_coords, added_coords)):
+                assert (
+                    gdf[0] == pytest.approx(added[0], abs=0.2)
+                ), f"Coordinate {i}.x from file does not match coordinates in hydromt-sfincs: {gdf[0]} vs {added[0]}"
+                assert (
+                    gdf[1] == pytest.approx(added[1], abs=0.2)
+                ), f"Coordinate {i}.y from file does not match coordinates in hydromt-sfincs {gdf[1]} vs {added[1]}"
+
+            # Check heights
+            assert len(added_heights) == len(expected_coords)
+            assert all(
+                height == pytest.approx(expected_height, 1) for height in added_heights
+            ), "Height in file does not match height in polygon file"
+
+        def read_weir_file(self, adapter: SfincsAdapter, floodwall_name: str):
+            weir_file = adapter._model.get_config("weirfile")
+
+            # read weir file
+            added_coords = []
+            added_heights = []
+            with open(adapter.get_model_root() / weir_file, "r") as f:
+                _first_line = f.readline()
+                assert (
+                    floodwall_name in _first_line
+                ), "Expected floodwall name in weir file"
+
+                _second_line = f.readline()
+                num_coords = int(_second_line.split()[0])
+                num_vars = int(_second_line.split()[1])
+                assert (
+                    num_vars == 4
+                ), "Expected 4 variables in weir file: x y z Cd (https://sfincs.readthedocs.io/en/latest/input_structures.html)"
+
+                for _ in range(num_coords):
+                    x, y, height, _ = f.readline().split()
+                    added_coords.append((float(x), float(y)))
+                    added_heights.append(float(height))
+            return added_coords, added_heights
+
+        def get_expected_floodwall_attributes(
+            self, adapter: SfincsAdapter, floodwall: FloodWall
+        ):
+            measure_gdf = TestAddMeasure.get_measure_gdf(adapter, floodwall)
+
+            expected_coords = []
+            for geom in measure_gdf.geometry:
+                for linestring in geom.geoms:
+                    expected_coords.extend(linestring.coords)
+            expected_coords = [(round(x, 1), round(y, 1)) for x, y in expected_coords]
+            expected_height = round(
+                floodwall.elevation.convert(us.UnitTypesLength.meters), 1
+            )
+
+            return expected_coords, expected_height
 
     class TestPump:
         @pytest.fixture()
@@ -934,13 +1096,99 @@ class TestAddMeasure:
             test_db.measures.save(pump)
             return pump
 
-        def test_add_measure_pump(self, default_sfincs_adapter: SfincsAdapter, pump):
+        def test_add_measure_pump(
+            self, default_sfincs_adapter: SfincsAdapter, pump: Pump, tmp_path: Path
+        ):
             # Arrange
+            new_root = tmp_path / "pump"
+            expected_snk_coord, expected_src_coord, expected_discharge = (
+                self.get_expected_pump_attributes(default_sfincs_adapter, pump)
+            )
 
             # Act
             default_sfincs_adapter.add_measure(pump)
+            default_sfincs_adapter.write(path_out=new_root)
 
             # Assert
+            (
+                drn_file,
+                added_snk_coord,
+                added_src_coord,
+                added_type,
+                added_discharge,
+            ) = self.read_drn_file(default_sfincs_adapter)
+
+            # Check types
+            assert (
+                added_type == 1 or added_type == 2
+            ), "All entries in drnfile should be pumps (type=1) or culverts (type=2)"
+
+            # Check coords
+            assert expected_snk_coord[0] == pytest.approx(
+                added_snk_coord[0], abs=0.2
+            ), f"Sink x coord mismatch at the first line ({drn_file})"
+            assert expected_snk_coord[1] == pytest.approx(
+                added_snk_coord[1], abs=0.2
+            ), f"Sink y coord mismatch at the first line ({drn_file})"
+
+            assert expected_src_coord[0] == pytest.approx(
+                added_src_coord[0], abs=0.2
+            ), f"Source x coord mismatch at the first line ({drn_file})"
+            assert expected_src_coord[1] == pytest.approx(
+                added_src_coord[1], abs=0.2
+            ), f"Source y coord mismatch at the first line ({drn_file})"
+
+            # Check discharge
+            assert (
+                added_discharge == pytest.approx(expected_discharge, rel=1e-3)
+            ), f"Discharge {added_discharge} does not match expected {expected_discharge}"
+
+        def get_expected_pump_attributes(self, default_sfincs_adapter, pump):
+            measure_gdf = TestAddMeasure.get_measure_gdf(default_sfincs_adapter, pump)
+
+            for geom in measure_gdf.geometry:
+                # It's a LineString, so just one geometry
+                coords = list(geom.coords)
+                assert len(coords) == 2, "Expected 2 coordinates in pump polygon file"
+                expected_snk_coord = (round(coords[0][0], 1), round(coords[0][1], 1))
+                expected_src_coord = (round(coords[-1][0], 1), round(coords[-1][1], 1))
+                break
+
+            expected_discharge = round(
+                pump.discharge.convert(us.UnitTypesDischarge.cms), 6
+            )
+
+            return expected_snk_coord, expected_src_coord, expected_discharge
+
+        def read_drn_file(self, default_sfincs_adapter):
+            drn_file = (
+                default_sfincs_adapter.get_model_root()
+                / default_sfincs_adapter._model.get_config("drnfile")
+            )
+            with open(drn_file, "r") as f:
+                first_line = f.readline()
+
+            # No header to skip here as defined in docs
+            # Also, the pump will be added as the first line of the drn file
+            # Expected: <xsnk1> <ysnk1> <xsrc1> <ysrc1> <type1> <par1-1> par2-1 par3-1 par4-1 par5-1
+            # https://sfincs.readthedocs.io/en/latest/input_structures.html
+            xsnk, ysnk, xsrc, ysrc, typ, dis, *_ = first_line.split()
+            xsnk, ysnk, xsrc, ysrc, typ, dis = (
+                float(xsnk),
+                float(ysnk),
+                float(xsrc),
+                float(ysrc),
+                int(typ),
+                float(dis),
+            )
+
+            return (
+                drn_file,
+                (round(xsnk, 1), round(ysnk, 1)),
+                (round(xsrc, 1), round(ysrc, 1)),
+                typ,
+                dis,
+            )
 
     class TestGreenInfrastructure:
         @pytest.fixture()
@@ -959,14 +1207,27 @@ class TestAddMeasure:
             return green_infra
 
         def test_add_measure_greeninfra(
-            self, default_sfincs_adapter: SfincsAdapter, water_square
+            self,
+            default_sfincs_adapter: SfincsAdapter,
+            water_square: GreenInfrastructure,
+            tmp_path: Path,
         ):
             # Arrange
+            new_root = tmp_path / "greeninfra"
+            vol_file = default_sfincs_adapter._model.get_config("volfile")
+            assert vol_file is None
 
             # Act
             default_sfincs_adapter._add_measure_greeninfra(water_square)
+            default_sfincs_adapter.write(path_out=new_root)
 
             # Assert
+            vol_file = default_sfincs_adapter._model.get_config("volfile")
+            assert vol_file is not None
+            with open(default_sfincs_adapter.get_model_root() / vol_file, "rb") as f:
+                contents_after = f.readlines()
+
+            assert contents_after
 
 
 class TestAddProjection:
@@ -1120,6 +1381,10 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
     )
 
 
+@pytest.mark.skipif(
+    platform.system() == "Linux",
+    reason="Skipped on Linux due to broken sfincs binary",
+)
 class TestPostProcessing:
     @pytest.fixture(scope="class")
     def synthetic_rainfall_class(self):
