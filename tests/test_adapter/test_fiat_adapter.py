@@ -1,3 +1,5 @@
+import platform
+
 import pandas as pd
 import pytest
 from fiat_toolbox import get_fiat_columns
@@ -14,6 +16,10 @@ from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
 _FIAT_COLUMNS = get_fiat_columns()
 
 
+@pytest.mark.skipif(
+    platform.system() == "Linux",
+    reason="Skipped on Linux due to broken sfincs binary",
+)
 class TestFiatAdapter:
     @pytest.fixture(scope="class")
     def run_scenario_no_measures(self, test_fa_class):

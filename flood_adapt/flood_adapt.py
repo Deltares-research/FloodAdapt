@@ -923,6 +923,13 @@ class FloodAdapt:
         )
 
     # Static
+    def load_static_data(self):
+        """Read the static data into the cache.
+
+        This is used to speed up the loading of the static data.
+        """
+        self.database.static.load_static_data()
+
     def get_aggregation_areas(
         self,
     ) -> dict[str, gpd.GeoDataFrame]:

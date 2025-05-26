@@ -1,3 +1,5 @@
+import platform
+
 import pandas as pd
 import pytest
 
@@ -70,6 +72,10 @@ def setup_offshore_scenario(test_db: IDatabase):
     return test_db, scn, event
 
 
+@pytest.mark.skipif(
+    platform.system() == "Linux",
+    reason="Skipped on Linux due to broken sfincs binary",
+)
 class TestOffshoreSfincsHandler:
     def test_process_sfincs_offshore(
         self,
