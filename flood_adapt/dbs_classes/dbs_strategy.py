@@ -1,7 +1,7 @@
 from itertools import combinations
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import DatabaseError
 from flood_adapt.objects.measures.measures import MeasureType
 from flood_adapt.objects.strategies.strategies import Strategy
 
