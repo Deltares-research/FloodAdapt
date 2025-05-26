@@ -11,12 +11,6 @@ from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
 
 
-class DatabaseError(Exception):
-    """Base class for exceptions raised in any database related files."""
-
-    pass
-
-
 class IDatabase(ABC):
     base_path: Path
     input_path: Path

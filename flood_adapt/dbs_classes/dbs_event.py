@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.dbs_classes.interface.database import DatabaseError
+from flood_adapt.exceptions import DatabaseError
 from flood_adapt.objects.events.event_factory import EventFactory
 from flood_adapt.objects.events.events import Event
 

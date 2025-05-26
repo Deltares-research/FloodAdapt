@@ -6,8 +6,9 @@ from typing import Any, Optional, TypeVar
 import tomli
 import tomli_w
 
-from flood_adapt.dbs_classes.interface.database import DatabaseError, IDatabase
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
+from flood_adapt.exceptions import DatabaseError
 from flood_adapt.objects.object_model import Object
 
 T_OBJECTMODEL = TypeVar("T_OBJECTMODEL", bound=Object)

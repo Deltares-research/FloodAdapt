@@ -7,7 +7,6 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.dbs_classes.interface.database import DatabaseError
 
 __all__ = [
     "Database",
@@ -19,5 +18,4 @@ __all__ = [
     "DbsStatic",
     "DbsStrategy",
     "DbsTemplate",
-    "DatabaseError",
 ]

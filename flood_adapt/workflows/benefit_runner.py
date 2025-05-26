@@ -10,7 +10,7 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
-from flood_adapt.dbs_classes.interface.database import DatabaseError
+from flood_adapt.exceptions import DatabaseError
 from flood_adapt.misc.path_builder import (
     ObjectDir,
     TopLevelDir,
