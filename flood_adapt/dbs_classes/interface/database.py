@@ -6,13 +6,11 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
 from flood_adapt.objects.benefits.benefits import Benefit
-from flood_adapt.objects.events.events import Event
 
 
 class IDatabase(ABC):
@@ -64,14 +62,6 @@ class IDatabase(ABC):
 
     @abstractmethod
     def plot_slr_scenarios(self) -> str:
-        pass
-
-    @abstractmethod
-    def write_to_csv(self, name: str, event: Event, df: pd.DataFrame) -> None:
-        pass
-
-    @abstractmethod
-    def write_cyc(self, event: Event, track: TropicalCyclone) -> None:
         pass
 
     @abstractmethod

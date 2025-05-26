@@ -9,7 +9,6 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import xarray as xr
-from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from plotly.express import line
 from plotly.express.colors import sample_colorscale
@@ -30,7 +29,6 @@ from flood_adapt.misc.path_builder import (
 )
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.benefits.benefits import Benefit
-from flood_adapt.objects.events.events import Event
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.workflows.benefit_runner import BenefitRunner
@@ -315,17 +313,6 @@ class Database(IDatabase):
         output_loc.parent.mkdir(parents=True, exist_ok=True)
         fig.write_html(output_loc)
         return str(output_loc)
-
-    def write_to_csv(self, name: str, event: Event, df: pd.DataFrame):
-        df.to_csv(
-            self.events.input_path.joinpath(event.name, f"{name}.csv"),
-            header=False,
-        )
-
-    def write_cyc(self, event: Event, track: TropicalCyclone):
-        cyc_file = self.events.input_path / event.name / f"{event.track_name}.cyc"
-        # cht_cyclone function to write TropicalCyclone as .cyc file
-        track.write_track(filename=cyc_file, fmt="ddb_cyc")
 
     def check_benefit_scenarios(self, benefit: Benefit) -> pd.DataFrame:
         """Return a dataframe with the scenarios needed for this benefit assessment run.
