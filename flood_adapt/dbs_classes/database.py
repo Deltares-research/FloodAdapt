@@ -14,7 +14,6 @@ from geopandas import GeoDataFrame
 from plotly.express import line
 from plotly.express.colors import sample_colorscale
 
-from flood_adapt.config.config import Settings
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -654,9 +653,6 @@ class Database(IDatabase):
             - does not have a corresponding input
 
         """
-        if not Settings().delete_crashed_runs:
-            return
-
         if not self.scenarios.output_path.is_dir():
             return
 
