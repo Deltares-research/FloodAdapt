@@ -104,26 +104,6 @@ class DbsStrategy(DbsTemplate[Strategy]):
                     counter += 1
             raise ValueError(msg)
 
-    def _check_standard_objects(self, name: str) -> bool:
-        """Check if a strategy is a standard strategy.
-
-        Parameters
-        ----------
-        name : str
-            name of the strategy to be checked
-
-        Raises
-        ------
-        ValueError
-            Raise error if strategy is a standard strategy.
-        """
-        # Check if strategy is a standard strategy
-        if self._database.site.standard_objects:
-            if self._database.site.standard_objects.strategies:
-                if name in self._database.site.standard_objects.strategies:
-                    return True
-        return False
-
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a strategy is used in a scenario.
 
