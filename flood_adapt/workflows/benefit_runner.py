@@ -161,22 +161,21 @@ class BenefitRunner:
         self.check_scenarios()
 
         # Iterate through the scenarios needed and create them if not existing
-        for index, row in self.scenarios.iterrows():
+        for _, row in self.scenarios.iterrows():
             if row["scenario created"] == "No":
-                scenario_obj = Scenario(
-                    name="_".join([row["projection"], row["event"], row["strategy"]]),
-                    event=row["event"],
-                    projection=row["projection"],
-                    strategy=row["strategy"],
-                )
-                # Check if scenario already exists (because it was created before in the loop)
+                name = "_".join([row["projection"], row["event"], row["strategy"]])
+
                 try:
-                    self.database.scenarios.save(scenario_obj)
+                    self.database.scenarios.get(name)
                 except DatabaseError:
-                    pass  # if it already exists, we can just continue
-                except Exception as e:
-                    # some other error was raised, so we re-raise it
-                    raise e
+                    # If the scenario does not exist, create it
+                    scenario = Scenario(
+                        name=name,
+                        event=row["event"],
+                        projection=row["projection"],
+                        strategy=row["strategy"],
+                    )
+                    self.database.scenarios.save(scenario)
 
         # Update the scenarios check
         self.check_scenarios()
