@@ -123,11 +123,17 @@ class Database(IDatabase):
 
         # Initialize the different database objects
         self._static = DbsStatic(self)
-        self._events = DbsEvent(self)
+        self._events = DbsEvent(
+            self, standard_objects=self.site.standard_objects.events
+        )
         self._scenarios = DbsScenario(self)
-        self._strategies = DbsStrategy(self)
+        self._strategies = DbsStrategy(
+            self, standard_objects=self.site.standard_objects.strategies
+        )
         self._measures = DbsMeasure(self)
-        self._projections = DbsProjection(self)
+        self._projections = DbsProjection(
+            self, standard_objects=self.site.standard_objects.projections
+        )
         self._benefits = DbsBenefit(self)
 
         # Delete any unfinished/crashed scenario output
