@@ -48,7 +48,8 @@ class DbsStatic(IDbsStatic):
         self.get_model_boundary()
         self.get_model_grid()
         self.get_obs_points()
-        self.get_slr_scn_names()
+        if self._database.site.sfincs.slr_scenarios is not None:
+            self.get_slr_scn_names()
         self.get_buildings()
         self.get_property_types()
 
