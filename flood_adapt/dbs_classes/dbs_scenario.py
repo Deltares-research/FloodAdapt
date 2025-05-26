@@ -48,7 +48,7 @@ class DbsScenario(DbsTemplate[Scenario]):
 
         Raises
         ------
-        ValueError
+        DatabaseError
             Raise error if scenario to be deleted is already in use.
         """
         # First delete the scenario

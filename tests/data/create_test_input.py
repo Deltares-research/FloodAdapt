@@ -70,6 +70,7 @@ from flood_adapt.objects.projections.projections import (
 )
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
+from flood_adapt.workflows.benefit_runner import BenefitRunner
 
 DATA_DIR = Path(__file__).parent
 
@@ -119,7 +120,8 @@ def update_database_input(database_path: Path):
         database.scenarios.save(scenario)
 
     for benefit in create_benefits():
-        database.create_benefit_scenarios(benefit)
+        runner = BenefitRunner(database, benefit)
+        runner.create_benefit_scenarios()
         database.benefits.save(benefit)
 
     # Cleanup singleton

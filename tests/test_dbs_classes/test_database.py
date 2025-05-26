@@ -7,7 +7,8 @@ import pytest
 from flood_adapt.config.config import Settings
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.database import Database
-from flood_adapt.workflows.benefit_runner import Benefit
+from flood_adapt.dbs_classes.interface.database import DatabaseError
+from flood_adapt.workflows.benefit_runner import Benefit, BenefitRunner
 
 
 def test_database_controller(test_db):
@@ -25,7 +26,8 @@ def test_create_benefit_scenarios(test_db):
     assert benefit_toml.is_file()
 
     benefit = Benefit.load_file(benefit_toml)
-    test_db.create_benefit_scenarios(benefit)
+    runner = BenefitRunner(test_db, benefit)
+    runner.create_benefit_scenarios()
 
     # Check if scenarios were created and then delete them
     scenarios_path = test_db.input_path / "scenarios"
@@ -44,8 +46,8 @@ def test_create_benefit_scenarios(test_db):
     shutil.rmtree(path3)
 
 
-def test_projection_interp_slr(test_db):
-    slr = test_db.interp_slr("ssp245", 2075)
+def test_projection_interp_slr(test_fa):
+    slr = test_fa.interp_slr("ssp245", 2075)
     assert slr > 1.0
     assert slr < 1.1
 
@@ -152,19 +154,19 @@ def test_cannot_delete_standard_objects(test_db: Database):
 
     # Act
     for event in test_db.site.standard_objects.events:
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(DatabaseError) as excinfo:
             test_db.events.delete(event)
 
         assert "cannot be deleted/modified since it is a standard" in str(excinfo.value)
 
     for projection in test_db.site.standard_objects.projections:
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(DatabaseError) as excinfo:
             test_db.projections.delete(projection)
 
         assert "cannot be deleted/modified since it is a standard" in str(excinfo.value)
 
     for strategy in test_db.site.standard_objects.strategies:
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(DatabaseError) as excinfo:
             test_db.strategies.delete(strategy)
 
         assert "cannot be deleted/modified since it is a standard" in str(excinfo.value)

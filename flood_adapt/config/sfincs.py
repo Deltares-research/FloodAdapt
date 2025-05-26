@@ -3,6 +3,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional, Union
 
+import numpy as np
+import pandas as pd
+from plotly.express import line
+from plotly.express.colors import sample_colorscale
 from pydantic import AfterValidator, BaseModel, Field, model_validator
 from tomli import load as load_toml
 from typing_extensions import Annotated
@@ -208,6 +212,147 @@ class SlrScenariosModel(BaseModel):
 
     file: str
     relative_to_year: int
+
+    def interp_slr(
+        self,
+        scenario: str,
+        year: float,
+        units: us.UnitTypesLength = us.UnitTypesLength.meters,
+    ) -> float:
+        """Interpolate SLR value and reference it to the SLR reference year from the site toml.
+
+        Parameters
+        ----------
+        csv_path : Path
+            Path to the slr.csv file containing the SLR scenarios.
+        scenario : str
+            SLR scenario name to use from the column names in self.file
+        year : float
+            year to evaluate
+        units : us.UnitTypesLength, default = us.UnitTypesLength.meters
+            The units to convert the SLR value to. Default is meters.
+
+        Returns
+        -------
+        float
+            The interpolated sea level rise value in the specified units, relative to the reference year.
+
+        Raises
+        ------
+        ValueError
+            if the reference year is outside of the time range in the slr.csv file
+        ValueError
+            if the year to evaluate is outside of the time range in the slr.csv file
+        """
+        df = pd.read_csv(self.file)
+        if year > df["year"].max() or year < df["year"].min():
+            raise ValueError(
+                "The selected year is outside the range of the available SLR scenarios"
+            )
+
+        if (
+            self.relative_to_year > df["year"].max()
+            or self.relative_to_year < df["year"].min()
+        ):
+            raise ValueError(
+                f"The reference year {self.relative_to_year} is outside the range of the available SLR scenarios"
+            )
+
+        slr = np.interp(year, df["year"], df[scenario])
+        ref_slr = np.interp(self.relative_to_year, df["year"], df[scenario])
+
+        new_slr = us.UnitfulLength(
+            value=slr - ref_slr,
+            units=df["units"][0],
+        )
+        return np.round(new_slr.convert(units), decimals=2)
+
+    def plot_slr_scenarios(
+        self,
+        scenario_names: list[str],
+        output_loc: Path,
+        units: us.UnitTypesLength = us.UnitTypesLength.meters,
+    ) -> str:
+        """
+        Plot sea level rise scenarios.
+
+        Returns
+        -------
+        html_path : str
+            The path to the html plot of the sea level rise scenarios.
+        """
+        df = pd.read_csv(self.file)
+
+        ncolors = len(df.columns) - 2
+        if "units" not in df.columns:
+            raise ValueError(f"Expected column `units` in {self.file}.")
+
+        _units = df["units"].iloc[0]
+        _units = us.UnitTypesLength(_units)
+
+        if "Year" not in df.columns:
+            raise ValueError(f"Expected column `Year` in {self.file}.")
+
+        if (
+            self.relative_to_year > df["Year"].max()
+            or self.relative_to_year < df["Year"].min()
+        ):
+            raise ValueError(
+                f"The reference year {self.relative_to_year} is outside the range of the available SLR scenarios"
+            )
+
+        for scn in scenario_names:
+            ref_slr = np.interp(self.relative_to_year, df["Year"], df[scn])
+            df[scn] -= ref_slr
+
+        df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
+        # convert to units used in GUI
+        conversion_factor = us.UnitfulLength(value=1.0, units=_units).convert(units)
+        df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
+
+        # rename column names that will be shown in html
+        df = df.rename(
+            columns={
+                "variable": "Scenario",
+                "value": f"Sea level rise [{units.value}]",
+            }
+        )
+
+        colors = sample_colorscale(
+            "rainbow", [n / (ncolors - 1) for n in range(ncolors)]
+        )
+        fig = line(
+            df,
+            x="Year",
+            y=f"Sea level rise [{units.value}]",
+            color="Scenario",
+            color_discrete_sequence=colors,
+        )
+
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 1.2,
+            width=280 * 1.3,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend_font={"size": 10, "color": "black", "family": "Arial"},
+            legend_grouptitlefont={"size": 10, "color": "black", "family": "Arial"},
+            legend={"entrywidthmode": "fraction", "entrywidth": 0.2},
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title=None,
+            xaxis_range=[self.relative_to_year, df["Year"].max()],
+            legend_title=None,
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
+
+        # write html to results folder
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
 
 
 class FloodModel(BaseModel):

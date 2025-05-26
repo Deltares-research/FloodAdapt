@@ -10,6 +10,7 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
+from flood_adapt.dbs_classes.interface.database import DatabaseError
 from flood_adapt.misc.path_builder import (
     ObjectDir,
     TopLevelDir,
@@ -149,6 +150,36 @@ class BenefitRunner:
             }
         )
         return self.scenarios
+
+    def create_benefit_scenarios(self) -> None:
+        """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already.
+
+        Parameters
+        ----------
+        benefit : Benefit
+        """
+        self.check_scenarios()
+
+        # Iterate through the scenarios needed and create them if not existing
+        for index, row in self.scenarios.iterrows():
+            if row["scenario created"] == "No":
+                scenario_obj = Scenario(
+                    name="_".join([row["projection"], row["event"], row["strategy"]]),
+                    event=row["event"],
+                    projection=row["projection"],
+                    strategy=row["strategy"],
+                )
+                # Check if scenario already exists (because it was created before in the loop)
+                try:
+                    self.database.scenarios.save(scenario_obj)
+                except DatabaseError:
+                    pass  # if it already exists, we can just continue
+                except Exception as e:
+                    # some other error was raised, so we re-raise it
+                    raise e
+
+        # Update the scenarios check
+        self.check_scenarios()
 
     def ready_to_run(self) -> bool:
         """Check if all the required scenarios have already been run.

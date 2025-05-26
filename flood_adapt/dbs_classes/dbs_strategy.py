@@ -1,6 +1,7 @@
 from itertools import combinations
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
+from flood_adapt.dbs_classes.interface.database import DatabaseError
 from flood_adapt.objects.measures.measures import MeasureType
 from flood_adapt.objects.strategies.strategies import Strategy
 
@@ -37,7 +38,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
 
         Raises
         ------
-        ValueError
+        DatabaseError
             Raise error if name is already in use.
         """
         object_exists = object_model.name in self.summarize_objects()["name"]
@@ -47,7 +48,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
         if overwrite and object_exists:
             self.delete(object_model.name, toml_only=True)
         elif not overwrite and object_exists:
-            raise ValueError(
+            raise DatabaseError(
                 f"'{object_model.name}' name is already used by another {self.display_name}. Choose a different name"
             )
 
@@ -68,7 +69,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
 
         Raises
         ------
-        ValueError
+        DatabaseError
             information on which combinations of measures have overlapping properties
         """
         measure_objects = [self._database.measures.get(measure) for measure in measures]
@@ -102,7 +103,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
                         impact_measures[comb[1][0]].name,
                     )
                     counter += 1
-            raise ValueError(msg)
+            raise DatabaseError(msg)
 
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a strategy is used in a scenario.

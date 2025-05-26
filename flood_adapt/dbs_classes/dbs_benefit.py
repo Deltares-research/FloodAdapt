@@ -1,6 +1,7 @@
 import shutil
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
+from flood_adapt.dbs_classes.interface.database import DatabaseError
 from flood_adapt.workflows.benefit_runner import Benefit, BenefitRunner
 
 
@@ -21,14 +22,14 @@ class DbsBenefit(DbsTemplate[Benefit]):
 
         Raises
         ------
-        ValueError
+        DatabaseError
             Raise error if name is already in use. Names of benefits assessments should be unique.
         """
         runner = BenefitRunner(self._database, benefit=object_model)
 
         # Check if all scenarios are created
         if not all(runner.scenarios["scenario created"] != "No"):
-            raise ValueError(
+            raise DatabaseError(
                 f"'{object_model.name}' name cannot be created before all necessary scenarios are created."
             )
 
@@ -48,7 +49,7 @@ class DbsBenefit(DbsTemplate[Benefit]):
 
         Raises
         ------
-        ValueError
+        DatabaseError
             Raise error if benefit has already model output
         """
         # First delete the benefit
