@@ -39,6 +39,20 @@ class DbsStatic(IDbsStatic):
         """Initialize any necessary attributes."""
         self._database = database
 
+    def load_static_data(self):
+        """Read data into the cache.
+
+        This is used to read data from the database and store it in the cache.
+        """
+        self.get_aggregation_areas()
+        self.get_model_boundary()
+        self.get_model_grid()
+        self.get_obs_points()
+        if self._database.site.sfincs.slr_scenarios is not None:
+            self.get_slr_scn_names()
+        self.get_buildings()
+        self.get_property_types()
+
     @cache_method_wrapper
     def get_aggregation_areas(self) -> dict[str, gpd.GeoDataFrame]:
         """Get a list of the aggregation areas that are provided in the site configuration.

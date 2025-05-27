@@ -14,7 +14,6 @@ from geopandas import GeoDataFrame
 from plotly.express import line
 from plotly.express.colors import sample_colorscale
 
-from flood_adapt.config.config import Settings
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -123,11 +122,17 @@ class Database(IDatabase):
 
         # Initialize the different database objects
         self._static = DbsStatic(self)
-        self._events = DbsEvent(self)
+        self._events = DbsEvent(
+            self, standard_objects=self.site.standard_objects.events
+        )
         self._scenarios = DbsScenario(self)
-        self._strategies = DbsStrategy(self)
+        self._strategies = DbsStrategy(
+            self, standard_objects=self.site.standard_objects.strategies
+        )
         self._measures = DbsMeasure(self)
-        self._projections = DbsProjection(self)
+        self._projections = DbsProjection(
+            self, standard_objects=self.site.standard_objects.projections
+        )
         self._benefits = DbsBenefit(self)
 
         # Delete any unfinished/crashed scenario output
@@ -648,9 +653,6 @@ class Database(IDatabase):
             - does not have a corresponding input
 
         """
-        if not Settings().delete_crashed_runs:
-            return
-
         if not self.scenarios.output_path.is_dir():
             return
 
