@@ -34,6 +34,9 @@ website:
 
         - section: Scenarios
           href: examples/scenarios/index.qmd
+          contents:
+          - href: examples/scenarios/advanced_scenario.ipynb
+              text: "Advanced Scenario"
 
         - section: Benefits
           href: examples/benefits/index.qmd

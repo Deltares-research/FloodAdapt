@@ -34,7 +34,7 @@ Each notebook includes narrative explanations and inline code cells. You can cop
 - [5. Measures]() example description
 - [6. Strategies]() example description
 - [7. Database manipulation]() example description
-- [8. Complex scenario(s)]() example description
+- [8. Complex scenario(s)](scenarios/advanced_scenario.ipynb) Workflow to create an advanced FloodAdapt model.
 - [9. Event set / risk]() example description
 - [10. Benefits]() example description
 
