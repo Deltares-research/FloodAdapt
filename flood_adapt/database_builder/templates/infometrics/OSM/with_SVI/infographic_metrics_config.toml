@@ -9,6 +9,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('residential') AND `Inundation Depth` <= 0.25 AND `Total Damage` > 0"
 long_name = "Res buildings w/ minor flooding (#)"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "ResidentialMajorCount"
@@ -17,6 +18,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('residential') AND `Inundation Depth` <= 1.5 AND `Inundation Depth` > 0.25 AND `Total Damage` > 0"
 long_name = "Res buildings w/ major flooding (#)"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "ResidentialDestroyedCount"
@@ -25,6 +27,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('residential') AND `Inundation Depth` > 1.5 AND `Total Damage` > 0"
 long_name = "Res buildings destroyed (#)"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "CommercialMinorCount"
@@ -33,6 +36,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('commercial')  AND `Inundation Depth` <= 0.25 AND `Total Damage` > 0"
 long_name = "Minor Damaged Commercial Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "CommercialMajorCount"
@@ -41,6 +45,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('commercial')  AND `Inundation Depth` <= 1.5 AND `Inundation Depth` > 0.25 AND `Total Damage` > 0"
 long_name = "Major Damaged Commercial Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "CommercialDestroyedCount"
@@ -49,6 +54,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('commercial')  AND `Inundation Depth` > 1.5 AND `Total Damage` > 0"
 long_name = "Destroyed Commercial Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "IndustrialMinorCount"
@@ -57,6 +63,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('industrial')  AND `Inundation Depth` <= 0.25 AND `Total Damage` > 0"
 long_name = "Minor Damaged Industrial Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "IndustrialMajorCount"
@@ -65,6 +72,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('industrial')  AND `Inundation Depth` <= 1.5 AND `Inundation Depth` > 0.25 AND `Total Damage` > 0"
 long_name = "Major Damaged Industrial Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "IndustrialDestroyedCount"
@@ -73,6 +81,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('industrial')  AND `Inundation Depth` > 1.5 AND `Total Damage` > 0"
 long_name = "Destroyed Industrial Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 # Metrics used in people/vulnerability charts
 
@@ -83,6 +92,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('residential') AND `Inundation Depth` <= 1.5 AND `SVI` < SVI_threshold AND `Total Damage` > 0"
 long_name = "Flooded Low Vulnerability"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "FloodedHighVulnerability"
@@ -91,6 +101,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('residential') AND `Inundation Depth` <= 1.5 AND `SVI` >= SVI_threshold AND `Total Damage` > 0"
 long_name = "Flooded Homes - High SV (#)"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "DisplacedLowVulnerability"
@@ -99,6 +110,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('residential') AND `Inundation Depth` > 1.5 AND `SVI` < SVI_threshold AND `Total Damage` > 0"
 long_name = "Displaced Low Vulnerability"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "DisplacedHighVulnerability"
@@ -107,6 +119,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('residential') AND `Inundation Depth` > 1.5 AND `SVI` >= SVI_threshold AND `Total Damage` > 0"
 long_name = "Displaced High Vulnerability"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 # Metrics used in road impacts graph
 
@@ -117,6 +130,7 @@ select = "SUM(`Segment Length`)*0.001"
 filter = "`Inundation Depth` > 0.05"
 long_name = "Slightly flooded roads"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "MinorFloodedRoads"
@@ -125,6 +139,7 @@ select = "SUM(`Segment Length`)*0.001"
 filter = "`Inundation Depth` >= 0.1"
 long_name = "Minor flooded roads"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "MajorFloodedRoads"
@@ -133,6 +148,7 @@ select = "SUM(`Segment Length`)*0.001"
 filter = "`Inundation Depth` >= 0.25"
 long_name = "Major flooded roads"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "FullyFloodedRoads"
@@ -141,3 +157,4 @@ select = "SUM(`Segment Length`)*0.001"
 filter = "`Inundation Depth` >= 0.4"
 long_name = "Fully flooded roads"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"

@@ -7,6 +7,7 @@ select = "SUM(`Risk (EAD)`)"
 filter = ""
 long_name = "Expected Annual Damages"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "TotalDamageRP1"
@@ -15,6 +16,7 @@ select = "SUM(`Total Damage (1Y)`)"
 filter = ""
 long_name = "Total Damage (RP 1)"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "TotalDamageRP2"
@@ -23,6 +25,7 @@ select = "SUM(`Total Damage (2Y)`)"
 filter = ""
 long_name = "Total Damage (RP 2)"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "TotalDamageRP5"
@@ -31,6 +34,7 @@ select = "SUM(`Total Damage (5Y)`)"
 filter = ""
 long_name = "Total Damage (RP 5)"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "TotalDamageRP10"
@@ -39,6 +43,7 @@ select = "SUM(`Total Damage (10Y)`)"
 filter = ""
 long_name = "Total Damage (RP 10)"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "TotalDamageRP25"
@@ -47,6 +52,7 @@ select = "SUM(`Total Damage (25Y)`)"
 filter = ""
 long_name = "Total Damage (RP 25)"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "TotalDamageRP50"
@@ -55,6 +61,7 @@ select = "SUM(`Total Damage (50Y)`)"
 filter = ""
 long_name = "Total Damage (RP 50)"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "TotalDamageRP100"
@@ -63,3 +70,4 @@ select = "SUM(`Total Damage (100Y)`)"
 filter = ""
 long_name = "Total Damage (RP 100)"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
