@@ -66,6 +66,11 @@ class Site(BaseModel):
             "description": self.description,
             "lat": self.lat,
             "lon": self.lon,
+            "standard_objects": {
+                "events": self.standard_objects.events,
+                "projections": self.standard_objects.projections,
+                "strategies": self.standard_objects.strategies,
+            },
             "components": {},
         }
 

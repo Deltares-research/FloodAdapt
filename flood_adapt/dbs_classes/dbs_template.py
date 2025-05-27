@@ -1,7 +1,7 @@
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, Optional, TypeVar
 
 import tomli
 import tomli_w
@@ -18,12 +18,14 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
     dir_name: str
     _object_class: type[T_OBJECTMODEL]
 
-    def __init__(self, database: IDatabase):
+    def __init__(
+        self, database: IDatabase, standard_objects: Optional[list[str]] = None
+    ):
         """Initialize any necessary attributes."""
         self._database = database
         self.input_path = database.input_path / self.dir_name
         self.output_path = database.output_path / self.dir_name
-        self.standard_objects = []
+        self.standard_objects = standard_objects
 
     def get(self, name: str) -> T_OBJECTMODEL:
         """Return an object of the type of the database with the given name.
@@ -188,8 +190,8 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         bool
             True if the object is a standard object, False otherwise
         """
-        # If this function is not implemented for the object type, it cannot be a standard object.
-        # By default, it is not a standard object.
+        if self.standard_objects:
+            return name in self.standard_objects
         return False
 
     def check_higher_level_usage(self, name: str) -> list[str]:
