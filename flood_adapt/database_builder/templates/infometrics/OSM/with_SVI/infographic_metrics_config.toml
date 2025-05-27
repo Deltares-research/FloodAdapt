@@ -130,7 +130,7 @@ select = "SUM(`Segment Length`)*0.001"
 filter = "`Inundation Depth` > 0.05"
 long_name = "Slightly flooded roads"
 show_in_metrics_table = "False"
-show_in_metrics_map = "True"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "MinorFloodedRoads"
@@ -139,7 +139,7 @@ select = "SUM(`Segment Length`)*0.001"
 filter = "`Inundation Depth` >= 0.1"
 long_name = "Minor flooded roads"
 show_in_metrics_table = "False"
-show_in_metrics_map = "True"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "MajorFloodedRoads"
@@ -148,7 +148,7 @@ select = "SUM(`Segment Length`)*0.001"
 filter = "`Inundation Depth` >= 0.25"
 long_name = "Major flooded roads"
 show_in_metrics_table = "False"
-show_in_metrics_map = "True"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "FullyFloodedRoads"
@@ -157,4 +157,4 @@ select = "SUM(`Segment Length`)*0.001"
 filter = "`Inundation Depth` >= 0.4"
 long_name = "Fully flooded roads"
 show_in_metrics_table = "False"
-show_in_metrics_map = "True"
+show_in_metrics_map = "False"
