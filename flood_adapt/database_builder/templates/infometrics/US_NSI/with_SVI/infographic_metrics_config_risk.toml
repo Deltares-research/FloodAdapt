@@ -7,6 +7,8 @@ select = "COUNT(*)"
 filter = "`Exceedance Probability` > 50 AND `Primary Object Type` = 'RES'"
 long_name = "Homes likely to flood in 30-year period (#)"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
+
 
 [[queries]]
 name = "ImpactedHomes2Y"
@@ -16,6 +18,7 @@ filter = "`Inundation Depth (2Y)` >= 0.25 AND `Primary Object Type` = 'RES'"
 long_name = "Flooded homes RP2"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes2YHighSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 2-year event"
@@ -24,6 +27,7 @@ filter = "`Inundation Depth (2Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND 
 long_name = "Highly vulnerable flooded homes RP2"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes2YLowSVI"
 description = "Less-vulnerable homes impacted (Inundation Depth > 0.25) in the 2-year event"
@@ -31,6 +35,8 @@ select = "COUNT(*)"
 filter = "`Inundation Depth (2Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND `SVI` < SVI_threshold"
 long_name = "Less vulnerable flooded homes RP2"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
+
 
 [[queries]]
 name = "ImpactedHomes5Y"
@@ -40,6 +46,7 @@ filter = "`Inundation Depth (5Y)` >= 0.25 AND `Primary Object Type` = 'RES'"
 long_name = "Flooded homes RP5"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes5YHighSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 5-year event"
@@ -48,6 +55,7 @@ filter = "`Inundation Depth (5Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND 
 long_name = "Highly vulnerable flooded homes RP5"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes5YLowSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 5-year event"
@@ -55,6 +63,8 @@ select = "COUNT(*)"
 filter = "`Inundation Depth (5Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND `SVI` < SVI_threshold"
 long_name = "Less vulnerable flooded homes RP5"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
+
 
 [[queries]]
 name = "ImpactedHomes10Y"
@@ -64,6 +74,7 @@ filter = "`Inundation Depth (10Y)` >= 0.25 AND `Primary Object Type` = 'RES'"
 long_name = "Flooded homes RP10"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes10YHighSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 10-year event"
@@ -72,6 +83,7 @@ filter = "`Inundation Depth (10Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND
 long_name = "Highly vulnerable flooded homes RP10"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes10YLowSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 10-year event"
@@ -79,6 +91,8 @@ select = "COUNT(*)"
 filter = "`Inundation Depth (10Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND `SVI` < SVI_threshold"
 long_name = "Less vulnerable flooded homes RP10"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
+
 
 [[queries]]
 name = "ImpactedHomes25Y"
@@ -88,6 +102,7 @@ filter = "`Inundation Depth (25Y)` >= 0.25 AND `Primary Object Type` = 'RES'"
 long_name = "Flooded homes RP25"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes25YHighSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 25-year event"
@@ -96,6 +111,7 @@ filter = "`Inundation Depth (25Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND
 long_name = "Highly vulnerable flooded homes RP25"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes25YLowSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 25-year event"
@@ -103,6 +119,8 @@ select = "COUNT(*)"
 filter = "`Inundation Depth (25Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND `SVI` < SVI_threshold"
 long_name = "Less vulnerable flooded homes RP25"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
+
 
 [[queries]]
 name = "ImpactedHomes50Y"
@@ -112,6 +130,7 @@ filter = "`Inundation Depth (50Y)` >= 0.25 AND `Primary Object Type` = 'RES'"
 long_name = "Flooded homes RP50"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes50YHighSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 50-year event"
@@ -120,6 +139,7 @@ filter = "`Inundation Depth (50Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND
 long_name = "Highly vulnerable flooded homes RP50"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes50YLowSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 50-year event"
@@ -127,6 +147,8 @@ select = "COUNT(*)"
 filter = "`Inundation Depth (50Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND `SVI` < SVI_threshold"
 long_name = "Less vulnerable flooded homes RP50"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
+
 
 [[queries]]
 name = "ImpactedHomes100Y"
@@ -136,6 +158,7 @@ filter = "`Inundation Depth (100Y)` >= 0.25 AND `Primary Object Type` = 'RES'"
 long_name = "Flooded homes RP100"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes100YHighSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 100-year event"
@@ -144,6 +167,7 @@ filter = "`Inundation Depth (100Y)` >= 0.25 AND `Primary Object Type` = 'RES' AN
 long_name = "Highly vulnerable flooded homes RP100"
 show_in_metrics_table = "True"
 
+
 [[queries]]
 name = "ImpactedHomes100YLowSVI"
 description = "Highly vulnerable homes impacted (Inundation Depth > 0.25) in the 100-year event"
@@ -151,3 +175,5 @@ select = "COUNT(*)"
 filter = "`Inundation Depth (100Y)` >= 0.25 AND `Primary Object Type` = 'RES' AND `SVI` < SVI_threshold"
 long_name = "Less vulnerable flooded homes RP100"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
+
