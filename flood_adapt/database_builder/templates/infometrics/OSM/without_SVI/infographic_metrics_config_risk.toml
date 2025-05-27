@@ -7,6 +7,7 @@ select = "COUNT(*)"
 filter = "`Exceedance Probability` > 50 AND `Primary Object Type` = 'residential'"
 long_name = "Homes likely to flood in 30-year period (#)"
 show_in_metrics_table = "False"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "ImpactedHomes2Y"
@@ -15,6 +16,7 @@ select = "COUNT(*)"
 filter = "`Inundation Depth (2Y)` >= 0.1 AND `Primary Object Type` = 'residential'"
 long_name = "Flooded homes RP2"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "ImpactedHomes5Y"
@@ -23,6 +25,7 @@ select = "COUNT(*)"
 filter = "`Inundation Depth (5Y)` >= 0.1 AND `Primary Object Type` = 'residential'"
 long_name = "Flooded homes RP5"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "ImpactedHomes10Y"
