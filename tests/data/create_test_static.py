@@ -42,7 +42,7 @@ from flood_adapt.config.sfincs import (
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
-from flood_adapt.config.site import Site
+from flood_adapt.config.site import Site, StandardObjectModel
 from flood_adapt.objects.forcing.tide_gauge import (
     TideGauge,
     TideGaugeSource,
@@ -290,6 +290,14 @@ def create_sfincs_config() -> SfincsModel:
     return sfincs
 
 
+def create_standard_objects() -> StandardObjectModel:
+    return StandardObjectModel(
+        events=["test_set"],
+        strategies=["no_measures"],
+        projections=["current"],
+    )
+
+
 def create_site_config(
     database_path: Path,
     fiat: Optional[FiatModel] = None,
@@ -305,6 +313,7 @@ def create_site_config(
         description="Charleston, SC",
         lat=32.7765,
         lon=-79.9311,
+        standard_objects=create_standard_objects(),
         fiat=fiat,
         gui=gui,
         sfincs=sfincs,
