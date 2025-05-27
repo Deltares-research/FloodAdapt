@@ -46,7 +46,7 @@ class ScenarioRunner:
                 self._database.static.get_overland_sfincs_model(),
             ]
             for hazard in hazard_models:
-                if not hazard.has_run(self._scenario):
+                if not hazard.run_completed(self._scenario):
                     hazard.run(self._scenario)
                 else:
                     self.logger.info(
