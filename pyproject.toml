@@ -150,9 +150,3 @@ build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], 
 render-examples = { cmd = "quarto render ./docs/examples/**/*.ipynb ./docs/examples/**/*.qmd --execute" }
 open-docs = { cmd = "cmd.exe /c start docs/_site/index.html" }
 render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs", "build-interlinks"] }
-
-[tool.pixi.target.win-64.activation]
-scripts = [ "setup.bat" ]
-
-[tool.pixi.target.linux-64.activation]
-scripts = [ "setup.sh" ]
