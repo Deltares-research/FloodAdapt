@@ -52,8 +52,8 @@ def test_projection_interp_slr(test_fa):
     assert slr < 1.1
 
 
-def test_projection_plot_slr(test_db):
-    html_file_loc = test_db.plot_slr_scenarios()
+def test_projection_plot_slr(test_fa):
+    html_file_loc = test_fa.plot_slr_scenarios()
     assert Path(html_file_loc).is_file()
 
 
