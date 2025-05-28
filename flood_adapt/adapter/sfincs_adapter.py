@@ -1840,7 +1840,9 @@ class SfincsAdapter(IHazardAdapter):
             waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
 
             # If data is available, add to plot
-            fig.add_trace(px.line(waterlevel, color="#ea6404"))
+            fig.add_trace(
+                px.line(waterlevel, color_discrete_sequence=["#ea6404"]).data[0]
+            )
             fig["data"][0]["name"] = "model"
             fig["data"][1]["name"] = "measurement"
             fig.update_layout(showlegend=True)
