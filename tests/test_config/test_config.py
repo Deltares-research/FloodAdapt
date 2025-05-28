@@ -1,13 +1,24 @@
 import os
 from pathlib import Path
 from typing import Callable, Optional
-from unittest.mock import patch
 
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.config.config import DEFAULT_EXE_PATHS, DEFAULT_SYSTEM_FOLDER, Settings
+from flood_adapt.config.config import Settings
 from flood_adapt.misc.utils import modified_environ
+
+DEFAULT_SYSTEM_FOLDER = Path(__file__).parents[2] / "flood_adapt" / "system"
+DEFAULT_EXE_PATHS: dict[str, dict[str, Path]] = {
+    "windows": {
+        "sfincs": Path("win-64/sfincs/sfincs.exe"),
+        "fiat": Path("win-64/fiat/fiat.exe"),
+    },
+    "linux": {
+        "sfincs": Path("linux-64/sfincs/bin/sfincs"),
+        "fiat": Path("linux-64/fiat/fiat"),
+    },
+}
 
 
 class TestSettingsModel:
@@ -27,16 +38,12 @@ class TestSettingsModel:
     def _create_dummy_db(
         self, db_root: Path, name: str = "test", system: str = "Windows"
     ) -> tuple[Path, str]:
-        sfincs_rel = DEFAULT_EXE_PATHS[system.lower()]["sfincs"].relative_to(
-            DEFAULT_SYSTEM_FOLDER
-        )
+        sfincs_rel = DEFAULT_EXE_PATHS[system.lower()]["sfincs"]
         sfincs_bin = db_root / "system" / sfincs_rel
         sfincs_bin.parent.mkdir(parents=True)
         sfincs_bin.touch()
 
-        _fiat_rel = DEFAULT_EXE_PATHS[system.lower()]["fiat"].relative_to(
-            DEFAULT_SYSTEM_FOLDER
-        )
+        _fiat_rel = DEFAULT_EXE_PATHS[system.lower()]["fiat"]
         fiat_bin = db_root / "system" / _fiat_rel
         fiat_bin.parent.mkdir(parents=True)
         fiat_bin.touch()
@@ -62,18 +69,12 @@ class TestSettingsModel:
         assert settings.database_path == expected_root / expected_name
 
         if expected_sfincs is not None:
-            assert settings.sfincs_path == expected_sfincs
+            assert settings.sfincs_bin_path == expected_sfincs
             assert os.environ["SFINCS_BIN_PATH"] == str(expected_sfincs)
 
         if expected_fiat is not None:
-            assert settings.fiat_path == expected_fiat
+            assert settings.fiat_bin_path == expected_fiat
             assert os.environ["FIAT_BIN_PATH"] == str(expected_fiat)
-
-    @pytest.fixture()
-    def mock_system(self):
-        with patch("flood_adapt.config.config.system") as mock_system:
-            mock_system.return_value = "Windows"
-            yield mock_system
 
     @pytest.fixture(autouse=True, scope="class")
     def protect_external_settings(self):
@@ -105,10 +106,8 @@ class TestSettingsModel:
         reason="TODO: Add sfincs & fiat binaries for Linux & Darwin to the system folder in the test database"
     )
     @pytest.mark.parametrize("system", ["windows", "linux"])
-    def test_init_from_defaults_no_envvars(self, system: str, mock_system):
+    def test_init_from_defaults_no_envvars(self, system: str):
         # Arrange
-        mock_system.return_value = system
-
         # Act
         settings = Settings()
 
@@ -116,27 +115,14 @@ class TestSettingsModel:
         self._assert_settings(settings=settings)
 
     @pytest.mark.parametrize("system", ["windows", "linux"])
-    def test_init_from_args_no_envvars(self, system: str, create_dummy_db, mock_system):
+    def test_init_from_args_no_envvars(self, system: str, create_dummy_db):
         # Arrange
-        mock_system.return_value = system
         db_root, name = create_dummy_db(system=system)
-
-        sfincs_rel = DEFAULT_EXE_PATHS[system.lower()]["sfincs"].relative_to(
-            DEFAULT_SYSTEM_FOLDER
-        )
-        sfincs_bin = db_root / "system" / sfincs_rel
-
-        fiat_rel = DEFAULT_EXE_PATHS[system.lower()]["fiat"].relative_to(
-            DEFAULT_SYSTEM_FOLDER
-        )
-        fiat_bin = db_root / "system" / fiat_rel
 
         # Act
         settings = Settings(
             DATABASE_ROOT=db_root,
             DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs_bin,
-            FIAT_BIN_PATH=fiat_bin,
         )
 
         # Assert
@@ -144,16 +130,13 @@ class TestSettingsModel:
             settings=settings,
             expected_name=name,
             expected_root=db_root,
-            expected_sfincs=sfincs_bin,
-            expected_fiat=fiat_bin,
         )
 
     @pytest.mark.parametrize("system", ["windows", "linux"])
     def test_init_from_envvars_overwriting_defaults(
-        self, system: str, create_dummy_db: Callable, mock_system
+        self, system: str, create_dummy_db: Callable
     ):
         # Arrange
-        mock_system.return_value = system
         db_root, name = create_dummy_db(system=system)
 
         with modified_environ(
@@ -171,11 +154,8 @@ class TestSettingsModel:
             )
 
     @pytest.mark.parametrize("system", ["windows", "linux"])
-    def test_init_from_args_overwriting_envvars(
-        self, system: str, create_dummy_db, mock_system
-    ):
+    def test_init_from_args_overwriting_envvars(self, system: str, create_dummy_db):
         # Arrange
-        mock_system.return_value = system
         db_root, name = create_dummy_db(system=system)
 
         with modified_environ(
@@ -212,9 +192,8 @@ class TestSettingsModel:
     @pytest.mark.parametrize("system", ["windows", "linux"])
     @pytest.mark.parametrize("model", ["fiat", "sfincs"])
     def test_missing_model_binaries_raise_validation_error(
-        self, system: str, model: str, create_dummy_db, mock_system
+        self, system: str, model: str, create_dummy_db
     ):
-        mock_system.return_value = system
         db_root, name = create_dummy_db(system=system)
         non_existent_path = Path("doesnt_exist")
         with pytest.raises(ValidationError) as exc_info:
@@ -239,7 +218,7 @@ class TestSettingsModel:
             exc_info.value
         )
 
-    def test_read_settings_no_envvars(self, create_dummy_db, mock_system):
+    def test_read_settings_no_envvars(self, create_dummy_db):
         # Arrange
         db_root, name = create_dummy_db()
 
@@ -258,7 +237,7 @@ class TestSettingsModel:
             expected_name=name,
         )
 
-    def test_read_settings_overwrites_envvars(self, create_dummy_db, mock_system):
+    def test_read_settings_overwrites_envvars(self, create_dummy_db):
         # Arrange
         db_root, name = create_dummy_db()
 
@@ -281,9 +260,7 @@ class TestSettingsModel:
                 expected_name=name,
             )
 
-    def test_read_settings_missing_fields_filled_by_envvars(
-        self, create_dummy_db, mock_system
-    ):
+    def test_read_settings_missing_fields_filled_by_envvars(self, create_dummy_db):
         # Arrange
         db_root, name = create_dummy_db()
 
@@ -304,9 +281,7 @@ class TestSettingsModel:
                 expected_name=name,
             )
 
-    def test_creating_settings_object_changes_envvars(
-        self, create_dummy_db, mock_system
-    ):
+    def test_creating_settings_object_changes_envvars(self, create_dummy_db):
         # Arrange
         db_root1, name1 = create_dummy_db("root1", "name1")
         db_root2, name2 = create_dummy_db("root2", "name2")
