@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>💾 Event modifications in the database – Flood Adapt Documentation</title>
+<title>Event set creation for Risk Analysis – Flood Adapt Documentation</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,8 +64,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../examples/scenarios/index.html" rel="next">
-<link href="../../examples/events/historical_event.html" rel="prev">
+<link href="../../examples/benefits/index.html" rel="next">
+<link href="../../examples/scenarios/index.html" rel="prev">
 <link href="../../_static/logo.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -337,7 +337,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../examples/events/index.html">Events</a></li><li class="breadcrumb-item"><a href="../../examples/events/database_manipulation.html">Database Manipulation</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../examples/event_set/create_event_set.html">Event set for risk assessments</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -402,7 +402,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../examples/events/database_manipulation.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../examples/events/database_manipulation.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Database Manipulation</span></a>
   </div>
 </li>
@@ -430,18 +430,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#analyze-the-effect-of-different-rainfall-forcings" id="toc-analyze-the-effect-of-different-rainfall-forcings" class="nav-link active" data-scroll-target="#analyze-the-effect-of-different-rainfall-forcings">Analyze the effect of different rainfall forcings</a></li>
-  <li><a href="#delete-save-copy-edit" id="toc-delete-save-copy-edit" class="nav-link" data-scroll-target="#delete-save-copy-edit">Delete, Save, Copy, Edit</a></li>
+  <li><a href="#step-1.-setup-and-imports" id="toc-step-1.-setup-and-imports" class="nav-link active" data-scroll-target="#step-1.-setup-and-imports">⏱️ Step 1. Setup and Imports</a></li>
+  <li><a href="#step-2.-set-name-frequencies-and-parameters-to-build-subevents" id="toc-step-2.-set-name-frequencies-and-parameters-to-build-subevents" class="nav-link" data-scroll-target="#step-2.-set-name-frequencies-and-parameters-to-build-subevents">🗓️ Step 2. Set name, frequencies and parameters to build subevents</a></li>
+  <li><a href="#step-3.-create-subevents" id="toc-step-3.-create-subevents" class="nav-link" data-scroll-target="#step-3.-create-subevents">🧩 Step 3. Create subevents</a></li>
+  <li><a href="#step-4.-create-and-save-event-set" id="toc-step-4.-create-and-save-event-set" class="nav-link" data-scroll-target="#step-4.-create-and-save-event-set">💾 Step 4. Create and save event set</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/examples/events/database_manipulation.ipynb" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/examples/event_set/create_event_set.ipynb" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../examples/events/index.html">Events</a></li><li class="breadcrumb-item"><a href="../../examples/events/database_manipulation.html">Database Manipulation</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">💾 Event modifications in the database</h1>
+<h1 class="title"><strong>Event set creation for Risk Analysis</strong></h1>
 </div>
 
 
@@ -458,137 +460,177 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This notebook demonstrates how to manipulate event objects in a FloodAdapt database, including loading, creating, editing, copying, and deleting events.</p>
-<p>It is assumed that at the start of this notebook, you have a database and the events saved from the other event notebooks.</p>
-<div id="1" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> flood_adapt.objects.forcing <span class="im">as</span> f</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flood_adapt <span class="im">import</span> unit_system <span class="im">as</span> us</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flood_adapt <span class="im">import</span> FloodAdapt, Settings</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flood_adapt.objects <span class="im">import</span> HistoricalEvent</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flood_adapt.objects.forcing.time_frame <span class="im">import</span> TimeFrame</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup FloodAdapt</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>STATIC_DATA_DIR <span class="op">=</span> Path(<span class="st">"../../_data/examples/static-data"</span>).resolve()</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>settings <span class="op">=</span> Settings(</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    DATABASE_ROOT<span class="op">=</span>Path(<span class="st">"../../_data/examples"</span>).resolve(),</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    DATABASE_NAME<span class="op">=</span><span class="st">"charleston_test"</span>,</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This notebook explains how to create the input files for a risk analysis in the correct format and place them in the correct folder structure. For an explanation on how to derive the (compound) events and their (joint) probabilities, the reader is referred to the FloodAdapt Setup Guide <a href="../../3_setup_guide/risk_analysis.html">Event Set</a>.</p>
+<section id="step-1.-setup-and-imports" class="level2">
+<h2 class="anchored" data-anchor-id="step-1.-setup-and-imports">⏱️ Step 1. Setup and Imports</h2>
+<div id="2" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flood_adapt <span class="im">import</span> Settings, FloodAdapt</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flood_adapt <span class="im">import</span> unit_system <span class="im">as</span> us</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flood_adapt.config.sfincs <span class="im">import</span> RiverModel</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flood_adapt.objects <span class="im">import</span> (</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    EventSet,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    SubEventModel,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    SyntheticEvent,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flood_adapt.objects.forcing <span class="im">import</span> (</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    DischargeConstant,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    ForcingType,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    TimeFrame,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    ShapeType,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    TimeseriesFactory,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    RainfallSynthetic,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    SurgeModel,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    TideModel,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    WaterlevelSynthetic,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    WindConstant,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Configure FloodAdapt</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>settings <span class="op">=</span> Settings(</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    DATABASE_ROOT<span class="op">=</span>Path(<span class="st">"../../_data/examples"</span>).resolve(),</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    DATABASE_NAME<span class="op">=</span><span class="st">"charleston_test"</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="analyze-the-effect-of-different-rainfall-forcings" class="level2">
-<h2 class="anchored" data-anchor-id="analyze-the-effect-of-different-rainfall-forcings">Analyze the effect of different rainfall forcings</h2>
-<p>Lets say we want to analyze the effect of rainfall, how would you approach that:</p>
-<ol type="1">
-<li>Retrieve an event from the database</li>
-<li>Create the rainfall forcings you want to analyze</li>
-<li>Update the event’s name and rainfall forcings</li>
-<li>Save the updated event to the database</li>
-<li>Create scenarios using these events and run them (see this example) TODO</li>
-</ol>
-<p>Of course, this approach also works for analyzing the difference between any other forcings.</p>
-<div id="3" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Create an event or load it from the database</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># event = fa.get_event(...)</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>event_name<span class="op">=</span><span class="st">"database_manipulation_event"</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>event <span class="op">=</span> HistoricalEvent(</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span>event_name,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    description<span class="op">=</span><span class="st">"Some event description"</span>,</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>TimeFrame(</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        start_time<span class="op">=</span>datetime(<span class="dv">2020</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        end_time<span class="op">=</span>datetime(<span class="dv">2020</span>, <span class="dv">1</span>, <span class="dv">2</span>),</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [f.WaterlevelGauged()]</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>event)</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Create rainfall forcings</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>rainfall_constant <span class="op">=</span> f.RainfallConstant(</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    intensity<span class="op">=</span>us.UnitfulIntensity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr)</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>rainfall_synthetic <span class="op">=</span> f.RainfallSynthetic(</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    timeseries<span class="op">=</span>f.GaussianTimeseries(</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        duration<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Choose the middle of the time frame for peak time</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        peak_time<span class="op">=</span>us.UnitfulTime.from_timedelta(event.time.duration <span class="op">/</span> <span class="dv">2</span>), </span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>        peak_value<span class="op">=</span>us.UnitfulIntensity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr),</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>rainfall_csv <span class="op">=</span> f.RainfallCSV(path<span class="op">=</span>STATIC_DATA_DIR <span class="op">/</span> <span class="st">"rainfall.csv"</span>)</span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>rainfall_forcings <span class="op">=</span> [</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    (rainfall_constant, <span class="st">"constant"</span>),</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    (rainfall_synthetic, <span class="st">"synthetic"</span>),</span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    (rainfall_csv, <span class="st">"csv"</span>)</span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> forcing, fsource <span class="kw">in</span> rainfall_forcings:</span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. Update the event</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    event.forcings[f.ForcingType.RAINFALL] <span class="op">=</span> [forcing]</span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>    event.name <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>event_name<span class="sc">}</span><span class="ss">_rainfall_</span><span class="sc">{</span>fsource<span class="sc">}</span><span class="ss">"</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. Save the event</span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>    fa.save_event(event<span class="op">=</span>event)</span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>fa.get_events()[<span class="st">"name"</span>]</span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. Now the events can be used as the components for scenario creation. Similar to how the rainfall forcings are used to create various events</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="co"># For more information on how to create scenarios, see the scenario creation example</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="2">
-<pre><code>['database_manipulation_event',
- 'database_manipulation_event_rainfall_constant',
- 'database_manipulation_event_rainfall_csv',
- 'database_manipulation_event_rainfall_synthetic',
- 'event_set',
- 'test_set']</code></pre>
+</section>
+<section id="step-2.-set-name-frequencies-and-parameters-to-build-subevents" class="level2">
+<h2 class="anchored" data-anchor-id="step-2.-set-name-frequencies-and-parameters-to-build-subevents">🗓️ Step 2. Set name, frequencies and parameters to build subevents</h2>
+<p>Set the name of the event set and the parameters for the input events and their frequencies. In this example, we are using three synthetic events with different storm surge heights and peak rainfall intensities. Alternatively, historic gauged and ungauged events or hurricanes are possible as well, see <a href="../../examples/events/index.html">Events</a> for examples on how to set up different subevents.</p>
+<div id="4" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>name <span class="op">=</span> <span class="st">"event_set"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Peak surge values in the subevents. </span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Surge is timed to always peak at 24.8 hours after the event start, coinciding with high tide at a tidal phase of 0 and lasting for 10 hours.</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>surge_values <span class="op">=</span> [<span class="fl">2.5</span>, <span class="dv">1</span>, <span class="dv">3</span>] <span class="co"># in meters</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Peak rainfall intensities in the three subevents. </span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Rainfall is applied as a 6 hour "block" shape preceding the peak of the storm surge.</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>rainfall_values <span class="op">=</span> [<span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">5</span>] <span class="co"># in mm/hr</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Occurrence frequencies of the three events</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>freq <span class="op">=</span> [<span class="fl">0.1</span>, <span class="dv">2</span>, <span class="fl">0.05</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="step-3.-create-subevents" class="level2">
+<h2 class="anchored" data-anchor-id="step-3.-create-subevents">🧩 Step 3. Create subevents</h2>
+<p>Create the subevents from the parameters defined in Step 1.</p>
+<div id="6" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>events <span class="op">=</span> []</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>number <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> surge, rainfall <span class="kw">in</span> <span class="bu">zip</span>(surge_values, rainfall_values):</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    number <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    events.append(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        SyntheticEvent(</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>            name <span class="op">=</span> <span class="ss">f"subevent_</span><span class="sc">{</span>number<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>            time<span class="op">=</span>TimeFrame(start_time<span class="op">=</span>datetime(<span class="dv">2020</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>),end_time<span class="op">=</span>datetime(<span class="dv">2020</span>, <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>            forcings<span class="op">=</span>{</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                <span class="co"># constant wind speed 10 m/, direction 90 degrees (from the East)</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>                ForcingType.WIND: [         </span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                    WindConstant(</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                        speed<span class="op">=</span>us.UnitfulVelocity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesVelocity.mps), </span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                        direction<span class="op">=</span>us.UnitfulDirection(</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                            value<span class="op">=</span><span class="dv">90</span>, units<span class="op">=</span>us.UnitTypesDirection.degrees                  </span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                        ),</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                ],</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                <span class="co"># block rainfall starting 18h after event start, duration 6h, intensity 10 mm/hr </span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>                ForcingType.RAINFALL: [         </span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>                    RainfallSynthetic(</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                        timeseries <span class="op">=</span> TimeseriesFactory.from_args(             </span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                            shape_type<span class="op">=</span>ShapeType.block,</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                            duration<span class="op">=</span>us.UnitfulTime(</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>                                value<span class="op">=</span><span class="dv">6</span>, units<span class="op">=</span>us.UnitTypesTime.hours</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>                            ),</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>                            peak_time<span class="op">=</span>us.UnitfulTime(</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>                                value<span class="op">=</span><span class="dv">21</span>, units<span class="op">=</span>us.UnitTypesTime.hours</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>                            ),</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>                            peak_value<span class="op">=</span>us.UnitfulIntensity(</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>                                value<span class="op">=</span>rainfall, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>                            ),</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>                        )</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>                ],</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>                <span class="co"># constant discharge in Cooper River of 5000 cubic feet per second</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>                ForcingType.DISCHARGE: [         </span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>                    DischargeConstant(</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>                        river<span class="op">=</span>RiverModel(</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>                            name<span class="op">=</span><span class="st">"cooper"</span>,</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>                            description<span class="op">=</span><span class="st">"Cooper River"</span>,</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>                            x_coordinate<span class="op">=</span><span class="fl">595546.3</span>,</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>                            y_coordinate<span class="op">=</span><span class="fl">3675590.6</span>,</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>                            mean_discharge<span class="op">=</span>us.UnitfulDischarge(</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>                                value<span class="op">=</span><span class="dv">5000</span>, units<span class="op">=</span>us.UnitTypesDischarge.cfs</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>                            ),</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>                        ),</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>                        discharge<span class="op">=</span>us.UnitfulDischarge(</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>                            value<span class="op">=</span><span class="dv">5000</span>, units<span class="op">=</span>us.UnitTypesDischarge.cfs </span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>                        ),</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>                ],</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>                ForcingType.WATERLEVEL: [       </span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>                    WaterlevelSynthetic(</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>                        <span class="co"># storm surge with gaussian shape, duration 10 hours, peak at 24h after event start_time, peak height 3m</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>                        surge<span class="op">=</span>SurgeModel(       </span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>                            timeseries<span class="op">=</span>TimeseriesFactory.from_args(             </span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>                                shape_type<span class="op">=</span>ShapeType.gaussian,</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>                                duration<span class="op">=</span>us.UnitfulTime(</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>                                    value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesTime.hours</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>                                ),</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>                                peak_time<span class="op">=</span>us.UnitfulTime(</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>                                    value<span class="op">=</span><span class="dv">24</span>, units<span class="op">=</span>us.UnitTypesTime.hours</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>                                ),</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>                                peak_value<span class="op">=</span>us.UnitfulLength(</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>                                    value<span class="op">=</span>surge, units<span class="op">=</span>us.UnitTypesLength.meters</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>                                ),</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>                            )</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>                        ),</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>                        <span class="co"># tide with 1m amplitude and 12.4h duration</span></span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>                        tide<span class="op">=</span>TideModel(     </span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>                            harmonic_amplitude<span class="op">=</span>us.UnitfulLength(</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>                                value<span class="op">=</span><span class="dv">1</span>, units<span class="op">=</span>us.UnitTypesLength.meters</span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>                            ),</span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>                            harmonic_period<span class="op">=</span>us.UnitfulTime(</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>                                value<span class="op">=</span><span class="fl">12.4</span>, units<span class="op">=</span>us.UnitTypesTime.hours</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>                            ),</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>                            harmonic_phase<span class="op">=</span>us.UnitfulTime(</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>                                value<span class="op">=</span><span class="dv">0</span>, units<span class="op">=</span>us.UnitTypesTime.hours</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>                            ),</span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>                        ),</span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>                ],</span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>            },</span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(events)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[SyntheticEvent(name='subevent_1', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=10.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=2.5, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0), SyntheticEvent(name='subevent_2', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=15.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=1.0, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0), SyntheticEvent(name='subevent_3', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=5.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=3.0, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0)]</code></pre>
 </div>
 </div>
 </section>
-<section id="delete-save-copy-edit" class="level2">
-<h2 class="anchored" data-anchor-id="delete-save-copy-edit">Delete, Save, Copy, Edit</h2>
-<p>FloodAdapt supports deleting, editing, and copying objects by name, as shown below.</p>
-<p>It is possible to achieve the exact same goal in multiple ways:</p>
-<ol type="1">
-<li><code>event = fa.get_event(event_name)</code> -&gt; update <code>event</code> -&gt; <code>fa.delete_event(event_name)</code> -&gt; <code>fa.save_event(event)</code></li>
-<li><code>event = fa.get_event(event_name)</code> -&gt; update <code>event</code> -&gt; <code>fa.edit_event(event)</code></li>
-</ol>
-<div id="5" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Initial:"</span>, fa.get_events()[<span class="st">"name"</span>])</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy all events</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> fa.get_events()[<span class="st">"name"</span>]:</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    new_name <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">_copy"</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    fa.copy_event(old_name<span class="op">=</span>name, new_name<span class="op">=</span>new_name, new_description<span class="op">=</span><span class="ss">f"Copy of </span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Names after `Copy`:"</span>, fa.get_events()[<span class="st">"name"</span>])</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Delete all copied events</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> fa.get_events()[<span class="st">"name"</span>]:</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"copy"</span> <span class="kw">in</span> name:</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        fa.delete_event(name)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Names after `Delete`:"</span>, fa.get_events()[<span class="st">"name"</span>])</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Edit an existing event</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>unedited_event <span class="op">=</span> fa.get_event(event_name)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Description before `Edit`:"</span>, unedited_event.description)</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>unedited_event.description <span class="op">=</span> <span class="ss">f"Updated description"</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>unedited_event, overwrite<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>edited_event <span class="op">=</span> fa.get_event(event_name)</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Description after `Edit`:"</span>, edited_event.description)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="step-4.-create-and-save-event-set" class="level2">
+<h2 class="anchored" data-anchor-id="step-4.-create-and-save-event-set">💾 Step 4. Create and save event set</h2>
+<p>In this step, we create an event set from the <code>SubEvents</code> created in Step 2, load the actual <code>Event</code> objects into it, and save it to the database. This event set can then be used like any other event in a Scenario. Click <a href="../../examples/scenarios/index.html">here</a> to see examples on how to build a scenario.</p>
+<div id="8" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sub_events <span class="op">=</span> []</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> event, frequency <span class="kw">in</span> <span class="bu">zip</span>(events, freq):</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    sub_events.append(SubEventModel(name<span class="op">=</span>event.name, frequency<span class="op">=</span>frequency))</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>event_set <span class="op">=</span> EventSet(</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span>name,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    sub_events<span class="op">=</span>sub_events,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>event_set.load_sub_events(events)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>fa.save_event(event_set)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(fa.get_events()[<span class="st">"name"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Initial: ['database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_synthetic', 'event_set', 'test_set']
-Names after `Copy`: ['database_manipulation_event', 'database_manipulation_event_copy', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_constant_copy', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_csv_copy', 'database_manipulation_event_rainfall_synthetic', 'database_manipulation_event_rainfall_synthetic_copy', 'event_set', 'event_set_copy', 'test_set', 'test_set_copy']
-Names after `Delete`: ['database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_synthetic', 'event_set', 'test_set']
-Description before `Edit`: Some event description
-Description after `Edit`: Updated description</code></pre>
+<pre><code>['event_set', 'test_set']</code></pre>
 </div>
 </div>
 
@@ -1010,13 +1052,13 @@ Description after `Edit`: Updated description</code></pre>
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../../examples/events/historical_event.html" class="pagination-link" aria-label="Historical Event">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Historical Event</span>
+      <a href="../../examples/scenarios/index.html" class="pagination-link" aria-label="Scenarios">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Scenarios</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../../examples/scenarios/index.html" class="pagination-link" aria-label="Scenarios">
-        <span class="nav-page-text">Scenarios</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../../examples/benefits/index.html" class="pagination-link" aria-label="Benefits">
+        <span class="nav-page-text">Benefits</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
@@ -1028,7 +1070,7 @@ Description after `Edit`: Updated description</code></pre>
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/examples/events/database_manipulation.ipynb" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/examples/event_set/create_event_set.ipynb" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>
