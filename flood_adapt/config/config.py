@@ -1,5 +1,6 @@
 from os import environ, listdir
 from pathlib import Path
+from typing import Optional
 
 import tomli
 import tomli_w
@@ -97,13 +98,15 @@ class Settings(BaseSettings):
         exclude=True,
     )
 
-    sfincs_bin_path: Path = Field(
+    sfincs_bin_path: Optional[Path] = Field(
+        default=None,
         alias="SFINCS_BIN_PATH",  # environment variable: SFINCS_BIN_PATH
         description="The path of the sfincs binary.",
         exclude=True,
     )
 
-    fiat_bin_path: Path = Field(
+    fiat_bin_path: Optional[Path] = Field(
+        default=None,
         alias="FIAT_BIN_PATH",  # environment variable: FIAT_BIN_PATH
         description="The path of the fiat binary.",
         exclude=True,
