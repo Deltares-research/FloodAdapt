@@ -33,7 +33,6 @@ website:
               text: "Database Manipulation"
 
         - section: Scenarios
-          href: examples/scenarios/index.qmd
-
+          href: examples/scenarios/simple_scenario.ipynb
         - section: Benefits
           href: examples/benefits/index.qmd

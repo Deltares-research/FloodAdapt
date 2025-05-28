@@ -28,7 +28,7 @@ Each notebook includes narrative explanations and inline code cells. You can cop
 ## Examples
 
 - [1. Database Builder]() example description
-- [2. Simple Scenario]() example description
+- [2. Simple Scenario](scenario/simple_scenario.ipynb) Workflow how to build a simple FloodAdapt model.
 - [3. Events ](events/index.qmd) How to manage hazard model configuration with Events.
 - [4. Projection ]() example description
 - [5. Measures]() example description
