@@ -176,4 +176,3 @@ filter = "`Inundation Depth (100Y)` >= 0.25 AND `Primary Object Type` = 'RES' AN
 long_name = "Less vulnerable flooded homes RP100"
 show_in_metrics_table = "False"
 show_in_metrics_map = "True"
-
