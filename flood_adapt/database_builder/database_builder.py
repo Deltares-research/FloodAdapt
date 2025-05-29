@@ -1280,9 +1280,9 @@ class DatabaseBuilder:
             relative_to_year=self.config.slr_scenarios.relative_to_year,
         )
 
-    def create_observation_points(self) -> list[ObsPointModel]:
+    def create_observation_points(self) -> Union[list[ObsPointModel], None]:
         if self.config.obs_point is None:
-            return []
+            return None
 
         self.logger.info("Observation points were provided in the config file.")
         return self.config.obs_point
