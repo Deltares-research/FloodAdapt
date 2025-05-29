@@ -209,7 +209,7 @@ class FiatModel(BaseModel):
     config: FiatConfigModel
 
     benefits: Optional[BenefitsModel] = None
-    risk: Optional[RiskModel] = None
+    risk: Optional[RiskModel] = RiskModel()
 
     @staticmethod
     def read_toml(path: Path) -> "FiatModel":
