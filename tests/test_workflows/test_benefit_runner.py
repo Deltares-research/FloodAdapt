@@ -41,7 +41,7 @@ class TestBenefitScenariosNotCreated:
         self, benefit_obj_and_runner: tuple[Benefit, BenefitRunner]
     ):
         benefit_obj, runner = benefit_obj_and_runner
-        scenarios = runner.check_scenarios()
+        scenarios = runner.scenarios
         assert isinstance(scenarios, pd.DataFrame)
         assert len(scenarios) == 4
         assert "No" not in scenarios["scenario created"].to_list()
@@ -90,10 +90,9 @@ class TestBenefitScenariosNotCreated:
         # Delete one of the scenarios
         to_delete = (
             runner.database.scenarios.input_path
-            / runner.check_scenarios()["scenario created"][0]
+            / runner.scenarios["scenario created"][0]
         )
         shutil.rmtree(to_delete)
-        runner.check_scenarios()
 
         with pytest.raises(RuntimeError) as exception_info:
             runner.run_cost_benefit()
@@ -145,7 +144,7 @@ class TestBenefitScenariosCreated:
         self, benefit_obj_and_runner: tuple[Benefit, BenefitRunner]
     ):
         benefit_obj, runner = benefit_obj_and_runner
-        scenarios = runner.check_scenarios()
+        scenarios = runner.scenarios
         assert isinstance(scenarios, pd.DataFrame)
         assert len(scenarios) == 4
         assert "No" not in scenarios["scenario created"].to_list()
@@ -284,7 +283,7 @@ class TestBenefitScenariosRun:
     ):
         benefit_obj, aggrs, runner = prepare_outputs
 
-        scenarios = runner.check_scenarios()
+        scenarios = runner.scenarios
         assert isinstance(scenarios, pd.DataFrame)
         assert len(scenarios) == 4
         assert "No" not in scenarios["scenario created"].to_list()
