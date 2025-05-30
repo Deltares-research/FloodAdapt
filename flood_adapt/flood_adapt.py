@@ -1164,7 +1164,7 @@ class FloodAdapt:
             A dataframe with the scenarios needed for this benefit assessment run.
         """
         runner = BenefitRunner(self.database, benefit=benefit)
-        return runner.check_scenarios()
+        return runner.scenarios
 
     def create_benefit_scenarios(self, benefit: Benefit) -> None:
         """Create the benefit scenarios.

@@ -169,8 +169,6 @@ class BenefitRunner:
         ----------
         benefit : Benefit
         """
-        self.check_scenarios()
-
         # Iterate through the scenarios needed and create them if not existing
         for _, row in self.scenarios.iterrows():
             if row["scenario created"] == "No":
@@ -187,9 +185,6 @@ class BenefitRunner:
                         strategy=row["strategy"],
                     )
                     self.database.scenarios.save(scenario)
-
-        # Update the scenarios check
-        self.check_scenarios()
 
     def ready_to_run(self) -> bool:
         """Check if all the required scenarios have already been run.
