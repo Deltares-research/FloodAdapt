@@ -8,7 +8,6 @@ from pydantic import ValidationError
 from flood_adapt.config.config import Settings
 from flood_adapt.misc.utils import modified_environ
 
-DEFAULT_SYSTEM_FOLDER = Path(__file__).parents[2] / "flood_adapt" / "system"
 DEFAULT_EXE_PATHS: dict[str, dict[str, Path]] = {
     "windows": {
         "sfincs": Path("win-64/sfincs/sfincs.exe"),
