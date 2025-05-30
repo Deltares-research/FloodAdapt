@@ -102,6 +102,9 @@ addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-
 testpaths = ["tests"]
 
 ### pixi ###
+[tool.pixi.feature.build.pypi-dependencies]
+flood-adapt = { path = "." }
+
 [tool.pixi.feature.py312.dependencies]
 python = "3.12.*"
 
