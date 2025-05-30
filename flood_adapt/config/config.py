@@ -40,19 +40,19 @@ class Settings(BaseSettings):
     Attributes
     ----------
     database_name : str
-        The name of the database.
+        The name of the database. Alias: `DATABASE_NAME` (environment variable).
     database_root : Path
-        The root directory of the database.
+        The root directory of the database. Alias: `DATABASE_ROOT` (environment variable).
     delete_crashed_runs : bool
-        Whether to delete crashed/corrupted runs immediately after they are detected.
-    sfincs_bin_path : Path
-        The path to the SFINCS binary.
-    fiat_bin_path : Path
-        The path to the FIAT binary.
+        Whether to delete crashed/corrupted runs immediately after they are detected. Alias: `DELETE_CRASHED_RUNS` (environment variable).
     validate_allowed_forcings : bool
-        Whether to validate the forcing types and sources against the allowed forcings in the event model.
-    validate_bin_paths : bool
-        Whether to validate the existence of the paths to the SFINCS and FIAT binaries.
+        Whether to validate the forcing types and sources against the allowed forcings in the event model. Alias: `VALIDATE_ALLOWED_FORCINGS` (environment variable).
+    validate_binaries : bool
+        Whether to validate the existence of the paths to the SFINCS and FIAT binaries. Alias: `VALIDATE_BINARIES` (environment variable).
+    sfincs_bin_path : Path
+        The path to the SFINCS binary. Alias: `SFINCS_BIN_PATH` (environment variable).
+    fiat_bin_path : Path
+        The path to the FIAT binary. Alias: `FIAT_BIN_PATH` (environment variable).
 
     Properties
     ----------
@@ -91,7 +91,7 @@ class Settings(BaseSettings):
         description="Whether to validate the forcing types and sources against the allowed forcings in the event model.",
         exclude=True,
     )
-    validate_bin_paths: bool = Field(
+    validate_binaries: bool = Field(
         alias="VALIDATE_BINARIES",  # environment variable: VALIDATE_BINARIES
         default=False,
         description="Whether to validate the existence of the paths to the SFINCS and FIAT binaries.",
@@ -120,7 +120,7 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_settings(self):
         self._validate_database_path()
-        if self.validate_bin_paths:
+        if self.validate_binaries:
             self._validate_fiat_path()
             self._validate_sfincs_path()
         self._update_environment_variables()
@@ -140,8 +140,8 @@ class Settings(BaseSettings):
         else:
             environ.pop("VALIDATE_ALLOWED_FORCINGS", None)
 
-        if self.validate_bin_paths:
-            environ["VALIDATE_BINARIES"] = str(self.validate_bin_paths)
+        if self.validate_binaries:
+            environ["VALIDATE_BINARIES"] = str(self.validate_binaries)
             environ["SFINCS_BIN_PATH"] = str(self.sfincs_bin_path)
             environ["FIAT_BIN_PATH"] = str(self.fiat_bin_path)
         else:

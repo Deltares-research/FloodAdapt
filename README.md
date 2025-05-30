@@ -59,8 +59,6 @@ Settings(
     SFINCS_BIN_PATH=sfincs_bin,
     FIAT_BIN_PATH=fiat_path,
     VALIDATE_BINARIES=True,
-    VALIDATE_ALLOWED_FORCINGS=True,
-    DELETE_CRASHED_RUNS=True,
 )
 ```
 

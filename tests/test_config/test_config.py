@@ -320,7 +320,7 @@ class TestSettingsModel:
 
             assert not settings.delete_crashed_runs
             assert not settings.validate_allowed_forcings
-            assert not settings.validate_bin_paths
+            assert not settings.validate_binaries
             assert not os.getenv("DELETE_CRASHED_RUNS")
             assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert not os.getenv("VALIDATE_BINARIES")
@@ -328,7 +328,7 @@ class TestSettingsModel:
             settings2 = Settings()
             assert not settings2.delete_crashed_runs
             assert not settings2.validate_allowed_forcings
-            assert not settings2.validate_bin_paths
+            assert not settings2.validate_binaries
             assert not os.getenv("DELETE_CRASHED_RUNS")
             assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert not os.getenv("VALIDATE_BINARIES")
@@ -343,7 +343,7 @@ class TestSettingsModel:
 
             assert settings.delete_crashed_runs
             assert settings.validate_allowed_forcings
-            assert settings.validate_bin_paths
+            assert settings.validate_binaries
             assert os.getenv("DELETE_CRASHED_RUNS")
             assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert os.getenv("VALIDATE_BINARIES")
@@ -351,7 +351,7 @@ class TestSettingsModel:
             settings2 = Settings()
             assert settings2.delete_crashed_runs
             assert settings2.validate_allowed_forcings
-            assert settings2.validate_bin_paths
+            assert settings2.validate_binaries
             assert os.getenv("DELETE_CRASHED_RUNS")
             assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert os.getenv("VALIDATE_BINARIES")
