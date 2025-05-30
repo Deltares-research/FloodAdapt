@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
+from dotenv import load_dotenv
 
 from flood_adapt import __path__
 from flood_adapt.config.config import Settings
@@ -76,6 +77,8 @@ def restore_db_from_snapshot():
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
+    load_dotenv()
+
     settings = Settings(
         DATABASE_ROOT=src_dir.parents[1] / "Database",
         DATABASE_NAME="charleston_test",

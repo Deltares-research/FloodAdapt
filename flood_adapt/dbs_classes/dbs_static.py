@@ -253,7 +253,7 @@ class DbsStatic(IDbsStatic):
         with FiatAdapter(
             model_root=template_path,
             config=self._database.site.fiat.config,
-            exe_path=Settings().fiat_path,
+            exe_path=Settings().fiat_bin_path,
             delete_crashed_runs=Settings().delete_crashed_runs,
             config_base_path=self._database.static_path,
         ) as fm:
