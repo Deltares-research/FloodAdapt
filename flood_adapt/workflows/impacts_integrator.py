@@ -26,9 +26,12 @@ class Impacts(DatabaseUser):
         self.name = scenario.name
         self.scenario = scenario
         self.site_info = self.database.site
-        self.models = [
-            self.database.static.get_fiat_model()
-        ]  # for now only FIAT adapter
+
+    @property
+    def models(self):
+        """Return the list of impact models."""
+        models = [self.database.static.get_fiat_model()]  # for now only FIAT adapter
+        return models
 
     @property
     def hazard(self) -> FloodMap:
