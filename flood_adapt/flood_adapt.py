@@ -1189,7 +1189,7 @@ class FloodAdapt:
             benefit_name = [name]
         for name in benefit_name:
             benefit = self.database.benefits.get(name)
-            runner = BenefitRunner(self, benefit=benefit)
+            runner = BenefitRunner(self.database, benefit=benefit)
             runner.run_cost_benefit()
 
     def get_aggregated_benefits(self, name: str) -> dict[str, gpd.GeoDataFrame]:
