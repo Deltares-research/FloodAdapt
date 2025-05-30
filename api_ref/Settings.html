@@ -837,31 +837,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <dl>
 <dt><code><span class="parameter-name"><strong>database_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
-<p>The name of the database.</p>
+<p>The name of the database. Alias: <code>DATABASE_NAME</code> (environment variable).</p>
 </dd>
 <dt><code><span class="parameter-name"><strong>database_root</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
 <dd>
-<p>The root directory of the database.</p>
+<p>The root directory of the database. Alias: <code>DATABASE_ROOT</code> (environment variable).</p>
 </dd>
 <dt><code><span class="parameter-name"><strong>delete_crashed_runs</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
 <dd>
-<p>Whether to delete crashed/corrupted runs immediately after they are detected.</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>sfincs_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
-<dd>
-<p>The path to the SFINCS binary.</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>fiat_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
-<dd>
-<p>The path to the FIAT binary.</p>
+<p>Whether to delete crashed/corrupted runs immediately after they are detected. Alias: <code>DELETE_CRASHED_RUNS</code> (environment variable).</p>
 </dd>
 <dt><code><span class="parameter-name"><strong>validate_allowed_forcings</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
 <dd>
-<p>Whether to validate the forcing types and sources against the allowed forcings in the event model.</p>
+<p>Whether to validate the forcing types and sources against the allowed forcings in the event model. Alias: <code>VALIDATE_ALLOWED_FORCINGS</code> (environment variable).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>validate_bin_paths</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>validate_binaries</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
 <dd>
-<p>Whether to validate the existence of the paths to the SFINCS and FIAT binaries.</p>
+<p>Whether to validate the existence of the paths to the SFINCS and FIAT binaries. Alias: <code>VALIDATE_BINARIES</code> (environment variable).</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>sfincs_bin_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
+<dd>
+<p>The path to the SFINCS binary. Alias: <code>SFINCS_BIN_PATH</code> (environment variable).</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>fiat_bin_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
+<dd>
+<p>The path to the FIAT binary. Alias: <code>FIAT_BIN_PATH</code> (environment variable).</p>
 </dd>
 </dl>
 </section>
