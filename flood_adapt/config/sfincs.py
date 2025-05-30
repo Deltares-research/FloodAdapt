@@ -290,22 +290,22 @@ class SlrScenariosModel(BaseModel):
         _units = df["units"].iloc[0]
         _units = us.UnitTypesLength(_units)
 
-        if "Year" not in df.columns:
-            raise ValueError(f"Expected column `Year` in {self.file}.")
+        if "year" not in df.columns:
+            raise ValueError(f"Expected column `year` in {self.file}.")
 
         if (
-            self.relative_to_year > df["Year"].max()
-            or self.relative_to_year < df["Year"].min()
+            self.relative_to_year > df["year"].max()
+            or self.relative_to_year < df["year"].min()
         ):
             raise ValueError(
                 f"The reference year {self.relative_to_year} is outside the range of the available SLR scenarios"
             )
 
         for scn in scenario_names:
-            ref_slr = np.interp(self.relative_to_year, df["Year"], df[scn])
+            ref_slr = np.interp(self.relative_to_year, df["year"], df[scn])
             df[scn] -= ref_slr
 
-        df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
+        df = df.drop(columns="units").melt(id_vars=["year"]).reset_index(drop=True)
         # convert to units used in GUI
         conversion_factor = us.UnitfulLength(value=1.0, units=_units).convert(units)
         df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
@@ -323,7 +323,7 @@ class SlrScenariosModel(BaseModel):
         )
         fig = line(
             df,
-            x="Year",
+            x="year",
             y=f"Sea level rise [{units.value}]",
             color="Scenario",
             color_discrete_sequence=colors,
@@ -343,7 +343,7 @@ class SlrScenariosModel(BaseModel):
             legend={"entrywidthmode": "fraction", "entrywidth": 0.2},
             yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
             xaxis_title=None,
-            xaxis_range=[self.relative_to_year, df["Year"].max()],
+            xaxis_range=[self.relative_to_year, df["year"].max()],
             legend_title=None,
             # paper_bgcolor="#3A3A3A",
             # plot_bgcolor="#131313",
