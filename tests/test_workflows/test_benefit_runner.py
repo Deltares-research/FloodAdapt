@@ -128,8 +128,9 @@ class TestBenefitScenariosCreated:
         benefit = Benefit.load_file(benefit_path)
 
         # Create missing scenarios
-        test_db.create_benefit_scenarios(benefit)
-        runner = BenefitRunner(test_db, benefit=benefit)
+        runner = BenefitRunner(test_db, benefit)
+        runner.create_benefit_scenarios()
+
         yield benefit, runner
 
     # When benefit analysis is not run yet, the has_run_check method should return False
@@ -193,10 +194,8 @@ class TestBenefitScenariosRun:
         )
 
         benefit = Benefit.load_file(benefit_path)
-        # Create missing scenarios
-        test_db.create_benefit_scenarios(benefit)
-
-        runner = BenefitRunner(test_db, benefit=benefit)
+        runner = BenefitRunner(test_db, benefit)
+        runner.create_benefit_scenarios()
 
         # Create dummy results to use for benefit analysis
         damages_dummy = {

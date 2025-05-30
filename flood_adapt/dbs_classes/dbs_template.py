@@ -8,6 +8,7 @@ import tomli_w
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
+from flood_adapt.misc.exceptions import DatabaseError
 from flood_adapt.objects.object_model import Object
 
 T_OBJECTMODEL = TypeVar("T_OBJECTMODEL", bound=Object)
@@ -45,7 +46,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         # Check if the object exists
         if not Path(full_path).is_file():
-            raise ValueError(f"{self.display_name}: '{name}' does not exist.")
+            raise DatabaseError(f"{self.display_name}: '{name}' does not exist.")
 
         # Load and return the object
         return self._object_class.load_file(full_path)
@@ -121,7 +122,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Raises
         ------
-        ValueError
+        DatabaseError
             Raise error if name is already in use.
         """
         self._validate_to_save(object_model, overwrite=overwrite)
@@ -148,18 +149,18 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Raises
         ------
-        ValueError
+        DatabaseError
             Raise error if object to be deleted is already in use.
         """
         # Check if the object is a standard object. If it is, raise an error
         if self._check_standard_objects(name):
-            raise ValueError(
+            raise DatabaseError(
                 f"'{name}' cannot be deleted/modified since it is a standard {self.display_name}."
             )
 
         # Check if object is used in a higher level object. If it is, raise an error
         if used_in := self.check_higher_level_usage(name):
-            raise ValueError(
+            raise DatabaseError(
                 f"{self.display_name}: '{name}' cannot be deleted/modified since it is already used in: {', '.join(used_in)}"
             )
 
@@ -262,7 +263,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Raises
         ------
-        ValueError
+        DatabaseError
             Raise error if name is already in use.
         """
         # Check if the object exists
@@ -273,6 +274,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         if overwrite and object_exists:
             self.delete(object_model.name, toml_only=True)
         elif not overwrite and object_exists:
-            raise ValueError(
+            raise DatabaseError(
                 f"'{object_model.name}' name is already used by another {self.display_name.lower()}. Choose a different name"
             )

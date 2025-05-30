@@ -4,6 +4,7 @@ from typing import Any
 import geopandas as gpd
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
+from flood_adapt.misc.exceptions import DatabaseError
 from flood_adapt.misc.utils import resolve_filepath
 from flood_adapt.objects.measures.measure_factory import MeasureFactory
 from flood_adapt.objects.measures.measures import Measure
@@ -32,7 +33,7 @@ class DbsMeasure(DbsTemplate[Measure]):
 
         # Check if the object exists
         if not Path(full_path).is_file():
-            raise ValueError(f"{self.display_name}: '{name}' does not exist.")
+            raise DatabaseError(f"{self.display_name}: '{name}' does not exist.")
 
         # Load and return the object
         return MeasureFactory.get_measure_object(full_path)
@@ -64,14 +65,14 @@ class DbsMeasure(DbsTemplate[Measure]):
                     obj.aggregation_area_type
                     not in self._database.static.get_aggregation_areas()
                 ):
-                    raise ValueError(
+                    raise DatabaseError(
                         f"Aggregation area type {obj.aggregation_area_type} for measure {obj.name} does not exist."
                     )
                 gdf = self._database.static.get_aggregation_areas()[
                     obj.aggregation_area_type
                 ]
                 if obj.aggregation_area_name not in gdf["name"].to_numpy():
-                    raise ValueError(
+                    raise DatabaseError(
                         f"Aggregation area name {obj.aggregation_area_name} for measure {obj.name} does not exist."
                     )
                 geometries.append(gdf.loc[gdf["name"] == obj.aggregation_area_name, :])
