@@ -335,7 +335,7 @@ class Database(IDatabase):
         benefit : Benefit
         """
         runner = BenefitRunner(self, benefit=benefit)
-        return runner.check_scenarios()
+        return runner.scenarios
 
     def create_benefit_scenarios(self, benefit: Benefit) -> None:
         """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already.
@@ -345,7 +345,6 @@ class Database(IDatabase):
         benefit : Benefit
         """
         runner = BenefitRunner(self, benefit=benefit)
-        runner.check_scenarios()
 
         # Iterate through the scenarios needed and create them if not existing
         for index, row in runner.scenarios.iterrows():
@@ -367,9 +366,6 @@ class Database(IDatabase):
                         # some other error was raised, so we re-raise it
                         raise e
                     # otherwise, if it already exists and we dont need to save it, we can just continue
-
-        # Update the scenarios check
-        runner.check_scenarios()
 
     def run_benefit(self, benefit_name: Union[str, list[str]]) -> None:
         """Run a (cost-)benefit analysis.
