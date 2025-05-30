@@ -179,6 +179,7 @@ def create_projections():
                 units=us.UnitTypesLength.feet,
                 type=VerticalReference.floodmap,
             ),
+            new_development_shapefile=str(DATA_DIR / "new_areas.geojson"),
         ),
     )
 
