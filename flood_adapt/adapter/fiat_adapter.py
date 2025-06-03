@@ -85,7 +85,7 @@ class FiatAdapter(IImpactAdapter):
     # TODO deal with all the relative paths for the files used
     # TODO IImpactAdapter and general Adapter class should NOT use the database
 
-    _model: FiatModel  # hydroMT-FIAT model
+    _model: Optional[FiatModel] = None
     config: Optional[FiatConfigModel] = None
     exe_path: Optional[os.PathLike] = None
     fiat_columns: FiatColumns
@@ -106,20 +106,27 @@ class FiatAdapter(IImpactAdapter):
         self.config_base_path = config_base_path
         self.exe_path = exe_path
         self.delete_crashed_runs = delete_crashed_runs
-        self._model = FiatModel(root=str(model_root.resolve()), mode="r")
-        self._model.read()
+        self._model_root = str(model_root.resolve())
         self.fiat_columns = _FIAT_COLUMNS
         self.impact_columns = _IMPACT_COLUMNS  # columns of FA impact output
 
     @property
+    def model(self) -> FiatModel:
+        """Lazily load and cache the FiatModel."""
+        if self._model is None:
+            self._model = FiatModel(root=self._model_root, mode="r")
+            self._model.read()
+        return self._model
+
+    @property
     def model_root(self):
-        return Path(self._model.root)
+        return Path(self.model.root)
 
     @property
     def damage_types(self):
         """Get the damage types that are present in the exposure."""
         types = []
-        for col in self._model.exposure.exposure_db.columns:
+        for col in self.model.exposure.exposure_db.columns:
             if matches_pattern(col, self.fiat_columns.damage_function):
                 name = extract_variables(col, self.fiat_columns.damage_function)["name"]
                 types.append(name)
@@ -127,9 +134,9 @@ class FiatAdapter(IImpactAdapter):
 
     def read(self, path: Path) -> None:
         """Read the fiat model from the current model root."""
-        if Path(self._model.root).resolve() != Path(path).resolve():
-            self._model.set_root(root=str(path), mode="r")
-        self._model.read()
+        if Path(self.model.root).resolve() != Path(path).resolve():
+            self.model.set_root(root=str(path), mode="r")
+        self.model.read()
 
     def write(self, path_out: Union[str, os.PathLike], overwrite: bool = True) -> None:
         """Write the fiat model configuration to a directory."""
@@ -141,8 +148,8 @@ class FiatAdapter(IImpactAdapter):
 
         write_mode = "w+" if overwrite else "w"
         with cd(path_out):
-            self._model.set_root(root=str(path_out), mode=write_mode)
-            self._model.write()
+            self.model.set_root(root=str(path_out), mode=write_mode)
+            self.model.write()
 
     def close_files(self):
         """Close all open files and clean up file handles."""
@@ -206,7 +213,7 @@ class FiatAdapter(IImpactAdapter):
             True if fiat has run, False if something went wrong
         """
         log_file = self.model_root.joinpath(
-            self._model.config["output"]["path"], "fiat.log"
+            self.model.config["output"]["path"], "fiat.log"
         )
         if not log_file.exists():
             return False
@@ -365,13 +372,13 @@ class FiatAdapter(IImpactAdapter):
                 The contents of the output CSV file.
         """
         # Get output path
-        outputs_path = self.model_root.joinpath(self._model.config["output"]["path"])
+        outputs_path = self.model_root.joinpath(self.model.config["output"]["path"])
 
         # Get all csvs and concatenate them in a single table
         csv_outputs_df = []
-        for output_csv in self._model.config["output"]["csv"]:
+        for output_csv in self.model.config["output"]["csv"]:
             csv_path = outputs_path.joinpath(
-                self._model.config["output"]["csv"][output_csv]
+                self.model.config["output"]["csv"][output_csv]
             )
             output_csv_df = pd.read_csv(csv_path)
             csv_outputs_df.append(output_csv_df)
@@ -700,9 +707,9 @@ class FiatAdapter(IImpactAdapter):
         self.logger.info(f"Setting hazard to the {map_type} map {map_fn}")
         # Add the floodmap data to a data catalog with the unit conversion
         wl_current_units = us.UnitfulLength(value=1.0, units=units)
-        conversion_factor = wl_current_units.convert(self._model.exposure.unit)
+        conversion_factor = wl_current_units.convert(self.model.exposure.unit)
 
-        self._model.setup_hazard(
+        self.model.setup_hazard(
             map_fn=map_fn,
             map_type=map_type,
             rp=None,
@@ -737,29 +744,29 @@ class FiatAdapter(IImpactAdapter):
         # Get columns that include max damage
         damage_cols = [
             c
-            for c in self._model.exposure.exposure_db.columns
+            for c in self.model.exposure.exposure_db.columns
             if matches_pattern(c, self.fiat_columns.max_potential_damage)
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self._model.exposure.exposure_db[
+        buildings_rows = ~self.model.exposure.exposure_db[
             self.fiat_columns.primary_object_type
         ].isin(self.config.non_building_names)
 
         # If ids are given use that as an additional filter
         if ids:
-            buildings_rows = buildings_rows & self._model.exposure.exposure_db[
+            buildings_rows = buildings_rows & self.model.exposure.exposure_db[
                 self.fiat_columns.object_id
             ].isin(ids)
 
         # Update columns using economic growth value
-        updated_max_pot_damage = self._model.exposure.exposure_db.copy()
+        updated_max_pot_damage = self.model.exposure.exposure_db.copy()
         updated_max_pot_damage.loc[buildings_rows, damage_cols] *= (
             1.0 + economic_growth / 100.0
         )
 
         # update fiat model
-        self._model.exposure.update_max_potential_damage(
+        self.model.exposure.update_max_potential_damage(
             updated_max_potential_damages=updated_max_pot_damage
         )
 
@@ -784,29 +791,29 @@ class FiatAdapter(IImpactAdapter):
         # Get columns that include max damage
         damage_cols = [
             c
-            for c in self._model.exposure.exposure_db.columns
+            for c in self.model.exposure.exposure_db.columns
             if matches_pattern(c, self.fiat_columns.max_potential_damage)
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self._model.exposure.exposure_db[
+        buildings_rows = ~self.model.exposure.exposure_db[
             self.fiat_columns.primary_object_type
         ].isin(self.config.non_building_names)
 
         # If ids are given use that as an additional filter
         if ids:
-            buildings_rows = buildings_rows & self._model.exposure.exposure_db[
+            buildings_rows = buildings_rows & self.model.exposure.exposure_db[
                 self.fiat_columns.object_id
             ].isin(ids)
 
         # Update columns using economic growth value
-        updated_max_pot_damage = self._model.exposure.exposure_db.copy()
+        updated_max_pot_damage = self.model.exposure.exposure_db.copy()
         updated_max_pot_damage.loc[buildings_rows, damage_cols] *= (
             1.0 + population_growth / 100.0
         )
 
         # update fiat model
-        self._model.exposure.update_max_potential_damage(
+        self.model.exposure.update_max_potential_damage(
             updated_max_potential_damages=updated_max_pot_damage
         )
 
@@ -841,7 +848,7 @@ class FiatAdapter(IImpactAdapter):
             If `elevation_type` is not 'floodmap' or 'datum'.
         """
         self.logger.info(
-            f"Applying population growth of {population_growth} %, by creating a new development area using the geometries from {area_path} and a ground floor height of {ground_floor_height} {self._model.exposure.unit} above '{elevation_type}'."
+            f"Applying population growth of {population_growth} %, by creating a new development area using the geometries from {area_path} and a ground floor height of {ground_floor_height} {self.model.exposure.unit} above '{elevation_type}'."
         )
         # Get reference type to align with hydromt
         if elevation_type == "floodmap":
@@ -870,12 +877,12 @@ class FiatAdapter(IImpactAdapter):
         ]
         new_dev_geom_name = Path(self.config.new_development_file_name).stem
         # Use hydromt function
-        self._model.exposure.setup_new_composite_areas(
+        self.model.exposure.setup_new_composite_areas(
             percent_growth=population_growth,
             geom_file=Path(area_path),
             ground_floor_height=ground_floor_height,
             damage_types=self.damage_types,
-            vulnerability=self._model.vulnerability,
+            vulnerability=self.model.vulnerability,
             ground_elevation=ground_elevation,
             aggregation_area_fn=aggregation_areas,
             attribute_names=attribute_names,
@@ -944,7 +951,7 @@ class FiatAdapter(IImpactAdapter):
                 path_ref = self.config_base_path.joinpath(self.config.bfe.geom)
                 height_reference = "geom"
             # Use hydromt function
-            self._model.exposure.raise_ground_floor_height(
+            self.model.exposure.raise_ground_floor_height(
                 raise_by=elevate.elevation.value,
                 objectids=objectids,
                 height_reference=height_reference,
@@ -954,7 +961,7 @@ class FiatAdapter(IImpactAdapter):
 
         elif elevate.elevation.type == "datum":
             # Use hydromt function
-            self._model.exposure.raise_ground_floor_height(
+            self.model.exposure.raise_ground_floor_height(
                 raise_by=elevate.elevation.value,
                 objectids=objectids,
                 height_reference="datum",
@@ -979,30 +986,28 @@ class FiatAdapter(IImpactAdapter):
         # Get columns that include max damage
         damage_cols = [
             c
-            for c in self._model.exposure.exposure_db.columns
+            for c in self.model.exposure.exposure_db.columns
             if matches_pattern(c, self.fiat_columns.max_potential_damage)
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self._model.exposure.exposure_db[
+        buildings_rows = ~self.model.exposure.exposure_db[
             self.fiat_columns.primary_object_type
         ].isin(self.config.non_building_names)
 
         # Get rows that are affected
         objectids = self.get_object_ids(buyout)
         rows = (
-            self._model.exposure.exposure_db[self.fiat_columns.object_id].isin(
-                objectids
-            )
+            self.model.exposure.exposure_db[self.fiat_columns.object_id].isin(objectids)
             & buildings_rows
         )
 
         # Update columns
-        updated_max_pot_damage = self._model.exposure.exposure_db.copy()
+        updated_max_pot_damage = self.model.exposure.exposure_db.copy()
         updated_max_pot_damage.loc[rows, damage_cols] *= 0
 
         # update fiat model
-        self._model.exposure.update_max_potential_damage(
+        self.model.exposure.update_max_potential_damage(
             updated_max_potential_damages=updated_max_pot_damage
         )
 
@@ -1023,11 +1028,11 @@ class FiatAdapter(IImpactAdapter):
         objectids = self.get_object_ids(floodproof)
 
         # Use hydromt function
-        self._model.exposure.truncate_damage_function(
+        self.model.exposure.truncate_damage_function(
             objectids=objectids,
             floodproof_to=floodproof.elevation.value,
             damage_function_types=self.damage_types,
-            vulnerability=self._model.vulnerability,
+            vulnerability=self.model.vulnerability,
         )
 
     # STATIC METHODS
@@ -1046,11 +1051,11 @@ class FiatAdapter(IImpactAdapter):
         ValueError
             If the FIAT model does not have an exposure database initialized.
         """
-        if self._model.exposure is None:
+        if self.model.exposure is None:
             raise ValueError(
                 "FIAT model does not have exposure, make sure your model has been initialized."
             )
-        gdf_0 = self._model.exposure.select_objects(
+        gdf_0 = self.model.exposure.select_objects(
             primary_object_type="ALL",
             non_building_names=self.config.non_building_names,
             return_gdf=True,
@@ -1081,7 +1086,7 @@ class FiatAdapter(IImpactAdapter):
         ValueError
             If no property types are found in the FIAT model.
         """
-        types = self._model.exposure.get_primary_object_type()
+        types = self.model.exposure.get_primary_object_type()
         if types is None:
             raise ValueError("No property types found in the FIAT model.")
         types.append("all")  # Add "all" type for using as identifier
@@ -1104,7 +1109,7 @@ class FiatAdapter(IImpactAdapter):
             A list of IDs for all buildings in the FIAT model.
         """
         # Get ids of existing buildings
-        ids = self._model.exposure.get_object_ids(
+        ids = self.model.exposure.get_object_ids(
             "all", non_building_names=self.config.non_building_names
         )
         return ids
@@ -1145,7 +1150,7 @@ class FiatAdapter(IImpactAdapter):
             polygon_file = None
 
         # use the hydromt-fiat method to the ids
-        ids = self._model.exposure.get_object_ids(
+        ids = self.model.exposure.get_object_ids(
             selection_type=measure.selection_type,
             property_type=measure.property_type,
             non_building_names=self.config.non_building_names,
@@ -1407,7 +1412,7 @@ class FiatAdapter(IImpactAdapter):
         self.logger.info("Calculating impacts at a building footprint scale")
 
         # Read the existing building points
-        buildings = self._model.exposure.select_objects(
+        buildings = self.model.exposure.select_objects(
             primary_object_type="ALL",
             non_building_names=self.config.non_building_names,
             return_gdf=True,

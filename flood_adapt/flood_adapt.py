@@ -37,6 +37,7 @@ from flood_adapt.objects.measures.measures import (
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
+from flood_adapt.workflows.benefit_runner import BenefitRunner
 from flood_adapt.workflows.impacts_integrator import Impacts
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
@@ -87,7 +88,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the measure with the given name does not exist.
         """
         return self.database.measures.get(name)
@@ -106,6 +107,11 @@ class FloodAdapt:
         -------
         measure : Measure
             Measure object.
+
+        Raises
+        ------
+        ValueError
+            If the type is not valid or if the attributes do not adhere to the Measure schema.
         """
         if type == "elevate_properties":
             return Elevate(**attrs)
@@ -134,7 +140,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the measure object is not valid.
         """
         self.database.measures.save(measure, overwrite=overwrite)
@@ -149,7 +155,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the measure does not exist.
         """
         self.database.measures.delete(name)
@@ -214,7 +220,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the strategy with the given name does not exist.
         """
         return self.database.strategies.get(name)
@@ -235,7 +241,6 @@ class FloodAdapt:
         Raises
         ------
         ValueError
-            If the strategy with the given name does not exist.
             If attrs does not adhere to the Strategy schema.
         """
         return Strategy(**attrs)
@@ -253,7 +258,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the strategy object is not valid.
             If the strategy object already exists.
         """
@@ -270,7 +275,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the strategy does not exist.
         """
         self.database.strategies.delete(name)
@@ -317,7 +322,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the event with the given name does not exist.
         """
         return self.database.events.get(name)
@@ -335,6 +340,11 @@ class FloodAdapt:
         event : Event
             Depending on attrs.template an event object.
             Can be of type: Synthetic, Historical, Hurricane.
+
+        Raises
+        ------
+        ValueError
+            If the attributes do not adhere to the Event schema.
         """
         return EventFactory.load_dict(attrs)
 
@@ -354,6 +364,11 @@ class FloodAdapt:
         -------
         event_set : EventSet
             EventSet object
+
+        Raises
+        ------
+        ValueError
+            If the attributes do not adhere to the EventSet schema.
         """
         return EventSet(**attrs, sub_events=sub_events)
 
@@ -369,7 +384,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the event object is not valid.
         """
         self.database.events.save(event, overwrite=overwrite)
@@ -384,7 +399,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the event does not exist.
             If the event is used in a scenario.
         """
@@ -434,7 +449,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the cyclone track database is not defined in the site configuration.
             If the cyclone track with the given index does not exist.
         """
@@ -469,7 +484,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the projection with the given name does not exist.
         """
         return self.database.projections.get(name)
@@ -506,7 +521,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the projection object is not valid.
         """
         self.database.projections.save(projection, overwrite=overwrite)
@@ -521,7 +536,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the projection does not exist.
             If the projection is used in a scenario.
         """
@@ -557,22 +572,32 @@ class FloodAdapt:
         return self.database.static.get_slr_scn_names()
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
-        """
-        Interpolate sea level rise for a given scenario and year.
+        """Interpolate SLR value and reference it to the SLR reference year from the site toml.
 
         Parameters
         ----------
         slr_scenario : str
-            The name of the sea level rise scenario.
+            SLR scenario name from the coulmn names in static/slr/slr.csv
         year : float
-            The year to interpolate sea level rise for.
+            year to evaluate
 
         Returns
         -------
         interpolated : float
             The interpolated sea level rise for the given scenario and year.
+
+        Raises
+        ------
+        ValueError
+            if the reference year is outside of the time range in the slr.csv file
+        ValueError
+            if the year to evaluate is outside of the time range in the slr.csv file
         """
-        return self.database.interp_slr(slr_scenario, year)
+        return self.database.get_slr_scenarios().interp_slr(
+            scenario=slr_scenario,
+            year=year,
+            units=self.database.site.gui.units.default_length_units,
+        )
 
     def plot_slr_scenarios(self) -> str:
         """
@@ -583,7 +608,11 @@ class FloodAdapt:
         html_path : str
             The path to the html plot of the sea level rise scenarios.
         """
-        return self.database.plot_slr_scenarios()
+        return self.database.get_slr_scenarios().plot_slr_scenarios(
+            scenario_names=self.database.static.get_slr_scn_names(),
+            output_loc=self.database.input_path.parent.joinpath("temp", "slr.html"),
+            units=self.database.site.gui.units.default_length_units,
+        )
 
     # Scenarios
     def get_scenarios(self) -> dict[str, Any]:
@@ -613,7 +642,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the scenario with the given name does not exist.
         """
         return self.database.scenarios.get(name)
@@ -638,9 +667,7 @@ class FloodAdapt:
         """
         return Scenario(**attrs)
 
-    def save_scenario(
-        self, scenario: Scenario, overwrite: bool = False
-    ) -> tuple[bool, str]:
+    def save_scenario(self, scenario: Scenario, overwrite: bool = False) -> None:
         """Save the scenario to the database.
 
         Parameters
@@ -650,18 +677,13 @@ class FloodAdapt:
         overwrite : bool, optional
             Whether to overwrite an existing scenario with the same name (default is False).
 
-        Returns
-        -------
-        run_success : bool
-            Whether the scenario was saved successfully.
-        error_msg : str
-            The error message if the scenario was not saved successfully.
+        Raises
+        ------
+        DatabaseError
+            If the scenario object is not valid or if it already exists and overwrite is False.
+
         """
-        try:
-            self.database.scenarios.save(scenario, overwrite=overwrite)
-            return True, ""
-        except Exception as e:
-            return False, str(e)
+        self.database.scenarios.save(scenario, overwrite=overwrite)
 
     def delete_scenario(self, name: str) -> None:
         """Delete a scenario from the database.
@@ -673,7 +695,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the scenario does not exist.
         """
         self.database.scenarios.delete(name)
@@ -999,7 +1021,7 @@ class FloodAdapt:
         else:
             return None
 
-    def get_static_map(self, path: Union[str, Path]) -> Union[gpd.GeoDataFrame, None]:
+    def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
         """Get a static map from the database.
 
         Parameters
@@ -1009,14 +1031,15 @@ class FloodAdapt:
 
         Returns
         -------
-        static_map : Union[gpd.GeoDataFrame, None]
-            gpd.GeoDataFrame with the static map if available, None if not found
+        static_map : gpd.GeoDataFrame
+            gpd.GeoDataFrame with the static map
+
+        Raises
+        ------
+        DatabaseError
+            If the static map with the given path does not exist.
         """
-        try:
-            return self.database.static.get_static_map(path)
-        except FileNotFoundError:
-            self.logger.warning(f"Static map {path} not found.")
-            return None
+        return self.database.static.get_static_map(path)
 
     def get_building_geometries(self) -> gpd.GeoDataFrame:
         """Get the buildings exposure that are used in Fiat.
@@ -1070,7 +1093,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the benefit with the given name does not exist.
         """
         return self.database.benefits.get(name)
@@ -1107,7 +1130,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the benefit object is not valid.
         """
         self.database.benefits.save(benefit, overwrite=overwrite)
@@ -1122,7 +1145,7 @@ class FloodAdapt:
 
         Raises
         ------
-        ValueError
+        DatabaseError
             If the benefit object does not exist.
         """
         self.database.benefits.delete(name)
@@ -1140,9 +1163,10 @@ class FloodAdapt:
         scenarios : pd.DataFrame
             A dataframe with the scenarios needed for this benefit assessment run.
         """
-        return self.database.check_benefit_scenarios(benefit)
+        runner = BenefitRunner(self.database, benefit=benefit)
+        return runner.scenarios
 
-    def create_benefit_scenarios(self, benefit: Benefit):
+    def create_benefit_scenarios(self, benefit: Benefit) -> None:
         """Create the benefit scenarios.
 
         Parameters
@@ -1150,7 +1174,8 @@ class FloodAdapt:
         benefit : Benefit
             The benefit object to create scenarios for.
         """
-        self.database.create_benefit_scenarios(benefit)
+        runner = BenefitRunner(self.database, benefit=benefit)
+        runner.create_benefit_scenarios()
 
     def run_benefit(self, name: Union[str, list[str]]) -> None:
         """Run the benefit assessment.
@@ -1160,7 +1185,12 @@ class FloodAdapt:
         name : Union[str, list[str]]
             The name of the benefit object to run.
         """
-        self.database.run_benefit(name)
+        if not isinstance(name, list):
+            benefit_name = [name]
+        for name in benefit_name:
+            benefit = self.database.benefits.get(name)
+            runner = BenefitRunner(self.database, benefit=benefit)
+            runner.run_cost_benefit()
 
     def get_aggregated_benefits(self, name: str) -> dict[str, gpd.GeoDataFrame]:
         """Get the aggregation benefits for a benefit assessment.

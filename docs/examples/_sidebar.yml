@@ -12,7 +12,7 @@ website:
           href: examples/database_builder/index.qmd
 
         - section: Projections
-          href: examples/projections/index.qmd
+          href: projections/projections.ipynb
 
         - section: Measures
           href: examples/measures/index.qmd
@@ -37,6 +37,9 @@ website:
           contents:
           - href: examples/scenarios/advanced_scenario.ipynb
             text: "Advanced Scenario"
+
+        - section: Event set for risk assessments
+          href: examples/event_set/create_event_set.ipynb
 
         - section: Benefits
           href: examples/benefits/index.qmd

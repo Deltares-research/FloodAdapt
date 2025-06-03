@@ -40,7 +40,7 @@ FloodAdapt uses a database to store, handle and organize input files, output fil
 To initialize FloodAdapt and configure the database, add the following lines to the top of your script / initialize function to validate and set the environment variables:
 ```python
 from pathlib import Path
-from flood_adapt.misc.config import Settings
+from flood_adapt import Settings
 
 # Usually ends in `Database` and can contain multiple sites
 root = Path("path/to/your/database/root")
@@ -48,14 +48,17 @@ root = Path("path/to/your/database/root")
 # Specifies which site to use
 name = "database_name"
 
-# Contains the model kernels to run that perform the calculations
-system_folder = Path("path/to/your/system/folder")
+# Define the paths to the model kernel binaries
+sfincs_bin = Path("path/to/your/sfincs/bin.exe")
+fiat_bin = Path("path/to/your/fiat/bin.exe")
 
 # Validate and set environment variables
 Settings(
     DATABASE_ROOT=root,
     DATABASE_NAME=name,
-    SYSTEM_FOLDER=system_folder,
+    SFINCS_BIN_PATH=sfincs_bin,
+    FIAT_BIN_PATH=fiat_path,
+    VALIDATE_BINARIES=True,
 )
 ```
 

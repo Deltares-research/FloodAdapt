@@ -9,11 +9,9 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import xarray as xr
-from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
-from plotly.express import line
-from plotly.express.colors import sample_colorscale
 
+from flood_adapt.config.sfincs import SlrScenariosModel
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -23,17 +21,14 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.misc.exceptions import DatabaseError
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     TopLevelDir,
     db_path,
 )
 from flood_adapt.misc.utils import finished_file_exists
-from flood_adapt.objects.benefits.benefits import Benefit
-from flood_adapt.objects.events.events import Event
 from flood_adapt.objects.forcing import unit_system as us
-from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.workflows.benefit_runner import BenefitRunner
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
 
@@ -88,7 +83,7 @@ class Database(IDatabase):
         """
         if database_path is None or database_name is None:
             if not self._init_done:
-                raise ValueError(
+                raise DatabaseError(
                     """Database path and name must be provided for the first initialization.
                     To do this, run `flood_adapt.api.static.read_database(database_path, site_name)` first."""
                 )
@@ -184,207 +179,19 @@ class Database(IDatabase):
     def benefits(self) -> DbsBenefit:
         return self._benefits
 
-    def interp_slr(self, slr_scenario: str, year: float) -> float:
-        """Interpolate SLR value and reference it to the SLR reference year from the site toml.
-
-        Parameters
-        ----------
-        slr_scenario : str
-            SLR scenario name from the coulmn names in static/slr/slr.csv
-        year : float
-            year to evaluate
+    def get_slr_scenarios(self) -> SlrScenariosModel:
+        """Get the path to the SLR scenarios file.
 
         Returns
         -------
-        float
-            _description_
-
-        Raises
-        ------
-        ValueError
-            if the reference year is outside of the time range in the slr.csv file
-        ValueError
-            if the year to evaluate is outside of the time range in the slr.csv file
+        SlrScenariosModel
+            SLR scenarios configuration model with the file path set to the static path.
         """
         if self.site.sfincs.slr_scenarios is None:
-            raise ValueError("No SLR scenarios defined in the site configuration.")
-
-        input_file = self.static_path / self.site.sfincs.slr_scenarios.file
-        df = pd.read_csv(input_file)
-        if year > df["year"].max() or year < df["year"].min():
-            raise ValueError(
-                "The selected year is outside the range of the available SLR scenarios"
-            )
-        else:
-            slr = np.interp(year, df["year"], df[slr_scenario])
-            ref_year = self.site.sfincs.slr_scenarios.relative_to_year
-            if ref_year > df["year"].max() or ref_year < df["year"].min():
-                raise ValueError(
-                    f"The reference year {ref_year} is outside the range of the available SLR scenarios"
-                )
-            else:
-                ref_slr = np.interp(ref_year, df["year"], df[slr_scenario])
-                new_slr = us.UnitfulLength(
-                    value=slr - ref_slr,
-                    units=df["units"][0],
-                )
-                gui_units = self.site.gui.units.default_length_units
-                return np.round(new_slr.convert(gui_units), decimals=2)
-
-    # TODO: should probably be moved to frontend
-    def plot_slr_scenarios(self) -> str:
-        if self.site.sfincs.slr_scenarios is None:
-            raise ValueError("No SLR scenarios defined in the site configuration.")
-        input_file = self.input_path.parent.joinpath(
-            "static", self.site.sfincs.slr_scenarios.file
-        )
-        df = pd.read_csv(input_file)
-        ncolors = len(df.columns) - 2
-        if "units" not in df.columns:
-            raise ValueError(f"Expected column `units` in {input_file}.")
-
-        units = df["units"].iloc[0]
-        units = us.UnitTypesLength(units)
-
-        if "Year" not in df.columns:
-            if "year" not in df.columns:
-                raise ValueError(f"Expected column `year` in {input_file}.")
-            else:
-                df = df.rename(columns={"year": "Year"})
-
-        ref_year = self.site.sfincs.slr_scenarios.relative_to_year
-        if ref_year > df["Year"].max() or ref_year < df["Year"].min():
-            raise ValueError(
-                f"The reference year {ref_year} is outside the range of the available SLR scenarios"
-            )
-        else:
-            scenarios = self._static.get_slr_scn_names()
-            for scn in scenarios:
-                ref_slr = np.interp(ref_year, df["Year"], df[scn])
-                df[scn] -= ref_slr
-
-        df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
-        # convert to units used in GUI
-        slr_current_units = us.UnitfulLength(value=1.0, units=units)
-        conversion_factor = slr_current_units.convert(
-            self.site.gui.units.default_length_units
-        )
-        df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
-
-        # rename column names that will be shown in html
-        df = df.rename(
-            columns={
-                "variable": "Scenario",
-                "value": f"Sea level rise [{self.site.gui.units.default_length_units.value}]",
-            }
-        )
-
-        colors = sample_colorscale(
-            "rainbow", [n / (ncolors - 1) for n in range(ncolors)]
-        )
-        fig = line(
-            df,
-            x="Year",
-            y=f"Sea level rise [{self.site.gui.units.default_length_units.value}]",
-            color="Scenario",
-            color_discrete_sequence=colors,
-        )
-
-        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
-
-        fig.update_layout(
-            autosize=False,
-            height=100 * 1.2,
-            width=280 * 1.3,
-            margin={"r": 0, "l": 0, "b": 0, "t": 0},
-            font={"size": 10, "color": "black", "family": "Arial"},
-            title_font={"size": 10, "color": "black", "family": "Arial"},
-            legend_font={"size": 10, "color": "black", "family": "Arial"},
-            legend_grouptitlefont={"size": 10, "color": "black", "family": "Arial"},
-            legend={"entrywidthmode": "fraction", "entrywidth": 0.2},
-            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-            xaxis_title=None,
-            xaxis_range=[ref_year, df["Year"].max()],
-            legend_title=None,
-            # paper_bgcolor="#3A3A3A",
-            # plot_bgcolor="#131313",
-        )
-
-        # write html to results folder
-        output_loc = self.input_path.parent.joinpath("temp", "slr.html")
-        output_loc.parent.mkdir(parents=True, exist_ok=True)
-        fig.write_html(output_loc)
-        return str(output_loc)
-
-    def write_to_csv(self, name: str, event: Event, df: pd.DataFrame):
-        df.to_csv(
-            self.events.input_path.joinpath(event.name, f"{name}.csv"),
-            header=False,
-        )
-
-    def write_cyc(self, event: Event, track: TropicalCyclone):
-        cyc_file = self.events.input_path / event.name / f"{event.track_name}.cyc"
-        # cht_cyclone function to write TropicalCyclone as .cyc file
-        track.write_track(filename=cyc_file, fmt="ddb_cyc")
-
-    def check_benefit_scenarios(self, benefit: Benefit) -> pd.DataFrame:
-        """Return a dataframe with the scenarios needed for this benefit assessment run.
-
-        Parameters
-        ----------
-        benefit : Benefit
-        """
-        runner = BenefitRunner(self, benefit=benefit)
-        return runner.check_scenarios()
-
-    def create_benefit_scenarios(self, benefit: Benefit) -> None:
-        """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already.
-
-        Parameters
-        ----------
-        benefit : Benefit
-        """
-        runner = BenefitRunner(self, benefit=benefit)
-        runner.check_scenarios()
-
-        # Iterate through the scenarios needed and create them if not existing
-        for index, row in runner.scenarios.iterrows():
-            if row["scenario created"] == "No":
-                scenario_dict = {}
-                scenario_dict["event"] = row["event"]
-                scenario_dict["projection"] = row["projection"]
-                scenario_dict["strategy"] = row["strategy"]
-                scenario_dict["name"] = "_".join(
-                    [row["projection"], row["event"], row["strategy"]]
-                )
-
-                scenario_obj = Scenario(**scenario_dict)
-                # Check if scenario already exists (because it was created before in the loop)
-                try:
-                    self.scenarios.save(scenario_obj)
-                except ValueError as e:
-                    if "name is already used" not in str(e):
-                        # some other error was raised, so we re-raise it
-                        raise e
-                    # otherwise, if it already exists and we dont need to save it, we can just continue
-
-        # Update the scenarios check
-        runner.check_scenarios()
-
-    def run_benefit(self, benefit_name: Union[str, list[str]]) -> None:
-        """Run a (cost-)benefit analysis.
-
-        Parameters
-        ----------
-        benefit_name : Union[str, list[str]]
-            name(s) of the benefits to run.
-        """
-        if not isinstance(benefit_name, list):
-            benefit_name = [benefit_name]
-        for name in benefit_name:
-            benefit = self.benefits.get(name)
-            runner = BenefitRunner(self, benefit=benefit)
-            runner.run_cost_benefit()
+            raise DatabaseError("No SLR scenarios defined in the site configuration.")
+        slr = self.site.sfincs.slr_scenarios
+        slr.file = str(self.static_path / slr.file)
+        return slr
 
     def get_outputs(self) -> dict[str, Any]:
         """Return a dictionary with info on the outputs that currently exist in the database.
@@ -594,7 +401,7 @@ class Database(IDatabase):
             case "benefits":
                 return self.benefits.summarize_objects()
             case _:
-                raise ValueError(
+                raise DatabaseError(
                     f"Object type '{object_type}' is not valid. Must be one of 'projections', 'events', 'measures', 'strategies' or 'scenarios'."
                 )
 
