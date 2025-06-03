@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 from flood_adapt.flood_adapt import FloodAdapt
+from flood_adapt.misc.exceptions import DatabaseError
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.hurricane import HurricaneEvent
 from flood_adapt.objects.measures.measures import Measure
@@ -117,7 +118,7 @@ class TestEvents:
         if test_dict["name"] not in test_fa.get_events()["name"]:
             test_fa.save_event(event)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(DatabaseError):
             test_fa.save_event(event)
         # TODO assert error msg
 
@@ -156,7 +157,7 @@ class TestProjections:
         test_dict["physical_projection"]["sea_level_rise"]["value"] = 2
         projection = test_fa.create_projection(test_dict)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(DatabaseError):
             # Assert error if name already exists
             test_fa.save_projection(projection)
 
@@ -256,11 +257,11 @@ class TestStrategies:
         strategy = test_fa.create_strategy(strat_with_existing_name)
 
         # Save it in the database -> name exists error
-        with pytest.raises(ValueError):
+        with pytest.raises(DatabaseError):
             test_fa.save_strategy(strategy)
 
         # Delete a strategy which is already used in a scenario
-        with pytest.raises(ValueError):
+        with pytest.raises(DatabaseError):
             test_fa.delete_strategy("strategy_comb")
 
         # Change to unused name
@@ -270,7 +271,7 @@ class TestStrategies:
         assert test_fa.get_strategy(strategy.name) == strategy
 
         test_fa.delete_strategy(strategy.name)
-        with pytest.raises(ValueError):
+        with pytest.raises(DatabaseError):
             test_fa.get_strategy(strategy.name)
 
 
@@ -325,7 +326,7 @@ class TestScenarios:
             strategy="no_measures",
         )
         test_fa.save_event(event)
-        test_fa.save_scenario(scn)
+
         return scn, event
 
     @pytest.fixture()
@@ -423,7 +424,9 @@ class TestScenarios:
         test_dict["event"] = setup_offshore_meteo_event.name
         scenario = test_fa.create_scenario(test_dict)
 
-        assert not test_fa.save_scenario(scenario)[0]
+        with pytest.raises(DatabaseError):
+            # Assert error if name already exists
+            test_fa.save_scenario(scenario)
 
         # Change name to something new
         test_dict["name"] = "test1"
