@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
+from flood_adapt.misc.exceptions import DatabaseError
 from flood_adapt.objects.measures.measures import (
     Buyout,
     Elevate,
@@ -195,7 +196,7 @@ def test_check_overlapping_measures(
     test_db, strategy = setup_strategy_with_overlapping_measures
     mock_get_object_ids.return_value = [1, 2, 3]
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(DatabaseError) as excinfo:
         test_db.strategies._check_overlapping_measures(strategy.measures)
 
     assert (

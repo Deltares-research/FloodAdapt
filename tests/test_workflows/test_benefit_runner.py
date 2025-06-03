@@ -41,7 +41,7 @@ class TestBenefitScenariosNotCreated:
         self, benefit_obj_and_runner: tuple[Benefit, BenefitRunner]
     ):
         benefit_obj, runner = benefit_obj_and_runner
-        scenarios = runner.check_scenarios()
+        scenarios = runner.scenarios
         assert isinstance(scenarios, pd.DataFrame)
         assert len(scenarios) == 4
         assert "No" not in scenarios["scenario created"].to_list()
@@ -90,10 +90,9 @@ class TestBenefitScenariosNotCreated:
         # Delete one of the scenarios
         to_delete = (
             runner.database.scenarios.input_path
-            / runner.check_scenarios()["scenario created"][0]
+            / runner.scenarios["scenario created"][0]
         )
         shutil.rmtree(to_delete)
-        runner.check_scenarios()
 
         with pytest.raises(RuntimeError) as exception_info:
             runner.run_cost_benefit()
@@ -129,8 +128,9 @@ class TestBenefitScenariosCreated:
         benefit = Benefit.load_file(benefit_path)
 
         # Create missing scenarios
-        test_db.create_benefit_scenarios(benefit)
-        runner = BenefitRunner(test_db, benefit=benefit)
+        runner = BenefitRunner(test_db, benefit)
+        runner.create_benefit_scenarios()
+
         yield benefit, runner
 
     # When benefit analysis is not run yet, the has_run_check method should return False
@@ -145,7 +145,7 @@ class TestBenefitScenariosCreated:
         self, benefit_obj_and_runner: tuple[Benefit, BenefitRunner]
     ):
         benefit_obj, runner = benefit_obj_and_runner
-        scenarios = runner.check_scenarios()
+        scenarios = runner.scenarios
         assert isinstance(scenarios, pd.DataFrame)
         assert len(scenarios) == 4
         assert "No" not in scenarios["scenario created"].to_list()
@@ -194,10 +194,8 @@ class TestBenefitScenariosRun:
         )
 
         benefit = Benefit.load_file(benefit_path)
-        # Create missing scenarios
-        test_db.create_benefit_scenarios(benefit)
-
-        runner = BenefitRunner(test_db, benefit=benefit)
+        runner = BenefitRunner(test_db, benefit)
+        runner.create_benefit_scenarios()
 
         # Create dummy results to use for benefit analysis
         damages_dummy = {
@@ -286,7 +284,7 @@ class TestBenefitScenariosRun:
     ):
         benefit_obj, aggrs, runner = prepare_outputs
 
-        scenarios = runner.check_scenarios()
+        scenarios = runner.scenarios
         assert isinstance(scenarios, pd.DataFrame)
         assert len(scenarios) == 4
         assert "No" not in scenarios["scenario created"].to_list()

@@ -1,6 +1,6 @@
 from os import environ, listdir
 from pathlib import Path
-from platform import system
+from typing import Optional
 
 import tomli
 import tomli_w
@@ -11,48 +11,6 @@ from pydantic import (
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-DEFAULT_SYSTEM_FOLDER = Path(__file__).parents[1] / "system"
-DEFAULT_EXE_PATHS: dict[str, dict[str, Path]] = {
-    "windows": {
-        "sfincs": DEFAULT_SYSTEM_FOLDER / "win-64" / "sfincs" / "sfincs.exe",
-        "fiat": DEFAULT_SYSTEM_FOLDER / "win-64" / "fiat" / "fiat.exe",
-    },
-    "linux": {
-        "sfincs": DEFAULT_SYSTEM_FOLDER / "linux-64" / "sfincs" / "bin" / "sfincs",
-        "fiat": DEFAULT_SYSTEM_FOLDER / "linux-64" / "fiat" / "fiat",
-    },
-}
-
-
-def _default_exe_path(exe_name: str) -> Path:
-    """
-    Get the default path for the given executable name based on the system type.
-
-    Parameters
-    ----------
-    exe_name : str
-        The name of the executable (e.g., "sfincs", "fiat").
-
-    Returns
-    -------
-    Path
-        The default path to the executable.
-
-    Raises
-    ------
-    ValueError
-        If the system type is not recognized.
-    """
-    if system().lower() not in DEFAULT_EXE_PATHS:
-        raise ValueError(
-            f"System type '{system()}' is not recognized. Supported types are: {', '.join(DEFAULT_EXE_PATHS.keys())}."
-        )
-    if exe_name not in DEFAULT_EXE_PATHS[system().lower()]:
-        raise ValueError(
-            f"Executable name '{exe_name}' is not recognized. Supported names are: {', '.join(DEFAULT_EXE_PATHS[system().lower()].keys())}."
-        )
-    return DEFAULT_EXE_PATHS[system().lower()][exe_name]
 
 
 class Settings(BaseSettings):
@@ -82,19 +40,19 @@ class Settings(BaseSettings):
     Attributes
     ----------
     database_name : str
-        The name of the database.
+        The name of the database. Alias: `DATABASE_NAME` (environment variable).
     database_root : Path
-        The root directory of the database.
+        The root directory of the database. Alias: `DATABASE_ROOT` (environment variable).
     delete_crashed_runs : bool
-        Whether to delete crashed/corrupted runs immediately after they are detected.
-    sfincs_path : Path
-        The path to the SFINCS binary.
-    fiat_path : Path
-        The path to the FIAT binary.
+        Whether to delete crashed/corrupted runs immediately after they are detected. Alias: `DELETE_CRASHED_RUNS` (environment variable).
     validate_allowed_forcings : bool
-        Whether to validate the forcing types and sources against the allowed forcings in the event model.
-    validate_bin_paths : bool
-        Whether to validate the existence of the paths to the SFINCS and FIAT binaries.
+        Whether to validate the forcing types and sources against the allowed forcings in the event model. Alias: `VALIDATE_ALLOWED_FORCINGS` (environment variable).
+    validate_binaries : bool
+        Whether to validate the existence of the paths to the SFINCS and FIAT binaries. Alias: `VALIDATE_BINARIES` (environment variable).
+    sfincs_bin_path : Path
+        The path to the SFINCS binary. Alias: `SFINCS_BIN_PATH` (environment variable).
+    fiat_bin_path : Path
+        The path to the FIAT binary. Alias: `FIAT_BIN_PATH` (environment variable).
 
     Properties
     ----------
@@ -133,22 +91,22 @@ class Settings(BaseSettings):
         description="Whether to validate the forcing types and sources against the allowed forcings in the event model.",
         exclude=True,
     )
-    validate_bin_paths: bool = Field(
+    validate_binaries: bool = Field(
         alias="VALIDATE_BINARIES",  # environment variable: VALIDATE_BINARIES
         default=False,
         description="Whether to validate the existence of the paths to the SFINCS and FIAT binaries.",
         exclude=True,
     )
 
-    sfincs_path: Path = Field(
-        default=_default_exe_path("sfincs"),
+    sfincs_bin_path: Optional[Path] = Field(
+        default=None,
         alias="SFINCS_BIN_PATH",  # environment variable: SFINCS_BIN_PATH
         description="The path of the sfincs binary.",
         exclude=True,
     )
 
-    fiat_path: Path = Field(
-        default=_default_exe_path("fiat"),
+    fiat_bin_path: Optional[Path] = Field(
+        default=None,
         alias="FIAT_BIN_PATH",  # environment variable: FIAT_BIN_PATH
         description="The path of the fiat binary.",
         exclude=True,
@@ -162,7 +120,7 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_settings(self):
         self._validate_database_path()
-        if self.validate_bin_paths:
+        if self.validate_binaries:
             self._validate_fiat_path()
             self._validate_sfincs_path()
         self._update_environment_variables()
@@ -171,21 +129,21 @@ class Settings(BaseSettings):
     def _update_environment_variables(self):
         environ["DATABASE_ROOT"] = str(self.database_root)
         environ["DATABASE_NAME"] = self.database_name
-        environ["SFINCS_BIN_PATH"] = str(self.sfincs_path)
-        environ["FIAT_BIN_PATH"] = str(self.fiat_path)
-        environ["SFINCS_PATH"] = str(self.sfincs_path)
-        environ["FIAT_PATH"] = str(self.fiat_path)
 
         if self.delete_crashed_runs:
             environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
         else:
             environ.pop("DELETE_CRASHED_RUNS", None)
+
         if self.validate_allowed_forcings:
             environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
         else:
             environ.pop("VALIDATE_ALLOWED_FORCINGS", None)
-        if self.validate_bin_paths:
-            environ["VALIDATE_BINARIES"] = str(self.validate_bin_paths)
+
+        if self.validate_binaries:
+            environ["VALIDATE_BINARIES"] = str(self.validate_binaries)
+            environ["SFINCS_BIN_PATH"] = str(self.sfincs_bin_path)
+            environ["FIAT_BIN_PATH"] = str(self.fiat_bin_path)
         else:
             environ.pop("VALIDATE_BINARIES", None)
 
@@ -224,13 +182,13 @@ class Settings(BaseSettings):
         return self
 
     def _validate_sfincs_path(self):
-        if not self.sfincs_path.exists():
-            raise ValueError(f"SFINCS binary {self.sfincs_path} does not exist.")
+        if not self.sfincs_bin_path.exists():
+            raise ValueError(f"SFINCS binary {self.sfincs_bin_path} does not exist.")
         return self
 
     def _validate_fiat_path(self):
-        if not self.fiat_path.exists():
-            raise ValueError(f"FIAT binary {self.fiat_path} does not exist.")
+        if not self.fiat_bin_path.exists():
+            raise ValueError(f"FIAT binary {self.fiat_bin_path} does not exist.")
         return self
 
     @field_serializer("database_root", "database_path")
@@ -284,7 +242,7 @@ class Settings(BaseSettings):
             tomli_w.dump(
                 self.model_dump(
                     by_alias=True,
-                    exclude={"sfincs_path", "fiat_path", "database_path"},
+                    exclude={"sfincs_bin_path", "fiat_bin_path", "database_path"},
                 ),
                 f,
             )
