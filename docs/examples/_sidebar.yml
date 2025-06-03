@@ -15,8 +15,7 @@ website:
           href: projections/projections.ipynb
 
         - section: Measures
-          href: examples/measures/index.qmd
-
+          href: examples/measures/measures_strategies.ipynb
         - section: Strategies
           href: examples/strategies/index.qmd
 
