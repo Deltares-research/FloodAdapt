@@ -34,6 +34,9 @@ website:
 
         - section: Scenarios
           href: examples/scenarios/index.qmd
+          contents:
+          - href: examples/scenarios/advanced_scenario.ipynb
+            text: "Advanced Scenario"
 
         - section: Event set for risk assessments
           href: examples/event_set/create_event_set.ipynb
