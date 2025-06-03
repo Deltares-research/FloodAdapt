@@ -15,7 +15,9 @@ from flood_adapt.config.fiat import (
     SVIModel,
 )
 from flood_adapt.config.gui import (
-    AggregationDmgLayer,
+    MetricsDmgLayer,
+    MetricsPeopLayer,
+    MetricsHousLayer,
     BenefitsLayer,
     FloodMapLayer,
     FootprintsDmgLayer,
@@ -147,10 +149,18 @@ def create_gui_config(database_path: Path) -> GuiModel:
             zbmax=3.28,
             depth_min=0.328,
         ),
-        aggregation_dmg=AggregationDmgLayer(
-            bins=[0.00001, 1000000, 2500000, 5000000, 10000000],
+        metrics_houses=MetricsHousLayer(
+            bins=[0.00001, 10, 50, 100, 200],
             colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
         ),
+        metrics_people=MetricsPeopLayer(
+            bins=[0.00001, 100, 2500, 5000, 10000],
+            colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        )
+        metrics_damages=MetricsDmgLayer(
+            bins=[0.00001, 1000000, 2500000, 5000000, 10000000],
+            colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        )
         footprints_dmg=FootprintsDmgLayer(
             bins=[0.00001, 10, 20, 40, 60],
             colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],

@@ -34,12 +34,14 @@ from flood_adapt.config.fiat import (
     SVIModel,
 )
 from flood_adapt.config.gui import (
-    AggregationDmgLayer,
     BenefitsLayer,
     FloodMapLayer,
     FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
+    MetricsDmgLayer,
+    MetricsHousLayer,
+    MetricsPeopLayer,
     OutputLayers,
     PlottingModel,
     SyntheticTideModel,
@@ -1607,7 +1609,29 @@ class DatabaseBuilder:
                 zbmax=-9999,
                 depth_min=0.0,
             ),
-            aggregation_dmg=AggregationDmgLayer(
+            metrics_houses=MetricsHousLayer(
+                bins=[0.00001, 10, 50, 100, 200],
+                colors=[
+                    "#FFFFFF",
+                    "#FEE9CE",
+                    "#FDBB84",
+                    "#FC844E",
+                    "#E03720",
+                    "#860000",
+                ],
+            ),
+            metrics_people=MetricsPeopLayer(
+                bins=[0.00001, 100, 2500, 5000, 10000],
+                colors=[
+                    "#FFFFFF",
+                    "#FEE9CE",
+                    "#FDBB84",
+                    "#FC844E",
+                    "#E03720",
+                    "#860000",
+                ],
+            ),
+            metrics_damages=MetricsDmgLayer(
                 bins=[0.00001, 0.1 * ad_max, 0.25 * ad_max, 0.5 * ad_max, ad_max],
                 colors=[
                     "#FFFFFF",

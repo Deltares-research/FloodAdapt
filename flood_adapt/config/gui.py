@@ -41,10 +41,6 @@ class FloodMapLayer(Layer):
     depth_min: float
 
 
-class AggregationDmgLayer(Layer):
-    damage_decimals: Optional[int] = 0
-
-
 class FootprintsDmgLayer(Layer):
     type: DamageType = DamageType.absolute
     damage_decimals: Optional[int] = 0
@@ -74,8 +70,6 @@ class OutputLayers(BaseModel):
     ----------
     floodmap : FloodMapLayer
         The configuration of the floodmap layer.
-    aggregation_dmg : AggregationDmgLayer
-        The configuration of the aggregation damage layer.
     footprints_dmg : FootprintsDmgLayer
         The configuration of the footprints damage layer.
     metrics_houses: MetricsHousLayer
@@ -90,7 +84,6 @@ class OutputLayers(BaseModel):
     """
 
     floodmap: FloodMapLayer
-    aggregation_dmg: AggregationDmgLayer
     footprints_dmg: FootprintsDmgLayer
     metrics_houses: MetricsHousLayer
     metrics_people: MetricsPeopLayer
