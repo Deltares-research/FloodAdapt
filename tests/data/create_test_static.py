@@ -15,14 +15,14 @@ from flood_adapt.config.fiat import (
     SVIModel,
 )
 from flood_adapt.config.gui import (
-    MetricsDmgLayer,
-    MetricsPeopLayer,
-    MetricsHousLayer,
     BenefitsLayer,
     FloodMapLayer,
     FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
+    MetricsDmgLayer,
+    MetricsHousLayer,
+    MetricsPeopLayer,
     OutputLayers,
     PlottingModel,
     SyntheticTideModel,
@@ -156,11 +156,11 @@ def create_gui_config(database_path: Path) -> GuiModel:
         metrics_people=MetricsPeopLayer(
             bins=[0.00001, 100, 2500, 5000, 10000],
             colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
-        )
+        ),
         metrics_damages=MetricsDmgLayer(
             bins=[0.00001, 1000000, 2500000, 5000000, 10000000],
             colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
-        )
+        ),
         footprints_dmg=FootprintsDmgLayer(
             bins=[0.00001, 10, 20, 40, 60],
             colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
