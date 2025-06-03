@@ -30,7 +30,7 @@ Each notebook includes narrative explanations and inline code cells. You can cop
 - [1. Database Builder]() example description
 - [2. Simple Scenario]() example description
 - [3. Events ](events/index.qmd) How to manage hazard model configuration with Events.
-- [4. Projection ]() example description
+- [4. Projection ](projections/projections.ipynb) example description
 - [5. Measures](measures/measures_strategy.ipynb) How to define and apply measures and strategies to your model.
 - [6. Strategies]() example description
 - [7. Database manipulation]() example description

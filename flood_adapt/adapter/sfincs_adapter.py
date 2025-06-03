@@ -200,7 +200,7 @@ class SfincsAdapter(IHazardAdapter):
         with cd(path):
             self.logger.info(f"Running SFINCS in {path}")
             process = subprocess.run(
-                str(Settings().sfincs_path),
+                str(Settings().sfincs_bin_path),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
