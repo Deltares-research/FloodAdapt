@@ -1452,6 +1452,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c6/c6/9963d588cc3d75d766c819e0377a168ef83cf3316a92769971527a1ad1de/colorcet-3.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e6/75/49e5bfe642f71f272236b5b2d2691cf915a7283cc0ceda56357b61daa538/comm-0.2.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/fb/46/07a029b73f9a5c7bbf9b538e6441c42014a448f335a1cc780616f2594bad/contextily-1.6.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c2/f3/20c5d1ef4f4748e52d60771b8560cf00b69d5c6368b5c2e9311bcfa2a08b/contourpy-1.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/06/58/38c676aec594bfe2a87c7683942e5a30224791d8df99bcc8439fde140377/coverage-7.8.2-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/2b/9e29e9ac4c4213d60491db09487125db358cd9263490fbadbd55e48fbe03/crc32c-2.7.1-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
@@ -1733,6 +1734,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c6/c6/9963d588cc3d75d766c819e0377a168ef83cf3316a92769971527a1ad1de/colorcet-3.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e6/75/49e5bfe642f71f272236b5b2d2691cf915a7283cc0ceda56357b61daa538/comm-0.2.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/fb/46/07a029b73f9a5c7bbf9b538e6441c42014a448f335a1cc780616f2594bad/contextily-1.6.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5e/fe/4029038b4e1c4485cef18e480b0e2cd2d755448bb071eb9977caac80b77b/contourpy-1.3.2-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/f6/8f/a543121f9f5f150eae092b08428cb4e6b6d2d134152c3357b77659d2a605/coverage-7.8.2-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c9/fb/1587c2705a3a47a3d0067eecf9a6fec510761c96dec45c7b038fb5c8ff46/crc32c-2.7.1-cp311-cp311-win_amd64.whl
@@ -3785,6 +3787,20 @@ packages:
   - traitlets>=4
   - pytest ; extra == 'test'
   requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/fb/46/07a029b73f9a5c7bbf9b538e6441c42014a448f335a1cc780616f2594bad/contextily-1.6.2-py3-none-any.whl
+  name: contextily
+  version: 1.6.2
+  sha256: b06ead7258b34e73db2e318e33554f54a22d207b3c272b74d8b64801773b3fc3
+  requires_dist:
+  - geopy
+  - matplotlib
+  - mercantile
+  - pillow
+  - rasterio
+  - requests
+  - joblib
+  - xyzservices
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/01/c8/fadd0b92ffa7b5eb5949bf340a63a4a496a6930a6c37a7ba0f12acb076d6/contourpy-1.3.2-cp312-cp312-win_amd64.whl
   name: contourpy
   version: 1.3.2
@@ -4493,7 +4509,7 @@ packages:
 - pypi: .\
   name: flood-adapt
   version: 0.3.9
-  sha256: 6bf0274423e91251afe4b0ff52d3e069a5d6537769e5aec2a48b05e54d1e241f
+  sha256: 78f9e3e912e84696eacad26c4600ea011f026851bfa53524863e1c88c58e4be0
   requires_dist:
   - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
@@ -4538,6 +4554,7 @@ packages:
   - python-dotenv>=1.0,<2.0 ; extra == 'docs'
   - folium>=0.19.0,<1.0 ; extra == 'docs'
   - mapclassify>=2.8.0,<3.0 ; extra == 'docs'
+  - contextily ; extra == 'docs'
   - flood-adapt[build,dev,docs] ; extra == 'all'
   requires_python: '>=3.8,<3.13'
 - pypi: https://files.pythonhosted.org/packages/32/42/9d1c6fe6478e14feca0d33c2a2a2d4c84de01eeb6c61cf707eda9532b4d8/folium-0.19.6-py2.py3-none-any.whl
