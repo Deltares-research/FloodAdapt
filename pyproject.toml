@@ -68,6 +68,7 @@ build = [
 docs = [
     "jupyter            >=1.0,<2.0",
     "jupyter-cache      >=1.0,<2.0",
+    "nbstripout         >=0.8.0,<0.9",
     "matplotlib         >=3.0,<4.0",
     "quartodoc          >=0.9.0,<1.0",
     "sphinx             >=8.0,<9.0",
@@ -103,6 +104,9 @@ addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-
 testpaths = ["tests"]
 
 ### pixi ###
+[tool.pixi.feature.docs.pypi-dependencies]
+flood-adapt = { path = "." }
+
 [tool.pixi.feature.build.pypi-dependencies]
 flood-adapt = { path = "." }
 
@@ -143,7 +147,9 @@ build-db-builder = {cmd = "python distribution/build_database_builder_executable
 
 [tool.pixi.feature.docs.tasks]
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
-clean-docs = {depends-on=["clean-generated-docs"]}
+clean-example-output = { cmd = "python docs/clean_notebook_output.py" }
+clean-example-database = { cmd = "python docs/clean_database.py ./docs/_data/examples/charleston_test" }
+clean-docs = {depends-on=["clean-generated-docs", "clean-example-output", "clean-example-database"]}
 fetch-data = { cmd = "python docs/fetch_data.py" }
 build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
 build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
