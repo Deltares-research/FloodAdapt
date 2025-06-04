@@ -8,9 +8,6 @@ project:
     - "*.qmd"
     - "*.ipynb"
     - "!PDF_Documentation.qmd"
-  post-render:
-    - clean_notebook_output.py
-    - clean_database.py
 
 filters:
   - interlinks
