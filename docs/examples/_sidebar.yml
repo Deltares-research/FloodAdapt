@@ -1,42 +1,44 @@
 website:
   sidebar:
-    - id: examples
+    - id: Examples
       border: true
       style: "docked"
       background: light
       search: true
       title: Examples
-      href: examples/index.qmd
       contents:
-        - section: Database Builder
+        - text: Database Builder
           href: examples/database_builder/index.qmd
 
-        - section: Projections
-          href: projections/projections.ipynb
+        - text: Simple Scenario
+          href: examples/scenarios/simple.html
 
-        - section: Measures
+        - text: Projections
+          href: examples/projections/projections.html
+
+        - text: Measures
           href: examples/measures/index.qmd
 
-        - section: Strategies
+        - text: Strategies
           href: examples/strategies/index.qmd
 
         - section: Events
           href: examples/events/index.qmd
           contents:
-            - href: examples/events/synthetic_event.ipynb
-              text: "Synthetic Event"
-            - href: examples/events/hurricane_event.ipynb
-              text: "Hurricane Event"
-            - href: examples/events/historical_event.ipynb
-              text: "Historical Event"
-            - href: examples/events/database_manipulation.ipynb
-              text: "Database Manipulation"
+            - text: Synthetic Event
+              href: examples/events/synthetic_event.html
+            - text: Hurricane Event
+              href: examples/events/hurricane_event.html
+            - text: Historical Event
+              href: examples/events/historical_event.html
+            - text: Event modification
+              href: examples/events/event_modification.html
 
-        - section: Scenarios
-          href: examples/scenarios/index.qmd
+        - text: Complex Scenario
+          href: examples/scenarios/complex.html
 
-        - section: Event set for risk assessments
-          href: examples/event_set/create_event_set.ipynb
+        - text: Event set for risk assessments
+          href: examples/event_set/create_event_set.html
 
-        - section: Benefits
+        - text: Benefits
           href: examples/benefits/index.qmd
