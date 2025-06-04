@@ -2,6 +2,7 @@
 title: "Examples"
 format: html
 page-layout: article
+sidebar: Examples
 ---
 
 ## Introduction
@@ -27,15 +28,15 @@ Each notebook includes narrative explanations and inline code cells. You can cop
 
 ## Examples
 
-- [1. Database Builder]() example description
+- [1. Database Builder]()
 - [2. Simple Scenario]() example description
 - [3. Events ](events/index.qmd) How to manage hazard model configuration with Events.
-- [4. Projection ](projections/projections.ipynb) example description
+- [4. Projection ](projections/projections.ipynb) How to model long-term effects like sea level rise, or population growth.
 - [5. Measures]() example description
 - [6. Strategies]() example description
 - [7. Database manipulation]() example description
 - [8. Complex scenario(s)]() example description
-- [9. Event set / risk]() example description
+- [9. Event set / risk](event_set/create_event_set.ipynb) How to create probabilistic event sets for use in risk analysis.
 - [10. Benefits]() example description
 
 ---
