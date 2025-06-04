@@ -35,7 +35,7 @@ website:
               href: examples/events/event_modification.html
 
         - text: Complex Scenario
-          href: examples/scenarios/complex_scenario.ipynb
+          href: examples/scenarios/complex_scenario.html
 
         - text: Event set for risk assessments
           href: examples/event_set/create_event_set.html

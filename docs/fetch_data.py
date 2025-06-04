@@ -86,3 +86,10 @@ if __name__ == "__main__":
         output_path=data_dir / "examples",
         overwrite=True
     )
+
+    download_directory(
+        client=client,
+        path_in_bucket="system", # requires the non-public access keys
+        output_path=data_dir / "system",
+        overwrite=True
+    )
