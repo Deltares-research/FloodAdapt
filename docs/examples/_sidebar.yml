@@ -10,6 +10,9 @@ website:
         - text: Database Builder
           href: examples/database_builder/index.qmd
 
+        - text: Simple Scenario
+          href: examples/scenarios/simple.html
+
         - text: Projections
           href: examples/projections/projections.html
 
@@ -31,8 +34,8 @@ website:
             - text: Event modification
               href: examples/events/event_modification.html
 
-        - text: Scenarios
-          href: examples/scenarios/index.qmd
+        - text: Complex Scenario
+          href: examples/scenarios/complex.html
 
         - text: Event set for risk assessments
           href: examples/event_set/create_event_set.html
