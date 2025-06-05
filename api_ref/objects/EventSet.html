@@ -817,7 +817,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>EventSet</h1>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>objects.EventSet()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>BaseModel describing the expected variables and data types for parameters of EventSet.</p>
-<p>An EventSet is a collection of events that can be used to create a scenario and perform a probabilistoc risk assessment.</p>
+<p>An EventSet is a collection of events that can be used to create a scenario and perform a probabilistic risk assessment.</p>
 <section id="attributes" class="level2 doc-section doc-section-attributes">
 <h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
 <dl>
@@ -861,7 +861,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <section id="flood_adapt.objects.EventSet.load_file" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.objects.EventSet.load_file">load_file</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.EventSet.load_file(file_path: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.EventSet.load_file(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    file_path: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    load_all: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Load object from file.</p>
 </section>
 <section id="flood_adapt.objects.EventSet.load_sub_events" class="level3">
