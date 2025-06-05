@@ -53,6 +53,7 @@ class HurricaneEvent(Event):
             ForcingSource.CSV,
             ForcingSource.SYNTHETIC,
             ForcingSource.TRACK,
+            ForcingSource.METEO,
         ],
         ForcingType.WIND: [ForcingSource.TRACK],
         ForcingType.WATERLEVEL: [ForcingSource.MODEL],
