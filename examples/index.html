@@ -75,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="../_static/styles.css">
 </head>
 
-<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -295,10 +295,118 @@ ul.task-list li input[type="checkbox"] {
 </div>
       </div> <!-- /container-fluid -->
     </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Examples</li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
 </header>
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/database_builder/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Database Builder</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/scenarios/simple.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simple Scenario</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/projections/projections.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Projections</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/measures/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Measures</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/strategies/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Strategies</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../examples/events/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Events</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/events/synthetic_event.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Synthetic Event</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/events/hurricane_event.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hurricane Event</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/events/historical_event.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Historical Event</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/events/event_modification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Event modification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/scenarios/complex.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Complex Scenario</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/event_set/create_event_set.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Event set for risk assessments</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/benefits/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Benefits</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
@@ -349,16 +457,15 @@ ul.task-list li input[type="checkbox"] {
 <section id="examples" class="level2">
 <h2 class="anchored" data-anchor-id="examples">Examples</h2>
 <ul>
-<li><a href="">1. Database Builder</a> example description</li>
-<li><a href="">2. Simple Scenario</a> example description</li>
-<li><a href="../examples/events/index.html">3. Events</a> How to manage hazard model configuration with Events.</li>
-<li><a href="../examples/projections/projections.html">4. Projection</a> example description</li>
-<li><a href="">5. Measures</a> example description</li>
-<li><a href="">6. Strategies</a> example description</li>
-<li><a href="">7. Database manipulation</a> example description</li>
-<li><a href="">8. Complex scenario(s)</a> example description</li>
-<li><a href="">9. Event set / risk</a> example description</li>
-<li><a href="">10. Benefits</a> example description</li>
+<li><a href="../examples/database_builder/index.html">1. Database Builder</a> Demonstrates how to initialize a FloodAdapt project by building the required database structure. This includes importing and configuring SFINCS and Delft-FIAT models, setting up spatial data, and preparing the backend for scenario analysis.</li>
+<li><a href="../examples/scenarios/simple.html">2. Simple Scenario</a> Walks through a basic flood scenario setup using predefined hazard and exposure data. Ideal for first-time users, this example illustrates the core workflow of defining a flood event, running simulations, and interpreting impact results.</li>
+<li><a href="../examples/events/index.html">3. Events</a> Explains how to configure and manage flood events within FloodAdapt. Learn to define event characteristics such as rainfall intensity, duration, and spatial distribution, and understand how these parameters influence flood modeling outcomes.</li>
+<li><a href="../examples/projections/projections.html">4. Projection</a> Covers the integration of long-term projections into flood risk assessments. This includes modeling future conditions like sea level rise, land subsidence, and socio-economic changes to evaluate their impact on flood hazards and vulnerabilities.</li>
+<li><a href="../examples/measures/index.html">5. Measures</a> Explores the implementation of adaptation measures such as levees, floodwalls, and green infrastructure. Learn how to simulate their effectiveness in reducing flood risks and assess their feasibility within different scenarios.</li>
+<li><a href="../examples/strategies/index.html">6. Strategies</a> Demonstrates how to develop and compare comprehensive adaptation strategies by combining multiple measures. This example guides users through evaluating trade-offs, cost-effectiveness, and overall risk reduction potential.</li>
+<li><a href="../examples/scenarios/complex.html">8. Complex scenario(s)</a> Provides an in-depth look at modeling compound flood scenarios involving multiple hazard sources (e.g., riverine and coastal flooding) and cascading impacts. Ideal for advanced users seeking to analyze intricate risk profiles.</li>
+<li><a href="../examples/event_set/create_event_set.html">9. Event set / risk</a> Illustrates the creation of probabilistic event sets for comprehensive risk analysis. Learn to generate a range of flood events with varying probabilities to assess potential impacts and inform robust adaptation planning.</li>
+<li><a href="../examples/benefits/index.html">10. Benefits</a> Focuses on evaluating the benefits of implemented adaptation strategies. This includes quantifying risk reduction, economic savings, and social advantages to support evidence-based decision-making.</li>
 </ul>
 <hr>
 

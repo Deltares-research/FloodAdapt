@@ -878,7 +878,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="flood_adapt.FloodAdapt" class="level1">
 <h1>FloodAdapt</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt(<span class="va">self</span>, database_path: Path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt(database_path: Path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="caption-top table">
@@ -1107,7 +1107,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.interp_slr">interp_slr</a></td>
-<td>Interpolate sea level rise for a given scenario and year.</td>
+<td>Interpolate SLR value and reference it to the SLR reference year from the site toml.</td>
 </tr>
 <tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.load_static_data">load_static_data</a></td>
@@ -1334,6 +1334,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
+<section id="raises-1" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-1">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dd>
+<p>If the attributes do not adhere to the Event schema.</p>
+</dd>
+</dl>
+</section>
 </section>
 <section id="flood_adapt.FloodAdapt.create_event_set" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.create_event_set">create_event_set</h3>
@@ -1364,6 +1373,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
+<section id="raises-2" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-2">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dd>
+<p>If the attributes do not adhere to the EventSet schema.</p>
+</dd>
+</dl>
+</section>
 </section>
 <section id="flood_adapt.FloodAdapt.create_measure" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.create_measure">create_measure</h3>
@@ -1391,6 +1409,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
+<section id="raises-3" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-3">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dd>
+<p>If the type is not valid or if the attributes do not adhere to the Measure schema.</p>
+</dd>
+</dl>
+</section>
 </section>
 <section id="flood_adapt.FloodAdapt.create_projection" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.create_projection">create_projection</h3>
@@ -1414,8 +1441,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-1" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-1">Raises</h4>
+<section id="raises-4" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-4">Raises</h4>
 <dl>
 <dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
 <dd>
@@ -1446,8 +1473,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-2" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-2">Raises</h4>
+<section id="raises-5" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-5">Raises</h4>
 <dl>
 <dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
 <dd>
@@ -1478,12 +1505,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-3" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-3">Raises</h4>
+<section id="raises-6" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-6">Raises</h4>
 <dl>
 <dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
 <dd>
-<p>If the strategy with the given name does not exist. If attrs does not adhere to the Strategy schema.</p>
+<p>If attrs does not adhere to the Strategy schema.</p>
 </dd>
 </dl>
 </section>
@@ -1501,10 +1528,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-4" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-4">Raises</h4>
+<section id="raises-7" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-7">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the benefit object does not exist.</p>
 </dd>
@@ -1524,10 +1551,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-5" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-5">Raises</h4>
+<section id="raises-8" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-8">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the event does not exist. If the event is used in a scenario.</p>
 </dd>
@@ -1547,10 +1574,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-6" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-6">Raises</h4>
+<section id="raises-9" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-9">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the measure does not exist.</p>
 </dd>
@@ -1570,10 +1597,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-7" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-7">Raises</h4>
+<section id="raises-10" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-10">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the projection does not exist. If the projection is used in a scenario.</p>
 </dd>
@@ -1593,10 +1620,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-8" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-8">Raises</h4>
+<section id="raises-11" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-11">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the scenario does not exist.</p>
 </dd>
@@ -1616,10 +1643,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-9" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-9">Raises</h4>
+<section id="raises-12" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-12">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the strategy does not exist.</p>
 </dd>
@@ -1709,10 +1736,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-10" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-10">Raises</h4>
+<section id="raises-13" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-13">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the benefit with the given name does not exist.</p>
 </dd>
@@ -1821,10 +1848,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-11" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-11">Raises</h4>
+<section id="raises-14" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-14">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the cyclone track database is not defined in the site configuration. If the cyclone track with the given index does not exist.</p>
 </dd>
@@ -1867,10 +1894,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-12" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-12">Raises</h4>
+<section id="raises-15" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-15">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the event with the given name does not exist.</p>
 </dd>
@@ -1973,8 +2000,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-13" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-13">Raises</h4>
+<section id="raises-16" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-16">Raises</h4>
 <dl>
 <dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError">FileNotFoundError</a></span></code></dt>
 <dd>
@@ -2032,10 +2059,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-14" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-14">Raises</h4>
+<section id="raises-17" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-17">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the measure with the given name does not exist.</p>
 </dd>
@@ -2144,10 +2171,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-15" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-15">Raises</h4>
+<section id="raises-18" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-18">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the projection with the given name does not exist.</p>
 </dd>
@@ -2213,10 +2240,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-16" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-16">Raises</h4>
+<section id="raises-19" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-19">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the scenario with the given name does not exist.</p>
 </dd>
@@ -2267,9 +2294,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="returns-38" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-38">Returns</h4>
 <dl>
-<dt><code><span class="parameter-name"><strong>static_map</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<code>gpd</code>.<a href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame">GeoDataFrame</a>, None]</span></code></dt>
+<dt><code><span class="parameter-name"><strong>static_map</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>gpd</code>.<a href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame">GeoDataFrame</a></span></code></dt>
 <dd>
-<p>gpd.GeoDataFrame with the static map if available, None if not found</p>
+<p>gpd.GeoDataFrame with the static map</p>
+</dd>
+</dl>
+</section>
+<section id="raises-20" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-20">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
+<dd>
+<p>If the static map with the given path does not exist.</p>
 </dd>
 </dl>
 </section>
@@ -2310,10 +2346,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-17" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-17">Raises</h4>
+<section id="raises-21" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-21">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the strategy with the given name does not exist.</p>
 </dd>
@@ -2351,17 +2387,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="flood_adapt.FloodAdapt.interp_slr" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.interp_slr">interp_slr</h3>
 <div class="sourceCode" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.interp_slr(slr_scenario: <span class="bu">str</span>, year: <span class="bu">float</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Interpolate sea level rise for a given scenario and year.</p>
+<p>Interpolate SLR value and reference it to the SLR reference year from the site toml.</p>
 <section id="parameters-36" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-36">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>slr_scenario</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
-<p>The name of the sea level rise scenario.</p>
+<p>SLR scenario name from the coulmn names in static/slr/slr.csv</p>
 </dd>
 <dt><code><span class="parameter-name"><strong>year</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#float">float</a></span></code></dt>
 <dd>
-<p>The year to interpolate sea level rise for.</p>
+<p>year to evaluate</p>
 </dd>
 </dl>
 </section>
@@ -2371,6 +2407,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <dt><code><span class="parameter-name"><strong>interpolated</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#float">float</a></span></code></dt>
 <dd>
 <p>The interpolated sea level rise for the given scenario and year.</p>
+</dd>
+</dl>
+</section>
+<section id="raises-22" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-22">Raises</h4>
+<dl>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dd>
+<p>if the reference year is outside of the time range in the slr.csv file</p>
+</dd>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dd>
+<p>if the year to evaluate is outside of the time range in the slr.csv file</p>
 </dd>
 </dl>
 </section>
@@ -2440,8 +2489,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-18" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-18">Raises</h4>
+<section id="raises-23" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-23">Raises</h4>
 <dl>
 <dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#RuntimeError">RuntimeError</a></span></code></dt>
 <dd>
@@ -2467,10 +2516,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-19" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-19">Raises</h4>
+<section id="raises-24" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-24">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the benefit object is not valid.</p>
 </dd>
@@ -2494,10 +2543,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-20" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-20">Raises</h4>
+<section id="raises-25" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-25">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the event object is not valid.</p>
 </dd>
@@ -2521,10 +2570,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-21" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-21">Raises</h4>
+<section id="raises-26" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-26">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the measure object is not valid.</p>
 </dd>
@@ -2548,10 +2597,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-22" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-22">Raises</h4>
+<section id="raises-27" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-27">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the projection object is not valid.</p>
 </dd>
@@ -2575,16 +2624,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-45" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-45">Returns</h4>
+<section id="raises-28" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-28">Raises</h4>
 <dl>
-<dt><code><span class="parameter-name"><strong>run_success</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
-<p>Whether the scenario was saved successfully.</p>
-</dd>
-<dt><code><span class="parameter-name"><strong>error_msg</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
-<dd>
-<p>The error message if the scenario was not saved successfully.</p>
+<p>If the scenario object is not valid or if it already exists and overwrite is False.</p>
 </dd>
 </dl>
 </section>
@@ -2606,10 +2651,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="raises-23" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-23">Raises</h4>
+<section id="raises-29" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-29">Raises</h4>
 <dl>
-<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></span></code></dt>
+<dt><code><span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>DatabaseError</code></span></code></dt>
 <dd>
 <p>If the strategy object is not valid. If the strategy object already exists.</p>
 </dd>
