@@ -92,10 +92,7 @@ class TestMeasure:
             Measure(name="", type=MeasureType.floodwall)
 
         # Assert
-        assert (
-            "validation error for Measure\nname\n  String should have at least 1 character "
-            in str(excinfo.value)
-        )
+        assert "Name must be at least one character long" in str(excinfo.value)
 
     def test_measure_model_invalid_type(self):
         # Arrange
