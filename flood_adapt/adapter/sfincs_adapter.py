@@ -739,7 +739,7 @@ class SfincsAdapter(IHazardAdapter):
 
         TODO: make this robust and more efficient for bigger datasets.
         """
-        event: EventSet = self.database.events.get(scenario.event)
+        event: EventSet = self.database.events.get(scenario.event, load_all=True)
         if not isinstance(event, EventSet):
             raise ValueError("This function is only available for risk scenarios.")
 
@@ -894,7 +894,7 @@ class SfincsAdapter(IHazardAdapter):
 
         This means preprocessing and running the SFINCS model for each event in the event set, and then postprocessing the results.
         """
-        event_set: EventSet = self.database.events.get(scenario.event)
+        event_set: EventSet = self.database.events.get(scenario.event, load_all=True)
         total = len(event_set._events)
 
         for i, sub_event in enumerate(event_set._events):
