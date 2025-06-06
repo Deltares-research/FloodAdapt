@@ -231,6 +231,7 @@ class TestBenefitScenariosRun:
                 {
                     "Description": "",
                     "Show In Metrics Table": "TRUE",
+                    "Show In Metrics Map": "TRUE",
                     "Long Name": "",
                     "Value": damages_dummy[name],
                 },
@@ -255,6 +256,7 @@ class TestBenefitScenariosRun:
                 dict0 = {
                     "Description": ["", ""],
                     "Show In Metrics Table": ["TRUE", "TRUE"],
+                    "Show In Metrics Map": ["TRUE", "TRUE"],
                     "Long Name": ["", ""],
                 }
 

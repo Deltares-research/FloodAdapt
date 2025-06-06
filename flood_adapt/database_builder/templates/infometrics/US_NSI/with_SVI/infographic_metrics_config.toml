@@ -9,6 +9,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` <= 1 AND `Total Damage` > 0"
 long_name = "Res buildings w/ minor flooding (#)"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "ResidentialMajorCount"
@@ -17,6 +18,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` <= 6 AND `Inundation Depth` > 1 AND `Total Damage` > 0"
 long_name = "Res buildings w/ major flooding (#)"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "ResidentialDestroyedCount"
@@ -25,6 +27,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` > 6 AND `Total Damage` > 0"
 long_name = "Res buildings destroyed (#)"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "CommercialMinorCount"
@@ -33,6 +36,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM8', 'COM9')  AND `Inundation Depth` <= 1 AND `Total Damage` > 0"
 long_name = "Minor Damaged Commercial Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "CommercialMajorCount"
@@ -41,6 +45,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM8', 'COM9')  AND `Inundation Depth` <= 6 AND `Inundation Depth` > 1 AND `Total Damage` > 0"
 long_name = "Major Damaged Commercial Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "CommercialDestroyedCount"
@@ -49,6 +54,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM8', 'COM9')  AND `Inundation Depth` > 6 AND `Total Damage` > 0"
 long_name = "Destroyed Commercial Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "HealthMinorCount"
@@ -57,6 +63,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('RES6', 'COM6', 'COM7') AND `Inundation Depth` <= 1 AND `Total Damage` > 0 AND `Inundation Depth` > 0"
 long_name = "Minor Damaged Health Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "HealthMajorCount"
@@ -65,6 +72,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('RES6', 'COM6', 'COM7') AND `Inundation Depth` <= 6 AND `Inundation Depth` > 1 AND `Total Damage` > 0"
 long_name = "Major Damaged Health Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "HealthDestroyedCount"
@@ -73,6 +81,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('RES6', 'COM6', 'COM7') AND `Inundation Depth` > 6 AND `Total Damage` > 0"
 long_name = "Destroyed Health Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "SchoolsMinorCount"
@@ -81,6 +90,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('EDU1', 'EDU2') AND `Inundation Depth` <= 1 AND `Total Damage` > 0"
 long_name = "Minor Damaged Schools Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "SchoolsMajorCount"
@@ -89,6 +99,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('EDU1', 'EDU2') AND `Inundation Depth` <= 6 AND `Inundation Depth` > 1 AND `Total Damage` > 0"
 long_name = "Major Damaged Schools Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "SchoolsDestroyedCount"
@@ -97,6 +108,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('EDU1', 'EDU2') AND `Inundation Depth` > 6 AND `Total Damage` > 0"
 long_name = "Destroyed Schools Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "EmergencyMinorCount"
@@ -105,6 +117,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('GOV2') AND `Inundation Depth` <= 1 AND `Total Damage` > 0"
 long_name = "Minor Damaged Emergency Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "EmergencyMajorCount"
@@ -113,6 +126,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('GOV2') AND `Inundation Depth` <= 6 AND `Inundation Depth` > 1 AND `Total Damage` > 0"
 long_name = "Major Damaged Emergency Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "EmergencyDestroyedCount"
@@ -121,6 +135,7 @@ select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('GOV2') AND `Inundation Depth` > 6 AND `Total Damage` > 0"
 long_name = "Destroyed Emergency Buildings"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 # Metrics used in people/vulnerability charts
 
@@ -131,6 +146,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` <= 6 AND `SVI` < SVI_threshold AND `Total Damage` > 0"
 long_name = "Flooded Low Vulnerability"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "FloodedHighVulnerability"
@@ -139,6 +155,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` <= 6 AND `SVI` >= SVI_threshold AND `Total Damage` > 0"
 long_name = "Flooded Homes - High SV (#)"
 show_in_metrics_table = "True"
+show_in_metrics_map = "True"
 
 [[queries]]
 name = "DisplacedLowVulnerability"
@@ -147,6 +164,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` > 6 AND `SVI` < SVI_threshold AND `Total Damage` > 0"
 long_name = "Displaced Low Vulnerability"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "DisplacedHighVulnerability"
@@ -155,6 +173,7 @@ select = "COUNT(*)"
 filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` > 6 AND `SVI` >= SVI_threshold AND `Total Damage` > 0"
 long_name = "Displaced High Vulnerability"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 # Metrics used in road impacts graph
 
@@ -165,6 +184,7 @@ select = "SUM(`Segment Length`)*0.0001894"
 filter = "`Inundation Depth` > 0.3"
 long_name = "Slightly flooded roads"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "MinorFloodedRoads"
@@ -173,6 +193,7 @@ select = "SUM(`Segment Length`)*0.0001894"
 filter = "`Inundation Depth` >= 0.5"
 long_name = "Minor flooded roads"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "MajorFloodedRoads"
@@ -181,6 +202,7 @@ select = "SUM(`Segment Length`)*0.0001894"
 filter = "`Inundation Depth` >= 1"
 long_name = "Major flooded roads"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
 
 [[queries]]
 name = "FullyFloodedRoads"
@@ -189,3 +211,4 @@ select = "SUM(`Segment Length`)*0.0001894"
 filter = "`Inundation Depth` >= 2"
 long_name = "Fully flooded roads"
 show_in_metrics_table = "False"
+show_in_metrics_map = "False"
