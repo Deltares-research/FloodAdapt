@@ -7,9 +7,7 @@ import pytest
 import tomli
 
 from flood_adapt.config.sfincs import RiverModel
-from flood_adapt.objects.events.synthetic import (
-    SyntheticEvent,
-)
+from flood_adapt.objects.events.historical import HistoricalEvent
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.discharge import DischargeConstant
 from flood_adapt.objects.forcing.forcing import ForcingSource, ForcingType
@@ -59,7 +57,7 @@ def _waterlevel_csv(dummy_1d_timeseries_df: pd.DataFrame):
 
 @pytest.fixture()
 def test_event_all_csv(_wind_csv, _rainfall_csv, _waterlevel_csv):
-    return SyntheticEvent(
+    return HistoricalEvent(
         name="test_synthetic_nearshore",
         time=TimeFrame(
             start_time=datetime(2020, 1, 1),
@@ -95,9 +93,9 @@ def test_event_all_csv(_wind_csv, _rainfall_csv, _waterlevel_csv):
     )
 
 
-class TestSyntheticEvent:
+class TestHistoricalEvent:
     def test_save_event_toml_and_datafiles(
-        self, test_event_all_csv: SyntheticEvent, tmp_path
+        self, test_event_all_csv: HistoricalEvent, tmp_path
     ):
         path = tmp_path / "test_event.toml"
         test_event = test_event_all_csv
@@ -107,7 +105,7 @@ class TestSyntheticEvent:
         with open(path, "rb") as f:
             content = tomli.load(f)
 
-        loaded_event = SyntheticEvent.load_file(path)
+        loaded_event = HistoricalEvent.load_file(path)
         csv_forcings = [
             f for f in loaded_event.get_forcings() if f.source == ForcingSource.CSV
         ]
@@ -126,7 +124,7 @@ class TestSyntheticEvent:
         test_event.save(path)
         assert path.exists()
 
-        loaded_event = SyntheticEvent.load_file(path)
+        loaded_event = HistoricalEvent.load_file(path)
 
         csv_forcings = [
             f for f in loaded_event.get_forcings() if f.source == ForcingSource.CSV
@@ -143,6 +141,6 @@ class TestSyntheticEvent:
         saved_event.save(path)
         assert path.exists()
 
-        loaded_event = SyntheticEvent.load_file(path)
+        loaded_event = HistoricalEvent.load_file(path)
 
         assert loaded_event == saved_event
