@@ -5,7 +5,8 @@ from typing import Any, Optional
 
 import geopandas as gpd
 import pyproj
-from pydantic import Field, field_validator, model_validator
+import tomli
+from pydantic import Field, field_serializer, field_validator, model_validator
 
 from flood_adapt.config.site import Site
 from flood_adapt.misc.utils import resolve_filepath, save_file_to_database
@@ -120,9 +121,87 @@ class Measure(Object):
         Description of the measure.
     type: MeasureType
         Type of measure. Should be one of the MeasureType enum values.
+    selection_type: SelectionType
+        Type of selection. Should be one of the SelectionType enum values.
+    polygon_file: str, Optional
+        Path to a polygon file, either absolute or relative to the measure's toml path in the database.
     """
 
     type: MeasureType
+    selection_type: SelectionType
+
+    polygon_file: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        description="Path to a polygon file, either absolute or relative to the measure path.",
+    )
+
+    aggregation_area_type: Optional[str] = None
+    aggregation_area_name: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_selection_type(self) -> "Measure":
+        match self.selection_type:
+            case SelectionType.all:
+                pass
+            case SelectionType.polygon | SelectionType.polyline:
+                if not self.polygon_file:
+                    raise ValueError(
+                        "If `selection_type` is 'polygon' or 'polyline', then `polygon_file` needs to be set."
+                    )
+            case SelectionType.aggregation_area:
+                if not self.aggregation_area_name:
+                    raise ValueError(
+                        "If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set."
+                    )
+                if not self.aggregation_area_type:
+                    raise ValueError(
+                        "If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set."
+                    )
+            case _:
+                raise ValueError(
+                    f"Invalid selection type: {self.selection_type}. "
+                    "Must be one of 'aggregation_area', 'polygon', 'polyline', or 'all'."
+                )
+        return self
+
+    @field_serializer("polygon_file")
+    def serialize_polygon_file(self, value: Optional[str]) -> Optional[str]:
+        """Serialize the polygon_file attribute to a string of only the file name."""
+        if value is None:
+            return None
+        return Path(value).name
+
+    @classmethod
+    def load_file(cls, file_path: Path | str | os.PathLike) -> "Measure":
+        """Load the measure from a file.
+
+        Parameters
+        ----------
+        filepath : Path | str | os.PathLike
+            Path to the file to load the measure from.
+
+        Returns
+        -------
+        Measure
+            The loaded measure object.
+        """
+        with open(file_path, mode="rb") as fp:
+            toml = tomli.load(fp)
+        measure = cls.model_validate(toml)
+
+        if measure.polygon_file:
+            measure.polygon_file = str(Path(file_path).parent / measure.polygon_file)
+
+        return measure
+
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.polygon_file:
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            src_path = resolve_filepath("measures", self.name, self.polygon_file)
+            path = save_file_to_database(src_path, Path(output_dir))
+            # Update the shapefile path in the object so it is saved in the toml file as well
+            self.polygon_file = path.name
 
 
 class HazardMeasure(Measure):
@@ -143,38 +222,11 @@ class HazardMeasure(Measure):
 
     """
 
-    selection_type: SelectionType
-    polygon_file: Optional[str] = Field(
-        default=None,
-        min_length=1,
-        description="Path to a polygon file, either absolute or relative to the measure path.",
-    )
-
     @field_validator("type")
     def validate_type(cls, value):
         if not MeasureType.is_hazard(value):
             raise ValueError(f"Invalid hazard type: {value}")
         return value
-
-    @model_validator(mode="after")
-    def validate_selection_type(self) -> "HazardMeasure":
-        if (
-            self.selection_type
-            not in [SelectionType.aggregation_area, SelectionType.all]
-            and self.polygon_file is None
-        ):
-            raise ValueError(
-                "If `selection_type` is not 'aggregation_area' or 'all', then `polygon_file` needs to be set."
-            )
-        return self
-
-    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.polygon_file:
-            Path(output_dir).mkdir(parents=True, exist_ok=True)
-            src_path = resolve_filepath("measures", self.name, self.polygon_file)
-            path = save_file_to_database(src_path, Path(output_dir))
-            # Update the shapefile path in the object so it is saved in the toml file as well
-            self.polygon_file = path.name
 
 
 class ImpactMeasure(Measure):
@@ -200,15 +252,6 @@ class ImpactMeasure(Measure):
             Name of the aggregation area.
     """
 
-    type: MeasureType
-    selection_type: SelectionType
-    aggregation_area_type: Optional[str] = None
-    aggregation_area_name: Optional[str] = None
-    polygon_file: Optional[str] = Field(
-        default=None,
-        min_length=1,
-        description="Path to a polygon file, relative to the database path.",
-    )
     property_type: str  # TODO make enum
 
     @field_validator("type")
@@ -216,34 +259,6 @@ class ImpactMeasure(Measure):
         if not MeasureType.is_impact(value):
             raise ValueError(f"Invalid impact type: {value}")
         return value
-
-    @model_validator(mode="after")
-    def validate_aggregation_area_name(self):
-        if (
-            self.selection_type == SelectionType.aggregation_area
-            and self.aggregation_area_name is None
-        ):
-            raise ValueError(
-                "If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set."
-            )
-        return self
-
-    @model_validator(mode="after")
-    def validate_polygon_file(self):
-        if self.selection_type == SelectionType.polygon and self.polygon_file is None:
-            raise ValueError(
-                "If `selection_type` is 'polygon', then `polygon_file` needs to be set."
-            )
-
-        return self
-
-    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        """Save the additional files to the database."""
-        if self.polygon_file:
-            src_path = resolve_filepath("measures", self.name, self.polygon_file)
-            path = save_file_to_database(src_path, Path(output_dir))
-            # Update the shapefile path in the object so it is saved in the toml file as well
-            self.polygon_file = path.name
 
 
 class Elevate(ImpactMeasure):
