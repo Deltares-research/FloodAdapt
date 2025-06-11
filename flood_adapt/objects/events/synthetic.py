@@ -30,19 +30,15 @@ class SyntheticEvent(Event):
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [
             ForcingSource.CONSTANT,
-            ForcingSource.CSV,
             ForcingSource.SYNTHETIC,
         ],
         ForcingType.WIND: [
-            ForcingSource.CSV,
             ForcingSource.CONSTANT,
         ],
         ForcingType.WATERLEVEL: [
-            ForcingSource.CSV,
             ForcingSource.SYNTHETIC,
         ],
         ForcingType.DISCHARGE: [
-            ForcingSource.CSV,
             ForcingSource.SYNTHETIC,
             ForcingSource.CONSTANT,
         ],
