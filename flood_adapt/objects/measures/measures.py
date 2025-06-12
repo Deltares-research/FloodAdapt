@@ -1,7 +1,7 @@
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Type, TypeVar
 
 import geopandas as gpd
 import pyproj
@@ -108,6 +108,9 @@ class SelectionType(str, Enum):
     all = "all"
 
 
+T = TypeVar("T", bound="Measure")
+
+
 class Measure(Object):
     """The expected variables and data types of attributes common to all measures.
 
@@ -173,7 +176,7 @@ class Measure(Object):
         return Path(value).name
 
     @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "Measure":
+    def load_file(cls: Type[T], file_path: Path | str | os.PathLike) -> T:
         """Load the measure from a file.
 
         Parameters
