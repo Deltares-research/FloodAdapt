@@ -17,7 +17,7 @@ website:
           href: examples/projections/projections.html
 
         - text: Measures
-          href: examples/measures/index.qmd
+          href: examples/measures/measures_strategies.html
 
         - text: Strategies
           href: examples/strategies/index.qmd
