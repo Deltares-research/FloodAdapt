@@ -595,6 +595,12 @@ class SfincsAdapter(IHazardAdapter):
 
         with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
+            if hasattr(zsmax, "ugrid"):
+                # Rasterize to regular grid with specified resolution
+                res = 100  # TODO find a way to get finest resolution from model
+                zsmax = zsmax.ugrid.rasterize(resolution=res)
+                # Add CRS to the rasterized xarray
+                zsmax = zsmax.rio.write_crs(model._model.config["epsg"])
             # Save as a Cloud Optimized GeoTIFF (COG)
             zsmax.rio.to_raster(
                 results_path / "max_water_level_map.tif",
