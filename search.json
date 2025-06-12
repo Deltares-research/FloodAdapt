@@ -74,7 +74,7 @@
     "href": "examples/projections/projections.html#step-2-getting-available-projections-from-the-database",
     "title": "📘 Example: Projections in FloodAdapt",
     "section": "🔎 Step 2: Getting available projections from the database",
-    "text": "🔎 Step 2: Getting available projections from the database\nUsing the get_projections() method of the FloodAdapt class, we can get a dictionary of all the projections in the database. The keys of the returned dictionary are the names, descriptions, paths and last modification dates of the projections. We can use this method to check which projections are currently available in the database.\n\npd.DataFrame(fa.get_projections()) # here we turn the dictionary to a Pandas DataFrame for better visualization\n\n\n\n\n\n\n\n\nname\ndescription\npath\nlast_modification_date\n\n\n\n\n0\ncurrent\n\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 12:13:32.330172\n\n\n\n\n\n\n\nAs can be seen above, right now, there is only one projection available in the database named “current”. This is a default projection created when the database is created, to describe the current conditions without any future changes.\nWe can get the Projection object of a projection by using the get_projection() method of the FloodAdapt class. This method takes only the name of the projection as an argument.\n\nfa.get_projection(\"current\")\n\nProjection(name='current', description='', physical_projection=PhysicalProjection(sea_level_rise=UnitfulLength(value=0.0, units=UnitTypesLength.meters), subsidence=UnitfulLength(value=0.0, units=UnitTypesLength.meters), rainfall_multiplier=1.0, storm_frequency_increase=0.0), socio_economic_change=SocioEconomicChange(population_growth_existing=0.0, economic_growth=0.0, population_growth_new=0.0, new_development_elevation=None, new_development_shapefile=None))\n\n\nAs can be seen the “current” projection has default values for the attributes of the physical_projection and socio_economic_change, which essentially means that this projection describes the current conditions without any change.",
+    "text": "🔎 Step 2: Getting available projections from the database\nUsing the get_projections() method of the FloodAdapt class, we can get a dictionary of all the projections in the database. The keys of the returned dictionary are the names, descriptions, paths and last modification dates of the projections. We can use this method to check which projections are currently available in the database.\n\npd.DataFrame(fa.get_projections()) # here we turn the dictionary to a Pandas DataFrame for better visualization\n\n\n\n\n\n\n\n\nname\ndescription\npath\nlast_modification_date\n\n\n\n\n0\ncurrent\n\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 13:55:31.846769\n\n\n\n\n\n\n\nAs can be seen above, right now, there is only one projection available in the database named “current”. This is a default projection created when the database is created, to describe the current conditions without any future changes.\nWe can get the Projection object of a projection by using the get_projection() method of the FloodAdapt class. This method takes only the name of the projection as an argument.\n\nfa.get_projection(\"current\")\n\nProjection(name='current', description='', physical_projection=PhysicalProjection(sea_level_rise=UnitfulLength(value=0.0, units=UnitTypesLength.meters), subsidence=UnitfulLength(value=0.0, units=UnitTypesLength.meters), rainfall_multiplier=1.0, storm_frequency_increase=0.0), socio_economic_change=SocioEconomicChange(population_growth_existing=0.0, economic_growth=0.0, population_growth_new=0.0, new_development_elevation=None, new_development_shapefile=None))\n\n\nAs can be seen the “current” projection has default values for the attributes of the physical_projection and socio_economic_change, which essentially means that this projection describes the current conditions without any change.",
     "crumbs": [
       "Projections"
     ]
@@ -94,7 +94,7 @@
     "href": "examples/projections/projections.html#step-4-saving-a-new-projection-to-the-database",
     "title": "📘 Example: Projections in FloodAdapt",
     "section": "💾 Step 4: Saving a new Projection to the database",
-    "text": "💾 Step 4: Saving a new Projection to the database\nIn the previous step we have created a Projection object, but we have not yet saved it in our database. The save_projection() method of the FloodAdapt class can be used to achieve that. This method takes a single argument which is a Projection object. If a projection with the same name already exists in the database, an error will be raised. Let’s save the projection we just created to the database.\n\nfa.save_projection(future_1)\n\nUsing the get_projections() method of the FloodAdapt class, we can check that the projection has been saved to the database.\n\npd.DataFrame(fa.get_projections())\n\n\n\n\n\n\n\n\nname\ndescription\npath\nlast_modification_date\n\n\n\n\n0\ncurrent\n\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 12:13:32.330172\n\n\n1\nfuture_1\n0.5 m sea level rise, 10% population growth, 5...\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 12:26:17.695174",
+    "text": "💾 Step 4: Saving a new Projection to the database\nIn the previous step we have created a Projection object, but we have not yet saved it in our database. The save_projection() method of the FloodAdapt class can be used to achieve that. This method takes a single argument which is a Projection object. If a projection with the same name already exists in the database, an error will be raised. Let’s save the projection we just created to the database.\n\nfa.save_projection(future_1)\n\nUsing the get_projections() method of the FloodAdapt class, we can check that the projection has been saved to the database.\n\npd.DataFrame(fa.get_projections())\n\n\n\n\n\n\n\n\nname\ndescription\npath\nlast_modification_date\n\n\n\n\n0\ncurrent\n\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 13:55:31.846769\n\n\n1\nfuture_1\n0.5 m sea level rise, 10% population growth, 5...\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:09:07.320373",
     "crumbs": [
       "Projections"
     ]
@@ -114,7 +114,7 @@
     "href": "examples/projections/projections.html#step-6-deleting-a-projection-from-the-database",
     "title": "📘 Example: Projections in FloodAdapt",
     "section": "❌ Step 6: Deleting a Projection from the database",
-    "text": "❌ Step 6: Deleting a Projection from the database\nWe now have 3 projections in the database.\n\npd.DataFrame(fa.get_projections())\n\n\n\n\n\n\n\n\nname\ndescription\npath\nlast_modification_date\n\n\n\n\n0\ncurrent\n\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 12:13:32.330172\n\n\n1\nfuture_1\n0.5 m sea level rise, 10% population growth, 5...\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 12:26:17.695174\n\n\n2\nfuture_2\n1 m sea level rise, 10% population growth, 5% ...\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 12:26:17.762505\n\n\n\n\n\n\n\nIf we want to delete a projection from the database, we can use the delete_projection() method of the FloodAdapt class. This method takes a single argument which is the name of the projection to be deleted. Let’s delete the projection we just created.\n\nfa.delete_projection(\"future_2\")\n\nWe can check that the projection has been indeed deleted from the database by using the get_projections() method of the FloodAdapt class. The projection with name “future_2” is no longer in the database.\n\npd.DataFrame(fa.get_projections())\n\n\n\n\n\n\n\n\nname\ndescription\npath\nlast_modification_date\n\n\n\n\n0\ncurrent\n\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 12:13:32.330172\n\n\n1\nfuture_1\n0.5 m sea level rise, 10% population growth, 5...\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 12:26:17.695174",
+    "text": "❌ Step 6: Deleting a Projection from the database\nWe now have 3 projections in the database.\n\npd.DataFrame(fa.get_projections())\n\n\n\n\n\n\n\n\nname\ndescription\npath\nlast_modification_date\n\n\n\n\n0\ncurrent\n\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 13:55:31.846769\n\n\n1\nfuture_1\n0.5 m sea level rise, 10% population growth, 5...\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:09:07.320373\n\n\n2\nfuture_2\n1 m sea level rise, 10% population growth, 5% ...\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:09:07.383211\n\n\n\n\n\n\n\nIf we want to delete a projection from the database, we can use the delete_projection() method of the FloodAdapt class. This method takes a single argument which is the name of the projection to be deleted. Let’s delete the projection we just created.\n\nfa.delete_projection(\"future_2\")\n\nWe can check that the projection has been indeed deleted from the database by using the get_projections() method of the FloodAdapt class. The projection with name “future_2” is no longer in the database.\n\npd.DataFrame(fa.get_projections())\n\n\n\n\n\n\n\n\nname\ndescription\npath\nlast_modification_date\n\n\n\n\n0\ncurrent\n\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 13:55:31.846769\n\n\n1\nfuture_1\n0.5 m sea level rise, 10% population growth, 5...\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:09:07.320373",
     "crumbs": [
       "Projections"
     ]
@@ -130,178 +130,355 @@
     ]
   },
   {
-    "objectID": "examples/events/hurricane_event.html",
-    "href": "examples/events/hurricane_event.html",
-    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "objectID": "examples/events/synthetic_event.html",
+    "href": "examples/events/synthetic_event.html",
+    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
     "section": "",
-    "text": "This notebook demonstrates how to create a hurricane event using FloodAdapt. Hurricane events are valuable for controlled testing, sensitivity analysis, and understanding the behavior of flood models under simplified or hypothetical scenarios.\nA FloodAdapt Event consists of 2 things:\nIn this example, we construct a full HurricaneEvent with water level, rainfall, wind, and river discharge forcings, and then save it to a FloodAdapt database.",
+    "text": "This notebook demonstrates how to create a synthetic event using FloodAdapt. Synthetic events are valuable for controlled testing, sensitivity analysis, and understanding the behavior of flood models under simplified or hypothetical scenarios.\nA FloodAdapt Event consists of 2 things:\nIn this example, we construct a full synthetic event with water level, rainfall, wind, and river discharge forcings, and then save it to a FloodAdapt database.",
     "crumbs": [
       "Events",
-      "Hurricane Event"
+      "Synthetic Event"
     ]
   },
   {
-    "objectID": "examples/events/hurricane_event.html#step-1.-setup-and-imports",
-    "href": "examples/events/hurricane_event.html#step-1.-setup-and-imports",
-    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "objectID": "examples/events/synthetic_event.html#step-1.-setup-and-imports",
+    "href": "examples/events/synthetic_event.html#step-1.-setup-and-imports",
+    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
     "section": "⏱️ Step 1. Setup and Imports",
-    "text": "⏱️ Step 1. Setup and Imports\nWe begin by importing the required classes and modules for constructing hurricane forcings and managing event data within the flood_adapt framework.\n\nimport flood_adapt.objects.forcing as f\n\nfrom pathlib import Path\nfrom datetime import datetime\n\nfrom flood_adapt.objects import HurricaneEvent, TimeFrame\nfrom flood_adapt.objects.events.hurricane import TranslationModel\nfrom flood_adapt import unit_system as us\nfrom flood_adapt import FloodAdapt, Settings\n\n# Setup FloodAdapt\nSTATIC_DATA_DIR = Path(\"../../_data/examples/static-data\").resolve()\nsettings = Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\"\n)\nfa = FloodAdapt(database_path=settings.database_path)",
+    "text": "⏱️ Step 1. Setup and Imports\nWe begin by importing the required classes and modules for constructing synthetic forcings and managing event data within the FloodAdapt framework.\n\nimport flood_adapt.objects.forcing as f\n\nfrom pathlib import Path\nfrom datetime import datetime\n\nfrom flood_adapt.objects import SyntheticEvent, TimeFrame\nfrom flood_adapt import unit_system as us\nfrom flood_adapt import FloodAdapt, Settings\n\n# Setup FloodAdapt\nSTATIC_DATA_DIR = Path(\"../../_data/examples/static-data\").resolve()\nsettings = Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\"\n)\nfa = FloodAdapt(database_path=settings.database_path)",
     "crumbs": [
       "Events",
-      "Hurricane Event"
+      "Synthetic Event"
     ]
   },
   {
-    "objectID": "examples/events/hurricane_event.html#step-2.-define-the-simulation-time-frame",
-    "href": "examples/events/hurricane_event.html#step-2.-define-the-simulation-time-frame",
-    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "objectID": "examples/events/synthetic_event.html#step-2.-define-the-simulation-time-frame",
+    "href": "examples/events/synthetic_event.html#step-2.-define-the-simulation-time-frame",
+    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
     "section": "🗓️ Step 2. Define the Simulation Time Frame",
-    "text": "🗓️ Step 2. Define the Simulation Time Frame\nWe specify a one-day time frame for the hurricane event, from January 1 to January 2, 2025. Make sure the time frame covers the tinme specified in your hurricane track file.\n\n# Create an time frame for the simulation\nstart_time = datetime(year=2025, month=1, day=1)\nend_time = datetime(year=2025, month=1, day=2)\ntime_frame = TimeFrame(start_time=start_time, end_time=end_time)",
+    "text": "🗓️ Step 2. Define the Simulation Time Frame\nWe specify a one-day time frame for the SyntheticEvent, from January 1 to January 2, 2025.\n\n# Create an time frame for the simulation\nstart_time = datetime(year=2025, month=1, day=1)\nend_time = datetime(year=2025, month=1, day=2)\ntime_frame = TimeFrame(start_time=start_time, end_time=end_time)",
     "crumbs": [
       "Events",
-      "Hurricane Event"
+      "Synthetic Event"
     ]
   },
   {
-    "objectID": "examples/events/hurricane_event.html#step-3.-define-water-level-forcing",
-    "href": "examples/events/hurricane_event.html#step-3.-define-water-level-forcing",
-    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "objectID": "examples/events/synthetic_event.html#step-3.-define-water-level-forcing",
+    "href": "examples/events/synthetic_event.html#step-3.-define-water-level-forcing",
+    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
     "section": "🌊 Step 3. Define Water Level Forcing",
-    "text": "🌊 Step 3. Define Water Level Forcing\nWater levels for Hurricane Events are computed by taking the Hurricane Track, and generating a pressure and wind field along its track.\nThese fields are then used as forcing inputs to the offshore simulation, which generates the storm surge to be used for the overland simulation. So for waterlevels, we only need to specify to use the offshore model as the input, denoted with WaterlevelModel\n\nwater_levels = f.WaterlevelModel()",
+    "text": "🌊 Step 3. Define Water Level Forcing\nSynthetic water levels are constructed from a combination of tidal and surge components. All FloodAdapt events require exactly 1 water level forcing, all other forcings are optional.\n\n# Synthetic water levels can be computed from a combination of surge and tide.\nsurge = f.SurgeModel(\n    timeseries=f.GaussianTimeseries(\n        duration=us.UnitfulTime(value=12, units=us.UnitTypesTime.hours),\n        # Choose the middle of the time frame for peak time\n        peak_time=us.UnitfulTime.from_timedelta(time_frame.duration / 2), \n        peak_value=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),\n    )\n)\n\ntide = f.TideModel(\n    harmonic_amplitude=us.UnitfulLength(value=1, units=us.UnitTypesLength.meters),\n    # Choose the middle of the time frame for peak time\n    harmonic_phase=us.UnitfulTime.from_timedelta(time_frame.duration / 2), \n    harmonic_period=us.UnitfulTime(value=12.4, units=us.UnitTypesTime.hours),\n)\n\nwater_levels_synthetic = f.WaterlevelSynthetic(\n    surge=surge,\n    tide=tide,\n)\n\n# Inspect\ngaussian = surge.timeseries.to_dataframe(time_frame=time_frame)\ngaussian.columns = [\"Surge\"]\nharmonic = tide.to_dataframe(time_frame=time_frame)\nharmonic.columns = [\"Tide\"]\ntotal = water_levels_synthetic.to_dataframe(time_frame=time_frame)\ntotal.columns = [\"Water levels\"]\ndf_combined = gaussian.join(harmonic).join(total)\ndf_combined.plot(\n    title=\"Synthetic Water Levels (Surge + Tide)\",\n    xlabel=\"Time\",\n    ylabel=\"Water Level (m)\",\n    legend=True,\n    figsize=(5, 2)\n)",
     "crumbs": [
       "Events",
-      "Hurricane Event"
+      "Synthetic Event"
     ]
   },
   {
-    "objectID": "examples/events/hurricane_event.html#step-3.-obtain-a-hurricane-track",
-    "href": "examples/events/hurricane_event.html#step-3.-obtain-a-hurricane-track",
-    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
-    "section": "🌧️ Step 3. Obtain a hurricane track",
-    "text": "🌧️ Step 3. Obtain a hurricane track\nYou can include an IBTrACS hurricane database with recent and historic tracks in the FloodAdapt database. You can use any track from the database and optionally shift the track north, southh, east or west.\n\nNOTE: Hurricane events are only available in FloodAdapt when you have an offshore flood hazard model in your database that simulates the surge from the hurricane track.\n\n\n# Get the cyclone database\ncyclone_db = fa.database.static.get_cyclone_track_database()\nian_index = cyclone_db.list_names().index(\"IAN\")\n\n# Not all cyclone tracks have names, in addition to duplicate names existing, so the index is required\ntrack = fa.get_cyclone_track_by_index(index=ian_index) \ntrack_file = STATIC_DATA_DIR / \"IAN.cyc\"\ntrack.write_track(filename=track_file, fmt=\"ddb_cyc\")\n\n# Optionally translate the cyclone track from what is defined in the file\ntranslation = TranslationModel(\n    eastwest_translation=us.UnitfulLength(value=3000, units=us.UnitTypesLength.meters),\n    northsouth_translation=us.UnitfulLength(value=5000, units=us.UnitTypesLength.meters),\n)",
+    "objectID": "examples/events/synthetic_event.html#step-4.-create-a-minimal-event-and-modify-it",
+    "href": "examples/events/synthetic_event.html#step-4.-create-a-minimal-event-and-modify-it",
+    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
+    "section": "🧩 Step 4. Create a minimal event and modify it",
+    "text": "🧩 Step 4. Create a minimal event and modify it\nGiven a water level forcing, and a TimeFrame, you can create the simplest possible event in FloodAdapt as shown below.\nIn many cases, it is interesting to to investigate a combination of different forcings. In steps 5 - 9, we will show the creation of various forcings and how to add them to an event.\n\nsimple_event = SyntheticEvent(\n    name=\"simple_event\",\n    time=time_frame,\n    forcings={\n        f.ForcingType.WATERLEVEL: [water_levels_synthetic],\n    }\n)",
     "crumbs": [
       "Events",
-      "Hurricane Event"
+      "Synthetic Event"
     ]
   },
   {
-    "objectID": "examples/events/hurricane_event.html#step-4.-define-track-forcings",
-    "href": "examples/events/hurricane_event.html#step-4.-define-track-forcings",
-    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
-    "section": "🌧️ Step 4. Define Track forcings",
-    "text": "🌧️ Step 4. Define Track forcings\nGiven a Hurricane track, the wind field is always computer from the track. You can choose to model the rainfall based on a parametric model around the hurricane track or choose any iother rainfall option.\n\n# We want to include the rainfall and wind from the hurricane track\nrainfall = f.RainfallTrack(path=track_file)\nwind = f.WindTrack(path=track_file)",
+    "objectID": "examples/events/synthetic_event.html#step-5.-define-rainfall-forcing",
+    "href": "examples/events/synthetic_event.html#step-5.-define-rainfall-forcing",
+    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
+    "section": "🌧️ Step 5. Define Rainfall Forcing",
+    "text": "🌧️ Step 5. Define Rainfall Forcing\nThe rainfall options for a synthetic event are:\n\nConstant: Constant rainfall intensity for the entire simultion period and spatially uniform across the model domain.\nSynthetic: Custom rainfall intensity timeseries built from key parameters applied spatially uniform across the entire model domain. The key parameters can be used to describe either a gaussian-, block- or triangle-shaped rainfall curve.\nCSV: Custom rainfall intensity from a csv file applied spatially uniform across the entire model domain.\n\n\nrainfall_constant = f.RainfallConstant(\n    intensity=us.UnitfulIntensity(value=10, units=us.UnitTypesIntensity.mm_hr)\n)\n\nrainfall_synthetic = f.RainfallSynthetic(\n    timeseries=f.GaussianTimeseries(\n        duration=us.UnitfulTime(value=12, units=us.UnitTypesTime.hours),\n        # Choose the middle of the time frame for peak time\n        peak_time=us.UnitfulTime.from_timedelta(time_frame.duration / 2), \n        peak_value=us.UnitfulIntensity(value=10, units=us.UnitTypesIntensity.mm_hr),\n    )\n)\n\nrainfall_csv = f.RainfallCSV(path=STATIC_DATA_DIR / \"rainfall.csv\")\n\n# Inspect\ndf_constant = rainfall_constant.to_dataframe(time_frame=time_frame)\ndf_constant.columns = [\"Constant\"]\ndf_synthetic = rainfall_synthetic.to_dataframe(time_frame=time_frame)\ndf_synthetic.columns = [\"Synthetic\"]\ndf_csv = rainfall_csv.to_dataframe(time_frame=time_frame)\ndf_csv.columns = [\"CSV\"]\n\ndf_combined = df_constant.join(df_synthetic).join(df_csv)\ndf_combined.plot(\n    title=\"Synthetic Rainfall (Constant, Gaussian, CSV)\",\n    xlabel=\"Time\",\n    ylabel=\"Rainfall Intensity (mm/hr)\",\n    legend=True,\n    figsize=(5, 2)\n)",
     "crumbs": [
       "Events",
-      "Hurricane Event"
+      "Synthetic Event"
     ]
   },
   {
-    "objectID": "examples/events/hurricane_event.html#step-5.-define-river-discharge-forcing",
-    "href": "examples/events/hurricane_event.html#step-5.-define-river-discharge-forcing",
-    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
-    "section": "🏞️ Step 5. Define River Discharge Forcing",
-    "text": "🏞️ Step 5. Define River Discharge Forcing\nDischarge is defined for two pre-configured rivers in this example. These rivers must be registered in the hazard model configuration beforehand, see [Database builder].\n\n# The available rivers are defined in the hazard model when creating the database.\n# You cannot add new rivers to the model in an event\n# You can only set the discharge of each given river.\nriver = fa.database.site.sfincs.river[0]\n\ndischarge = f.DischargeConstant(\n    river=river,\n    discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cms)\n)\n\n# Inspect\ndf = discharge.to_dataframe(time_frame=time_frame)\ndf.plot(title=\"Constant Discharge River\", xlabel=\"Time\", ylabel=\"Discharge (cms)\", legend=True, figsize=(5, 2))",
+    "objectID": "examples/events/synthetic_event.html#step-5.-define-wind-forcing",
+    "href": "examples/events/synthetic_event.html#step-5.-define-wind-forcing",
+    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
+    "section": "🌬️ Step 5. Define Wind Forcing",
+    "text": "🌬️ Step 5. Define Wind Forcing\nThe wind options for a synthetic event are:\n\nCSV: Custom wind speed and direction from a csv file applied spatially uniform across the entire model domain.\nConstant: Constant wind speed and direction is applied spatially uniform across the entire model domain.\n\n\nNote: Wind set up in embayments, lagoons etc is only included for the water bodies included in the overland model. Large scale wind effects creating surges and wind set up are typically included in the water level forcing. When the water level forcing is set to “Model” (see ‘Historical Event’), this effect can be simulated by FloodAdapt in the offshore model.\n\n\nwind_constant = f.WindConstant(\n    speed=us.UnitfulVelocity(value=12, units=us.UnitTypesVelocity.mps), \n    direction=us.UnitfulDirection(value=2, units=us.UnitTypesDirection.degrees) \n    # 0 degrees is North, 90 degrees is East, 180 degrees is South, and 270 degrees is West\n)\n\nwind_csv = f.WindCSV(path=STATIC_DATA_DIR / \"wind.csv\")\n\n# Inspect\ndf = wind_constant.to_dataframe(time_frame=time_frame)\ndf.columns = [\"speed\", \"direction\"]\ndf_csv = wind_csv.to_dataframe(time_frame=time_frame)\ndf_csv.columns = [\"speed\", \"direction\"]\ndf_combined = df.join(df_csv, lsuffix=\"_constant\", rsuffix=\"_csv\")\ndf_combined.plot(\n    title=\"Synthetic Wind (Constant, CSV)\",\n    xlabel=\"Time\",\n    ylabel=\"Wind Speed (m/s)\",\n    legend=True,\n    figsize=(5, 2),\n)",
     "crumbs": [
       "Events",
-      "Hurricane Event"
+      "Synthetic Event"
     ]
   },
   {
-    "objectID": "examples/events/hurricane_event.html#step-6.-combine-forcings-and-create-hurricane-event",
-    "href": "examples/events/hurricane_event.html#step-6.-combine-forcings-and-create-hurricane-event",
-    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
-    "section": "🧩 Step 6. Combine Forcings and Create hurricane Event",
-    "text": "🧩 Step 6. Combine Forcings and Create hurricane Event\nAll defined forcings are collected into a single dictionary, which is used to construct a hurricaneEvent.\n\nNOTE: each event can only have 1 forcing of the types: water level, rainfall and wind. For discharge however, each river is required to have a forcing associated with it.\n\n\n# Create a hurricaneEvent with the forcings and time frame\nevent = HurricaneEvent(\n    name=\"example_hurricane_event\",\n    time=time_frame,\n    forcings = {\n        f.ForcingType.WATERLEVEL: [water_levels],\n        f.ForcingType.RAINFALL: [rainfall],\n        f.ForcingType.WIND: [wind],\n        f.ForcingType.DISCHARGE: [discharge],\n    },\n    track_name=track.name,\n    hurricane_translation=translation,\n)",
+    "objectID": "examples/events/synthetic_event.html#step-6.-define-river-discharge-forcing",
+    "href": "examples/events/synthetic_event.html#step-6.-define-river-discharge-forcing",
+    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
+    "section": "🏞️ Step 6. Define River Discharge Forcing",
+    "text": "🏞️ Step 6. Define River Discharge Forcing\nDischarge is required to be defined for all pre-configured rivers. These rivers are registered in the hazard model configuration beforehand and it is important that the order of rivers and their source locations are consistent with the setup of the hazard model. The timeseries data provided will determine the in-flow of water at the river’s location.\nDischarge options for a SyntheticEvent are:\n\nConstant: Constant discharge for the entire simulation period.\nCSV: Custom discharge specified in a csv file.\nSynthetic: Custom discharge timeseries built from key parameters. The key parameters can be used to describe either a gaussian-, block- or triangle-shaped rainfall curve.\n\n\n# The available rivers are defined in the hazard model when creating the database.\n# You cannot add new rivers to the model in an event, you can only set the discharge of each given river.\nprint(f\"Number of available rivers: {len(fa.database.site.sfincs.river)}\")\n\nriver = fa.database.site.sfincs.river[0]\n\ndischarge_constant = f.DischargeConstant(\n    river=river,\n    discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cms)\n)\n\ndischarge_synthetic = f.DischargeSynthetic(\n    river=river,\n    timeseries=f.BlockTimeseries(\n        duration=us.UnitfulTime(value=12, units=us.UnitTypesTime.hours),\n        # Choose the middle of the time frame for peak time\n        peak_time=us.UnitfulTime.from_timedelta(time_frame.duration / 2), \n        peak_value=us.UnitfulDischarge(value=80, units=us.UnitTypesDischarge.cms),\n    )\n)\n\ndischarge_csv = f.DischargeCSV(\n    river=river,\n    path=STATIC_DATA_DIR / \"discharge.csv\"\n)\n\n# Inspect\ndf_constant = discharge_constant.to_dataframe(time_frame=time_frame)\ndf_constant.columns = [\"Constant\"]\ndf_synthetic = discharge_synthetic.to_dataframe(time_frame=time_frame)\ndf_synthetic.columns = [\"Synthetic\"]\ndf_csv = discharge_csv.to_dataframe(time_frame=time_frame)\ndf_csv.columns = [\"CSV\"]\ndf_combined = df_constant.join(df_synthetic).join(df_csv)\ndf_combined.plot(\n    title=\"Synthetic Discharge (Constant, Gaussian, CSV)\",\n    xlabel=\"Time\",\n    ylabel=\"Discharge (cms)\",\n    legend=True,\n    figsize=(5, 2)\n)\n\nNumber of available rivers: 1",
     "crumbs": [
       "Events",
-      "Hurricane Event"
+      "Synthetic Event"
     ]
   },
   {
-    "objectID": "examples/events/hurricane_event.html#step-7.-save-the-event-to-a-floodadapt-database",
-    "href": "examples/events/hurricane_event.html#step-7.-save-the-event-to-a-floodadapt-database",
-    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
-    "section": "💾 Step 7. Save the Event to a FloodAdapt Database",
-    "text": "💾 Step 7. Save the Event to a FloodAdapt Database\nFinally, we save the event to a FloodAdapt database.\n\n# Save the event to the database\nfa.save_event(event=event)",
+    "objectID": "examples/events/synthetic_event.html#step-7.-combine-forcings-and-create-synthetic-event",
+    "href": "examples/events/synthetic_event.html#step-7.-combine-forcings-and-create-synthetic-event",
+    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
+    "section": "🧩 Step 7. Combine Forcings and Create Synthetic Event",
+    "text": "🧩 Step 7. Combine Forcings and Create Synthetic Event\nAll defined forcings are collected into a single dictionary, which is used to construct a SyntheticEvent. Now construct the forcings dictionary that contains the forcings you want to include.\n\nNOTE: each event can only have 1 forcing of the types: water level, rainfall and wind. For discharge however, each river is required to have a forcing associated with it.\n\n\n# Create a SyntheticEvent with the forcings and time frame\nfull_event = SyntheticEvent(\n    name=\"example_synthetic_event\",\n    time=time_frame,\n    forcings={\n        f.ForcingType.WATERLEVEL: [water_levels_synthetic],\n        f.ForcingType.RAINFALL: [rainfall_constant],\n        f.ForcingType.WIND: [wind_csv],\n        f.ForcingType.DISCHARGE: [discharge_synthetic], \n        # The discharge list needs to be exactly as long as the number of rivers in the hazard model\n    },\n)",
     "crumbs": [
       "Events",
-      "Hurricane Event"
+      "Synthetic Event"
     ]
   },
   {
-    "objectID": "examples/events/event_modification.html",
-    "href": "examples/events/event_modification.html",
-    "title": "💾 Event modifications in the database",
+    "objectID": "examples/events/synthetic_event.html#step-8.-save-the-event-to-a-floodadapt-database",
+    "href": "examples/events/synthetic_event.html#step-8.-save-the-event-to-a-floodadapt-database",
+    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
+    "section": "💾 Step 8. Save the Event to a FloodAdapt Database",
+    "text": "💾 Step 8. Save the Event to a FloodAdapt Database\nFinally, we save the event to a FloodAdapt database.\n\n# Save the event to the database\nfa.save_event(event=full_event)",
+    "crumbs": [
+      "Events",
+      "Synthetic Event"
+    ]
+  },
+  {
+    "objectID": "examples/events/historical_event.html",
+    "href": "examples/events/historical_event.html",
+    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
     "section": "",
-    "text": "This notebook demonstrates how to manipulate event objects in a FloodAdapt database, including loading, creating, editing, copying, and deleting events.\nIt is assumed that at the start of this notebook, you have a database and the events saved from the other event notebooks.\nimport flood_adapt.objects.forcing as f\n\nfrom pathlib import Path\nfrom datetime import datetime\n\nfrom flood_adapt import unit_system as us\nfrom flood_adapt import FloodAdapt, Settings\nfrom flood_adapt.objects import HistoricalEvent\nfrom flood_adapt.objects.forcing.time_frame import TimeFrame\n\n# Setup FloodAdapt\nSTATIC_DATA_DIR = Path(\"../../_data/examples/static-data\").resolve()\nsettings = Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\",\n)\nfa = FloodAdapt(database_path=settings.database_path)",
+    "text": "This notebook demonstrates how to create a historical event using FloodAdapt. Historical events are valuable for validation, controlled testing, sensitivity analysis, and what-if scenarios based on historic events.\nA FloodAdapt Event consists of 2 things:\nIn this example, we construct a full historical event with water level, rainfall, wind, and river discharge forcings, and then save it to a FloodAdapt database.",
     "crumbs": [
       "Events",
-      "Event modification"
+      "Historical Event"
     ]
   },
   {
-    "objectID": "examples/events/event_modification.html#analyze-the-effect-of-different-rainfall-forcings",
-    "href": "examples/events/event_modification.html#analyze-the-effect-of-different-rainfall-forcings",
-    "title": "💾 Event modifications in the database",
-    "section": "Analyze the effect of different rainfall forcings",
-    "text": "Analyze the effect of different rainfall forcings\nLets say we want to analyze the effect of rainfall, how would you approach that:\n\nRetrieve an event from the database\nCreate the rainfall forcings you want to analyze\nUpdate the event’s name and rainfall forcings\nSave the updated event to the database\nCreate scenarios using these events and run them (see this example) TODO\n\nOf course, this approach also works for analyzing the difference between any other forcings.\n\n# 1. Create an event or load it from the database\n# event = fa.get_event(...)\nevent_name=\"database_manipulation_event\"\nevent = HistoricalEvent(\n    name=event_name,\n    description=\"Some event description\",\n    time=TimeFrame(\n        start_time=datetime(2020, 1, 1),\n        end_time=datetime(2020, 1, 2),\n    ),\n    forcings={\n        f.ForcingType.WATERLEVEL: [f.WaterlevelGauged()]\n    }\n)\nfa.save_event(event=event)\n\n# 2. Create rainfall forcings\nrainfall_constant = f.RainfallConstant(\n    intensity=us.UnitfulIntensity(value=10, units=us.UnitTypesIntensity.mm_hr)\n)\n\nrainfall_synthetic = f.RainfallSynthetic(\n    timeseries=f.GaussianTimeseries(\n        duration=us.UnitfulTime(value=12, units=us.UnitTypesTime.hours),\n        # Choose the middle of the time frame for peak time\n        peak_time=us.UnitfulTime.from_timedelta(event.time.duration / 2), \n        peak_value=us.UnitfulIntensity(value=10, units=us.UnitTypesIntensity.mm_hr),\n    )\n)\n\nrainfall_csv = f.RainfallCSV(path=STATIC_DATA_DIR / \"rainfall.csv\")\n\nrainfall_forcings = [\n    (rainfall_constant, \"constant\"),\n    (rainfall_synthetic, \"synthetic\"),\n    (rainfall_csv, \"csv\")\n]\n\nfor forcing, fsource in rainfall_forcings:\n    # 3. Update the event\n    event.forcings[f.ForcingType.RAINFALL] = [forcing]\n    event.name = f\"{event_name}_rainfall_{fsource}\"\n    \n    # 4. Save the event\n    fa.save_event(event=event)\n\nfa.get_events()[\"name\"]\n\n# 5. Now the events can be used as the components for scenario creation. Similar to how the rainfall forcings are used to create various events\n# For more information on how to create scenarios, see the scenario creation example\n\n['database_manipulation_event',\n 'database_manipulation_event_rainfall_constant',\n 'database_manipulation_event_rainfall_csv',\n 'database_manipulation_event_rainfall_synthetic',\n 'event_set',\n 'test_set']",
+    "objectID": "examples/events/historical_event.html#step-1.-setup-and-imports",
+    "href": "examples/events/historical_event.html#step-1.-setup-and-imports",
+    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "section": "⏱️ Step 1. Setup and Imports",
+    "text": "⏱️ Step 1. Setup and Imports\nWe begin by importing the required classes and modules for constructing forcings and managing event data within the flood_adapt framework.\n\nimport flood_adapt.objects.forcing as f\n\nfrom pathlib import Path\nfrom datetime import datetime\n\nfrom flood_adapt.objects import HistoricalEvent, TimeFrame\nfrom flood_adapt import unit_system as us\nfrom flood_adapt import FloodAdapt, Settings\n\n# Setup FloodAdapt\nSTATIC_DATA_DIR = Path(\"../../_data/examples/static-data\").resolve()\nsettings = Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\"\n)\nfa = FloodAdapt(database_path=settings.database_path)",
     "crumbs": [
       "Events",
-      "Event modification"
+      "Historical Event"
     ]
   },
   {
-    "objectID": "examples/events/event_modification.html#delete-save-copy-edit",
-    "href": "examples/events/event_modification.html#delete-save-copy-edit",
-    "title": "💾 Event modifications in the database",
-    "section": "Delete, Save, Copy, Edit",
-    "text": "Delete, Save, Copy, Edit\nFloodAdapt supports deleting, editing, and copying objects by name, as shown below.\nIt is possible to achieve the exact same goal in multiple ways:\n\nevent = fa.get_event(event_name) -&gt; update event -&gt; fa.delete_event(event_name) -&gt; fa.save_event(event)\nevent = fa.get_event(event_name) -&gt; update event -&gt; fa.edit_event(event)\n\n\nprint(\"Initial:\", fa.get_events()[\"name\"])\n\n# Copy all events\nfor name in fa.get_events()[\"name\"]:\n    new_name = f\"{name}_copy\"\n    fa.copy_event(old_name=name, new_name=new_name, new_description=f\"Copy of {name}\")\nprint(\"Names after `Copy`:\", fa.get_events()[\"name\"])\n\n# Delete all copied events\nfor name in fa.get_events()[\"name\"]:\n    if \"copy\" in name:\n        fa.delete_event(name)\nprint(\"Names after `Delete`:\", fa.get_events()[\"name\"])\n\n# Edit an existing event\nunedited_event = fa.get_event(event_name)\nprint(\"Description before `Edit`:\", unedited_event.description)\n\nunedited_event.description = f\"Updated description\"\nfa.save_event(event=unedited_event, overwrite=True)\n\nedited_event = fa.get_event(event_name)\nprint(\"Description after `Edit`:\", edited_event.description)\n\nInitial: ['database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_synthetic', 'event_set', 'test_set']\nNames after `Copy`: ['database_manipulation_event', 'database_manipulation_event_copy', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_constant_copy', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_csv_copy', 'database_manipulation_event_rainfall_synthetic', 'database_manipulation_event_rainfall_synthetic_copy', 'event_set', 'event_set_copy', 'test_set', 'test_set_copy']\nNames after `Delete`: ['database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_synthetic', 'event_set', 'test_set']\nDescription before `Edit`: Some event description\nDescription after `Edit`: Updated description",
+    "objectID": "examples/events/historical_event.html#step-2.-define-the-simulation-time-frame",
+    "href": "examples/events/historical_event.html#step-2.-define-the-simulation-time-frame",
+    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "section": "🗓️ Step 2. Define the Simulation Time Frame",
+    "text": "🗓️ Step 2. Define the Simulation Time Frame\nWe specify a one-day time frame for the historical event, from January 1 to January 2, 2025.\n\n# Create an time frame for the simulation\nstart_time = datetime(year=2020, month=1, day=1)\nend_time = datetime(year=2020, month=1, day=2)\ntime_frame = TimeFrame(start_time=start_time, end_time=end_time)",
     "crumbs": [
       "Events",
-      "Event modification"
+      "Historical Event"
     ]
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Introduction",
+    "objectID": "examples/events/historical_event.html#step-3.-define-water-level-forcing",
+    "href": "examples/events/historical_event.html#step-3.-define-water-level-forcing",
+    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "section": "🌊 Step 3. Define Water Level Forcing",
+    "text": "🌊 Step 3. Define Water Level Forcing\nHistorical water levels can be included in 3 few ways:\n\nTide Gauge: Measured water levels downloaded from NOAA CO-OPS. The automated download is only available for stations in the US. Outside the US, water level records can be stored in the FloodAdapt database. This avoids having to import the csv for each event, see below.\n\nCSV: Custom water levels specified in a csv file (perhaps from a tide gauge not connected to the noaa_coops API)\nModel: Generate the storm surge to be used for the overland simulation by running an offshore model. For historic events, this model uses weather re-analysis data (wind and pressure) from the NOAA GFS model.\n\n\n# Recorded water levels from a CSV file\ncsv_file = STATIC_DATA_DIR / \"tide.csv\"\nwater_levels = f.WaterlevelCSV(path=csv_file)\nwl_df = water_levels.to_dataframe(time_frame=time_frame)\n\n# Alternative: Water levels downloaded from a tide gauge\ntide_gauge = fa.database.site.sfincs.tide_gauge\ndf_tide_gauge = tide_gauge.get_waterlevels_in_time_frame(\n    time=time_frame,\n)\nwater_levels_gauged = f.WaterlevelGauged()\n\n# Alternative: Water levels simulated by an offshore model\nwater_levels_from_offshore = f.WaterlevelModel()\n\n# Inspect\nwl_df.plot(\n    title=\"Water Level from CSV\",\n    xlabel=\"Time\",\n    ylabel=\"Water Level (m)\",\n    legend=False,\n    figsize=(5, 2)\n)\n\ndf_tide_gauge.plot(\n    title=\"Water Level from Tide Gauge\",\n    xlabel=\"Time\",\n    ylabel=\"Water Level (m)\",\n    legend=False,\n    figsize=(5, 2)\n)",
+    "crumbs": [
+      "Events",
+      "Historical Event"
+    ]
+  },
+  {
+    "objectID": "examples/events/historical_event.html#step-4.-create-a-minimal-event-and-modify-it",
+    "href": "examples/events/historical_event.html#step-4.-create-a-minimal-event-and-modify-it",
+    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "section": "🧩 Step 4. Create a minimal event and modify it",
+    "text": "🧩 Step 4. Create a minimal event and modify it\nGiven a water level forcing, and a TimeFrame, you can create the simplest possible event in FloodAdapt as shown below.\nIn many cases, it is interesting to to investigate a combination of different forcings. In steps 5 - 9, we will show the creation of various forcings and how to add them to an event.\n\nsimple_event = HistoricalEvent(\n    name=\"simple_event\",\n    time=time_frame,\n    forcings={\n        f.ForcingType.WATERLEVEL: [water_levels], \n        # or [water_levels_gauged], [water_levels_from_offshore]\n    }\n)",
+    "crumbs": [
+      "Events",
+      "Historical Event"
+    ]
+  },
+  {
+    "objectID": "examples/events/historical_event.html#step-5.-define-meteo-forcing",
+    "href": "examples/events/historical_event.html#step-5.-define-meteo-forcing",
+    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "section": "🌧️ Step 5. Define Meteo Forcing",
+    "text": "🌧️ Step 5. Define Meteo Forcing\nHistoric events have several options to define wind and rainfall, see also Synthteic event. Additionally, FloodAdapt provides an easy connection to NOAA GFS model re-analysis data for rainfall and wind that is automatically downloaded based on the event’s ‘TimeFrame’.\n\nmeteo_dataset = f.MeteoHandler().read(time_frame)\nprint(meteo_dataset) # TODO make sure the meteo files are already downloaded in the database to circumvent flaky noaa coops API calls\n\nRequested meteo data already available\n&lt;xarray.Dataset&gt; Size: 485kB\nDimensions:      (time: 9, lon: 41, lat: 41)\nCoordinates:\n  * time         (time) datetime64[ns] 72B 2020-01-01 ... 2020-01-02\n  * lon          (lon) float32 164B -90.0 -89.5 -89.0 ... -71.0 -70.5 -70.0\n  * lat          (lat) float32 164B 23.0 23.5 24.0 24.5 ... 41.5 42.0 42.5 43.0\n    spatial_ref  int32 4B 0\nData variables:\n    wind10_u     (time, lat, lon) float64 121kB -5.165 -5.625 ... 11.64 11.98\n    wind10_v     (time, lat, lon) float64 121kB -5.967 -5.257 ... -0.8354 -1.565\n    press_msl    (time, lat, lon) float64 121kB 1.017e+05 ... 1.004e+05\n    precip       (time, lat, lon) float64 121kB 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0\n\n\n\nVisualizing Meteo data\nIt can be difficult to visualize spatially varying timeseries data. So, below is a simple animation generator to do some basic data checks on the downloaded NOAA GFS data.\nChoose any of the available timeseries data variables and generate the animation.\n\nimport matplotlib.pyplot as plt\nimport matplotlib.animation as animation\nfrom IPython.display import HTML\n\nto_plot = 'press_msl' # available variables: 'wind10_u' or 'wind10_v' or 'press_msl' or 'precip'\n\nvar = meteo_dataset[to_plot] \nfig, ax = plt.subplots()\nplot = var.isel(time=0).plot(ax=ax, cmap='viridis', add_colorbar=True)\n\ndef update(frame):\n    ax.clear()\n    var.isel(time=frame).plot(ax=ax, cmap='viridis', add_colorbar=False)\n    ax.set_title(f'Time: {str(var.time[frame].values)}')\n\nani = animation.FuncAnimation(fig, update, frames=len(var.time), interval=200)\nplt.close(fig)\n\nHTML(ani.to_jshtml()) # TODO look at hvplot or other options to display the animation\n\n\n\n\n\n\n\n\n  \n  \n    \n    \n      \n          \n      \n        \n      \n          \n      \n          \n      \n          \n      \n          \n      \n          \n      \n          \n      \n          \n    \n    \n      \n      Once\n      \n      Loop\n      \n      Reflect",
+    "crumbs": [
+      "Events",
+      "Historical Event"
+    ]
+  },
+  {
+    "objectID": "examples/events/historical_event.html#step-6.-define-meteo-forcings",
+    "href": "examples/events/historical_event.html#step-6.-define-meteo-forcings",
+    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "section": "🌬️ Step 6. Define Meteo Forcings",
+    "text": "🌬️ Step 6. Define Meteo Forcings\nTo use the downloaded NOAA’s GFS hindcast data in FloodAdapt, you need to create Meteo forcings and add them to your event.\nUnder the hood, the meteo forcings use the MeteoHandler to download the data, and then return slices of that dataset.\n\nrainfall = f.RainfallMeteo()\nwind = f.WindMeteo()",
+    "crumbs": [
+      "Events",
+      "Historical Event"
+    ]
+  },
+  {
+    "objectID": "examples/events/historical_event.html#step-7.-define-river-discharge-forcing",
+    "href": "examples/events/historical_event.html#step-7.-define-river-discharge-forcing",
+    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "section": "🏞️ Step 7. Define River Discharge Forcing",
+    "text": "🏞️ Step 7. Define River Discharge Forcing\nDischarge is required to be defined for the pre-configured river(s). These rivers must be registered in the hazard model configuration beforehand.\n\n# The available rivers are defined in the hazard model when creating the database.\n# You cannot add new rivers to the model in an event\n# You can only set the discharge of each given river.\nprint(f\"Number of available rivers: {len(fa.database.site.sfincs.river)}\")\n\nriver = fa.database.site.sfincs.river[0]\n\ndischarge_constant = f.DischargeConstant(\n    river=river,\n    discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cms)\n)\n\n# Inspect\ndf = discharge_constant.to_dataframe(time_frame=time_frame)\ndf.plot(\n    title=\"Constant Discharge River\",\n    xlabel=\"Time\",\n    ylabel=\"Discharge (cms)\",\n    legend=True,\n    figsize=(5, 2)\n)\n\nNumber of available rivers: 1",
+    "crumbs": [
+      "Events",
+      "Historical Event"
+    ]
+  },
+  {
+    "objectID": "examples/events/historical_event.html#step-8.-combine-forcings-and-create-event",
+    "href": "examples/events/historical_event.html#step-8.-combine-forcings-and-create-event",
+    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "section": "🧩 Step 8. Combine Forcings and Create Event",
+    "text": "🧩 Step 8. Combine Forcings and Create Event\nAll defined forcings are collected into a single dictionary, which is used to construct a HistoricalEvent.\n\nNOTE: each event can only have 1 forcing of the types: water level, rainfall and wind. For discharge however, each river is required to have a forcing associated with it.\n\n\n# Create a HistoricalEvent with the forcings and time frame\nevent = HistoricalEvent(\n    name=\"example_historical_event\",\n    time=time_frame,\n    forcings={\n        f.ForcingType.WATERLEVEL: [water_levels], \n        # or one of `water_levels_gauged` or `water_levels_from_offshore`,\n        f.ForcingType.RAINFALL: [rainfall],\n        f.ForcingType.WIND: [wind],\n        f.ForcingType.DISCHARGE: [discharge_constant],\n    },\n)",
+    "crumbs": [
+      "Events",
+      "Historical Event"
+    ]
+  },
+  {
+    "objectID": "examples/events/historical_event.html#step-9.-save-the-event-to-a-floodadapt-database",
+    "href": "examples/events/historical_event.html#step-9.-save-the-event-to-a-floodadapt-database",
+    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "section": "💾 Step 9. Save the Event to a FloodAdapt Database",
+    "text": "💾 Step 9. Save the Event to a FloodAdapt Database\nFinally, we save the event to a FloodAdapt database.\n\n# Save the event to the database\nfa.save_event(event=event)",
+    "crumbs": [
+      "Events",
+      "Historical Event"
+    ]
+  },
+  {
+    "objectID": "examples/event_set/create_event_set.html",
+    "href": "examples/event_set/create_event_set.html",
+    "title": "Event set creation for Risk Analysis",
     "section": "",
-    "text": "Welcome to the FloodAdapt documentation!\nIn this introduction, you will find an overview of FloodAdapt, information on its intended uses, and reader guidance explaining the information you will find in this documentation."
-  },
-  {
-    "objectID": "index.html#overview",
-    "href": "index.html#overview",
-    "title": "Introduction",
-    "section": "Overview",
-    "text": "Overview\nFloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software"
-  },
-  {
-    "objectID": "index.html#intended-uses-of-floodadapt",
-    "href": "index.html#intended-uses-of-floodadapt",
-    "title": "Introduction",
-    "section": "Intended Uses of FloodAdapt",
-    "text": "Intended Uses of FloodAdapt\nFloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to aid in prioritizing investments, and to assess the effectiveness and longevity of different adaptation options.\nFloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.\nFloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt."
-  },
-  {
-    "objectID": "index.html#reader-guidance",
-    "href": "index.html#reader-guidance",
-    "title": "Introduction",
-    "section": "Reader Guidance",
-    "text": "Reader Guidance\nFloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Setting up FloodAdapt in a new location requires additional capabilities.\n\nUser Guide The user guide provides information on how to get started with FloodAdapt, and describes how to use all the FloodAdapt functionalities.\nSetup Guide - The setup guides users in setting up FloodAdapt in their area of interest.\nTechnical docs - The technical docs provide detailed information on the calculation methods within FloodAdapt."
-  },
-  {
-    "objectID": "examples/strategies/index.html",
-    "href": "examples/strategies/index.html",
-    "title": "TITLE HERE",
-    "section": "",
-    "text": "This section contains …\nSelect an example from the sidebar to view the corresponding notebook.\n\n\n\n Back to top",
+    "text": "This notebook explains how to create the input files for a risk analysis in the correct format and place them in the correct folder structure. For an explanation on how to derive the (compound) events and their (joint) probabilities, the reader is referred to the FloodAdapt Setup Guide Event Set.",
     "crumbs": [
-      "Strategies"
+      "Event set for risk assessments"
     ]
   },
   {
-    "objectID": "examples/projections/index.html",
-    "href": "examples/projections/index.html",
+    "objectID": "examples/event_set/create_event_set.html#step-1.-setup-and-imports",
+    "href": "examples/event_set/create_event_set.html#step-1.-setup-and-imports",
+    "title": "Event set creation for Risk Analysis",
+    "section": "⏱️ Step 1. Setup and Imports",
+    "text": "⏱️ Step 1. Setup and Imports\n\nfrom datetime import datetime\nfrom pathlib import Path\n\nfrom flood_adapt import Settings, FloodAdapt\nfrom flood_adapt import unit_system as us\nfrom flood_adapt.config.sfincs import RiverModel\nfrom flood_adapt.objects import (\n    EventSet,\n    SubEventModel,\n    SyntheticEvent,\n)\nfrom flood_adapt.objects.forcing import (\n    DischargeConstant,\n    ForcingType,\n    TimeFrame,\n    ShapeType,\n    TimeseriesFactory,\n    RainfallSynthetic,\n    SurgeModel,\n    TideModel,\n    WaterlevelSynthetic,\n    WindConstant,\n)\n\n# Configure FloodAdapt\nsettings = Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\"\n)\n\nfa = FloodAdapt(database_path=settings.database_path)",
+    "crumbs": [
+      "Event set for risk assessments"
+    ]
+  },
+  {
+    "objectID": "examples/event_set/create_event_set.html#step-2.-set-name-frequencies-and-parameters-to-build-subevents",
+    "href": "examples/event_set/create_event_set.html#step-2.-set-name-frequencies-and-parameters-to-build-subevents",
+    "title": "Event set creation for Risk Analysis",
+    "section": "🗓️ Step 2. Set name, frequencies and parameters to build subevents",
+    "text": "🗓️ Step 2. Set name, frequencies and parameters to build subevents\nSet the name of the event set and the parameters for the input events and their frequencies. In this example, we are using three synthetic events with different storm surge heights and peak rainfall intensities. Alternatively, historic gauged and ungauged events or hurricanes are possible as well, see Events for examples on how to set up different subevents.\n\nname = \"event_set\"\n\n# Peak surge values in the subevents. \n# Surge is timed to always peak at 24.8 hours after the event start, coinciding with high tide at a tidal phase of 0 and lasting for 10 hours.\nsurge_values = [2.5, 1, 3] # in meters\n\n# Peak rainfall intensities in the three subevents. \n# Rainfall is applied as a 6 hour \"block\" shape preceding the peak of the storm surge.\nrainfall_values = [10, 15, 5] # in mm/hr\n\n# Occurrence frequencies of the three events\nfreq = [0.1, 2, 0.05]",
+    "crumbs": [
+      "Event set for risk assessments"
+    ]
+  },
+  {
+    "objectID": "examples/event_set/create_event_set.html#step-3.-create-subevents",
+    "href": "examples/event_set/create_event_set.html#step-3.-create-subevents",
+    "title": "Event set creation for Risk Analysis",
+    "section": "🧩 Step 3. Create subevents",
+    "text": "🧩 Step 3. Create subevents\nCreate the subevents from the parameters defined in Step 1.\n\nevents = []\nnumber = 0\nfor surge, rainfall in zip(surge_values, rainfall_values):\n    number += 1\n    events.append(\n        SyntheticEvent(\n            name = f\"subevent_{number}\",\n            time=TimeFrame(start_time=datetime(2020, 1, 1, 0, 0, 0),end_time=datetime(2020, 1, 3, 0, 0, 0)),\n            forcings={\n                # constant wind speed 10 m/, direction 90 degrees (from the East)\n                ForcingType.WIND: [         \n                    WindConstant(\n                        speed=us.UnitfulVelocity(value=10, units=us.UnitTypesVelocity.mps), \n                        direction=us.UnitfulDirection(\n                            value=90, units=us.UnitTypesDirection.degrees                  \n                        ),\n                    )\n                ],\n                # block rainfall starting 18h after event start, duration 6h, intensity 10 mm/hr \n                ForcingType.RAINFALL: [         \n                    RainfallSynthetic(\n                        timeseries = TimeseriesFactory.from_args(             \n                            shape_type=ShapeType.block,\n                            duration=us.UnitfulTime(\n                                value=6, units=us.UnitTypesTime.hours\n                            ),\n                            peak_time=us.UnitfulTime(\n                                value=21, units=us.UnitTypesTime.hours\n                            ),\n                            peak_value=us.UnitfulIntensity(\n                                value=rainfall, units=us.UnitTypesIntensity.mm_hr\n                            ),\n                        )\n                    )\n                ],\n                # constant discharge in Cooper River of 5000 cubic feet per second\n                ForcingType.DISCHARGE: [         \n                    DischargeConstant(\n                        river=RiverModel(\n                            name=\"cooper\",\n                            description=\"Cooper River\",\n                            x_coordinate=595546.3,\n                            y_coordinate=3675590.6,\n                            mean_discharge=us.UnitfulDischarge(\n                                value=5000, units=us.UnitTypesDischarge.cfs\n                            ),\n                        ),\n                        discharge=us.UnitfulDischarge(\n                            value=5000, units=us.UnitTypesDischarge.cfs \n                        ),\n                    )\n                ],\n                ForcingType.WATERLEVEL: [       \n                    WaterlevelSynthetic(\n                        # storm surge with gaussian shape, duration 10 hours, peak at 24h after event start_time, peak height 3m\n                        surge=SurgeModel(       \n                            timeseries=TimeseriesFactory.from_args(             \n                                shape_type=ShapeType.gaussian,\n                                duration=us.UnitfulTime(\n                                    value=10, units=us.UnitTypesTime.hours\n                                ),\n                                peak_time=us.UnitfulTime(\n                                    value=24, units=us.UnitTypesTime.hours\n                                ),\n                                peak_value=us.UnitfulLength(\n                                    value=surge, units=us.UnitTypesLength.meters\n                                ),\n                            )\n                        ),\n                        # tide with 1m amplitude and 12.4h duration\n                        tide=TideModel(     \n                            harmonic_amplitude=us.UnitfulLength(\n                                value=1, units=us.UnitTypesLength.meters\n                            ),\n                            harmonic_period=us.UnitfulTime(\n                                value=12.4, units=us.UnitTypesTime.hours\n                            ),\n                            harmonic_phase=us.UnitfulTime(\n                                value=0, units=us.UnitTypesTime.hours\n                            ),\n                        ),\n                    )\n                ],\n            },\n        )\n    )\n\nprint(events)\n\n[SyntheticEvent(name='subevent_1', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=10.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=2.5, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0), SyntheticEvent(name='subevent_2', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=15.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=1.0, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0), SyntheticEvent(name='subevent_3', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=5.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=3.0, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0)]",
+    "crumbs": [
+      "Event set for risk assessments"
+    ]
+  },
+  {
+    "objectID": "examples/event_set/create_event_set.html#step-4.-create-and-save-event-set",
+    "href": "examples/event_set/create_event_set.html#step-4.-create-and-save-event-set",
+    "title": "Event set creation for Risk Analysis",
+    "section": "💾 Step 4. Create and save event set",
+    "text": "💾 Step 4. Create and save event set\nIn this step, we create an event set from the SubEvents created in Step 2, load the actual Event objects into it, and save it to the database. This event set can then be used like any other event in a Scenario. Click here to see examples on how to build a scenario.\n\nsub_events = []\nfor event, frequency in zip(events, freq):\n    sub_events.append(SubEventModel(name=event.name, frequency=frequency))\n\n\nevent_set = EventSet(\n    name=name,\n    sub_events=sub_events,\n)\nevent_set.load_sub_events(events)\n\nfa.save_event(event_set)\nprint(fa.get_events()[\"name\"])\n\n['event_set', 'test_set']",
+    "crumbs": [
+      "Event set for risk assessments"
+    ]
+  },
+  {
+    "objectID": "formatting_tips.html",
+    "href": "formatting_tips.html",
+    "title": "Flood Adapt Documentation",
+    "section": "",
+    "text": "I put some styling infos here: but you can check all formatting here:\nhttps://quarto.org/docs/authoring/markdown-basics.html"
+  },
+  {
+    "objectID": "formatting_tips.html#generate-tables",
+    "href": "formatting_tips.html#generate-tables",
+    "title": "Flood Adapt Documentation",
+    "section": "Generate tables",
+    "text": "Generate tables\nhttps://tablesgenerator.com/markdown_tables"
+  },
+  {
+    "objectID": "formatting_tips.html#headings",
+    "href": "formatting_tips.html#headings",
+    "title": "Flood Adapt Documentation",
+    "section": "Headings",
+    "text": "Headings\nfirst level : # Heading second level : ## Heading third level : ### Heading\n…"
+  },
+  {
+    "objectID": "formatting_tips.html#fonts",
+    "href": "formatting_tips.html#fonts",
+    "title": "Flood Adapt Documentation",
+    "section": "Fonts",
+    "text": "Fonts\nbold: ** word ** (remove tab spaces betweenw asterisk and word)\nitalic: * this will be italic when tab space removed *\n&lt;Make font a different color?&gt;"
+  },
+  {
+    "objectID": "formatting_tips.html#paragraphs",
+    "href": "formatting_tips.html#paragraphs",
+    "title": "Flood Adapt Documentation",
+    "section": "Paragraphs",
+    "text": "Paragraphs\nIf you want to create a paragraph or continue in the next line add 2 tab spaces behind the last word.\nE.g I write and want to continue in the next line.\nIf I only press enter to continue in the next line as I did now this will not show. -&gt; I have to add 2 spaces after line.\nLet’s see what happens when I add the 2 tabs:\nI to continue in the next line. If I only press enter to continue in the next line as I did now this will not show."
+  },
+  {
+    "objectID": "formatting_tips.html#additional-options",
+    "href": "formatting_tips.html#additional-options",
+    "title": "Flood Adapt Documentation",
+    "section": "Additional options",
+    "text": "Additional options\n\nEmphasizing\nCreate different types to emphasize the text eg code\nExample 1: conda install jupyter : Use ` (grave accent) before and after your sentence (without any spacing)\nExample 2: something: just indent one time. for scrolling do the same just write a longer text (see below)\nsomething really long that will needs scrolling so I will just continue writing until the scrolling bar appears.\n\n\nBullet Points\nJust write numbers below one another and use Indentation for the levels.\n\nMerry\nChristmas\nKathryn\n\nand a new year too\n\n\nUse the asterisks for your first level. For the second level in the row below add an indentation and a + per entry.\n\nMerry (* Merry)\n\nChristmas (+ Christmas)\nKathryn (+ Kathryn)"
+  },
+  {
+    "objectID": "formatting_tips.html#urls",
+    "href": "formatting_tips.html#urls",
+    "title": "Flood Adapt Documentation",
+    "section": "URLs",
+    "text": "URLs\nadd a URL and give it a name a\n[here comes the name] (here comes the URL)\nFloodAdapt Deltares webpage"
+  },
+  {
+    "objectID": "formatting_tips.html#embedded-videos",
+    "href": "formatting_tips.html#embedded-videos",
+    "title": "Flood Adapt Documentation",
+    "section": "Embedded videos",
+    "text": "Embedded videos"
+  },
+  {
+    "objectID": "formatting_tips.html#figures",
+    "href": "formatting_tips.html#figures",
+    "title": "Flood Adapt Documentation",
+    "section": "Figures",
+    "text": "Figures\nadd a figure and give it a name add #fig..to cross-reference. Just included here for demonstration purposes):\nFirst an exclamation mark - [here comes the name] (here comes the path to the file){#fig-logo}\nadd “fig-” before the label name to be able to cross reference.\n\n\n\n\n\n\nFigure 1: Floodadapt\n\n\n\n\nCross reference figure\nI want to reference the Figure 1."
+  },
+  {
+    "objectID": "formatting_tips.html#note-warning-blocks",
+    "href": "formatting_tips.html#note-warning-blocks",
+    "title": "Flood Adapt Documentation",
+    "section": "Note/ Warning Blocks",
+    "text": "Note/ Warning Blocks\nCreate info blocks within your test.\nJust use this header (remove quotation mark):\n\"::: {.callout-tip}\"\nwrite here the Note. and end with the following footer.\n\":::\"\nExample:\n::: {.callout-tip}\ncreate a tip\n:::\n::: {.callout-warning}\nCreate a warning .\n:::\n\noptions\n\nnote\nwarning\nimportant\ntip\ncaution"
+  },
+  {
+    "objectID": "formatting_tips.html#cross-reference",
+    "href": "formatting_tips.html#cross-reference",
+    "title": "Flood Adapt Documentation",
+    "section": "Cross Reference",
+    "text": "Cross Reference\nCross reference to another page or figure: (remove quotation marks)\n“[Write here the text would want to see]”(“add the reference”)\n\nCross reference page\n“[Setup Guide]”(/3_setup_guide/index.qmd)” Here I use the reference to the Setup Guide\n\n\nCross reference Figure\nuse the @ before the logo Reference and use the name you gave it as reference above: @ fig-logo (remove space)\nExample: Figure 1"
+  },
+  {
+    "objectID": "examples/scenarios/index.html",
+    "href": "examples/scenarios/index.html",
     "title": "TITLE HERE",
     "section": "",
     "text": "This section contains …\nSelect an example from the sidebar to view the corresponding notebook.\n\n\n\n Back to top"
@@ -1132,14 +1309,21 @@
     "href": "api_ref/Measure.html",
     "title": "Measure",
     "section": "",
-    "text": "objects.Measure()\nThe expected variables and data types of attributes common to all measures.\nA measure is a collection of attributes that can be applied to a model.\n\n\n\nname : str\n\nName of the measure.\n\ndescription : str\n\nDescription of the measure.\n\ntype : MeasureType\n\nType of measure. Should be one of the MeasureType enum values."
+    "text": "objects.Measure()\nThe expected variables and data types of attributes common to all measures.\nA measure is a collection of attributes that can be applied to a model.\n\n\n\nname : str\n\nName of the measure.\n\ndescription : str\n\nDescription of the measure.\n\ntype : MeasureType\n\nType of measure. Should be one of the MeasureType enum values.\n\nselection_type : SelectionType\n\nType of selection. Should be one of the SelectionType enum values.\n\npolygon_file : (str, Optional)\n\nPath to a polygon file, either absolute or relative to the measure’s toml path in the database.\n\naggregation_area_name : (str, Optional)\n\nName of the aggregation area. Required if selection_type is ‘aggregation_area’.\n\naggregation_area_type : (str, Optional)\n\nType of aggregation area. Required if selection_type is ‘aggregation_area’.\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nload_file\nLoad the measure from a file.\n\n\nserialize_polygon_file\nSerialize the polygon_file attribute to a string of only the file name.\n\n\n\n\n\nobjects.Measure.load_file(file_path: Path | str | os.PathLike)\nLoad the measure from a file.\n\n\n\nfilepath : Path | str | os.PathLike\n\nPath to the file to load the measure from.\n\n\n\n\n\n\n : Measure\n\nThe loaded measure object.\n\n\n\n\n\n\nobjects.Measure.serialize_polygon_file(value: Optional[str])\nSerialize the polygon_file attribute to a string of only the file name."
   },
   {
     "objectID": "api_ref/Measure.html#attributes",
     "href": "api_ref/Measure.html#attributes",
     "title": "Measure",
     "section": "",
-    "text": "name : str\n\nName of the measure.\n\ndescription : str\n\nDescription of the measure.\n\ntype : MeasureType\n\nType of measure. Should be one of the MeasureType enum values."
+    "text": "name : str\n\nName of the measure.\n\ndescription : str\n\nDescription of the measure.\n\ntype : MeasureType\n\nType of measure. Should be one of the MeasureType enum values.\n\nselection_type : SelectionType\n\nType of selection. Should be one of the SelectionType enum values.\n\npolygon_file : (str, Optional)\n\nPath to a polygon file, either absolute or relative to the measure’s toml path in the database.\n\naggregation_area_name : (str, Optional)\n\nName of the aggregation area. Required if selection_type is ‘aggregation_area’.\n\naggregation_area_type : (str, Optional)\n\nType of aggregation area. Required if selection_type is ‘aggregation_area’."
+  },
+  {
+    "objectID": "api_ref/Measure.html#methods",
+    "href": "api_ref/Measure.html#methods",
+    "title": "Measure",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nload_file\nLoad the measure from a file.\n\n\nserialize_polygon_file\nSerialize the polygon_file attribute to a string of only the file name.\n\n\n\n\n\nobjects.Measure.load_file(file_path: Path | str | os.PathLike)\nLoad the measure from a file.\n\n\n\nfilepath : Path | str | os.PathLike\n\nPath to the file to load the measure from.\n\n\n\n\n\n\n : Measure\n\nThe loaded measure object.\n\n\n\n\n\n\nobjects.Measure.serialize_polygon_file(value: Optional[str])\nSerialize the polygon_file attribute to a string of only the file name."
   },
   {
     "objectID": "api_ref/HurricaneEvent.html",
@@ -3430,7 +3614,7 @@
     "href": "api_ref/objects/Measure.html",
     "title": "Measure",
     "section": "",
-    "text": "objects.Measure()\nThe expected variables and data types of attributes common to all measures.\nA measure is a collection of attributes that can be applied to a model.\n\n\n\nname : str\n\nName of the measure.\n\ndescription : str\n\nDescription of the measure.\n\ntype : MeasureType\n\nType of measure. Should be one of the MeasureType enum values.",
+    "text": "objects.Measure()\nThe expected variables and data types of attributes common to all measures.\nA measure is a collection of attributes that can be applied to a model.\n\n\n\nname : str\n\nName of the measure.\n\ndescription : str\n\nDescription of the measure.\n\ntype : MeasureType\n\nType of measure. Should be one of the MeasureType enum values.\n\nselection_type : SelectionType\n\nType of selection. Should be one of the SelectionType enum values.\n\npolygon_file : (str, Optional)\n\nPath to a polygon file, either absolute or relative to the measure’s toml path in the database.\n\naggregation_area_name : (str, Optional)\n\nName of the aggregation area. Required if selection_type is ‘aggregation_area’.\n\naggregation_area_type : (str, Optional)\n\nType of aggregation area. Required if selection_type is ‘aggregation_area’.\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nload_file\nLoad the measure from a file.\n\n\nserialize_polygon_file\nSerialize the polygon_file attribute to a string of only the file name.\n\n\n\n\n\nobjects.Measure.load_file(file_path: Path | str | os.PathLike)\nLoad the measure from a file.\n\n\n\nfilepath : Path | str | os.PathLike\n\nPath to the file to load the measure from.\n\n\n\n\n\n\n : Measure\n\nThe loaded measure object.\n\n\n\n\n\n\nobjects.Measure.serialize_polygon_file(value: Optional[str])\nSerialize the polygon_file attribute to a string of only the file name.",
     "crumbs": [
       "API Reference",
       "Object models",
@@ -3443,7 +3627,20 @@
     "href": "api_ref/objects/Measure.html#attributes",
     "title": "Measure",
     "section": "",
-    "text": "name : str\n\nName of the measure.\n\ndescription : str\n\nDescription of the measure.\n\ntype : MeasureType\n\nType of measure. Should be one of the MeasureType enum values.",
+    "text": "name : str\n\nName of the measure.\n\ndescription : str\n\nDescription of the measure.\n\ntype : MeasureType\n\nType of measure. Should be one of the MeasureType enum values.\n\nselection_type : SelectionType\n\nType of selection. Should be one of the SelectionType enum values.\n\npolygon_file : (str, Optional)\n\nPath to a polygon file, either absolute or relative to the measure’s toml path in the database.\n\naggregation_area_name : (str, Optional)\n\nName of the aggregation area. Required if selection_type is ‘aggregation_area’.\n\naggregation_area_type : (str, Optional)\n\nType of aggregation area. Required if selection_type is ‘aggregation_area’.",
+    "crumbs": [
+      "API Reference",
+      "Object models",
+      "Measures",
+      "Measure"
+    ]
+  },
+  {
+    "objectID": "api_ref/objects/Measure.html#methods",
+    "href": "api_ref/objects/Measure.html#methods",
+    "title": "Measure",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nload_file\nLoad the measure from a file.\n\n\nserialize_polygon_file\nSerialize the polygon_file attribute to a string of only the file name.\n\n\n\n\n\nobjects.Measure.load_file(file_path: Path | str | os.PathLike)\nLoad the measure from a file.\n\n\n\nfilepath : Path | str | os.PathLike\n\nPath to the file to load the measure from.\n\n\n\n\n\n\n : Measure\n\nThe loaded measure object.\n\n\n\n\n\n\nobjects.Measure.serialize_polygon_file(value: Optional[str])\nSerialize the polygon_file attribute to a string of only the file name.",
     "crumbs": [
       "API Reference",
       "Object models",
@@ -3648,367 +3845,290 @@
     ]
   },
   {
-    "objectID": "examples/measures/index.html",
-    "href": "examples/measures/index.html",
-    "title": "TITLE HERE",
-    "section": "",
-    "text": "This section contains …\nSelect an example from the sidebar to view the corresponding notebook.\n\n\n\n Back to top",
-    "crumbs": [
-      "Measures"
-    ]
-  },
-  {
-    "objectID": "examples/scenarios/index.html",
-    "href": "examples/scenarios/index.html",
+    "objectID": "examples/projections/index.html",
+    "href": "examples/projections/index.html",
     "title": "TITLE HERE",
     "section": "",
     "text": "This section contains …\nSelect an example from the sidebar to view the corresponding notebook.\n\n\n\n Back to top"
   },
   {
-    "objectID": "formatting_tips.html",
-    "href": "formatting_tips.html",
-    "title": "Flood Adapt Documentation",
+    "objectID": "examples/strategies/index.html",
+    "href": "examples/strategies/index.html",
+    "title": "TITLE HERE",
     "section": "",
-    "text": "I put some styling infos here: but you can check all formatting here:\nhttps://quarto.org/docs/authoring/markdown-basics.html"
+    "text": "This section contains …\nSelect an example from the sidebar to view the corresponding notebook.\n\n\n\n Back to top",
+    "crumbs": [
+      "Strategies"
+    ]
   },
   {
-    "objectID": "formatting_tips.html#generate-tables",
-    "href": "formatting_tips.html#generate-tables",
-    "title": "Flood Adapt Documentation",
-    "section": "Generate tables",
-    "text": "Generate tables\nhttps://tablesgenerator.com/markdown_tables"
-  },
-  {
-    "objectID": "formatting_tips.html#headings",
-    "href": "formatting_tips.html#headings",
-    "title": "Flood Adapt Documentation",
-    "section": "Headings",
-    "text": "Headings\nfirst level : # Heading second level : ## Heading third level : ### Heading\n…"
-  },
-  {
-    "objectID": "formatting_tips.html#fonts",
-    "href": "formatting_tips.html#fonts",
-    "title": "Flood Adapt Documentation",
-    "section": "Fonts",
-    "text": "Fonts\nbold: ** word ** (remove tab spaces betweenw asterisk and word)\nitalic: * this will be italic when tab space removed *\n&lt;Make font a different color?&gt;"
-  },
-  {
-    "objectID": "formatting_tips.html#paragraphs",
-    "href": "formatting_tips.html#paragraphs",
-    "title": "Flood Adapt Documentation",
-    "section": "Paragraphs",
-    "text": "Paragraphs\nIf you want to create a paragraph or continue in the next line add 2 tab spaces behind the last word.\nE.g I write and want to continue in the next line.\nIf I only press enter to continue in the next line as I did now this will not show. -&gt; I have to add 2 spaces after line.\nLet’s see what happens when I add the 2 tabs:\nI to continue in the next line. If I only press enter to continue in the next line as I did now this will not show."
-  },
-  {
-    "objectID": "formatting_tips.html#additional-options",
-    "href": "formatting_tips.html#additional-options",
-    "title": "Flood Adapt Documentation",
-    "section": "Additional options",
-    "text": "Additional options\n\nEmphasizing\nCreate different types to emphasize the text eg code\nExample 1: conda install jupyter : Use ` (grave accent) before and after your sentence (without any spacing)\nExample 2: something: just indent one time. for scrolling do the same just write a longer text (see below)\nsomething really long that will needs scrolling so I will just continue writing until the scrolling bar appears.\n\n\nBullet Points\nJust write numbers below one another and use Indentation for the levels.\n\nMerry\nChristmas\nKathryn\n\nand a new year too\n\n\nUse the asterisks for your first level. For the second level in the row below add an indentation and a + per entry.\n\nMerry (* Merry)\n\nChristmas (+ Christmas)\nKathryn (+ Kathryn)"
-  },
-  {
-    "objectID": "formatting_tips.html#urls",
-    "href": "formatting_tips.html#urls",
-    "title": "Flood Adapt Documentation",
-    "section": "URLs",
-    "text": "URLs\nadd a URL and give it a name a\n[here comes the name] (here comes the URL)\nFloodAdapt Deltares webpage"
-  },
-  {
-    "objectID": "formatting_tips.html#embedded-videos",
-    "href": "formatting_tips.html#embedded-videos",
-    "title": "Flood Adapt Documentation",
-    "section": "Embedded videos",
-    "text": "Embedded videos"
-  },
-  {
-    "objectID": "formatting_tips.html#figures",
-    "href": "formatting_tips.html#figures",
-    "title": "Flood Adapt Documentation",
-    "section": "Figures",
-    "text": "Figures\nadd a figure and give it a name add #fig..to cross-reference. Just included here for demonstration purposes):\nFirst an exclamation mark - [here comes the name] (here comes the path to the file){#fig-logo}\nadd “fig-” before the label name to be able to cross reference.\n\n\n\n\n\n\nFigure 1: Floodadapt\n\n\n\n\nCross reference figure\nI want to reference the Figure 1."
-  },
-  {
-    "objectID": "formatting_tips.html#note-warning-blocks",
-    "href": "formatting_tips.html#note-warning-blocks",
-    "title": "Flood Adapt Documentation",
-    "section": "Note/ Warning Blocks",
-    "text": "Note/ Warning Blocks\nCreate info blocks within your test.\nJust use this header (remove quotation mark):\n\"::: {.callout-tip}\"\nwrite here the Note. and end with the following footer.\n\":::\"\nExample:\n::: {.callout-tip}\ncreate a tip\n:::\n::: {.callout-warning}\nCreate a warning .\n:::\n\noptions\n\nnote\nwarning\nimportant\ntip\ncaution"
-  },
-  {
-    "objectID": "formatting_tips.html#cross-reference",
-    "href": "formatting_tips.html#cross-reference",
-    "title": "Flood Adapt Documentation",
-    "section": "Cross Reference",
-    "text": "Cross Reference\nCross reference to another page or figure: (remove quotation marks)\n“[Write here the text would want to see]”(“add the reference”)\n\nCross reference page\n“[Setup Guide]”(/3_setup_guide/index.qmd)” Here I use the reference to the Setup Guide\n\n\nCross reference Figure\nuse the @ before the logo Reference and use the name you gave it as reference above: @ fig-logo (remove space)\nExample: Figure 1"
-  },
-  {
-    "objectID": "examples/event_set/create_event_set.html",
-    "href": "examples/event_set/create_event_set.html",
-    "title": "Event set creation for Risk Analysis",
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Introduction",
     "section": "",
-    "text": "This notebook explains how to create the input files for a risk analysis in the correct format and place them in the correct folder structure. For an explanation on how to derive the (compound) events and their (joint) probabilities, the reader is referred to the FloodAdapt Setup Guide Event Set.",
-    "crumbs": [
-      "Event set for risk assessments"
-    ]
+    "text": "Welcome to the FloodAdapt documentation!\nIn this introduction, you will find an overview of FloodAdapt, information on its intended uses, and reader guidance explaining the information you will find in this documentation."
   },
   {
-    "objectID": "examples/event_set/create_event_set.html#step-1.-setup-and-imports",
-    "href": "examples/event_set/create_event_set.html#step-1.-setup-and-imports",
-    "title": "Event set creation for Risk Analysis",
-    "section": "⏱️ Step 1. Setup and Imports",
-    "text": "⏱️ Step 1. Setup and Imports\n\nfrom datetime import datetime\nfrom pathlib import Path\n\nfrom flood_adapt import Settings, FloodAdapt\nfrom flood_adapt import unit_system as us\nfrom flood_adapt.config.sfincs import RiverModel\nfrom flood_adapt.objects import (\n    EventSet,\n    SubEventModel,\n    SyntheticEvent,\n)\nfrom flood_adapt.objects.forcing import (\n    DischargeConstant,\n    ForcingType,\n    TimeFrame,\n    ShapeType,\n    TimeseriesFactory,\n    RainfallSynthetic,\n    SurgeModel,\n    TideModel,\n    WaterlevelSynthetic,\n    WindConstant,\n)\n\n# Configure FloodAdapt\nsettings = Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\"\n)\n\nfa = FloodAdapt(database_path=settings.database_path)",
-    "crumbs": [
-      "Event set for risk assessments"
-    ]
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
+    "title": "Introduction",
+    "section": "Overview",
+    "text": "Overview\nFloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software"
   },
   {
-    "objectID": "examples/event_set/create_event_set.html#step-2.-set-name-frequencies-and-parameters-to-build-subevents",
-    "href": "examples/event_set/create_event_set.html#step-2.-set-name-frequencies-and-parameters-to-build-subevents",
-    "title": "Event set creation for Risk Analysis",
-    "section": "🗓️ Step 2. Set name, frequencies and parameters to build subevents",
-    "text": "🗓️ Step 2. Set name, frequencies and parameters to build subevents\nSet the name of the event set and the parameters for the input events and their frequencies. In this example, we are using three synthetic events with different storm surge heights and peak rainfall intensities. Alternatively, historic gauged and ungauged events or hurricanes are possible as well, see Events for examples on how to set up different subevents.\n\nname = \"event_set\"\n\n# Peak surge values in the subevents. \n# Surge is timed to always peak at 24.8 hours after the event start, coinciding with high tide at a tidal phase of 0 and lasting for 10 hours.\nsurge_values = [2.5, 1, 3] # in meters\n\n# Peak rainfall intensities in the three subevents. \n# Rainfall is applied as a 6 hour \"block\" shape preceding the peak of the storm surge.\nrainfall_values = [10, 15, 5] # in mm/hr\n\n# Occurrence frequencies of the three events\nfreq = [0.1, 2, 0.05]",
-    "crumbs": [
-      "Event set for risk assessments"
-    ]
+    "objectID": "index.html#intended-uses-of-floodadapt",
+    "href": "index.html#intended-uses-of-floodadapt",
+    "title": "Introduction",
+    "section": "Intended Uses of FloodAdapt",
+    "text": "Intended Uses of FloodAdapt\nFloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to aid in prioritizing investments, and to assess the effectiveness and longevity of different adaptation options.\nFloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.\nFloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt."
   },
   {
-    "objectID": "examples/event_set/create_event_set.html#step-3.-create-subevents",
-    "href": "examples/event_set/create_event_set.html#step-3.-create-subevents",
-    "title": "Event set creation for Risk Analysis",
-    "section": "🧩 Step 3. Create subevents",
-    "text": "🧩 Step 3. Create subevents\nCreate the subevents from the parameters defined in Step 1.\n\nevents = []\nnumber = 0\nfor surge, rainfall in zip(surge_values, rainfall_values):\n    number += 1\n    events.append(\n        SyntheticEvent(\n            name = f\"subevent_{number}\",\n            time=TimeFrame(start_time=datetime(2020, 1, 1, 0, 0, 0),end_time=datetime(2020, 1, 3, 0, 0, 0)),\n            forcings={\n                # constant wind speed 10 m/, direction 90 degrees (from the East)\n                ForcingType.WIND: [         \n                    WindConstant(\n                        speed=us.UnitfulVelocity(value=10, units=us.UnitTypesVelocity.mps), \n                        direction=us.UnitfulDirection(\n                            value=90, units=us.UnitTypesDirection.degrees                  \n                        ),\n                    )\n                ],\n                # block rainfall starting 18h after event start, duration 6h, intensity 10 mm/hr \n                ForcingType.RAINFALL: [         \n                    RainfallSynthetic(\n                        timeseries = TimeseriesFactory.from_args(             \n                            shape_type=ShapeType.block,\n                            duration=us.UnitfulTime(\n                                value=6, units=us.UnitTypesTime.hours\n                            ),\n                            peak_time=us.UnitfulTime(\n                                value=21, units=us.UnitTypesTime.hours\n                            ),\n                            peak_value=us.UnitfulIntensity(\n                                value=rainfall, units=us.UnitTypesIntensity.mm_hr\n                            ),\n                        )\n                    )\n                ],\n                # constant discharge in Cooper River of 5000 cubic feet per second\n                ForcingType.DISCHARGE: [         \n                    DischargeConstant(\n                        river=RiverModel(\n                            name=\"cooper\",\n                            description=\"Cooper River\",\n                            x_coordinate=595546.3,\n                            y_coordinate=3675590.6,\n                            mean_discharge=us.UnitfulDischarge(\n                                value=5000, units=us.UnitTypesDischarge.cfs\n                            ),\n                        ),\n                        discharge=us.UnitfulDischarge(\n                            value=5000, units=us.UnitTypesDischarge.cfs \n                        ),\n                    )\n                ],\n                ForcingType.WATERLEVEL: [       \n                    WaterlevelSynthetic(\n                        # storm surge with gaussian shape, duration 10 hours, peak at 24h after event start_time, peak height 3m\n                        surge=SurgeModel(       \n                            timeseries=TimeseriesFactory.from_args(             \n                                shape_type=ShapeType.gaussian,\n                                duration=us.UnitfulTime(\n                                    value=10, units=us.UnitTypesTime.hours\n                                ),\n                                peak_time=us.UnitfulTime(\n                                    value=24, units=us.UnitTypesTime.hours\n                                ),\n                                peak_value=us.UnitfulLength(\n                                    value=surge, units=us.UnitTypesLength.meters\n                                ),\n                            )\n                        ),\n                        # tide with 1m amplitude and 12.4h duration\n                        tide=TideModel(     \n                            harmonic_amplitude=us.UnitfulLength(\n                                value=1, units=us.UnitTypesLength.meters\n                            ),\n                            harmonic_period=us.UnitfulTime(\n                                value=12.4, units=us.UnitTypesTime.hours\n                            ),\n                            harmonic_phase=us.UnitfulTime(\n                                value=0, units=us.UnitTypesTime.hours\n                            ),\n                        ),\n                    )\n                ],\n            },\n        )\n    )\n\nprint(events)\n\n[SyntheticEvent(name='subevent_1', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=10.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=2.5, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0), SyntheticEvent(name='subevent_2', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=15.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=1.0, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0), SyntheticEvent(name='subevent_3', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=5.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=3.0, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0)]",
-    "crumbs": [
-      "Event set for risk assessments"
-    ]
+    "objectID": "index.html#reader-guidance",
+    "href": "index.html#reader-guidance",
+    "title": "Introduction",
+    "section": "Reader Guidance",
+    "text": "Reader Guidance\nFloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Setting up FloodAdapt in a new location requires additional capabilities.\n\nUser Guide The user guide provides information on how to get started with FloodAdapt, and describes how to use all the FloodAdapt functionalities.\nSetup Guide - The setup guides users in setting up FloodAdapt in their area of interest.\nTechnical docs - The technical docs provide detailed information on the calculation methods within FloodAdapt."
   },
   {
-    "objectID": "examples/event_set/create_event_set.html#step-4.-create-and-save-event-set",
-    "href": "examples/event_set/create_event_set.html#step-4.-create-and-save-event-set",
-    "title": "Event set creation for Risk Analysis",
-    "section": "💾 Step 4. Create and save event set",
-    "text": "💾 Step 4. Create and save event set\nIn this step, we create an event set from the SubEvents created in Step 2, load the actual Event objects into it, and save it to the database. This event set can then be used like any other event in a Scenario. Click here to see examples on how to build a scenario.\n\nsub_events = []\nfor event, frequency in zip(events, freq):\n    sub_events.append(SubEventModel(name=event.name, frequency=frequency))\n\n\nevent_set = EventSet(\n    name=name,\n    sub_events=sub_events,\n)\nevent_set.load_sub_events(events)\n\nfa.save_event(event_set)\nprint(fa.get_events()[\"name\"])\n\n['event_set', 'test_set']",
-    "crumbs": [
-      "Event set for risk assessments"
-    ]
-  },
-  {
-    "objectID": "examples/events/historical_event.html",
-    "href": "examples/events/historical_event.html",
-    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "objectID": "examples/events/event_modification.html",
+    "href": "examples/events/event_modification.html",
+    "title": "💾 Event modifications in the database",
     "section": "",
-    "text": "This notebook demonstrates how to create a historical event using FloodAdapt. Historical events are valuable for validation, controlled testing, sensitivity analysis, and what-if scenarios based on historic events.\nA FloodAdapt Event consists of 2 things:\nIn this example, we construct a full historical event with water level, rainfall, wind, and river discharge forcings, and then save it to a FloodAdapt database.",
+    "text": "This notebook demonstrates how to manipulate event objects in a FloodAdapt database, including loading, creating, editing, copying, and deleting events.\nIt is assumed that at the start of this notebook, you have a database and the events saved from the other event notebooks.\nimport flood_adapt.objects.forcing as f\n\nfrom pathlib import Path\nfrom datetime import datetime\n\nfrom flood_adapt import unit_system as us\nfrom flood_adapt import FloodAdapt, Settings\nfrom flood_adapt.objects import HistoricalEvent\nfrom flood_adapt.objects.forcing.time_frame import TimeFrame\n\n# Setup FloodAdapt\nSTATIC_DATA_DIR = Path(\"../../_data/examples/static-data\").resolve()\nsettings = Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\",\n)\nfa = FloodAdapt(database_path=settings.database_path)",
     "crumbs": [
       "Events",
-      "Historical Event"
+      "Event modification"
     ]
   },
   {
-    "objectID": "examples/events/historical_event.html#step-1.-setup-and-imports",
-    "href": "examples/events/historical_event.html#step-1.-setup-and-imports",
-    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
-    "section": "⏱️ Step 1. Setup and Imports",
-    "text": "⏱️ Step 1. Setup and Imports\nWe begin by importing the required classes and modules for constructing forcings and managing event data within the flood_adapt framework.\n\nimport flood_adapt.objects.forcing as f\n\nfrom pathlib import Path\nfrom datetime import datetime\n\nfrom flood_adapt.objects import HistoricalEvent, TimeFrame\nfrom flood_adapt import unit_system as us\nfrom flood_adapt import FloodAdapt, Settings\n\n# Setup FloodAdapt\nSTATIC_DATA_DIR = Path(\"../../_data/examples/static-data\").resolve()\nsettings = Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\"\n)\nfa = FloodAdapt(database_path=settings.database_path)",
+    "objectID": "examples/events/event_modification.html#analyze-the-effect-of-different-rainfall-forcings",
+    "href": "examples/events/event_modification.html#analyze-the-effect-of-different-rainfall-forcings",
+    "title": "💾 Event modifications in the database",
+    "section": "Analyze the effect of different rainfall forcings",
+    "text": "Analyze the effect of different rainfall forcings\nLets say we want to analyze the effect of rainfall, how would you approach that:\n\nRetrieve an event from the database\nCreate the rainfall forcings you want to analyze\nUpdate the event’s name and rainfall forcings\nSave the updated event to the database\nCreate scenarios using these events and run them (see this example) TODO\n\nOf course, this approach also works for analyzing the difference between any other forcings.\n\n# 1. Create an event or load it from the database\n# event = fa.get_event(...)\nevent_name=\"database_manipulation_event\"\nevent = HistoricalEvent(\n    name=event_name,\n    description=\"Some event description\",\n    time=TimeFrame(\n        start_time=datetime(2020, 1, 1),\n        end_time=datetime(2020, 1, 2),\n    ),\n    forcings={\n        f.ForcingType.WATERLEVEL: [f.WaterlevelGauged()]\n    }\n)\nfa.save_event(event=event)\n\n# 2. Create rainfall forcings\nrainfall_constant = f.RainfallConstant(\n    intensity=us.UnitfulIntensity(value=10, units=us.UnitTypesIntensity.mm_hr)\n)\n\nrainfall_synthetic = f.RainfallSynthetic(\n    timeseries=f.GaussianTimeseries(\n        duration=us.UnitfulTime(value=12, units=us.UnitTypesTime.hours),\n        # Choose the middle of the time frame for peak time\n        peak_time=us.UnitfulTime.from_timedelta(event.time.duration / 2), \n        peak_value=us.UnitfulIntensity(value=10, units=us.UnitTypesIntensity.mm_hr),\n    )\n)\n\nrainfall_csv = f.RainfallCSV(path=STATIC_DATA_DIR / \"rainfall.csv\")\n\nrainfall_forcings = [\n    (rainfall_constant, \"constant\"),\n    (rainfall_synthetic, \"synthetic\"),\n    (rainfall_csv, \"csv\")\n]\n\nfor forcing, fsource in rainfall_forcings:\n    # 3. Update the event\n    event.forcings[f.ForcingType.RAINFALL] = [forcing]\n    event.name = f\"{event_name}_rainfall_{fsource}\"\n    \n    # 4. Save the event\n    fa.save_event(event=event)\n\nfa.get_events()[\"name\"]\n\n# 5. Now the events can be used as the components for scenario creation. Similar to how the rainfall forcings are used to create various events\n# For more information on how to create scenarios, see the scenario creation example\n\n['database_manipulation_event',\n 'database_manipulation_event_rainfall_constant',\n 'database_manipulation_event_rainfall_csv',\n 'database_manipulation_event_rainfall_synthetic',\n 'event_set',\n 'test_set']",
     "crumbs": [
       "Events",
-      "Historical Event"
+      "Event modification"
     ]
   },
   {
-    "objectID": "examples/events/historical_event.html#step-2.-define-the-simulation-time-frame",
-    "href": "examples/events/historical_event.html#step-2.-define-the-simulation-time-frame",
-    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "objectID": "examples/events/event_modification.html#delete-save-copy-edit",
+    "href": "examples/events/event_modification.html#delete-save-copy-edit",
+    "title": "💾 Event modifications in the database",
+    "section": "Delete, Save, Copy, Edit",
+    "text": "Delete, Save, Copy, Edit\nFloodAdapt supports deleting, editing, and copying objects by name, as shown below.\nIt is possible to achieve the exact same goal in multiple ways:\n\nevent = fa.get_event(event_name) -&gt; update event -&gt; fa.delete_event(event_name) -&gt; fa.save_event(event)\nevent = fa.get_event(event_name) -&gt; update event -&gt; fa.edit_event(event)\n\n\nprint(\"Initial:\", fa.get_events()[\"name\"])\n\n# Copy all events\nfor name in fa.get_events()[\"name\"]:\n    new_name = f\"{name}_copy\"\n    fa.copy_event(old_name=name, new_name=new_name, new_description=f\"Copy of {name}\")\nprint(\"Names after `Copy`:\", fa.get_events()[\"name\"])\n\n# Delete all copied events\nfor name in fa.get_events()[\"name\"]:\n    if \"copy\" in name:\n        fa.delete_event(name)\nprint(\"Names after `Delete`:\", fa.get_events()[\"name\"])\n\n# Edit an existing event\nunedited_event = fa.get_event(event_name)\nprint(\"Description before `Edit`:\", unedited_event.description)\n\nunedited_event.description = f\"Updated description\"\nfa.save_event(event=unedited_event, overwrite=True)\n\nedited_event = fa.get_event(event_name)\nprint(\"Description after `Edit`:\", edited_event.description)\n\nInitial: ['database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_synthetic', 'event_set', 'test_set']\nNames after `Copy`: ['database_manipulation_event', 'database_manipulation_event_copy', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_constant_copy', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_csv_copy', 'database_manipulation_event_rainfall_synthetic', 'database_manipulation_event_rainfall_synthetic_copy', 'event_set', 'event_set_copy', 'test_set', 'test_set_copy']\nNames after `Delete`: ['database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_synthetic', 'event_set', 'test_set']\nDescription before `Edit`: Some event description\nDescription after `Edit`: Updated description",
+    "crumbs": [
+      "Events",
+      "Event modification"
+    ]
+  },
+  {
+    "objectID": "examples/events/hurricane_event.html",
+    "href": "examples/events/hurricane_event.html",
+    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "section": "",
+    "text": "This notebook demonstrates how to create a hurricane event using FloodAdapt. Hurricane events are valuable for controlled testing, sensitivity analysis, and understanding the behavior of flood models under simplified or hypothetical scenarios.\nA FloodAdapt Event consists of 2 things:\nIn this example, we construct a full HurricaneEvent with water level, rainfall, wind, and river discharge forcings, and then save it to a FloodAdapt database.",
+    "crumbs": [
+      "Events",
+      "Hurricane Event"
+    ]
+  },
+  {
+    "objectID": "examples/events/hurricane_event.html#step-1.-setup-and-imports",
+    "href": "examples/events/hurricane_event.html#step-1.-setup-and-imports",
+    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "section": "⏱️ Step 1. Setup and Imports",
+    "text": "⏱️ Step 1. Setup and Imports\nWe begin by importing the required classes and modules for constructing hurricane forcings and managing event data within the flood_adapt framework.\n\nimport flood_adapt.objects.forcing as f\n\nfrom pathlib import Path\nfrom datetime import datetime\n\nfrom flood_adapt.objects import HurricaneEvent, TimeFrame\nfrom flood_adapt.objects.events.hurricane import TranslationModel\nfrom flood_adapt import unit_system as us\nfrom flood_adapt import FloodAdapt, Settings\n\n# Setup FloodAdapt\nSTATIC_DATA_DIR = Path(\"../../_data/examples/static-data\").resolve()\nsettings = Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\"\n)\nfa = FloodAdapt(database_path=settings.database_path)",
+    "crumbs": [
+      "Events",
+      "Hurricane Event"
+    ]
+  },
+  {
+    "objectID": "examples/events/hurricane_event.html#step-2.-define-the-simulation-time-frame",
+    "href": "examples/events/hurricane_event.html#step-2.-define-the-simulation-time-frame",
+    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
     "section": "🗓️ Step 2. Define the Simulation Time Frame",
-    "text": "🗓️ Step 2. Define the Simulation Time Frame\nWe specify a one-day time frame for the historical event, from January 1 to January 2, 2025.\n\n# Create an time frame for the simulation\nstart_time = datetime(year=2020, month=1, day=1)\nend_time = datetime(year=2020, month=1, day=2)\ntime_frame = TimeFrame(start_time=start_time, end_time=end_time)",
+    "text": "🗓️ Step 2. Define the Simulation Time Frame\nWe specify a one-day time frame for the hurricane event, from January 1 to January 2, 2025. Make sure the time frame covers the tinme specified in your hurricane track file.\n\n# Create an time frame for the simulation\nstart_time = datetime(year=2025, month=1, day=1)\nend_time = datetime(year=2025, month=1, day=2)\ntime_frame = TimeFrame(start_time=start_time, end_time=end_time)",
     "crumbs": [
       "Events",
-      "Historical Event"
+      "Hurricane Event"
     ]
   },
   {
-    "objectID": "examples/events/historical_event.html#step-3.-define-water-level-forcing",
-    "href": "examples/events/historical_event.html#step-3.-define-water-level-forcing",
-    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
+    "objectID": "examples/events/hurricane_event.html#step-3.-define-water-level-forcing",
+    "href": "examples/events/hurricane_event.html#step-3.-define-water-level-forcing",
+    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
     "section": "🌊 Step 3. Define Water Level Forcing",
-    "text": "🌊 Step 3. Define Water Level Forcing\nHistorical water levels can be included in 3 few ways:\n\nTide Gauge: Measured water levels downloaded from NOAA CO-OPS. The automated download is only available for stations in the US. Outside the US, water level records can be stored in the FloodAdapt database. This avoids having to import the csv for each event, see below.\n\nCSV: Custom water levels specified in a csv file (perhaps from a tide gauge not connected to the noaa_coops API)\nModel: Generate the storm surge to be used for the overland simulation by running an offshore model. For historic events, this model uses weather re-analysis data (wind and pressure) from the NOAA GFS model.\n\n\n# Recorded water levels from a CSV file\ncsv_file = STATIC_DATA_DIR / \"tide.csv\"\nwater_levels = f.WaterlevelCSV(path=csv_file)\nwl_df = water_levels.to_dataframe(time_frame=time_frame)\n\n# Alternative: Water levels downloaded from a tide gauge\ntide_gauge = fa.database.site.sfincs.tide_gauge\ndf_tide_gauge = tide_gauge.get_waterlevels_in_time_frame(\n    time=time_frame,\n)\nwater_levels_gauged = f.WaterlevelGauged()\n\n# Alternative: Water levels simulated by an offshore model\nwater_levels_from_offshore = f.WaterlevelModel()\n\n# Inspect\nwl_df.plot(\n    title=\"Water Level from CSV\",\n    xlabel=\"Time\",\n    ylabel=\"Water Level (m)\",\n    legend=False,\n    figsize=(5, 2)\n)\n\ndf_tide_gauge.plot(\n    title=\"Water Level from Tide Gauge\",\n    xlabel=\"Time\",\n    ylabel=\"Water Level (m)\",\n    legend=False,\n    figsize=(5, 2)\n)",
+    "text": "🌊 Step 3. Define Water Level Forcing\nWater levels for Hurricane Events are computed by taking the Hurricane Track, and generating a pressure and wind field along its track.\nThese fields are then used as forcing inputs to the offshore simulation, which generates the storm surge to be used for the overland simulation. So for waterlevels, we only need to specify to use the offshore model as the input, denoted with WaterlevelModel\n\nwater_levels = f.WaterlevelModel()",
     "crumbs": [
       "Events",
-      "Historical Event"
+      "Hurricane Event"
     ]
   },
   {
-    "objectID": "examples/events/historical_event.html#step-4.-create-a-minimal-event-and-modify-it",
-    "href": "examples/events/historical_event.html#step-4.-create-a-minimal-event-and-modify-it",
-    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
-    "section": "🧩 Step 4. Create a minimal event and modify it",
-    "text": "🧩 Step 4. Create a minimal event and modify it\nGiven a water level forcing, and a TimeFrame, you can create the simplest possible event in FloodAdapt as shown below.\nIn many cases, it is interesting to to investigate a combination of different forcings. In steps 5 - 9, we will show the creation of various forcings and how to add them to an event.\n\nsimple_event = HistoricalEvent(\n    name=\"simple_event\",\n    time=time_frame,\n    forcings={\n        f.ForcingType.WATERLEVEL: [water_levels], \n        # or [water_levels_gauged], [water_levels_from_offshore]\n    }\n)",
+    "objectID": "examples/events/hurricane_event.html#step-3.-obtain-a-hurricane-track",
+    "href": "examples/events/hurricane_event.html#step-3.-obtain-a-hurricane-track",
+    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "section": "🌧️ Step 3. Obtain a hurricane track",
+    "text": "🌧️ Step 3. Obtain a hurricane track\nYou can include an IBTrACS hurricane database with recent and historic tracks in the FloodAdapt database. You can use any track from the database and optionally shift the track north, southh, east or west.\n\nNOTE: Hurricane events are only available in FloodAdapt when you have an offshore flood hazard model in your database that simulates the surge from the hurricane track.\n\n\n# Get the cyclone database\ncyclone_db = fa.database.static.get_cyclone_track_database()\nian_index = cyclone_db.list_names().index(\"IAN\")\n\n# Not all cyclone tracks have names, in addition to duplicate names existing, so the index is required\ntrack = fa.get_cyclone_track_by_index(index=ian_index) \ntrack_file = STATIC_DATA_DIR / \"IAN.cyc\"\ntrack.write_track(filename=track_file, fmt=\"ddb_cyc\")\n\n# Optionally translate the cyclone track from what is defined in the file\ntranslation = TranslationModel(\n    eastwest_translation=us.UnitfulLength(value=3000, units=us.UnitTypesLength.meters),\n    northsouth_translation=us.UnitfulLength(value=5000, units=us.UnitTypesLength.meters),\n)",
     "crumbs": [
       "Events",
-      "Historical Event"
+      "Hurricane Event"
     ]
   },
   {
-    "objectID": "examples/events/historical_event.html#step-5.-define-meteo-forcing",
-    "href": "examples/events/historical_event.html#step-5.-define-meteo-forcing",
-    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
-    "section": "🌧️ Step 5. Define Meteo Forcing",
-    "text": "🌧️ Step 5. Define Meteo Forcing\nHistoric events have several options to define wind and rainfall, see also Synthteic event. Additionally, FloodAdapt provides an easy connection to NOAA GFS model re-analysis data for rainfall and wind that is automatically downloaded based on the event’s ‘TimeFrame’.\n\nmeteo_dataset = f.MeteoHandler().read(time_frame)\nprint(meteo_dataset) # TODO make sure the meteo files are already downloaded in the database to circumvent flaky noaa coops API calls\n\nRequested meteo data already available\n&lt;xarray.Dataset&gt; Size: 485kB\nDimensions:      (time: 9, lon: 41, lat: 41)\nCoordinates:\n  * time         (time) datetime64[ns] 72B 2020-01-01 ... 2020-01-02\n  * lon          (lon) float32 164B -90.0 -89.5 -89.0 ... -71.0 -70.5 -70.0\n  * lat          (lat) float32 164B 23.0 23.5 24.0 24.5 ... 41.5 42.0 42.5 43.0\n    spatial_ref  int32 4B 0\nData variables:\n    wind10_u     (time, lat, lon) float64 121kB -5.165 -5.625 ... 11.64 11.98\n    wind10_v     (time, lat, lon) float64 121kB -5.967 -5.257 ... -0.8354 -1.565\n    press_msl    (time, lat, lon) float64 121kB 1.017e+05 ... 1.004e+05\n    precip       (time, lat, lon) float64 121kB 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0\n\n\n\nVisualizing Meteo data\nIt can be difficult to visualize spatially varying timeseries data. So, below is a simple animation generator to do some basic data checks on the downloaded NOAA GFS data.\nChoose any of the available timeseries data variables and generate the animation.\n\nimport matplotlib.pyplot as plt\nimport matplotlib.animation as animation\nfrom IPython.display import HTML\n\nto_plot = 'press_msl' # available variables: 'wind10_u' or 'wind10_v' or 'press_msl' or 'precip'\n\nvar = meteo_dataset[to_plot] \nfig, ax = plt.subplots()\nplot = var.isel(time=0).plot(ax=ax, cmap='viridis', add_colorbar=True)\n\ndef update(frame):\n    ax.clear()\n    var.isel(time=frame).plot(ax=ax, cmap='viridis', add_colorbar=False)\n    ax.set_title(f'Time: {str(var.time[frame].values)}')\n\nani = animation.FuncAnimation(fig, update, frames=len(var.time), interval=200)\nplt.close(fig)\n\nHTML(ani.to_jshtml()) # TODO look at hvplot or other options to display the animation\n\n\n\n\n\n\n\n\n  \n  \n    \n    \n      \n          \n      \n        \n      \n          \n      \n          \n      \n          \n      \n          \n      \n          \n      \n          \n      \n          \n    \n    \n      \n      Once\n      \n      Loop\n      \n      Reflect",
+    "objectID": "examples/events/hurricane_event.html#step-4.-define-track-forcings",
+    "href": "examples/events/hurricane_event.html#step-4.-define-track-forcings",
+    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "section": "🌧️ Step 4. Define Track forcings",
+    "text": "🌧️ Step 4. Define Track forcings\nGiven a Hurricane track, the wind field is always computer from the track. You can choose to model the rainfall based on a parametric model around the hurricane track or choose any iother rainfall option.\n\n# We want to include the rainfall and wind from the hurricane track\nrainfall = f.RainfallTrack(path=track_file)\nwind = f.WindTrack(path=track_file)",
     "crumbs": [
       "Events",
-      "Historical Event"
+      "Hurricane Event"
     ]
   },
   {
-    "objectID": "examples/events/historical_event.html#step-6.-define-meteo-forcings",
-    "href": "examples/events/historical_event.html#step-6.-define-meteo-forcings",
-    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
-    "section": "🌬️ Step 6. Define Meteo Forcings",
-    "text": "🌬️ Step 6. Define Meteo Forcings\nTo use the downloaded NOAA’s GFS hindcast data in FloodAdapt, you need to create Meteo forcings and add them to your event.\nUnder the hood, the meteo forcings use the MeteoHandler to download the data, and then return slices of that dataset.\n\nrainfall = f.RainfallMeteo()\nwind = f.WindMeteo()",
+    "objectID": "examples/events/hurricane_event.html#step-5.-define-river-discharge-forcing",
+    "href": "examples/events/hurricane_event.html#step-5.-define-river-discharge-forcing",
+    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "section": "🏞️ Step 5. Define River Discharge Forcing",
+    "text": "🏞️ Step 5. Define River Discharge Forcing\nDischarge is defined for two pre-configured rivers in this example. These rivers must be registered in the hazard model configuration beforehand, see [Database builder].\n\n# The available rivers are defined in the hazard model when creating the database.\n# You cannot add new rivers to the model in an event\n# You can only set the discharge of each given river.\nriver = fa.database.site.sfincs.river[0]\n\ndischarge = f.DischargeConstant(\n    river=river,\n    discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cms)\n)\n\n# Inspect\ndf = discharge.to_dataframe(time_frame=time_frame)\ndf.plot(title=\"Constant Discharge River\", xlabel=\"Time\", ylabel=\"Discharge (cms)\", legend=True, figsize=(5, 2))",
     "crumbs": [
       "Events",
-      "Historical Event"
+      "Hurricane Event"
     ]
   },
   {
-    "objectID": "examples/events/historical_event.html#step-7.-define-river-discharge-forcing",
-    "href": "examples/events/historical_event.html#step-7.-define-river-discharge-forcing",
-    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
-    "section": "🏞️ Step 7. Define River Discharge Forcing",
-    "text": "🏞️ Step 7. Define River Discharge Forcing\nDischarge is required to be defined for the pre-configured river(s). These rivers must be registered in the hazard model configuration beforehand.\n\n# The available rivers are defined in the hazard model when creating the database.\n# You cannot add new rivers to the model in an event\n# You can only set the discharge of each given river.\nprint(f\"Number of available rivers: {len(fa.database.site.sfincs.river)}\")\n\nriver = fa.database.site.sfincs.river[0]\n\ndischarge_constant = f.DischargeConstant(\n    river=river,\n    discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cms)\n)\n\n# Inspect\ndf = discharge_constant.to_dataframe(time_frame=time_frame)\ndf.plot(\n    title=\"Constant Discharge River\",\n    xlabel=\"Time\",\n    ylabel=\"Discharge (cms)\",\n    legend=True,\n    figsize=(5, 2)\n)\n\nNumber of available rivers: 1",
+    "objectID": "examples/events/hurricane_event.html#step-6.-combine-forcings-and-create-hurricane-event",
+    "href": "examples/events/hurricane_event.html#step-6.-combine-forcings-and-create-hurricane-event",
+    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "section": "🧩 Step 6. Combine Forcings and Create hurricane Event",
+    "text": "🧩 Step 6. Combine Forcings and Create hurricane Event\nAll defined forcings are collected into a single dictionary, which is used to construct a hurricaneEvent.\n\nNOTE: each event can only have 1 forcing of the types: water level, rainfall and wind. For discharge however, each river is required to have a forcing associated with it.\n\n\n# Create a hurricaneEvent with the forcings and time frame\nevent = HurricaneEvent(\n    name=\"example_hurricane_event\",\n    time=time_frame,\n    forcings = {\n        f.ForcingType.WATERLEVEL: [water_levels],\n        f.ForcingType.RAINFALL: [rainfall],\n        f.ForcingType.WIND: [wind],\n        f.ForcingType.DISCHARGE: [discharge],\n    },\n    track_name=track.name,\n    hurricane_translation=translation,\n)",
     "crumbs": [
       "Events",
-      "Historical Event"
+      "Hurricane Event"
     ]
   },
   {
-    "objectID": "examples/events/historical_event.html#step-8.-combine-forcings-and-create-event",
-    "href": "examples/events/historical_event.html#step-8.-combine-forcings-and-create-event",
-    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
-    "section": "🧩 Step 8. Combine Forcings and Create Event",
-    "text": "🧩 Step 8. Combine Forcings and Create Event\nAll defined forcings are collected into a single dictionary, which is used to construct a HistoricalEvent.\n\nNOTE: each event can only have 1 forcing of the types: water level, rainfall and wind. For discharge however, each river is required to have a forcing associated with it.\n\n\n# Create a HistoricalEvent with the forcings and time frame\nevent = HistoricalEvent(\n    name=\"example_historical_event\",\n    time=time_frame,\n    forcings={\n        f.ForcingType.WATERLEVEL: [water_levels], \n        # or one of `water_levels_gauged` or `water_levels_from_offshore`,\n        f.ForcingType.RAINFALL: [rainfall],\n        f.ForcingType.WIND: [wind],\n        f.ForcingType.DISCHARGE: [discharge_constant],\n    },\n)",
+    "objectID": "examples/events/hurricane_event.html#step-7.-save-the-event-to-a-floodadapt-database",
+    "href": "examples/events/hurricane_event.html#step-7.-save-the-event-to-a-floodadapt-database",
+    "title": "📘 Example: Creating a Hurricane Event in FloodAdapt",
+    "section": "💾 Step 7. Save the Event to a FloodAdapt Database",
+    "text": "💾 Step 7. Save the Event to a FloodAdapt Database\nFinally, we save the event to a FloodAdapt database.\n\n# Save the event to the database\nfa.save_event(event=event)",
     "crumbs": [
       "Events",
-      "Historical Event"
+      "Hurricane Event"
     ]
   },
   {
-    "objectID": "examples/events/historical_event.html#step-9.-save-the-event-to-a-floodadapt-database",
-    "href": "examples/events/historical_event.html#step-9.-save-the-event-to-a-floodadapt-database",
-    "title": "📘 Example: Creating a Historical Event in FloodAdapt",
-    "section": "💾 Step 9. Save the Event to a FloodAdapt Database",
-    "text": "💾 Step 9. Save the Event to a FloodAdapt Database\nFinally, we save the event to a FloodAdapt database.\n\n# Save the event to the database\nfa.save_event(event=event)",
-    "crumbs": [
-      "Events",
-      "Historical Event"
-    ]
-  },
-  {
-    "objectID": "examples/events/synthetic_event.html",
-    "href": "examples/events/synthetic_event.html",
-    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
+    "objectID": "examples/measures/measures_strategies.html",
+    "href": "examples/measures/measures_strategies.html",
+    "title": "📘 Example: Measures and Strategies",
     "section": "",
-    "text": "This notebook demonstrates how to create a synthetic event using FloodAdapt. Synthetic events are valuable for controlled testing, sensitivity analysis, and understanding the behavior of flood models under simplified or hypothetical scenarios.\nA FloodAdapt Event consists of 2 things:\nIn this example, we construct a full synthetic event with water level, rainfall, wind, and river discharge forcings, and then save it to a FloodAdapt database.",
+    "text": "In this notebook we will show you all the different options and inputs for creating different measures and how to create a strategy from the different measures.\nMeasures in FloodAdapt can be categorized into two different categories, which we will cover all in this notebook:\n1. Hazard - Mitigate the hazard directly\n2. Impact - Mitiage the impacts of the hazard on the assets\nStrategies consist of multiple measures combined for example: StrategyXYZ = Floodwall + Elevated Homes + Pumps\nIf you want to learn in more detail about measures and what a strategy is, please read the sections on Measures in the FloodAdapt GUI documentation.",
     "crumbs": [
-      "Events",
-      "Synthetic Event"
+      "Measures"
     ]
   },
   {
-    "objectID": "examples/events/synthetic_event.html#step-1.-setup-and-imports",
-    "href": "examples/events/synthetic_event.html#step-1.-setup-and-imports",
-    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
-    "section": "⏱️ Step 1. Setup and Imports",
-    "text": "⏱️ Step 1. Setup and Imports\nWe begin by importing the required classes and modules for constructing synthetic forcings and managing event data within the FloodAdapt framework.\n\nimport flood_adapt.objects.forcing as f\n\nfrom pathlib import Path\nfrom datetime import datetime\n\nfrom flood_adapt.objects import SyntheticEvent, TimeFrame\nfrom flood_adapt import unit_system as us\nfrom flood_adapt import FloodAdapt, Settings\n\n# Setup FloodAdapt\nSTATIC_DATA_DIR = Path(\"../../_data/examples/static-data\").resolve()\nsettings = Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\"\n)\nfa = FloodAdapt(database_path=settings.database_path)",
+    "objectID": "examples/measures/measures_strategies.html#import-libraries",
+    "href": "examples/measures/measures_strategies.html#import-libraries",
+    "title": "📘 Example: Measures and Strategies",
+    "section": "Import libraries",
+    "text": "Import libraries\n\nimport pandas as pd\nimport geopandas as gpd\nfrom pathlib import Path\n\nfrom flood_adapt import FloodAdapt, Settings\nfrom flood_adapt.objects import (\n    FloodProof, FloodWall, Elevate, GreenInfrastructure, Buyout, Pump, Strategy, MeasureType, SelectionType\n)\nfrom flood_adapt import unit_system as us",
     "crumbs": [
-      "Events",
-      "Synthetic Event"
+      "Measures"
     ]
   },
   {
-    "objectID": "examples/events/synthetic_event.html#step-2.-define-the-simulation-time-frame",
-    "href": "examples/events/synthetic_event.html#step-2.-define-the-simulation-time-frame",
-    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
-    "section": "🗓️ Step 2. Define the Simulation Time Frame",
-    "text": "🗓️ Step 2. Define the Simulation Time Frame\nWe specify a one-day time frame for the SyntheticEvent, from January 1 to January 2, 2025.\n\n# Create an time frame for the simulation\nstart_time = datetime(year=2025, month=1, day=1)\nend_time = datetime(year=2025, month=1, day=2)\ntime_frame = TimeFrame(start_time=start_time, end_time=end_time)",
+    "objectID": "examples/measures/measures_strategies.html#step-1.-reading-in-the-floodadapt-database",
+    "href": "examples/measures/measures_strategies.html#step-1.-reading-in-the-floodadapt-database",
+    "title": "📘 Example: Measures and Strategies",
+    "section": "🚀 Step 1. Reading-in the FloodAdapt database",
+    "text": "🚀 Step 1. Reading-in the FloodAdapt database\nLet’s start with initiating the database and FloodAdapt class. 1. Initiate the database class Settings by defining the DATABASE_ROOT and DATABASE_NAME. 2. Initiate the FloodAdapt class by parsing the Settings().database_path.\n\n# Define the static data folder\nSTATIC_DATA_DIR = Path(\"../../_data/examples/static-data/3_Measures\").resolve()\n\n# Set up the settings for the database\nsettings=Settings(\n    DATABASE_ROOT=Path(\"../../_data/examples\").resolve(),\n    DATABASE_NAME=\"charleston_test\"\n)\n\n# Create the FloodAdapt instance\nfa = FloodAdapt(settings.database_path)",
     "crumbs": [
-      "Events",
-      "Synthetic Event"
+      "Measures"
     ]
   },
   {
-    "objectID": "examples/events/synthetic_event.html#step-3.-define-water-level-forcing",
-    "href": "examples/events/synthetic_event.html#step-3.-define-water-level-forcing",
-    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
-    "section": "🌊 Step 3. Define Water Level Forcing",
-    "text": "🌊 Step 3. Define Water Level Forcing\nSynthetic water levels are constructed from a combination of tidal and surge components. All FloodAdapt events require exactly 1 water level forcing, all other forcings are optional.\n\n# Synthetic water levels can be computed from a combination of surge and tide.\nsurge = f.SurgeModel(\n    timeseries=f.GaussianTimeseries(\n        duration=us.UnitfulTime(value=12, units=us.UnitTypesTime.hours),\n        # Choose the middle of the time frame for peak time\n        peak_time=us.UnitfulTime.from_timedelta(time_frame.duration / 2), \n        peak_value=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),\n    )\n)\n\ntide = f.TideModel(\n    harmonic_amplitude=us.UnitfulLength(value=1, units=us.UnitTypesLength.meters),\n    # Choose the middle of the time frame for peak time\n    harmonic_phase=us.UnitfulTime.from_timedelta(time_frame.duration / 2), \n    harmonic_period=us.UnitfulTime(value=12.4, units=us.UnitTypesTime.hours),\n)\n\nwater_levels_synthetic = f.WaterlevelSynthetic(\n    surge=surge,\n    tide=tide,\n)\n\n# Inspect\ngaussian = surge.timeseries.to_dataframe(time_frame=time_frame)\ngaussian.columns = [\"Surge\"]\nharmonic = tide.to_dataframe(time_frame=time_frame)\nharmonic.columns = [\"Tide\"]\ntotal = water_levels_synthetic.to_dataframe(time_frame=time_frame)\ntotal.columns = [\"Water levels\"]\ndf_combined = gaussian.join(harmonic).join(total)\ndf_combined.plot(\n    title=\"Synthetic Water Levels (Surge + Tide)\",\n    xlabel=\"Time\",\n    ylabel=\"Water Level (m)\",\n    legend=True,\n    figsize=(5, 2)\n)",
+    "objectID": "examples/measures/measures_strategies.html#step-2.-create-hazard-measures",
+    "href": "examples/measures/measures_strategies.html#step-2.-create-hazard-measures",
+    "title": "📘 Example: Measures and Strategies",
+    "section": "🌧️ Step 2. Create Hazard Measures",
+    "text": "🌧️ Step 2. Create Hazard Measures\nWe can divide the hazard measures into: 1. Hydraulic (grey) measures - structures such as levees, pumps, seawalls that protect infrastructure and residents 2. Green infrastructure measures - integrate natural elements like parks, green roofs, and permeable pavements into city\nTo create a hazard measure in Floodadapt we need to create a Measure object. Depending on the type of measure different attributes must be parsed. There are three types of hazard measures: 1. Floodwall 2. Pump 3. Green Infrastructure The green infrastructure class can be divided into sub-categories:\n- Greening - Total storage - Water square\nBelow we will create a Measure object for each of the three hazard measure.\n\n🧱🌊 Floodwall\nWhen we create a floodwall object we need to specify the elevation attribute to capture the height of the floodwall. To define the elevation we need to parse a UnitfulLength object which consists of a value of type float and a unit which can be one of the UnitTypesLength. The selection_type describes the spatial type. This should be of SelectionType.polyline for a floodwall.\n\n# Create a measure object for a Floodwall\nfloodwall = FloodWall(\n    name= \"Seawall_12ft\",\n    description=\"12ft Seawall\",\n    selection_type=SelectionType.polyline,\n    polygon_file=str(STATIC_DATA_DIR / \"seawall.geojson\"),\n    elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet)\n)\n\n\n\n⛽💦 Pump\nWhen we create a pump object we need to specify the discharge attribute to capture the total river discharge in the model. To define the discharge we need to parse a UnitfulLength object which consists of a value of type float and a unit which can be one of the UnitTypesLength. The selection_type describes the spatial type. This should be of SelectionType.polygon for a pump.\n\n# Create a measure object for a Pump\npump = Pump(\n    name= \"Pump\",\n    description=\"Pump\",\n    selection_type=SelectionType.polygon,\n    polygon_file=str(STATIC_DATA_DIR / \"pump.geojson\"),\n    discharge=us.UnitfulDischarge(value=1, units=us.UnitTypesDischarge.cfs)\n)\n\n\n\n🌱🖼️ Green infrastructure\nWhen we create a green infrastructure object we need to specify the volume attribute to capture the total storage of the green infrastructure. o define the volume we need to parse a UnitfulVolume object which consists of a value of type float and a unit which can be one of the UnitTypesVolume. The selection_type describes the spatial type. This should be of SelectionType.polygon or SelectionType.aggregation_area for a green infrastructure. Other attributes like height and percentage are optional.\n\nNote: GreenInfraStructure is the only measure for which it is required to pass the specific type (or sub-category as described above) to create the object, all other measures have the correct default.\n\n\n# Create a measure object for Green infrastructure\ngreening = GreenInfrastructure(\n    name= \"green_infrastructure_storage\",\n    description=\"Storage through green infrastructure\",\n    type=MeasureType.greening,\n    selection_type=SelectionType.polygon,\n    polygon_file=str(STATIC_DATA_DIR / \"greening.geojson\"),\n    volume=us.UnitfulVolume(value=43975190.31512848, units=us.UnitTypesVolume.cf),\n    height=us.UnitfulHeight(value=3, units=us.UnitTypesLength.feet),\n    percent_area=100.0\n)\n\ntotal_storage = GreenInfrastructure(\n    name=  \"total_storage_aggregation_area\",\n    description=\"Total Storage through green infrastructure in aggr area\",\n    type=MeasureType.total_storage,\n    selection_type=SelectionType.aggregation_area,\n    aggregation_area_type=\"aggr_lvl_2\",\n    aggregation_area_name=\"name5\",\n    volume=us.UnitfulVolume(value=100000000.0, units=us.UnitTypesVolume.cf),\n)\n\nwater_square = GreenInfrastructure(\n    name=\"water_square\",\n    description=\"Water Square\",\n    type=MeasureType.water_square,\n    selection_type=SelectionType.polygon,\n    polygon_file=str(STATIC_DATA_DIR / \"water_square.geojson\"),\n    volume=us.UnitfulVolume(value=43975190.31512848, units=us.UnitTypesVolume.cf),\n    height=us.UnitfulHeight(value=3, units=us.UnitTypesLength.feet)\n)  \n\nLet’s have a look at some of the measures. We can for example explore the floodwall. If you want to explore another measure, update the measure variable in the cell below and re-run it.\n\nmeasure = floodwall # or `pump` or `greening` or `total_storage` or `water_square`\ngdf = gpd.read_file(measure.polygon_file)\ngdf.explore()\n\nMake this Notebook Trusted to load map: File -&gt; Trust Notebook",
     "crumbs": [
-      "Events",
-      "Synthetic Event"
+      "Measures"
     ]
   },
   {
-    "objectID": "examples/events/synthetic_event.html#step-4.-create-a-minimal-event-and-modify-it",
-    "href": "examples/events/synthetic_event.html#step-4.-create-a-minimal-event-and-modify-it",
-    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
-    "section": "🧩 Step 4. Create a minimal event and modify it",
-    "text": "🧩 Step 4. Create a minimal event and modify it\nGiven a water level forcing, and a TimeFrame, you can create the simplest possible event in FloodAdapt as shown below.\nIn many cases, it is interesting to to investigate a combination of different forcings. In steps 5 - 9, we will show the creation of various forcings and how to add them to an event.\n\nsimple_event = SyntheticEvent(\n    name=\"simple_event\",\n    time=time_frame,\n    forcings={\n        f.ForcingType.WATERLEVEL: [water_levels_synthetic],\n    }\n)",
+    "objectID": "examples/measures/measures_strategies.html#step-3.-saving-the-hazard-measures-to-the-database",
+    "href": "examples/measures/measures_strategies.html#step-3.-saving-the-hazard-measures-to-the-database",
+    "title": "📘 Example: Measures and Strategies",
+    "section": "💾 Step 3. Saving the hazard measures to the database",
+    "text": "💾 Step 3. Saving the hazard measures to the database\n\n# # Save the measures to the database\nfa.save_measure(floodwall)\nfa.save_measure(pump)\nfa.save_measure(greening)\nfa.save_measure(total_storage)\nfa.save_measure(water_square)",
     "crumbs": [
-      "Events",
-      "Synthetic Event"
+      "Measures"
     ]
   },
   {
-    "objectID": "examples/events/synthetic_event.html#step-5.-define-rainfall-forcing",
-    "href": "examples/events/synthetic_event.html#step-5.-define-rainfall-forcing",
-    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
-    "section": "🌧️ Step 5. Define Rainfall Forcing",
-    "text": "🌧️ Step 5. Define Rainfall Forcing\nThe rainfall options for a synthetic event are:\n\nConstant: Constant rainfall intensity for the entire simultion period and spatially uniform across the model domain.\nSynthetic: Custom rainfall intensity timeseries built from key parameters applied spatially uniform across the entire model domain. The key parameters can be used to describe either a gaussian-, block- or triangle-shaped rainfall curve.\nCSV: Custom rainfall intensity from a csv file applied spatially uniform across the entire model domain.\n\n\nrainfall_constant = f.RainfallConstant(\n    intensity=us.UnitfulIntensity(value=10, units=us.UnitTypesIntensity.mm_hr)\n)\n\nrainfall_synthetic = f.RainfallSynthetic(\n    timeseries=f.GaussianTimeseries(\n        duration=us.UnitfulTime(value=12, units=us.UnitTypesTime.hours),\n        # Choose the middle of the time frame for peak time\n        peak_time=us.UnitfulTime.from_timedelta(time_frame.duration / 2), \n        peak_value=us.UnitfulIntensity(value=10, units=us.UnitTypesIntensity.mm_hr),\n    )\n)\n\nrainfall_csv = f.RainfallCSV(path=STATIC_DATA_DIR / \"rainfall.csv\")\n\n# Inspect\ndf_constant = rainfall_constant.to_dataframe(time_frame=time_frame)\ndf_constant.columns = [\"Constant\"]\ndf_synthetic = rainfall_synthetic.to_dataframe(time_frame=time_frame)\ndf_synthetic.columns = [\"Synthetic\"]\ndf_csv = rainfall_csv.to_dataframe(time_frame=time_frame)\ndf_csv.columns = [\"CSV\"]\n\ndf_combined = df_constant.join(df_synthetic).join(df_csv)\ndf_combined.plot(\n    title=\"Synthetic Rainfall (Constant, Gaussian, CSV)\",\n    xlabel=\"Time\",\n    ylabel=\"Rainfall Intensity (mm/hr)\",\n    legend=True,\n    figsize=(5, 2)\n)",
+    "objectID": "examples/measures/measures_strategies.html#step-4-create-impact-measures",
+    "href": "examples/measures/measures_strategies.html#step-4-create-impact-measures",
+    "title": "📘 Example: Measures and Strategies",
+    "section": "🏠 Step 4: Create Impact Measures",
+    "text": "🏠 Step 4: Create Impact Measures\nTo create a impact measure in Floodadapt we need to create a Measure object. In the attributes we define which type of measure we want to apply using the type attribute. Depending on the type of measure different attributes must be parsed. There are three types of impact measures: 1. Elevate 2. Buy out 3. Floodproof\nWe can apply measures to a specific building occupancy by defining the occupancy in the property_type attribute. For example, if we only want to buyout residential homes we can parse the building type of the residential buildings here. Make sure you parse the same string-value as you use in your Delft-FIAT model to describe that type of building.\nIf we want to apply the measure only in a specific aggregation area, we can define this with the aggregation_area_type, which describes the name of the aggregation area category, and the aggregation_area_name, which responds to the name of the specific aggregation area within the category.\nBelow we will create a Measure-object for each impact measure.\n\n🏠⬆️ Elevate\nWhen we create a Elevate object we need to specify the elevation attribute to capture the height of the elevation. To define the elevation we need to parse a UnitfulLengthRefValue object which consists of a value of type float, a unit which can be one of the UnitTypesLength and a vertical reference from which point the elevation should be calculated. This sholud be parsed as VerticalReference object.\n\n# Create a measure object for elevating buildings\nelevate = Elevate(\n    name= \"elevate_homes_2ft\",\n    description=\"Elevate all residential buildings in aggregation area 1 by 2ft.\",\n    selection_type=SelectionType.polygon,\n    property_type=\"residential\",\n    polygon_file=str(STATIC_DATA_DIR / \"raise_property_polygon.geojson\"),\n    elevation=us.UnitfulLengthRefValue(value=2, units=us.UnitTypesLength.feet, type=us.VerticalReference.floodmap)\n)\n\n\n\n👥💰 Buyout\nWhen we create a Buyout object we need to specify the property_type and either provide a spatial file for the area boundaries or define the aggregation_area_type and aggregation_area_name.\n\n# Create a measure object for buying out buildings\nbuyout = Buyout(\n    name= \"buyout_all_buildings\",\n    description=\"Buyout all buildings in a specific area.\",\n    selection_type=SelectionType.aggregation_area,\n    aggregation_area_type=\"aggr_lvl_2\",\n    aggregation_area_name=\"name5\",\n    property_type=\"ALL\",\n)\n\n\n\n🏠🌊 Floodproof\nWhen we create a FloodProof object we need to specify the elevation attribute to capture the height of the elevation. To define the elevation we need to parse a UnitfulLength object which consists of a value of type float, a unit which can be one of the UnitTypesLength.\n\n# Create a measure object for flood proofing buildings\nflood_proof = FloodProof(\n    name= \"floodproof_all_com\",\n    description=\"Floodproofing all commercial buildings.\",\n    selection_type=SelectionType.all,\n    property_type=\"commercial\",\n    elevation=us.UnitfulLength(value=2, units=us.UnitTypesLength.feet)\n)\n\nLet’s have a look at some of the measures. We can for example explore the area in which all buildings will be elevated.\n\nmeasure = elevate  # or `buyout` or `flood_proof`\ngdf = gpd.read_file(measure.polygon_file)\ngdf.explore()\n\nMake this Notebook Trusted to load map: File -&gt; Trust Notebook",
     "crumbs": [
-      "Events",
-      "Synthetic Event"
+      "Measures"
     ]
   },
   {
-    "objectID": "examples/events/synthetic_event.html#step-5.-define-wind-forcing",
-    "href": "examples/events/synthetic_event.html#step-5.-define-wind-forcing",
-    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
-    "section": "🌬️ Step 5. Define Wind Forcing",
-    "text": "🌬️ Step 5. Define Wind Forcing\nThe wind options for a synthetic event are:\n\nCSV: Custom wind speed and direction from a csv file applied spatially uniform across the entire model domain.\nConstant: Constant wind speed and direction is applied spatially uniform across the entire model domain.\n\n\nNote: Wind set up in embayments, lagoons etc is only included for the water bodies included in the overland model. Large scale wind effects creating surges and wind set up are typically included in the water level forcing. When the water level forcing is set to “Model” (see ‘Historical Event’), this effect can be simulated by FloodAdapt in the offshore model.\n\n\nwind_constant = f.WindConstant(\n    speed=us.UnitfulVelocity(value=12, units=us.UnitTypesVelocity.mps), \n    direction=us.UnitfulDirection(value=2, units=us.UnitTypesDirection.degrees) \n    # 0 degrees is North, 90 degrees is East, 180 degrees is South, and 270 degrees is West\n)\n\nwind_csv = f.WindCSV(path=STATIC_DATA_DIR / \"wind.csv\")\n\n# Inspect\ndf = wind_constant.to_dataframe(time_frame=time_frame)\ndf.columns = [\"speed\", \"direction\"]\ndf_csv = wind_csv.to_dataframe(time_frame=time_frame)\ndf_csv.columns = [\"speed\", \"direction\"]\ndf_combined = df.join(df_csv, lsuffix=\"_constant\", rsuffix=\"_csv\")\ndf_combined.plot(\n    title=\"Synthetic Wind (Constant, CSV)\",\n    xlabel=\"Time\",\n    ylabel=\"Wind Speed (m/s)\",\n    legend=True,\n    figsize=(5, 2),\n)",
+    "objectID": "examples/measures/measures_strategies.html#step-5.-saving-the-impact-measures-to-the-database",
+    "href": "examples/measures/measures_strategies.html#step-5.-saving-the-impact-measures-to-the-database",
+    "title": "📘 Example: Measures and Strategies",
+    "section": "💾 Step 5. Saving the impact measures to the database",
+    "text": "💾 Step 5. Saving the impact measures to the database\n\n# Save the measures to the database\nfa.save_measure(elevate)\nfa.save_measure(buyout)\nfa.save_measure(flood_proof)\n\nUsing the get_measures() method of the FloodAdapt class, we can check that the measures have been saved to the database.\n\n# Get a df with all strategies\npd.DataFrame(fa.get_measures())\n\n\n\n\n\n\n\n\nname\ndescription\npath\nlast_modification_date\ngeometry\n\n\n\n\n0\nbuyout_all_buildings\nBuyout all buildings in a specific area.\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:08:55.212779\nid name ...\n\n\n1\nelevate_homes_2ft\nElevate all residential buildings in aggregati...\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:08:55.197121\nid ...\n\n\n2\nfloodproof_all_com\nFloodproofing all commercial buildings.\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:08:55.228404\nNone\n\n\n3\ngreen_infrastructure_storage\nStorage through green infrastructure\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:08:55.054658\nge...\n\n\n4\nPump\nPump\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:08:55.054658\nge...\n\n\n5\nSeawall_12ft\n12ft Seawall\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:08:55.039001\nid ...\n\n\n6\ntotal_storage_aggregation_area\nTotal Storage through green infrastructure in ...\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:08:55.070283\nid name ...\n\n\n7\nwater_square\nWater Square\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:08:55.101546\nge...",
     "crumbs": [
-      "Events",
-      "Synthetic Event"
+      "Measures"
     ]
   },
   {
-    "objectID": "examples/events/synthetic_event.html#step-6.-define-river-discharge-forcing",
-    "href": "examples/events/synthetic_event.html#step-6.-define-river-discharge-forcing",
-    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
-    "section": "🏞️ Step 6. Define River Discharge Forcing",
-    "text": "🏞️ Step 6. Define River Discharge Forcing\nDischarge is required to be defined for all pre-configured rivers. These rivers are registered in the hazard model configuration beforehand and it is important that the order of rivers and their source locations are consistent with the setup of the hazard model. The timeseries data provided will determine the in-flow of water at the river’s location.\nDischarge options for a SyntheticEvent are:\n\nConstant: Constant discharge for the entire simulation period.\nCSV: Custom discharge specified in a csv file.\nSynthetic: Custom discharge timeseries built from key parameters. The key parameters can be used to describe either a gaussian-, block- or triangle-shaped rainfall curve.\n\n\n# The available rivers are defined in the hazard model when creating the database.\n# You cannot add new rivers to the model in an event, you can only set the discharge of each given river.\nprint(f\"Number of available rivers: {len(fa.database.site.sfincs.river)}\")\n\nriver = fa.database.site.sfincs.river[0]\n\ndischarge_constant = f.DischargeConstant(\n    river=river,\n    discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cms)\n)\n\ndischarge_synthetic = f.DischargeSynthetic(\n    river=river,\n    timeseries=f.BlockTimeseries(\n        duration=us.UnitfulTime(value=12, units=us.UnitTypesTime.hours),\n        # Choose the middle of the time frame for peak time\n        peak_time=us.UnitfulTime.from_timedelta(time_frame.duration / 2), \n        peak_value=us.UnitfulDischarge(value=80, units=us.UnitTypesDischarge.cms),\n    )\n)\n\ndischarge_csv = f.DischargeCSV(\n    river=river,\n    path=STATIC_DATA_DIR / \"discharge.csv\"\n)\n\n# Inspect\ndf_constant = discharge_constant.to_dataframe(time_frame=time_frame)\ndf_constant.columns = [\"Constant\"]\ndf_synthetic = discharge_synthetic.to_dataframe(time_frame=time_frame)\ndf_synthetic.columns = [\"Synthetic\"]\ndf_csv = discharge_csv.to_dataframe(time_frame=time_frame)\ndf_csv.columns = [\"CSV\"]\ndf_combined = df_constant.join(df_synthetic).join(df_csv)\ndf_combined.plot(\n    title=\"Synthetic Discharge (Constant, Gaussian, CSV)\",\n    xlabel=\"Time\",\n    ylabel=\"Discharge (cms)\",\n    legend=True,\n    figsize=(5, 2)\n)\n\nNumber of available rivers: 1",
+    "objectID": "examples/measures/measures_strategies.html#step-6-copying-and-editing-a-measure-in-the-database",
+    "href": "examples/measures/measures_strategies.html#step-6-copying-and-editing-a-measure-in-the-database",
+    "title": "📘 Example: Measures and Strategies",
+    "section": "✏️ Step 6: Copying and Editing a Measure in the database",
+    "text": "✏️ Step 6: Copying and Editing a Measure in the database\nIf we want to edit small parts of a measure, it is easier to copy an existing measure and edit the copy. This way we do not have to create a new measure from scratch.\nA measure can be copied in the database by using the copy_measure() method of the FloodAdapt class. This method takes three arguments: the name of the measure to be copied and the name and description of the new measure. Let’s copy the measure we just created, having in mind that we want to make a measure for flood-proofing residential buildings.\n\n# Copy measure\nfa.copy_measure(\n    old_name=\"floodproof_all_com\",\n    new_name=\"floodproof_all_res\",\n    new_description=\"Floodproofing all residential buildings.\"\n)\n\nWe can see that now a new measure with name “floodproof_all_res” has been created in the database. However, the actual attributes of the measure are still the same as the original measure.\n\n# Inspect Measure\nfloodproof_res = fa.get_measure(\"floodproof_all_res\")\nfloodproof_res\n\nFloodProof(name='floodproof_all_res', description='Floodproofing all residential buildings.', type=&lt;MeasureType.floodproof_properties: 'floodproof_properties'&gt;, selection_type=&lt;SelectionType.all: 'all'&gt;, polygon_file=None, aggregation_area_type=None, aggregation_area_name=None, property_type='commercial', elevation=UnitfulLength(value=2.0, units=UnitTypesLength.feet))\n\n\nWe can directly edit the relevant attributes of the measure object. In this case, we want to change the type to “residential”.\n\n# Edit attributes\nfloodproof_res.property_type = \"residential\"\n\nThen using the save_measure() method of the FloodAdapt class, we can save the changes to the database. This method takes a two arguments which are the Measure object and an optional boolean overwrite. The name field of the measure object provided will be used to identify which measure is going to be updated in the database, with the given Measure object attributes.\n\n# Save updates\nfa.save_measure(floodproof_res, overwrite=True)\n\nNow we can verify that the measure has been updated in the database. The property type is now “residential”.\n\n# Verify updates\nfloodproof_res = fa.get_measure(\"floodproof_all_res\")\nfloodproof_res.property_type\n\n'residential'",
     "crumbs": [
-      "Events",
-      "Synthetic Event"
+      "Measures"
     ]
   },
   {
-    "objectID": "examples/events/synthetic_event.html#step-7.-combine-forcings-and-create-synthetic-event",
-    "href": "examples/events/synthetic_event.html#step-7.-combine-forcings-and-create-synthetic-event",
-    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
-    "section": "🧩 Step 7. Combine Forcings and Create Synthetic Event",
-    "text": "🧩 Step 7. Combine Forcings and Create Synthetic Event\nAll defined forcings are collected into a single dictionary, which is used to construct a SyntheticEvent. Now construct the forcings dictionary that contains the forcings you want to include.\n\nNOTE: each event can only have 1 forcing of the types: water level, rainfall and wind. For discharge however, each river is required to have a forcing associated with it.\n\n\n# Create a SyntheticEvent with the forcings and time frame\nfull_event = SyntheticEvent(\n    name=\"example_synthetic_event\",\n    time=time_frame,\n    forcings={\n        f.ForcingType.WATERLEVEL: [water_levels_synthetic],\n        f.ForcingType.RAINFALL: [rainfall_constant],\n        f.ForcingType.WIND: [wind_csv],\n        f.ForcingType.DISCHARGE: [discharge_synthetic], \n        # The discharge list needs to be exactly as long as the number of rivers in the hazard model\n    },\n)",
+    "objectID": "examples/measures/measures_strategies.html#step-6.-create-a-strategy",
+    "href": "examples/measures/measures_strategies.html#step-6.-create-a-strategy",
+    "title": "📘 Example: Measures and Strategies",
+    "section": "🧩 Step 6. Create a Strategy",
+    "text": "🧩 Step 6. Create a Strategy\nStrategies are combinations measures. They allow us to run an test multiple measures in a single model run.\nTo create a strategy we need to create a Strategy object. In the measures attribute we parse a list of all the names of the measures that we want to apply in that strategy.\n\nNote: All measures of a strategy need to be saved in the database before you can save the strategy itself.\n\n\n# Create a strategy object\nstrategy = Strategy(\n    name=\"pump_greening_flood_proof\",\n    description=\"Strategy with pump, greening and floodproofing\",\n    measures=[pump.name, greening.name, flood_proof.name],\n)\n\n# Save the strategy\nfa.save_strategy(strategy)\n\nUsing the get_strategies() method of the FloodAdapt class, we can check that the strategies have been saved to the database.\n\n# Get a df with all strategies\npd.DataFrame(fa.get_strategies())\n\n\n\n\n\n\n\n\nname\ndescription\npath\nlast_modification_date\n\n\n\n\n0\nno_measures\n\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 13:55:32.346760\n\n\n1\npump_greening_flood_proof\nStrategy with pump, greening and floodproofing\nC:\\a\\FloodAdapt\\FloodAdapt\\docs\\_data\\examples...\n2025-06-12 14:08:55.465756\n\n\n\n\n\n\n\n\n# Inspect strategy\nstrategy = fa.get_strategy(\"pump_greening_flood_proof\")\nstrategy\n\nStrategy(name='pump_greening_flood_proof', description='Strategy with pump, greening and floodproofing', measures=['Pump', 'green_infrastructure_storage', 'floodproof_all_com'])",
     "crumbs": [
-      "Events",
-      "Synthetic Event"
+      "Measures"
     ]
   },
   {
-    "objectID": "examples/events/synthetic_event.html#step-8.-save-the-event-to-a-floodadapt-database",
-    "href": "examples/events/synthetic_event.html#step-8.-save-the-event-to-a-floodadapt-database",
-    "title": "📘 Example: Creating a Synthetic Event in FloodAdapt",
-    "section": "💾 Step 8. Save the Event to a FloodAdapt Database",
-    "text": "💾 Step 8. Save the Event to a FloodAdapt Database\nFinally, we save the event to a FloodAdapt database.\n\n# Save the event to the database\nfa.save_event(event=full_event)",
+    "objectID": "examples/measures/measures_strategies.html#step-7.-copying-and-editing-a-strategy-in-the-database",
+    "href": "examples/measures/measures_strategies.html#step-7.-copying-and-editing-a-strategy-in-the-database",
+    "title": "📘 Example: Measures and Strategies",
+    "section": "✏️ Step 7. Copying and Editing a Strategy in the database",
+    "text": "✏️ Step 7. Copying and Editing a Strategy in the database\nIf we want to edit small parts of a strategy, it is easier to copy an existing strategy and edit the copy. This way we do not have to create a new strategy from scratch.\nA strategy can be copied in the database by using the copy_strategy() method of the FloodAdapt class. This method takes three arguments: the name of the strategy to be copied and the name and description of the new strategy. Let’s copy the strategy we just created, having in mind that we want to remove the greening from the strategy and add a floodwall instead.\n\n# Copy strategy\nfa.copy_strategy(\n    old_name=\"pump_greening_flood_proof\", \n    new_name=\"pump_floodwall_flood_proof\", \n    new_description=\"Strategy with pump, flodwall and floodproofing.\",\n)\n\nWe can see that now a new strategy with name “pump_floodwall_flood_proof” has been created in the database. However, the actual attributes of the strtaegy are still the same as the original srtategy.\n\n# Inspect strategy2\nstrategy_2 = fa.get_strategy(\"pump_floodwall_flood_proof\")\nstrategy_2\n\nStrategy(name='pump_floodwall_flood_proof', description='Strategy with pump, flodwall and floodproofing.', measures=['Pump', 'green_infrastructure_storage', 'floodproof_all_com'])\n\n\nWe can directly edit the relevant attributes of the measure object. In this case, we want to change the type to “residential”.\n\nstrategy_2.measures.remove(greening.name)  # Remove greening\nstrategy_2.measures.append(floodwall.name) # Add floodwall\n\nThen using the save_strategy(name, overwrite=True) method of the FloodAdapt class, we can save the changes to the database. This method takes a single argument which is a Strategy object. The name field of the Strategy object provided will be used to identify which strategy is going to be updated in the database, with the given Strategy object attributes.\n\n# Save updates\nfa.save_strategy(strategy_2, overwrite=True)\n\nNow we can verify that the strategy has been updated in the database.\n\n# Verify updates\nstrategy_2 = fa.get_strategy(\"pump_floodwall_flood_proof\")\nstrategy_2.measures\n\n['Pump', 'floodproof_all_com', 'Seawall_12ft']",
     "crumbs": [
-      "Events",
-      "Synthetic Event"
+      "Measures"
+    ]
+  },
+  {
+    "objectID": "examples/measures/measures_strategies.html#finished",
+    "href": "examples/measures/measures_strategies.html#finished",
+    "title": "📘 Example: Measures and Strategies",
+    "section": "Finished!",
+    "text": "Finished!\nCongratulations you created all measures possible in FloodAdap and combined some of them into a strategy!",
+    "crumbs": [
+      "Measures"
     ]
   },
   {
