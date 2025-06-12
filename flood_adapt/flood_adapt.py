@@ -770,7 +770,9 @@ class FloodAdapt:
         """
         return self.database.get_depth_conversion()
 
-    def get_max_water_level_map(self, name: str, rp: int = None) -> np.ndarray:
+    def get_max_water_level_map(
+        self, name: str, rp: Optional[int] = None
+    ) -> np.ndarray:
         """
         Return the maximum water level for the given scenario.
 
@@ -787,6 +789,26 @@ class FloodAdapt:
             2D gridded map with the maximum waterlevels for each cell.
         """
         return self.database.get_max_water_level(name, rp)
+
+    def get_flood_map_geotiff(
+        self, name: str, rp: Optional[int] = None
+    ) -> Optional[Path]:
+        """
+        Return the path to the geotiff file with the flood map for the given scenario.
+
+        Parameters
+        ----------
+        name : str
+            The name of the scenario.
+        rp : int, optional
+            The return period of the water level, by default None. Only for event set scenarios.
+
+        Returns
+        -------
+        flood_map_geotiff : Optional[Path]
+            The path to the geotiff file with the flood map for the scenario if it exists, otherwise None.
+        """
+        return self.database.get_flood_map_geotiff(name, rp)
 
     def get_building_footprint_impacts(self, name: str) -> gpd.GeoDataFrame:
         """
