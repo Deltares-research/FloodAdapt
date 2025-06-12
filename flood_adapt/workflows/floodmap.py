@@ -28,14 +28,14 @@ class FloodMap(DatabaseUser):
         # TODO check naming of files
         if self.mode == Mode.single_event:
             if self.type == FloodmapType.water_level:
-                self.path = base_dir / "max_water_level_map.nc"
+                self.path = base_dir / "max_water_level_map.tif"
             elif self.type == FloodmapType.water_depth:
                 self.path = base_dir / f"FloodMap_{self.name}.tif"
         elif self.mode == Mode.risk:
             if self.type == FloodmapType.water_level:
-                self.path = list(base_dir.glob("RP_*_maps.nc"))
+                self.path = list(base_dir.glob("RP_*_max_water_level_map.tif"))
             elif self.type == FloodmapType.water_depth:
-                self.path = list(base_dir.glob("RP_*_maps.tif"))
+                self.path = list(base_dir.glob("RP_*_FloodMap.tif"))
 
     @property
     def has_run(self) -> bool:

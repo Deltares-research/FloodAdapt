@@ -271,18 +271,16 @@ class Database(IDatabase):
             map_path = self.scenarios.output_path.joinpath(
                 scenario_name,
                 "Flooding",
-                "max_water_level_map.nc",
+                "max_water_level_map.tif",
             )
-            with xr.open_dataarray(map_path) as map:
-                zsmax = map.to_numpy()
         else:
-            file_path = self.scenarios.output_path.joinpath(
+            map_path = self.scenarios.output_path.joinpath(
                 scenario_name,
                 "Flooding",
-                f"RP_{return_period:04d}_maps.nc",
+                f"RP_{return_period:04d}_max_water_level_map.tif",
             )
-            with xr.open_dataset(file_path) as ds:
-                zsmax = ds["risk_map"][:, :].to_numpy().T
+        with xr.open_dataarray(map_path) as map:
+            zsmax = map.to_numpy()
         return zsmax
 
     def get_building_footprints(self, scenario_name: str) -> GeoDataFrame:

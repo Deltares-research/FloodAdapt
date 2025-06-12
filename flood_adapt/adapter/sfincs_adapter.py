@@ -410,7 +410,8 @@ class SfincsAdapter(IHazardAdapter):
 
     def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get bounding box from model."""
-        return self._model.region
+        boundary = self._model.region[["geometry"]]
+        return boundary
 
     def get_model_grid(self) -> QuadtreeGrid:
         """Get grid from model.
@@ -594,7 +595,15 @@ class SfincsAdapter(IHazardAdapter):
 
         with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
-            zsmax.to_netcdf(results_path / "max_water_level_map.nc")
+            # Save as a Cloud Optimized GeoTIFF (COG)
+            zsmax.rio.to_raster(
+                results_path / "max_water_level_map.tif",
+                driver="COG",
+                compress="deflate",
+                dtype="float32",
+                nodata=np.nan,
+                OVERVIEW_RESAMPLING="nearest",
+            )
 
     def plot_wl_obs(
         self,
@@ -848,8 +857,15 @@ class SfincsAdapter(IHazardAdapter):
                 zsmax.raster.crs
             )  # , inplace=True)
             zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
-            fn_rp = result_path / f"RP_{rp:04d}_maps.nc"
-            zs_rp_single.to_netcdf(fn_rp)
+            fn_rp = result_path / f"RP_{rp:04d}_max_water_level_map.tif"
+            zs_rp_single.transpose("y", "x").rio.to_raster(
+                fn_rp,
+                driver="COG",
+                compress="deflate",
+                dtype="float32",
+                nodata=np.nan,
+                OVERVIEW_RESAMPLING="nearest",
+            )
 
             # write geotiff
             # dem file for high resolution flood depth map
@@ -859,7 +875,7 @@ class SfincsAdapter(IHazardAdapter):
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
                 dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
                 zsmax = zs_rp_single.to_array().squeeze().transpose()
-                floodmap_fn = fn_rp.with_suffix(".tif")
+                floodmap_fn = result_path / f"RP_{rp:04d}_FloodMap.tif"
 
                 # convert dem from dem units to floodmap units
                 dem_conversion = us.UnitfulLength(
@@ -1575,9 +1591,9 @@ class SfincsAdapter(IHazardAdapter):
         if isinstance(event, EventSet):
             map_fn = []
             for rp in self.database.site.fiat.risk.return_periods:
-                map_fn.append(results_path / f"RP_{rp:04d}_maps.nc")
+                map_fn.append(results_path / f"RP_{rp:04d}_max_water_level_map.tif")
         elif isinstance(event, Event):
-            map_fn = [results_path / "max_water_level_map.nc"]
+            map_fn = [results_path / "max_water_level_map.tif"]
         else:
             raise ValueError(f"Unsupported mode: {event.mode}")
 
