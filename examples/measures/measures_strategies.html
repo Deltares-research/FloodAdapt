@@ -368,7 +368,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../examples/scenarios/simple_scenario.html" class="sidebar-item-text sidebar-link">
+  <a href="../../examples/scenarios/simple_scenario_scenario.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simple Scenario</span></a>
   </div>
 </li>
@@ -427,8 +427,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../examples/scenarios/complex_scenario.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Complex Scenario</span></a>
+  <a href="../../examples/scenarios/advanced_scenario.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Advanced Scenario</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -558,7 +558,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="9" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a measure object for a Floodwall</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>floodwall <span class="op">=</span> FloodWall(</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span> <span class="st">"Seawall_12ft"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"seawall_12ft"</span>,</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    description<span class="op">=</span><span class="st">"12ft Seawall"</span>,</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    selection_type<span class="op">=</span>SelectionType.polyline,</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    polygon_file<span class="op">=</span><span class="bu">str</span>(STATIC_DATA_DIR <span class="op">/</span> <span class="st">"seawall.geojson"</span>),</span>
@@ -610,7 +610,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>water_square <span class="op">=</span> GreenInfrastructure(</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"water_square"</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"w_square"</span>,</span>
 <span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    description<span class="op">=</span><span class="st">"Water Square"</span>,</span>
 <span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="bu">type</span><span class="op">=</span>MeasureType.water_square,</span>
 <span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    selection_type<span class="op">=</span>SelectionType.polygon,</span>
@@ -644,7 +644,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <meta name=&quot;viewport&quot; content=&quot;width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; />
             <style>
-                #map_98a80b905402f983c6448993f76340c6 {
+                #map_d6631eaf03a94f76c525b5c24a7d0d65 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -697,14 +697,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <body>
     
     
-            <div class=&quot;folium-map&quot; id=&quot;map_98a80b905402f983c6448993f76340c6&quot; ></div>
+            <div class=&quot;folium-map&quot; id=&quot;map_d6631eaf03a94f76c525b5c24a7d0d65&quot; ></div>
         
 </body>
 <script>
     
     
-            var map_98a80b905402f983c6448993f76340c6 = L.map(
-                &quot;map_98a80b905402f983c6448993f76340c6&quot;,
+            var map_d6631eaf03a94f76c525b5c24a7d0d65 = L.map(
+                &quot;map_d6631eaf03a94f76c525b5c24a7d0d65&quot;,
                 {
                     center: [32.785635380401445, -79.9433587261437],
                     crs: L.CRS.EPSG3857,
@@ -716,13 +716,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
                 }
             );
-            L.control.scale().addTo(map_98a80b905402f983c6448993f76340c6);
+            L.control.scale().addTo(map_d6631eaf03a94f76c525b5c24a7d0d65);
 
             
 
         
     
-            var tile_layer_c30a1ae4b9d8acbf73ba9bd8c7960b89 = L.tileLayer(
+            var tile_layer_013a1929a1f942fcaea20d55b6ddf257 = L.tileLayer(
                 &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
                 {
   &quot;minZoom&quot;: 0,
@@ -739,28 +739,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             );
         
     
-            tile_layer_c30a1ae4b9d8acbf73ba9bd8c7960b89.addTo(map_98a80b905402f983c6448993f76340c6);
+            tile_layer_013a1929a1f942fcaea20d55b6ddf257.addTo(map_d6631eaf03a94f76c525b5c24a7d0d65);
         
     
-            map_98a80b905402f983c6448993f76340c6.fitBounds(
+            map_d6631eaf03a94f76c525b5c24a7d0d65.fitBounds(
                 [[32.769555352706625, -79.96242766295042], [32.801715408096264, -79.92428978933698]],
                 {}
             );
         
     
-        function geo_json_c3008f19036ba054d686682fcaf300ca_styler(feature) {
+        function geo_json_86847a80da9a50eda49f8cf65b8d6381_styler(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.5, &quot;weight&quot;: 2};
             }
         }
-        function geo_json_c3008f19036ba054d686682fcaf300ca_highlighter(feature) {
+        function geo_json_86847a80da9a50eda49f8cf65b8d6381_highlighter(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.75};
             }
         }
-        function geo_json_c3008f19036ba054d686682fcaf300ca_pointToLayer(feature, latlng) {
+        function geo_json_86847a80da9a50eda49f8cf65b8d6381_pointToLayer(feature, latlng) {
             var opts = {
   &quot;stroke&quot;: true,
   &quot;color&quot;: &quot;#3388ff&quot;,
@@ -778,46 +778,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   &quot;radius&quot;: 2,
 };
             
-            let style = geo_json_c3008f19036ba054d686682fcaf300ca_styler(feature)
+            let style = geo_json_86847a80da9a50eda49f8cf65b8d6381_styler(feature)
             Object.assign(opts, style)
             
             return new L.CircleMarker(latlng, opts)
         }
 
-        function geo_json_c3008f19036ba054d686682fcaf300ca_onEachFeature(feature, layer) {
+        function geo_json_86847a80da9a50eda49f8cf65b8d6381_onEachFeature(feature, layer) {
 
             layer.on({
                 mouseout: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                            geo_json_c3008f19036ba054d686682fcaf300ca.resetStyle(e.target);
+                            geo_json_86847a80da9a50eda49f8cf65b8d6381.resetStyle(e.target);
                     }
                 },
                 mouseover: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                        const highlightStyle = geo_json_c3008f19036ba054d686682fcaf300ca_highlighter(e.target.feature)
+                        const highlightStyle = geo_json_86847a80da9a50eda49f8cf65b8d6381_highlighter(e.target.feature)
                         e.target.setStyle(highlightStyle);
                     }
                 },
             });
         };
-        var geo_json_c3008f19036ba054d686682fcaf300ca = L.geoJson(null, {
-                onEachFeature: geo_json_c3008f19036ba054d686682fcaf300ca_onEachFeature,
+        var geo_json_86847a80da9a50eda49f8cf65b8d6381 = L.geoJson(null, {
+                onEachFeature: geo_json_86847a80da9a50eda49f8cf65b8d6381_onEachFeature,
             
-                style: geo_json_c3008f19036ba054d686682fcaf300ca_styler,
-                pointToLayer: geo_json_c3008f19036ba054d686682fcaf300ca_pointToLayer,
+                style: geo_json_86847a80da9a50eda49f8cf65b8d6381_styler,
+                pointToLayer: geo_json_86847a80da9a50eda49f8cf65b8d6381_pointToLayer,
             ...{
 }
         });
 
-        function geo_json_c3008f19036ba054d686682fcaf300ca_add (data) {
-            geo_json_c3008f19036ba054d686682fcaf300ca
+        function geo_json_86847a80da9a50eda49f8cf65b8d6381_add (data) {
+            geo_json_86847a80da9a50eda49f8cf65b8d6381
                 .addData(data);
         }
-            geo_json_c3008f19036ba054d686682fcaf300ca_add({&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;features&quot;: [{&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.96242766295042, 32.78909640883882], [-79.95576222911224, 32.78324916123054], [-79.94590897909052, 32.77515983512822], [-79.93675125259975, 32.77048133500943], [-79.93020173935003, 32.769555352706625], [-79.9279992481687, 32.77018892058612], [-79.92428978933698, 32.77930205181672], [-79.9244057099255, 32.78631901415039], [-79.9274776055205, 32.79377393017178], [-79.92968009670182, 32.799035847596095], [-79.93124502464644, 32.801715408096264]]], &quot;type&quot;: &quot;MultiLineString&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
+            geo_json_86847a80da9a50eda49f8cf65b8d6381_add({&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;features&quot;: [{&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.96242766295042, 32.78909640883882], [-79.95576222911224, 32.78324916123054], [-79.94590897909052, 32.77515983512822], [-79.93675125259975, 32.77048133500943], [-79.93020173935003, 32.769555352706625], [-79.9279992481687, 32.77018892058612], [-79.92428978933698, 32.77930205181672], [-79.9244057099255, 32.78631901415039], [-79.9274776055205, 32.79377393017178], [-79.92968009670182, 32.799035847596095], [-79.93124502464644, 32.801715408096264]]], &quot;type&quot;: &quot;MultiLineString&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
 
         
     
-    geo_json_c3008f19036ba054d686682fcaf300ca.bindTooltip(
+    geo_json_86847a80da9a50eda49f8cf65b8d6381.bindTooltip(
     function(layer){
     let div = L.DomUtil.create('div');
     
@@ -852,7 +852,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 });
                      
     
-            geo_json_c3008f19036ba054d686682fcaf300ca.addTo(map_98a80b905402f983c6448993f76340c6);
+            geo_json_86847a80da9a50eda49f8cf65b8d6381.addTo(map_d6631eaf03a94f76c525b5c24a7d0d65);
         
 </script>
 </html>" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen="" webkitallowfullscreen="" mozallowfullscreen=""></iframe></div></div>
@@ -883,7 +883,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="20" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a measure object for elevating buildings</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>elevate <span class="op">=</span> Elevate(</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span> <span class="st">"elevate_homes_2ft"</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"elevate_homes_2ft"</span>,</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    description<span class="op">=</span><span class="st">"Elevate all residential buildings in aggregation area 1 by 2ft."</span>,</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    selection_type<span class="op">=</span>SelectionType.polygon,</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    property_type<span class="op">=</span><span class="st">"residential"</span>,</span>
@@ -913,7 +913,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="24" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a measure object for flood proofing buildings</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>flood_proof <span class="op">=</span> FloodProof(</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span> <span class="st">"floodproof_all_com"</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"floodproof_all_com"</span>,</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    description<span class="op">=</span><span class="st">"Floodproofing all commercial buildings."</span>,</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    selection_type<span class="op">=</span>SelectionType.<span class="bu">all</span>,</span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    property_type<span class="op">=</span><span class="st">"commercial"</span>,</span>
@@ -945,7 +945,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <meta name=&quot;viewport&quot; content=&quot;width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; />
             <style>
-                #map_a84a596277199ecda314956bcf95eaeb {
+                #map_3feab3c881dfcdf4dd14024ead244dc8 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -998,14 +998,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <body>
     
     
-            <div class=&quot;folium-map&quot; id=&quot;map_a84a596277199ecda314956bcf95eaeb&quot; ></div>
+            <div class=&quot;folium-map&quot; id=&quot;map_3feab3c881dfcdf4dd14024ead244dc8&quot; ></div>
         
 </body>
 <script>
     
     
-            var map_a84a596277199ecda314956bcf95eaeb = L.map(
-                &quot;map_a84a596277199ecda314956bcf95eaeb&quot;,
+            var map_3feab3c881dfcdf4dd14024ead244dc8 = L.map(
+                &quot;map_3feab3c881dfcdf4dd14024ead244dc8&quot;,
                 {
                     center: [32.7720047172163, -79.9392402303062],
                     crs: L.CRS.EPSG3857,
@@ -1017,13 +1017,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
                 }
             );
-            L.control.scale().addTo(map_a84a596277199ecda314956bcf95eaeb);
+            L.control.scale().addTo(map_3feab3c881dfcdf4dd14024ead244dc8);
 
             
 
         
     
-            var tile_layer_b69c4031f8c2b9d5e995c9eaaca6a2da = L.tileLayer(
+            var tile_layer_41b4ca1e48bcaf0161268ef4762093b5 = L.tileLayer(
                 &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
                 {
   &quot;minZoom&quot;: 0,
@@ -1040,28 +1040,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             );
         
     
-            tile_layer_b69c4031f8c2b9d5e995c9eaaca6a2da.addTo(map_a84a596277199ecda314956bcf95eaeb);
+            tile_layer_41b4ca1e48bcaf0161268ef4762093b5.addTo(map_3feab3c881dfcdf4dd14024ead244dc8);
         
     
-            map_a84a596277199ecda314956bcf95eaeb.fitBounds(
+            map_3feab3c881dfcdf4dd14024ead244dc8.fitBounds(
                 [[32.769891964939895, -79.94275509838587], [32.7741174694927, -79.93572536222652]],
                 {}
             );
         
     
-        function geo_json_6d46d3b406188486596d9884cad8b748_styler(feature) {
+        function geo_json_f5db553416bb6a0ce412ab2da63354c7_styler(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.5, &quot;weight&quot;: 2};
             }
         }
-        function geo_json_6d46d3b406188486596d9884cad8b748_highlighter(feature) {
+        function geo_json_f5db553416bb6a0ce412ab2da63354c7_highlighter(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.75};
             }
         }
-        function geo_json_6d46d3b406188486596d9884cad8b748_pointToLayer(feature, latlng) {
+        function geo_json_f5db553416bb6a0ce412ab2da63354c7_pointToLayer(feature, latlng) {
             var opts = {
   &quot;stroke&quot;: true,
   &quot;color&quot;: &quot;#3388ff&quot;,
@@ -1079,46 +1079,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   &quot;radius&quot;: 2,
 };
             
-            let style = geo_json_6d46d3b406188486596d9884cad8b748_styler(feature)
+            let style = geo_json_f5db553416bb6a0ce412ab2da63354c7_styler(feature)
             Object.assign(opts, style)
             
             return new L.CircleMarker(latlng, opts)
         }
 
-        function geo_json_6d46d3b406188486596d9884cad8b748_onEachFeature(feature, layer) {
+        function geo_json_f5db553416bb6a0ce412ab2da63354c7_onEachFeature(feature, layer) {
 
             layer.on({
                 mouseout: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                            geo_json_6d46d3b406188486596d9884cad8b748.resetStyle(e.target);
+                            geo_json_f5db553416bb6a0ce412ab2da63354c7.resetStyle(e.target);
                     }
                 },
                 mouseover: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                        const highlightStyle = geo_json_6d46d3b406188486596d9884cad8b748_highlighter(e.target.feature)
+                        const highlightStyle = geo_json_f5db553416bb6a0ce412ab2da63354c7_highlighter(e.target.feature)
                         e.target.setStyle(highlightStyle);
                     }
                 },
             });
         };
-        var geo_json_6d46d3b406188486596d9884cad8b748 = L.geoJson(null, {
-                onEachFeature: geo_json_6d46d3b406188486596d9884cad8b748_onEachFeature,
+        var geo_json_f5db553416bb6a0ce412ab2da63354c7 = L.geoJson(null, {
+                onEachFeature: geo_json_f5db553416bb6a0ce412ab2da63354c7_onEachFeature,
             
-                style: geo_json_6d46d3b406188486596d9884cad8b748_styler,
-                pointToLayer: geo_json_6d46d3b406188486596d9884cad8b748_pointToLayer,
+                style: geo_json_f5db553416bb6a0ce412ab2da63354c7_styler,
+                pointToLayer: geo_json_f5db553416bb6a0ce412ab2da63354c7_pointToLayer,
             ...{
 }
         });
 
-        function geo_json_6d46d3b406188486596d9884cad8b748_add (data) {
-            geo_json_6d46d3b406188486596d9884cad8b748
+        function geo_json_f5db553416bb6a0ce412ab2da63354c7_add (data) {
+            geo_json_f5db553416bb6a0ce412ab2da63354c7
                 .addData(data);
         }
-            geo_json_6d46d3b406188486596d9884cad8b748_add({&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;features&quot;: [{&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.94275509838587, 32.77306721830996], [-79.93572536222652, 32.7741174694927], [-79.93697444757714, 32.769891964939895], [-79.94275509838587, 32.77306721830996]]], &quot;type&quot;: &quot;Polygon&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
+            geo_json_f5db553416bb6a0ce412ab2da63354c7_add({&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;features&quot;: [{&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.94275509838587, 32.77306721830996], [-79.93572536222652, 32.7741174694927], [-79.93697444757714, 32.769891964939895], [-79.94275509838587, 32.77306721830996]]], &quot;type&quot;: &quot;Polygon&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
 
         
     
-    geo_json_6d46d3b406188486596d9884cad8b748.bindTooltip(
+    geo_json_f5db553416bb6a0ce412ab2da63354c7.bindTooltip(
     function(layer){
     let div = L.DomUtil.create('div');
     
@@ -1153,7 +1153,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 });
                      
     
-            geo_json_6d46d3b406188486596d9884cad8b748.addTo(map_a84a596277199ecda314956bcf95eaeb);
+            geo_json_f5db553416bb6a0ce412ab2da63354c7.addTo(map_3feab3c881dfcdf4dd14024ead244dc8);
         
 </script>
 </html>" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen="" webkitallowfullscreen="" mozallowfullscreen=""></iframe></div></div>
@@ -1194,7 +1194,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>buyout_all_buildings</td>
 <td>Buyout all buildings in a specific area.</td>
 <td>C:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2025-06-12 15:51:58.234440</td>
+<td>2025-06-12 16:56:12.556586</td>
 <td>id name ...</td>
 </tr>
 <tr class="even">
@@ -1202,7 +1202,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>elevate_homes_2ft</td>
 <td>Elevate all residential buildings in aggregati...</td>
 <td>C:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2025-06-12 15:51:58.218848</td>
+<td>2025-06-12 16:56:12.540973</td>
 <td>id ...</td>
 </tr>
 <tr class="odd">
@@ -1210,7 +1210,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>floodproof_all_com</td>
 <td>Floodproofing all commercial buildings.</td>
 <td>C:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2025-06-12 15:51:58.250069</td>
+<td>2025-06-12 16:56:12.588115</td>
 <td>None</td>
 </tr>
 <tr class="even">
@@ -1218,7 +1218,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>green_infrastructure_storage</td>
 <td>Storage through green infrastructure</td>
 <td>C:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2025-06-12 15:51:58.076687</td>
+<td>2025-06-12 16:56:12.399198</td>
 <td>ge...</td>
 </tr>
 <tr class="odd">
@@ -1226,15 +1226,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Pump</td>
 <td>Pump</td>
 <td>C:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2025-06-12 15:51:58.061064</td>
+<td>2025-06-12 16:56:12.383536</td>
 <td>ge...</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">5</td>
-<td>Seawall_12ft</td>
+<td>seawall_12ft</td>
 <td>12ft Seawall</td>
 <td>C:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2025-06-12 15:51:58.045404</td>
+<td>2025-06-12 16:56:12.383536</td>
 <td>id ...</td>
 </tr>
 <tr class="odd">
@@ -1242,15 +1242,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>total_storage_aggregation_area</td>
 <td>Total Storage through green infrastructure in ...</td>
 <td>C:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2025-06-12 15:51:58.076687</td>
+<td>2025-06-12 16:56:12.414823</td>
 <td>id name ...</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">7</td>
-<td>water_square</td>
+<td>w_square</td>
 <td>Water Square</td>
 <td>C:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2025-06-12 15:51:58.107953</td>
+<td>2025-06-12 16:56:12.446069</td>
 <td>ge...</td>
 </tr>
 </tbody>
@@ -1343,14 +1343,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>no_measures</td>
 <td></td>
 <td>C:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2025-06-12 15:27:29.630763</td>
+<td>2025-06-12 16:39:04.622285</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">1</td>
 <td>pump_greening_flood_proof</td>
 <td>Strategy with pump, greening and floodproofing</td>
 <td>C:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2025-06-12 15:51:58.486324</td>
+<td>2025-06-12 16:56:12.825110</td>
 </tr>
 </tbody>
 </table>
@@ -1404,7 +1404,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>strategy_2 <span class="op">=</span> fa.get_strategy(<span class="st">"pump_floodwall_flood_proof"</span>)</span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>strategy_2.measures</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="26">
-<pre><code>['Pump', 'floodproof_all_com', 'Seawall_12ft']</code></pre>
+<pre><code>['Pump', 'floodproof_all_com', 'seawall_12ft']</code></pre>
 </div>
 </div>
 </section>
