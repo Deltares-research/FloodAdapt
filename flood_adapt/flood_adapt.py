@@ -770,7 +770,9 @@ class FloodAdapt:
         """
         return self.database.get_depth_conversion()
 
-    def get_max_water_level_map(self, name: str, rp: int = None) -> np.ndarray:
+    def get_max_water_level_map(
+        self, name: str, rp: Optional[int] = None
+    ) -> np.ndarray:
         """
         Return the maximum water level for the given scenario.
 
@@ -787,6 +789,26 @@ class FloodAdapt:
             2D gridded map with the maximum waterlevels for each cell.
         """
         return self.database.get_max_water_level(name, rp)
+
+    def get_flood_map_geotiff(
+        self, name: str, rp: Optional[int] = None
+    ) -> Optional[Path]:
+        """
+        Return the path to the geotiff file with the flood map for the given scenario.
+
+        Parameters
+        ----------
+        name : str
+            The name of the scenario.
+        rp : int, optional
+            The return period of the water level, by default None. Only for event set scenarios.
+
+        Returns
+        -------
+        flood_map_geotiff : Optional[Path]
+            The path to the geotiff file with the flood map for the scenario if it exists, otherwise None.
+        """
+        return self.database.get_flood_map_geotiff(name, rp)
 
     def get_building_footprint_impacts(self, name: str) -> gpd.GeoDataFrame:
         """
@@ -884,22 +906,21 @@ class FloodAdapt:
         # Get the impacts objects from the scenario
         database = self.database
         scn = database.scenarios.get(name)
-        impact = Impacts(scenario=scn)
         event_mode = self.database.events.get(scn.event).mode
 
         # Check if the scenario has run
-        if not impact.has_run_check():
+        if not self.database.scenarios.has_run_check(scn.name):
             raise ValueError(
                 f"Scenario {name} has not been run. Please run the scenario first."
             )
 
         config_path = database.static_path.joinpath("templates", "infographics")
-        output_path = database.scenarios.output_path.joinpath(impact.name)
-        metrics_outputs_path = output_path.joinpath(f"Infometrics_{impact.name}.csv")
+        output_path = database.scenarios.output_path.joinpath(scn.name)
+        metrics_outputs_path = output_path.joinpath(f"Infometrics_{scn.name}.csv")
 
         infographic_path = InforgraphicFactory.create_infographic_file_writer(
             infographic_mode=event_mode,
-            scenario_name=impact.name,
+            scenario_name=scn.name,
             metrics_full_path=metrics_outputs_path,
             config_base_path=config_path,
             output_base_path=output_path,
