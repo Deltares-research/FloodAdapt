@@ -885,9 +885,11 @@ class SfincsAdapter(IHazardAdapter):
         self.preprocess(scenario, event)
         self.process(scenario, event)
         self.postprocess(scenario, event)
-        shutil.rmtree(
-            self._get_simulation_path(scenario, sub_event=event), ignore_errors=True
-        )
+
+        if not self.settings.config.save_simulation:
+            shutil.rmtree(
+                self._get_simulation_path(scenario, sub_event=event), ignore_errors=True
+            )
 
     def _run_risk_scenario(self, scenario: Scenario):
         """Run the whole workflow for a risk scenario.
@@ -911,11 +913,12 @@ class SfincsAdapter(IHazardAdapter):
         self.calculate_rp_floodmaps(scenario)
 
         # Cleanup
-        for i, sub_event in enumerate(event_set._events):
-            shutil.rmtree(
-                self._get_simulation_path(scenario, sub_event=sub_event),
-                ignore_errors=True,
-            )
+        if not self.settings.config.save_simulation:
+            for i, sub_event in enumerate(event_set._events):
+                shutil.rmtree(
+                    self._get_simulation_path(scenario, sub_event=sub_event),
+                    ignore_errors=True,
+                )
 
     def _ensure_no_existing_forcings(self):
         """Check for existing forcings in the model and raise an error if any are found."""
