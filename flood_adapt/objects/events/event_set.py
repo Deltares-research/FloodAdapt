@@ -27,7 +27,7 @@ class SubEventModel(BaseModel):
 class EventSet(Object):
     """BaseModel describing the expected variables and data types for parameters of EventSet.
 
-    An EventSet is a collection of events that can be used to create a scenario and perform a probabilistoc risk assessment.
+    An EventSet is a collection of events that can be used to create a scenario and perform a probabilistic risk assessment.
 
     Attributes
     ----------
@@ -69,12 +69,16 @@ class EventSet(Object):
             raise ValueError("Either `sub_events` or `file_path` must be provided.")
 
     @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike):
+    def load_file(
+        cls, file_path: Path | str | os.PathLike, load_all: bool = False
+    ) -> "EventSet":
         """Load object from file."""
         with open(file_path, mode="rb") as fp:
             event_set = tomli.load(fp)
         event_set = EventSet(**event_set)
-        event_set.load_sub_events(file_path=file_path)
+        if load_all:
+            # Load all sub events from the file path
+            event_set.load_sub_events(file_path=file_path)
         return event_set
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:

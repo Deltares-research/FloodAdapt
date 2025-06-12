@@ -35,8 +35,8 @@ from flood_adapt.misc.path_builder import (
 from flood_adapt.misc.utils import cd, resolve_filepath
 from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Event, Mode, Template
-from flood_adapt.objects.events.historical import HistoricalEvent
 from flood_adapt.objects.events.hurricane import TranslationModel
+from flood_adapt.objects.events.synthetic import SyntheticEvent
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
@@ -739,7 +739,7 @@ class SfincsAdapter(IHazardAdapter):
 
         TODO: make this robust and more efficient for bigger datasets.
         """
-        event: EventSet = self.database.events.get(scenario.event)
+        event: EventSet = self.database.events.get(scenario.event, load_all=True)
         if not isinstance(event, EventSet):
             raise ValueError("This function is only available for risk scenarios.")
 
@@ -894,7 +894,7 @@ class SfincsAdapter(IHazardAdapter):
 
         This means preprocessing and running the SFINCS model for each event in the event set, and then postprocessing the results.
         """
-        event_set: EventSet = self.database.events.get(scenario.event)
+        event_set: EventSet = self.database.events.get(scenario.event, load_all=True)
         total = len(event_set._events)
 
         for i, sub_event in enumerate(event_set._events):
@@ -1819,8 +1819,7 @@ class SfincsAdapter(IHazardAdapter):
     def _add_tide_gauge_plot(
         self, fig, event: Event, units: us.UnitTypesLength
     ) -> None:
-        # check if event is historic
-        if not isinstance(event, HistoricalEvent):
+        if isinstance(event, SyntheticEvent):
             return
         if self.settings.tide_gauge is None:
             return
@@ -1832,17 +1831,20 @@ class SfincsAdapter(IHazardAdapter):
             units=us.UnitTypesLength(units),
         )
 
-        if df_gauge is not None:
-            gauge_reference_height = self.settings.water_level.get_datum(
-                self.settings.tide_gauge.reference
-            ).height.convert(units)
-
-            waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
-
-            # If data is available, add to plot
-            fig.add_trace(
-                px.line(waterlevel, color_discrete_sequence=["#ea6404"]).data[0]
+        if df_gauge is None:
+            self.logger.warning(
+                "No water level data available for the tide gauge. Could not add it to the plot."
             )
-            fig["data"][0]["name"] = "model"
-            fig["data"][1]["name"] = "measurement"
-            fig.update_layout(showlegend=True)
+            return
+
+        gauge_reference_height = self.settings.water_level.get_datum(
+            self.settings.tide_gauge.reference
+        ).height.convert(units)
+
+        waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
+
+        # If data is available, add to plot
+        fig.add_trace(px.line(waterlevel, color_discrete_sequence=["#ea6404"]).data[0])
+        fig["data"][0]["name"] = "model"
+        fig["data"][1]["name"] = "measurement"
+        fig.update_layout(showlegend=True)
