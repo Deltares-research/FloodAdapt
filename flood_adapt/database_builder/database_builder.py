@@ -1,9 +1,12 @@
 import datetime
+import logging
 import math
 import os
 import shutil
+import time
 import warnings
 from enum import Enum
+from functools import wraps
 from pathlib import Path
 from typing import Optional, Union
 from urllib.request import urlretrieve
@@ -79,6 +82,24 @@ from flood_adapt.objects.projections.projections import (
     SocioEconomicChange,
 )
 from flood_adapt.objects.strategies.strategies import Strategy
+
+logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
+
+
+def debug_timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        logger.debug(f"Started '{func.__name__}'")
+        start_time = time.perf_counter()
+
+        result = func(*args, **kwargs)
+
+        end_time = time.perf_counter()
+        elapsed = end_time - start_time
+        logger.debug(f"Finished '{func.__name__}' in {elapsed:.4f} seconds")
+        return result
+
+    return wrapper
 
 
 def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
@@ -379,8 +400,6 @@ class ConfigModel(BaseModel):
 
 
 class DatabaseBuilder:
-    logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
-
     _has_roads: bool = False
     _aggregation_areas: Optional[list] = None
     _probabilistic_set_name: Optional[str] = None
@@ -406,6 +425,7 @@ class DatabaseBuilder:
     def static_path(self) -> Path:
         return self.root / "static"
 
+    @debug_timer
     def build(self, overwrite: bool = False) -> None:
         # Check if database already exists
         if self.root.exists() and not overwrite:
@@ -423,9 +443,7 @@ class DatabaseBuilder:
         with FloodAdaptLogging.to_file(
             file_path=self.root.joinpath("database_builder.log")
         ):
-            self.logger.info(
-                f"Creating a FloodAdapt database in '{self.root.as_posix()}'"
-            )
+            logger.info(f"Creating a FloodAdapt database in '{self.root.as_posix()}'")
 
             # Make folder structure and read models
             self.setup()
@@ -441,8 +459,9 @@ class DatabaseBuilder:
             self.create_standard_objects()
 
             # Save log file
-            self.logger.info("FloodAdapt database creation finished!")
+            logger.info("FloodAdapt database creation finished!")
 
+    @debug_timer
     def setup(self) -> None:
         # Create the models
         self.make_folder_structure()
@@ -452,6 +471,7 @@ class DatabaseBuilder:
         self.read_template_sfincs_overland_model()
         self.read_template_sfincs_offshore_model()
 
+    @debug_timer
     def set_standard_objects(self):
         # Define name and create object
         self._no_measures_strategy_name = "no_measures"
@@ -467,14 +487,13 @@ class DatabaseBuilder:
         )
         return std_obj
 
+    @debug_timer
     def create_standard_objects(self):
         with modified_environ(
             DATABASE_ROOT=str(self.root.parent),
             DATABASE_NAME=self.root.name,
         ):
-            self.logger.info(
-                "Creating `no measures` strategy and `current` projection."
-            )
+            logger.info("Creating `no measures` strategy and `current` projection.")
             # Create database instance
             db = Database(self.root.parent, self.config.name)
             # Create no measures strategy
@@ -506,6 +525,7 @@ class DatabaseBuilder:
                     )
 
     ### TEMPLATE READERS ###
+    @debug_timer
     def read_template_fiat_model(self):
         user_provided = self._check_exists_and_absolute(self.config.fiat)
 
@@ -543,6 +563,7 @@ class DatabaseBuilder:
 
         self.fiat_model = in_db
 
+    @debug_timer
     def read_template_sfincs_overland_model(self):
         user_provided = self._check_exists_and_absolute(
             self.config.sfincs_overland.name
@@ -560,6 +581,7 @@ class DatabaseBuilder:
         in_db.read()
         self.sfincs_overland_model = in_db
 
+    @debug_timer
     def read_template_sfincs_offshore_model(self):
         if self.config.sfincs_offshore is None:
             self.sfincs_offshore_model = None
@@ -582,6 +604,7 @@ class DatabaseBuilder:
         self.sfincs_offshore_model = in_db
 
     ### FIAT ###
+    @debug_timer
     def create_fiat_model(self) -> FiatModel:
         fiat = FiatModel(
             config=self.create_fiat_config(),
@@ -590,17 +613,18 @@ class DatabaseBuilder:
         )
         return fiat
 
+    @debug_timer
     def create_risk_model(self) -> Optional[RiskModel]:
         # Check if return periods are provided
         if not self.config.return_periods:
             if self._probabilistic_set_name:
                 risk = RiskModel()
-                self.logger.warning(
+                logger.warning(
                     f"No return periods provided, but a probabilistic set is available. Using default return periods {risk.return_periods}."
                 )
                 return risk
             else:
-                self.logger.warning(
+                logger.warning(
                     "No return periods provided and no probabilistic set available. Risk calculations will not be performed."
                 )
                 return None
@@ -608,9 +632,10 @@ class DatabaseBuilder:
             risk = RiskModel(return_periods=self.config.return_periods)
         return risk
 
+    @debug_timer
     def create_benefit_config(self) -> Optional[BenefitsModel]:
         if self._probabilistic_set_name is None:
-            self.logger.warning(
+            logger.warning(
                 "No probabilistic set found in the config, benefits will not be available."
             )
             return None
@@ -621,6 +646,7 @@ class DatabaseBuilder:
             event_set=self._probabilistic_set_name,
         )
 
+    @debug_timer
     def create_fiat_config(self) -> FiatConfigModel:
         # Make sure only csv objects have geometries
         for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
@@ -681,6 +707,7 @@ class DatabaseBuilder:
 
         return config
 
+    @debug_timer
     def update_fiat_elevation(self):
         """
         Update the ground elevations of FIAT objects based on the SFINCS ground elevation map.
@@ -691,7 +718,7 @@ class DatabaseBuilder:
         dem_file = self._dem_path
         # TODO resolve issue with double geometries in hydromt-FIAT and use update_ground_elevation method instead
         # self.fiat_model.update_ground_elevation(dem_file, grnd_elev_unit="meters")
-        self.logger.info(
+        logger.info(
             "Updating FIAT objects ground elevations from SFINCS ground elevation map."
         )
         SFINCS_units = us.UnitfulLength(
@@ -701,7 +728,7 @@ class DatabaseBuilder:
         conversion_factor = SFINCS_units.convert(FIAT_units)
 
         if not math.isclose(conversion_factor, 1):
-            self.logger.info(
+            logger.info(
                 f"Ground elevation for FIAT objects is in '{FIAT_units}', while SFINCS ground elevation is in 'meters'. Values in the exposure csv will be converted by a factor of {conversion_factor}"
             )
 
@@ -760,15 +787,17 @@ class DatabaseBuilder:
         ] = exposure.loc[exposure[_FIAT_COLUMNS.primary_object_type] != "road", "elev"]
         del exposure["elev"]
 
+    @debug_timer
     def read_damage_unit(self) -> str:
         if self.fiat_model.exposure.damage_unit is not None:
             return self.fiat_model.exposure.damage_unit
         else:
-            self.logger.warning(
+            logger.warning(
                 "Delft-FIAT model was missing damage units so '$' was assumed."
             )
             return "$"
 
+    @debug_timer
     def read_floodmap_type(self) -> FloodmapType:
         # If there is at least on object that uses the area method, use water depths for FA calcs
         if (
@@ -779,10 +808,11 @@ class DatabaseBuilder:
         else:
             return FloodmapType.water_level
 
+    @debug_timer
     def create_roads(self) -> Optional[str]:
         # Make sure that FIAT roads are polygons
         if self.config.fiat_roads_name not in self.fiat_model.exposure.geom_names:
-            self.logger.warning(
+            logger.warning(
                 "Road objects are not available in the FIAT model and thus would not be available in FloodAdapt."
             )
             # TODO check how this naming of output geoms should become more explicit!
@@ -795,7 +825,7 @@ class DatabaseBuilder:
             _FIAT_COLUMNS.segment_length
             not in self.fiat_model.exposure.exposure_db.columns
         ):
-            self.logger.warning(
+            logger.warning(
                 f"'{_FIAT_COLUMNS.segment_length}' column not present in the FIAT exposure csv. Road impact infometrics cannot be produced."
             )
 
@@ -807,16 +837,18 @@ class DatabaseBuilder:
             )
             roads = roads.to_crs(self.fiat_model.exposure.crs)
             self.fiat_model.exposure.exposure_geoms[self._get_fiat_road_index()] = roads
-            self.logger.info(
+            logger.info(
                 f"FIAT road objects transformed from lines to polygons assuming a road width of {self.config.road_width} meters."
             )
 
         self._has_roads = True
         return f"{self.config.fiat_roads_name}.gpkg"
 
+    @debug_timer
     def create_new_developments(self) -> Optional[str]:
         return "new_development_area.gpkg"
 
+    @debug_timer
     def create_footprints(self) -> Optional[Path]:
         if isinstance(self.config.building_footprints, SpatialJoinModel):
             # Use the provided building footprints
@@ -824,7 +856,7 @@ class DatabaseBuilder:
                 self.config.building_footprints.file
             )
 
-            self.logger.info(
+            logger.info(
                 f"Using building footprints from {Path(building_footprints_file).as_posix()}."
             )
             # Spatially join buildings and map
@@ -835,7 +867,7 @@ class DatabaseBuilder:
             )
             return path
         elif self.config.building_footprints == FootprintsOptions.OSM:
-            self.logger.info(
+            logger.info(
                 "Building footprint data will be downloaded from Open Street Maps."
             )
             region = self.fiat_model.region
@@ -862,7 +894,7 @@ class DatabaseBuilder:
             ].geometry.iloc[0],
             (Polygon, MultiPolygon),
         ):
-            self.logger.info(
+            logger.info(
                 "Building footprints are already available in the FIAT model geometry files."
             )
             return None
@@ -885,21 +917,20 @@ class DatabaseBuilder:
                     f"While 'BF_FID' column exists, building footprints file {footprints_path} not found."
                 )
 
-            self.logger.info(
-                f"Using the building footprints located at {footprints_path}."
-            )
+            logger.info(f"Using the building footprints located at {footprints_path}.")
             return footprints_path.relative_to(self.static_path)
 
         # Other methods
         else:
-            self.logger.warning(
+            logger.warning(
                 "No building footprints are available. Buildings will be plotted with a default shape in FloodAdapt."
             )
             return None
 
+    @debug_timer
     def create_bfe(self) -> Optional[BFEModel]:
         if self.config.bfe is None:
-            self.logger.warning(
+            logger.warning(
                 "No base flood elevation provided. Elevating building relative to base flood elevation will not be possible in FloodAdapt."
             )
             return None
@@ -907,7 +938,7 @@ class DatabaseBuilder:
         # TODO can we use hydromt-FIAT?
         bfe_file = self._check_exists_and_absolute(self.config.bfe.file)
 
-        self.logger.info(
+        logger.info(
             f"Using map from {Path(bfe_file).as_posix()} as base flood elevation."
         )
 
@@ -940,6 +971,7 @@ class DatabaseBuilder:
             field_name=self.config.bfe.field_name,
         )
 
+    @debug_timer
     def create_aggregation_areas(self) -> list[AggregationModel]:
         # TODO split this to 3 methods?
         aggregation_areas = []
@@ -982,7 +1014,7 @@ class DatabaseBuilder:
                 )
                 aggregation_areas.append(aggr)
 
-                self.logger.info(
+                logger.info(
                     f"Aggregation areas: {aggr.name} from the FIAT model are going to be used."
                 )
 
@@ -1079,11 +1111,12 @@ class DatabaseBuilder:
                 buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
             self.fiat_model.exposure.exposure_db = exposure_csv
-            self.logger.warning(
+            logger.warning(
                 "No aggregation areas were available in the FIAT model and none were provided in the config file. The region file will be used as a mock aggregation area."
             )
         return aggregation_areas
 
+    @debug_timer
     def create_svi(self) -> Optional[SVIModel]:
         if self.config.svi:
             svi_file = self._check_exists_and_absolute(self.config.svi.file)
@@ -1099,12 +1132,12 @@ class DatabaseBuilder:
             )
             # Add column to exposure
             if "SVI" in exposure_csv.columns:
-                self.logger.info(
+                logger.info(
                     f"'SVI' column in the FIAT exposure csv will be replaced by {svi_file.as_posix()}."
                 )
                 del exposure_csv["SVI"]
             else:
-                self.logger.info(
+                logger.info(
                     f"'SVI' column in the FIAT exposure csv will be filled by {svi_file.as_posix()}."
                 )
             exposure_csv = exposure_csv.merge(
@@ -1116,7 +1149,7 @@ class DatabaseBuilder:
             svi_path = self.static_path / "templates" / "fiat" / "svi" / "svi.gpkg"
             svi_path.parent.mkdir(parents=True, exist_ok=True)
             svi.to_file(svi_path)
-            self.logger.info(
+            logger.info(
                 f"An SVI map can be shown in FloodAdapt GUI using '{self.config.svi.field_name}' column from {svi_file.as_posix()}"
             )
 
@@ -1125,19 +1158,17 @@ class DatabaseBuilder:
                 field_name="SVI",
             )
         elif "SVI" in self.fiat_model.exposure.exposure_db.columns:
-            self.logger.info(
+            logger.info(
                 "'SVI' column present in the FIAT exposure csv. Vulnerability type infometrics can be produced."
             )
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             if "SVI" not in [attr["name"] for attr in add_attrs]:
-                self.logger.warning(
-                    "No SVI map found to display in the FloodAdapt GUI!"
-                )
+                logger.warning("No SVI map found to display in the FloodAdapt GUI!")
 
             ind = [attr["name"] for attr in add_attrs].index("SVI")
             svi = add_attrs[ind]
             svi_path = self.static_path / "templates" / "fiat" / svi["file"]
-            self.logger.info(
+            logger.info(
                 f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['file']}"
             )
             # Save site attributes
@@ -1147,12 +1178,13 @@ class DatabaseBuilder:
             )
 
         else:
-            self.logger.warning(
+            logger.warning(
                 "'SVI' column not present in the FIAT exposure csv. Vulnerability type infometrics cannot be produced."
             )
             return None
 
     ### SFINCS ###
+    @debug_timer
     def create_sfincs_config(self) -> SfincsModel:
         # call these functions before others to make sure water level references are updated
         config = self.create_sfincs_model_config()
@@ -1172,9 +1204,10 @@ class DatabaseBuilder:
 
         return sfincs
 
+    @debug_timer
     def create_cyclone_track_database(self) -> Optional[CycloneTrackDatabaseModel]:
         if not self.config.cyclones or not self.config.sfincs_offshore:
-            self.logger.warning("No cyclones will be available in the database.")
+            logger.warning("No cyclones will be available in the database.")
             return None
 
         if self.config.cyclone_basin:
@@ -1184,7 +1217,7 @@ class DatabaseBuilder:
 
         name = f"IBTrACS.{basin.value}.v04r01.nc"
         url = f"https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r01/access/netcdf/{name}"
-        self.logger.info(f"Downloading cyclone track database from {url}")
+        logger.info(f"Downloading cyclone track database from {url}")
         fn = Path(self.root) / "static" / "cyclone_track_database" / name
         fn.parent.mkdir(parents=True, exist_ok=True)
 
@@ -1195,6 +1228,7 @@ class DatabaseBuilder:
 
         return CycloneTrackDatabaseModel(file=name)
 
+    @debug_timer
     def create_scs_model(self) -> Optional[SCSModel]:
         if self.config.scs is None:
             return None
@@ -1205,11 +1239,12 @@ class DatabaseBuilder:
 
         return SCSModel(file=scs_file.name, type=self.config.scs.type)
 
+    @debug_timer
     def create_dem_model(self) -> DemModel:
         if self.config.dem:
             subgrid_sfincs = Path(self.config.dem.filename)
         else:
-            self.logger.warning(
+            logger.warning(
                 "No subgrid depth geotiff file provided in the config file. Using the one from the SFINCS model."
             )
             subgrid_sfincs = (
@@ -1227,7 +1262,7 @@ class DatabaseBuilder:
             shutil.move(tiles_sfincs, fa_tiles_path)
             if (fa_tiles_path / "index").exists():
                 os.rename(fa_tiles_path / "index", fa_tiles_path / "indices")
-            self.logger.info(
+            logger.info(
                 "Tiles were already available in the SFINCS model and will directly be used in FloodAdapt."
             )
         else:
@@ -1239,7 +1274,7 @@ class DatabaseBuilder:
                 zoom_range=[0, 13],
                 fmt="png",
             )
-            self.logger.info(
+            logger.info(
                 f"Tiles were created using the {subgrid_sfincs.as_posix()} as the elevation map."
             )
 
@@ -1249,6 +1284,7 @@ class DatabaseBuilder:
             filename=fa_subgrid_path.name, units=us.UnitTypesLength.meters
         )  # always in meters
 
+    @debug_timer
     def create_sfincs_model_config(self) -> SfincsConfigModel:
         config = SfincsConfigModel(
             csname=self.sfincs_overland_model.crs.name,
@@ -1263,6 +1299,7 @@ class DatabaseBuilder:
 
         return config
 
+    @debug_timer
     def create_slr(self) -> Optional[SlrScenariosModel]:
         if self.config.slr_scenarios is None:
             return None
@@ -1280,17 +1317,19 @@ class DatabaseBuilder:
             relative_to_year=self.config.slr_scenarios.relative_to_year,
         )
 
+    @debug_timer
     def create_observation_points(self) -> Union[list[ObsPointModel], None]:
         if self.config.obs_point is None:
             return None
 
-        self.logger.info("Observation points were provided in the config file.")
+        logger.info("Observation points were provided in the config file.")
         return self.config.obs_point
 
+    @debug_timer
     def create_rivers(self) -> list[RiverModel]:
         src_file = Path(self.sfincs_overland_model.root) / "sfincs.src"
         if not src_file.exists():
-            self.logger.warning("No rivers found in the SFINCS model.")
+            logger.warning("No rivers found in the SFINCS model.")
             return []
 
         df = pd.read_csv(src_file, delim_whitespace=True, header=None, names=["x", "y"])
@@ -1310,7 +1349,7 @@ class DatabaseBuilder:
                 )
             else:
                 discharge = 0
-                self.logger.warning(
+                logger.warning(
                     f"No river discharge conditions were found in the SFINCS model for river {idx}. A default value of 0 will be used."
                 )
 
@@ -1324,18 +1363,19 @@ class DatabaseBuilder:
             )
             rivers.append(river)
 
-        self.logger.info(
+        logger.info(
             f"{len(river_locs)} river(s) were identified from the SFINCS model and will be available in FloodAdapt for discharge input."
         )
 
         return rivers
 
+    @debug_timer
     def create_tide_gauge(self) -> Optional[TideGauge]:
         if self.config.tide_gauge is None:
-            self.logger.warning(
+            logger.warning(
                 "Tide gauge information not provided. Historical events will not have an option to use gauged data in FloodAdapt!"
             )
-            self.logger.warning(
+            logger.warning(
                 "No water level references were found. It is assumed that MSL is equal to the datum used in the SFINCS overland model. You can provide these values with the tide_gauge.ref attribute in the site.toml."
             )
             return None
@@ -1346,7 +1386,7 @@ class DatabaseBuilder:
                     "Tide gauge file needs to be provided when 'file' is selected as the source."
                 )
             if self.config.tide_gauge.ref is None:
-                self.logger.warning(
+                logger.warning(
                     "Tide gauge reference not provided. MSL is assumed as the reference of the water levels in the file."
                 )
                 self.config.tide_gauge.ref = "MSL"
@@ -1360,7 +1400,7 @@ class DatabaseBuilder:
             shutil.copyfile(self.config.tide_gauge.file, db_file_path)
 
             rel_db_path = Path(db_file_path.relative_to(self.static_path))
-            self.logger.warning(
+            logger.warning(
                 f"Tide gauge from file {rel_db_path} assumed to be in {self.unit_system.default_length_units}!"
             )
             tide_gauge = TideGauge(
@@ -1387,12 +1427,12 @@ class DatabaseBuilder:
 
             if self.config.tide_gauge.id is None:
                 station_id = self._get_closest_station()
-                self.logger.info(
+                logger.info(
                     "The closest NOAA tide gauge station to the site will be searched."
                 )
             else:
                 station_id = self.config.tide_gauge.id
-                self.logger.info(
+                logger.info(
                     f"The NOAA tide gauge station with the provided ID {station_id} will be used."
                 )
             station = self._get_station_metadata(station_id=station_id, ref=ref)
@@ -1448,11 +1488,12 @@ class DatabaseBuilder:
                     self.water_level_references.datums.append(wl_info)
             return tide_gauge
         else:
-            self.logger.warning(
+            logger.warning(
                 f"Tide gauge source not recognized: {self.config.tide_gauge.source}. Historical events will not have an option to use gauged data in FloodAdapt!"
             )
             return None
 
+    @debug_timer
     def create_offshore_model(self) -> Optional[FloodModel]:
         if self.sfincs_offshore_model is None:
             return None
@@ -1477,7 +1518,7 @@ class DatabaseBuilder:
             index=False,
             header=False,
         )
-        self.logger.info(
+        logger.info(
             "Output points of the offshore SFINCS model were reconfigured to the boundary points of the overland SFINCS model."
         )
 
@@ -1487,6 +1528,7 @@ class DatabaseBuilder:
             vertical_offset=self.config.sfincs_offshore.vertical_offset,
         )
 
+    @debug_timer
     def create_overland_model(self) -> FloodModel:
         return FloodModel(
             name="overland",
@@ -1494,6 +1536,7 @@ class DatabaseBuilder:
         )
 
     ### SITE ###
+    @debug_timer
     def create_site_config(self) -> Site:
         """Create the site configuration for the FloodAdapt model.
 
@@ -1533,6 +1576,7 @@ class DatabaseBuilder:
         )
         return config
 
+    @debug_timer
     def read_location(self) -> tuple[float, float]:
         # Get center of area of interest
         if not self.fiat_model.region.empty:
@@ -1545,6 +1589,7 @@ class DatabaseBuilder:
             )
         return center.x, center.y
 
+    @debug_timer
     def create_gui_config(self) -> GuiModel:
         gui = GuiModel(
             units=self.unit_system,
@@ -1555,6 +1600,7 @@ class DatabaseBuilder:
 
         return gui
 
+    @debug_timer
     def create_default_units(self) -> GuiUnitModel:
         if self.config.unit_system == UnitSystems.imperial:
             return GuiUnitModel.imperial()
@@ -1565,6 +1611,7 @@ class DatabaseBuilder:
                 f"Unit system {self.config.unit_system} not recognized. Please choose 'imperial' or 'metric'."
             )
 
+    @debug_timer
     def create_visualization_layers(self) -> VisualizationLayers:
         visualization_layers = VisualizationLayers()
         if self._svi is not None:
@@ -1578,6 +1625,7 @@ class DatabaseBuilder:
             )
         return visualization_layers
 
+    @debug_timer
     def create_output_layers_config(self) -> OutputLayers:
         # Read default colors from template
         fd_max = self.config.gui.max_flood_depth
@@ -1633,6 +1681,7 @@ class DatabaseBuilder:
         )
         return output_layers
 
+    @debug_timer
     def create_hazard_plotting_config(self) -> PlottingModel:
         datum_names = [datum.name for datum in self.water_level_references.datums]
         if "MHHW" in datum_names:
@@ -1640,20 +1689,20 @@ class DatabaseBuilder:
                 self.water_level_references.get_datum("MHHW").height
                 - self.water_level_references.get_datum("MSL").height
             )
-            self.logger.info(
+            logger.info(
                 f"The default tidal amplitude in the GUI will be {amplitude.transform(self.unit_system.default_length_units)}, calculated as the difference between MHHW and MSL from the tide gauge data."
             )
         else:
             amplitude = us.UnitfulLength(
                 value=0.0, units=self.unit_system.default_length_units
             )
-            self.logger.warning(
+            logger.warning(
                 "The default tidal amplitude in the GUI will be 0.0, since no tide-gauge water levels are available. You can change this in the site.toml with the 'gui.tide_harmonic_amplitude' attribute."
             )
 
         ref = "MSL"
         if ref not in datum_names:
-            self.logger.warning(
+            logger.warning(
                 f"The Mean Sea Level (MSL) datum is not available in the site.toml. The synthetic tide will be created relative to the main reference: {self.water_level_references.reference}."
             )
             ref = self.water_level_references.reference
@@ -1668,6 +1717,7 @@ class DatabaseBuilder:
 
         return plotting
 
+    @debug_timer
     def create_infometrics(self):
         """
         Copy the infometrics and infographics templates to the appropriate location and modifies the metrics_config.toml files.
@@ -1728,6 +1778,7 @@ class DatabaseBuilder:
             with open(file, "wb") as f:
                 tomli_w.dump(attrs, f)
 
+    @debug_timer
     def _create_optional_infometrics(self, templates_path: Path, path_im: Path):
         # If infographics are going to be created in FA, get template metric configurations
         if not self.config.infographics:
@@ -1736,14 +1787,10 @@ class DatabaseBuilder:
         # Check what type of infographics should be used
         if self.config.unit_system == UnitSystems.imperial:
             metrics_folder_name = "US_NSI"
-            self.logger.info(
-                "Default NSI infometrics and infographics will be created."
-            )
+            logger.info("Default NSI infometrics and infographics will be created.")
         elif self.config.unit_system == UnitSystems.metric:
             metrics_folder_name = "OSM"
-            self.logger.info(
-                "Default OSM infometrics and infographics will be created."
-            )
+            logger.info("Default OSM infometrics and infographics will be created.")
         else:
             raise ValueError(
                 f"Unit system {self.config.unit_system} is not recognized. Please choose 'imperial' or 'metric'."
@@ -1790,6 +1837,7 @@ class DatabaseBuilder:
         path_1 = self.root.joinpath("static", "templates", "infographics", "images")
         shutil.copytree(path_0, path_1)
 
+    @debug_timer
     def add_static_files(self):
         """
         Copy static files from the 'templates' folder to the 'static' folder.
@@ -1804,10 +1852,11 @@ class DatabaseBuilder:
             path_1 = self.static_path / folder
             shutil.copytree(path_0, path_1)
 
+    @debug_timer
     def add_probabilistic_set(self):
         # Copy prob set if given
         if self.config.probabilistic_set:
-            self.logger.info(
+            logger.info(
                 f"Probabilistic event set imported from {self.config.probabilistic_set}"
             )
             prob_event_name = Path(self.config.probabilistic_set).name
@@ -1815,7 +1864,7 @@ class DatabaseBuilder:
             shutil.copytree(self.config.probabilistic_set, path_db)
             self._probabilistic_set_name = prob_event_name
         else:
-            self.logger.warning(
+            logger.warning(
                 "Probabilistic event set not provided. Risk scenarios cannot be run in FloodAdapt."
             )
             self._probabilistic_set_name = None
@@ -1829,7 +1878,7 @@ class DatabaseBuilder:
         the input and static folders. It also creates subfolders within the input and
         static folders based on a predefined list of names.
         """
-        self.logger.info("Preparing the database folder structure.")
+        logger.info("Preparing the database folder structure.")
         inputs = [
             "events",
             "projections",
@@ -1856,6 +1905,7 @@ class DatabaseBuilder:
         else:
             raise ValueError(f"Path {path} is not absolute.")
 
+    @debug_timer
     def _join_building_footprints(
         self, building_footprints: gpd.GeoDataFrame, field_name: str
     ) -> Path:
@@ -1883,7 +1933,7 @@ class DatabaseBuilder:
         ]
         exposure_csv = self.fiat_model.exposure.exposure_db
         if "BF_FID" in exposure_csv.columns:
-            self.logger.warning(
+            logger.warning(
                 "Column 'BF_FID' already exists in the exposure columns and will be replaced."
             )
             del exposure_csv["BF_FID"]
@@ -1919,12 +1969,13 @@ class DatabaseBuilder:
 
         # Save site attributes
         buildings_path = geo_path.relative_to(self.static_path)
-        self.logger.info(
+        logger.info(
             f"Building footprints saved at {(self.static_path / buildings_path).resolve().as_posix()}"
         )
 
         return buildings_path
 
+    @debug_timer
     def _clip_hazard_extend(self, clip_footprints=True):
         """
         Clip the exposure data to the bounding box of the hazard data.
@@ -2022,6 +2073,7 @@ class DatabaseBuilder:
         return gdf_new
 
     @staticmethod
+    @debug_timer
     def spatial_join(
         objects: gpd.GeoDataFrame,
         layer: Union[str, gpd.GeoDataFrame],
@@ -2078,6 +2130,7 @@ class DatabaseBuilder:
     def _get_fiat_road_index(self) -> int:
         return self.fiat_model.exposure.geom_names.index(self.config.fiat_roads_name)
 
+    @debug_timer
     def _get_closest_station(self):
         # Get available stations from source
         obs_data = obs.source(self.config.tide_gauge.source)
@@ -2099,7 +2152,7 @@ class DatabaseBuilder:
         )
 
         distance = us.UnitfulLength(value=distance, units=us.UnitTypesLength.meters)
-        self.logger.info(
+        logger.info(
             f"The closest tide gauge from {self.config.tide_gauge.source} is located {distance.transform(self.unit_system.default_length_units)} from the SFINCS domain"
         )
         # Check if user provided max distance
@@ -2110,7 +2163,7 @@ class DatabaseBuilder:
                 value=distance.convert(units_new), units=units_new
             )
             if distance_new.value > self.config.tide_gauge.max_distance.value:
-                self.logger.warning(
+                logger.warning(
                     f"This distance is larger than the 'max_distance' value of {self.config.tide_gauge.max_distance.value} {units_new} provided in the config file. The station cannot be used."
                 )
                 return None
@@ -2120,6 +2173,7 @@ class DatabaseBuilder:
 
         return station_id
 
+    @debug_timer
     def _get_station_metadata(self, station_id: str, ref: str = "MLLW"):
         """
         Find the closest tide gauge station to the SFINCS domain and retrieves its metadata.
@@ -2166,11 +2220,11 @@ class DatabaseBuilder:
             "lat": station_metadata["lat"],
         }
 
-        self.logger.info(
+        logger.info(
             f"The tide gauge station '{station_metadata['name']}' from {self.config.tide_gauge.source} will be used to download nearshore historical water level time-series."
         )
 
-        self.logger.info(
+        logger.info(
             f"The station metadata will be used to fill in the water_level attribute in the site.toml. The reference level will be {ref}."
         )
 
@@ -2192,12 +2246,36 @@ class DatabaseBuilder:
         return bin_colors
 
 
-if __name__ == "__main__":
+def main():
     while True:
         config_path = Path(
             input(
                 "Please provide the path to the database creation configuration toml: \n"
             )
+        )
+        print(
+            "Please select the log verbosity level for the database creation process.\n"
+            "From most verbose to least verbose: `DEBUG`, `INFO`, `WARNING`.'n"
+        )
+        log_level = input("Enter log level: ")
+        match log_level:
+            case "DEBUG":
+                level = logging.DEBUG
+            case "INFO":
+                level = logging.INFO
+            case "WARNING":
+                level = logging.WARNING
+            case _:
+                print(
+                    f"Log level `{log_level}` not recognized. Defaulting to INFO. Please choose from: `DEBUG`, `INFO`, `WARNING`."
+                )
+                log_level = "INFO"
+                level = logging.INFO
+        print("Log level set to: ", log_level)
+        FloodAdaptLogging(
+            loglevel_root=level,
+            loglevel_console=level,
+            loglevel_files=level,
         )
         try:
             config = ConfigModel.read(config_path)
@@ -2208,3 +2286,7 @@ if __name__ == "__main__":
         quit = input("Do you want to quit? (y/n)")
         if quit == "y":
             exit()
+
+
+if __name__ == "__main__":
+    main()
