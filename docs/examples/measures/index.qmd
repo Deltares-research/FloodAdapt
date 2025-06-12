@@ -1,8 +1,0 @@
----
-title: TITLE HERE
-format: html
----
-
-This section contains ...
-
-Select an example from the sidebar to view the corresponding notebook.
