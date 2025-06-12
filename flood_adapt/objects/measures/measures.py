@@ -128,6 +128,10 @@ class Measure(Object):
         Type of selection. Should be one of the SelectionType enum values.
     polygon_file: str, Optional
         Path to a polygon file, either absolute or relative to the measure's toml path in the database.
+    aggregation_area_name: str, Optional
+        Name of the aggregation area. Required if `selection_type` is 'aggregation_area'.
+    aggregation_area_type: str, Optional
+        Type of aggregation area. Required if `selection_type` is 'aggregation_area'.
     """
 
     type: MeasureType
