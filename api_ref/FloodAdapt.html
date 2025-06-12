@@ -830,6 +830,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#flood_adapt.FloodAdapt.get_depth_conversion" id="toc-flood_adapt.FloodAdapt.get_depth_conversion" class="nav-link" data-scroll-target="#flood_adapt.FloodAdapt.get_depth_conversion">get_depth_conversion</a></li>
   <li><a href="#flood_adapt.FloodAdapt.get_event" id="toc-flood_adapt.FloodAdapt.get_event" class="nav-link" data-scroll-target="#flood_adapt.FloodAdapt.get_event">get_event</a></li>
   <li><a href="#flood_adapt.FloodAdapt.get_events" id="toc-flood_adapt.FloodAdapt.get_events" class="nav-link" data-scroll-target="#flood_adapt.FloodAdapt.get_events">get_events</a></li>
+  <li><a href="#flood_adapt.FloodAdapt.get_flood_map_geotiff" id="toc-flood_adapt.FloodAdapt.get_flood_map_geotiff" class="nav-link" data-scroll-target="#flood_adapt.FloodAdapt.get_flood_map_geotiff">get_flood_map_geotiff</a></li>
   <li><a href="#flood_adapt.FloodAdapt.get_green_infra_table" id="toc-flood_adapt.FloodAdapt.get_green_infra_table" class="nav-link" data-scroll-target="#flood_adapt.FloodAdapt.get_green_infra_table">get_green_infra_table</a></li>
   <li><a href="#flood_adapt.FloodAdapt.get_index_path" id="toc-flood_adapt.FloodAdapt.get_index_path" class="nav-link" data-scroll-target="#flood_adapt.FloodAdapt.get_index_path">get_index_path</a></li>
   <li><a href="#flood_adapt.FloodAdapt.get_infographic" id="toc-flood_adapt.FloodAdapt.get_infographic" class="nav-link" data-scroll-target="#flood_adapt.FloodAdapt.get_infographic">get_infographic</a></li>
@@ -1018,138 +1019,142 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Get all events from the database.</td>
 </tr>
 <tr class="odd">
+<td><a href="#flood_adapt.FloodAdapt.get_flood_map_geotiff">get_flood_map_geotiff</a></td>
+<td>Return the path to the geotiff file with the flood map for the given scenario.</td>
+</tr>
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_green_infra_table">get_green_infra_table</a></td>
 <td>Return a table with different types of green infrastructure measures and their infiltration depths.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_index_path">get_index_path</a></td>
 <td>Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_infographic">get_infographic</a></td>
 <td>Return the HTML string of the infographic for the given scenario.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_infometrics">get_infometrics</a></td>
 <td>Return the metrics for the given scenario.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_max_water_level_map">get_max_water_level_map</a></td>
 <td>Return the maximum water level for the given scenario.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_measure">get_measure</a></td>
 <td>Get a measure from the database by name.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_measures">get_measures</a></td>
 <td>Get all measures from the database.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_model_boundary">get_model_boundary</a></td>
 <td>Get the model boundary that is used in SFINCS.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_model_grid">get_model_grid</a></td>
 <td>Get the model grid that is used in SFINCS.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_obs_point_timeseries">get_obs_point_timeseries</a></td>
 <td>Return the HTML strings of the water level timeseries for the given scenario.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_obs_points">get_obs_points</a></td>
 <td>Get the observation points specified in the site.toml.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_projection">get_projection</a></td>
 <td>Get a projection from the database by name.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_projections">get_projections</a></td>
 <td>Get all projections from the database.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_road_impacts">get_road_impacts</a></td>
 <td>Return a geodataframe of the impacts at roads.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_scenario">get_scenario</a></td>
 <td>Get a scenario from the database by name.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_scenarios">get_scenarios</a></td>
 <td>Get all scenarios from the database.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_slr_scn_names">get_slr_scn_names</a></td>
 <td>Get all sea level rise scenario names from the database.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_static_map">get_static_map</a></td>
 <td>Get a static map from the database.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_strategies">get_strategies</a></td>
 <td>Get all strategies from the database.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_strategy">get_strategy</a></td>
 <td>Get a strategy from the database by name.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.get_svi_map">get_svi_map</a></td>
 <td>Get the SVI map that are used in Fiat.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.get_topobathy_path">get_topobathy_path</a></td>
 <td>Return the path of the topobathy tiles in order to create flood maps with water level maps.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.interp_slr">interp_slr</a></td>
 <td>Interpolate SLR value and reference it to the SLR reference year from the site toml.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.load_static_data">load_static_data</a></td>
 <td>Read the static data into the cache.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.plot_event_forcing">plot_event_forcing</a></td>
 <td>Plot forcing data for an event.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.plot_slr_scenarios">plot_slr_scenarios</a></td>
 <td>Plot sea level rise scenarios.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.run_benefit">run_benefit</a></td>
 <td>Run the benefit assessment.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.run_scenario">run_scenario</a></td>
 <td>Run a scenario hazard and impacts.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.save_benefit">save_benefit</a></td>
 <td>Save a benefit object to the database.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.save_event">save_event</a></td>
 <td>Save an event object to the database.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.save_measure">save_measure</a></td>
 <td>Save a measure object to the database.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.save_projection">save_projection</a></td>
 <td>Save a projection object to the database.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.FloodAdapt.save_scenario">save_scenario</a></td>
 <td>Save the scenario to the database.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.FloodAdapt.save_strategy">save_strategy</a></td>
 <td>Save a strategy object to the database.</td>
 </tr>
@@ -1918,12 +1923,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dl>
 </section>
 </section>
-<section id="flood_adapt.FloodAdapt.get_green_infra_table" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_green_infra_table">get_green_infra_table</h3>
-<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_green_infra_table(measure_type: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return a table with different types of green infrastructure measures and their infiltration depths.</p>
+<section id="flood_adapt.FloodAdapt.get_flood_map_geotiff" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_flood_map_geotiff">get_flood_map_geotiff</h3>
+<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_flood_map_geotiff(name: <span class="bu">str</span>, rp: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Return the path to the geotiff file with the flood map for the given scenario.</p>
 <section id="parameters-25" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-25">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
+<dd>
+<p>The name of the scenario.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>rp</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="parameter-default-sep">=</span> <span class="parameter-default">None</span></code></dt>
+<dd>
+<p>The return period of the water level, by default None. Only for event set scenarios.</p>
+</dd>
+</dl>
+</section>
+<section id="returns-21" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-21">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>flood_map_geotiff</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a>]</span></code></dt>
+<dd>
+<p>The path to the geotiff file with the flood map for the scenario if it exists, otherwise None.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.FloodAdapt.get_green_infra_table" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_green_infra_table">get_green_infra_table</h3>
+<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_green_infra_table(measure_type: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Return a table with different types of green infrastructure measures and their infiltration depths.</p>
+<section id="parameters-26" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-26">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>measure_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -1931,8 +1963,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-21" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-21">Returns</h4>
+<section id="returns-22" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-22">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>table</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></span></code></dt>
 <dd>
@@ -1943,10 +1975,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_index_path" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_index_path">get_index_path</h3>
-<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_index_path()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_index_path()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.</p>
-<section id="returns-22" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-22">Returns</h4>
+<section id="returns-23" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-23">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>index_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -1957,31 +1989,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_infographic" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_infographic">get_infographic</h3>
-<div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_infographic(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_infographic(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return the HTML string of the infographic for the given scenario.</p>
-<section id="parameters-26" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-26">Parameters</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
-<dd>
-<p>The name of the scenario.</p>
-</dd>
-</dl>
-</section>
-<section id="returns-23" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-23">Returns</h4>
-<dl>
-<dt><code><span class="parameter-name"><strong>html</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
-<dd>
-<p>The HTML string of the infographic.</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="flood_adapt.FloodAdapt.get_infometrics" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_infometrics">get_infometrics</h3>
-<div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_infometrics(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return the metrics for the given scenario.</p>
 <section id="parameters-27" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-27">Parameters</h4>
 <dl>
@@ -1993,6 +2002,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="returns-24" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-24">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>html</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
+<dd>
+<p>The HTML string of the infographic.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="flood_adapt.FloodAdapt.get_infometrics" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_infometrics">get_infometrics</h3>
+<div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_infometrics(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Return the metrics for the given scenario.</p>
+<section id="parameters-28" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-28">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
+<dd>
+<p>The name of the scenario.</p>
+</dd>
+</dl>
+</section>
+<section id="returns-25" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-25">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>metrics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></span></code></dt>
 <dd>
@@ -2012,10 +2044,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_max_water_level_map" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_max_water_level_map">get_max_water_level_map</h3>
-<div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_max_water_level_map(name: <span class="bu">str</span>, rp: <span class="bu">int</span> <span class="op">=</span> <span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_max_water_level_map(name: <span class="bu">str</span>, rp: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return the maximum water level for the given scenario.</p>
-<section id="parameters-28" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-28">Parameters</h4>
+<section id="parameters-29" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-29">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2027,8 +2059,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-25" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-25">Returns</h4>
+<section id="returns-26" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-26">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>water_level_map</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span></code></dt>
 <dd>
@@ -2039,10 +2071,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_measure" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_measure">get_measure</h3>
-<div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_measure(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_measure(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get a measure from the database by name.</p>
-<section id="parameters-29" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-29">Parameters</h4>
+<section id="parameters-30" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-30">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2050,8 +2082,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-26" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-26">Returns</h4>
+<section id="returns-27" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-27">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>measure</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Measure.html#flood_adapt.objects.Measure">Measure</a></span></code></dt>
 <dd>
@@ -2071,10 +2103,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_measures" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_measures">get_measures</h3>
-<div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_measures()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_measures()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get all measures from the database.</p>
-<section id="returns-27" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-27">Returns</h4>
+<section id="returns-28" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-28">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>measures</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</span></code></dt>
 <dd>
@@ -2085,10 +2117,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_model_boundary" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_model_boundary">get_model_boundary</h3>
-<div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_model_boundary()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_model_boundary()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get the model boundary that is used in SFINCS.</p>
-<section id="returns-28" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-28">Returns</h4>
+<section id="returns-29" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-29">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>model_boundary</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>GeoDataFrame</code></span></code></dt>
 <dd>
@@ -2099,10 +2131,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_model_grid" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_model_grid">get_model_grid</h3>
-<div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_model_grid()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_model_grid()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get the model grid that is used in SFINCS.</p>
-<section id="returns-29" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-29">Returns</h4>
+<section id="returns-30" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-30">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>grid</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>QuadtreeGrid</code></span></code></dt>
 <dd>
@@ -2113,10 +2145,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_obs_point_timeseries" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_obs_point_timeseries">get_obs_point_timeseries</h3>
-<div class="sourceCode" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_obs_point_timeseries(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_obs_point_timeseries(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return the HTML strings of the water level timeseries for the given scenario.</p>
-<section id="parameters-30" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-30">Parameters</h4>
+<section id="parameters-31" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-31">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2124,8 +2156,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-30" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-30">Returns</h4>
+<section id="returns-31" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-31">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>html_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2136,11 +2168,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_obs_points" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_obs_points">get_obs_points</h3>
-<div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_obs_points()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_obs_points()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get the observation points specified in the site.toml.</p>
 <p>These are also added to the flood hazard model. They are used as marker locations to plot water level time series in the output tab.</p>
-<section id="returns-31" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-31">Returns</h4>
+<section id="returns-32" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-32">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>observation_points</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>gpd</code>.<a href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame">GeoDataFrame</a></span></code></dt>
 <dd>
@@ -2151,10 +2183,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_projection" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_projection">get_projection</h3>
-<div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_projection(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_projection(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get a projection from the database by name.</p>
-<section id="parameters-31" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-31">Parameters</h4>
+<section id="parameters-32" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-32">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2162,8 +2194,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-32" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-32">Returns</h4>
+<section id="returns-33" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-33">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>projection</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Projection.html#flood_adapt.objects.Projection">Projection</a></span></code></dt>
 <dd>
@@ -2183,10 +2215,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_projections" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_projections">get_projections</h3>
-<div class="sourceCode" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_projections()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_projections()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get all projections from the database.</p>
-<section id="returns-33" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-33">Returns</h4>
+<section id="returns-34" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-34">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>projections</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</span></code></dt>
 <dd>
@@ -2197,10 +2229,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_road_impacts" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_road_impacts">get_road_impacts</h3>
-<div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_road_impacts(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_road_impacts(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return a geodataframe of the impacts at roads.</p>
-<section id="parameters-32" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-32">Parameters</h4>
+<section id="parameters-33" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-33">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2208,8 +2240,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-34" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-34">Returns</h4>
+<section id="returns-35" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-35">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>roads</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>gpd</code>.<a href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame">GeoDataFrame</a></span></code></dt>
 <dd>
@@ -2220,10 +2252,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_scenario" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_scenario">get_scenario</h3>
-<div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_scenario(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_scenario(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get a scenario from the database by name.</p>
-<section id="parameters-33" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-33">Parameters</h4>
+<section id="parameters-34" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-34">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2231,8 +2263,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-35" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-35">Returns</h4>
+<section id="returns-36" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-36">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>scenario</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Scenario.html#flood_adapt.objects.Scenario">Scenario</a></span></code></dt>
 <dd>
@@ -2252,10 +2284,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_scenarios" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_scenarios">get_scenarios</h3>
-<div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_scenarios()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_scenarios()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get all scenarios from the database.</p>
-<section id="returns-36" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-36">Returns</h4>
+<section id="returns-37" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-37">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>scenarios</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</span></code></dt>
 <dd>
@@ -2266,10 +2298,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_slr_scn_names" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_slr_scn_names">get_slr_scn_names</h3>
-<div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_slr_scn_names()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_slr_scn_names()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get all sea level rise scenario names from the database.</p>
-<section id="returns-37" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-37">Returns</h4>
+<section id="returns-38" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-38">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>names</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</span></code></dt>
 <dd>
@@ -2280,10 +2312,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_static_map" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_static_map">get_static_map</h3>
-<div class="sourceCode" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_static_map(path: Union[<span class="bu">str</span>, Path])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_static_map(path: Union[<span class="bu">str</span>, Path])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get a static map from the database.</p>
-<section id="parameters-34" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-34">Parameters</h4>
+<section id="parameters-35" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-35">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a>]</span></code></dt>
 <dd>
@@ -2291,8 +2323,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-38" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-38">Returns</h4>
+<section id="returns-39" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-39">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>static_map</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>gpd</code>.<a href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame">GeoDataFrame</a></span></code></dt>
 <dd>
@@ -2312,10 +2344,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_strategies" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_strategies">get_strategies</h3>
-<div class="sourceCode" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_strategies()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_strategies()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get all strategies from the database.</p>
-<section id="returns-39" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-39">Returns</h4>
+<section id="returns-40" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-40">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>strategies</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</span></code></dt>
 <dd>
@@ -2326,10 +2358,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_strategy" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_strategy">get_strategy</h3>
-<div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_strategy(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_strategy(name: <span class="bu">str</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get a strategy from the database by name.</p>
-<section id="parameters-35" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-35">Parameters</h4>
+<section id="parameters-36" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-36">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2337,8 +2369,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-40" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-40">Returns</h4>
+<section id="returns-41" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-41">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>strategy</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Strategy.html#flood_adapt.objects.Strategy">Strategy</a></span></code></dt>
 <dd>
@@ -2358,10 +2390,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_svi_map" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_svi_map">get_svi_map</h3>
-<div class="sourceCode" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_svi_map()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_svi_map()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get the SVI map that are used in Fiat.</p>
-<section id="returns-41" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-41">Returns</h4>
+<section id="returns-42" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-42">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>svi_map</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>gpd</code>.<a href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame">GeoDataFrame</a></span></code></dt>
 <dd>
@@ -2372,10 +2404,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.get_topobathy_path" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.get_topobathy_path">get_topobathy_path</h3>
-<div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_topobathy_path()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.get_topobathy_path()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return the path of the topobathy tiles in order to create flood maps with water level maps.</p>
-<section id="returns-42" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-42">Returns</h4>
+<section id="returns-43" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-43">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>topo_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2386,10 +2418,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.interp_slr" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.interp_slr">interp_slr</h3>
-<div class="sourceCode" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.interp_slr(slr_scenario: <span class="bu">str</span>, year: <span class="bu">float</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.interp_slr(slr_scenario: <span class="bu">str</span>, year: <span class="bu">float</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Interpolate SLR value and reference it to the SLR reference year from the site toml.</p>
-<section id="parameters-36" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-36">Parameters</h4>
+<section id="parameters-37" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-37">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>slr_scenario</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2401,8 +2433,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 </dl>
 </section>
-<section id="returns-43" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-43">Returns</h4>
+<section id="returns-44" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-44">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>interpolated</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#float">float</a></span></code></dt>
 <dd>
@@ -2426,16 +2458,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.load_static_data" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.load_static_data">load_static_data</h3>
-<div class="sourceCode" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.load_static_data()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.load_static_data()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Read the static data into the cache.</p>
 <p>This is used to speed up the loading of the static data.</p>
 </section>
 <section id="flood_adapt.FloodAdapt.plot_event_forcing" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.plot_event_forcing">plot_event_forcing</h3>
-<div class="sourceCode" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.plot_event_forcing(event: Event, forcing_type: ForcingType)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.plot_event_forcing(event: Event, forcing_type: ForcingType)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Plot forcing data for an event.</p>
-<section id="parameters-37" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-37">Parameters</h4>
+<section id="parameters-38" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-38">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>event</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Event.html#flood_adapt.objects.Event">Event</a></span></code></dt>
 <dd>
@@ -2450,10 +2482,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.plot_slr_scenarios" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.plot_slr_scenarios">plot_slr_scenarios</h3>
-<div class="sourceCode" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.plot_slr_scenarios()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.plot_slr_scenarios()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Plot sea level rise scenarios.</p>
-<section id="returns-44" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-44">Returns</h4>
+<section id="returns-45" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-45">Returns</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>html_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -2464,10 +2496,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.run_benefit" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.run_benefit">run_benefit</h3>
-<div class="sourceCode" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.run_benefit(name: Union[<span class="bu">str</span>, <span class="bu">list</span>[<span class="bu">str</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.run_benefit(name: Union[<span class="bu">str</span>, <span class="bu">list</span>[<span class="bu">str</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Run the benefit assessment.</p>
-<section id="parameters-38" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-38">Parameters</h4>
+<section id="parameters-39" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-39">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]]</span></code></dt>
 <dd>
@@ -2478,10 +2510,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.run_scenario" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.run_scenario">run_scenario</h3>
-<div class="sourceCode" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.run_scenario(scenario_name: Union[<span class="bu">str</span>, <span class="bu">list</span>[<span class="bu">str</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.run_scenario(scenario_name: Union[<span class="bu">str</span>, <span class="bu">list</span>[<span class="bu">str</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Run a scenario hazard and impacts.</p>
-<section id="parameters-39" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-39">Parameters</h4>
+<section id="parameters-40" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-40">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>scenario_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]]</span></code></dt>
 <dd>
@@ -2501,10 +2533,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.save_benefit" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.save_benefit">save_benefit</h3>
-<div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_benefit(benefit: Benefit, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_benefit(benefit: Benefit, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Save a benefit object to the database.</p>
-<section id="parameters-40" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-40">Parameters</h4>
+<section id="parameters-41" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-41">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>benefit</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Benefit.html#flood_adapt.objects.Benefit">Benefit</a></span></code></dt>
 <dd>
@@ -2528,10 +2560,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.save_event" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.save_event">save_event</h3>
-<div class="sourceCode" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_event(event: Event, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_event(event: Event, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Save an event object to the database.</p>
-<section id="parameters-41" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-41">Parameters</h4>
+<section id="parameters-42" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-42">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>event</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Event.html#flood_adapt.objects.Event">Event</a></span></code></dt>
 <dd>
@@ -2555,10 +2587,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.save_measure" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.save_measure">save_measure</h3>
-<div class="sourceCode" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_measure(measure: Measure, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_measure(measure: Measure, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Save a measure object to the database.</p>
-<section id="parameters-42" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-42">Parameters</h4>
+<section id="parameters-43" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-43">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>measure</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Measure.html#flood_adapt.objects.Measure">Measure</a></span></code></dt>
 <dd>
@@ -2582,10 +2614,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.save_projection" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.save_projection">save_projection</h3>
-<div class="sourceCode" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_projection(projection: Projection, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_projection(projection: Projection, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Save a projection object to the database.</p>
-<section id="parameters-43" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-43">Parameters</h4>
+<section id="parameters-44" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-44">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>projection</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Projection.html#flood_adapt.objects.Projection">Projection</a></span></code></dt>
 <dd>
@@ -2609,10 +2641,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.save_scenario" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.save_scenario">save_scenario</h3>
-<div class="sourceCode" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_scenario(scenario: Scenario, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_scenario(scenario: Scenario, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Save the scenario to the database.</p>
-<section id="parameters-44" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-44">Parameters</h4>
+<section id="parameters-45" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-45">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>scenario</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Scenario.html#flood_adapt.objects.Scenario">Scenario</a></span></code></dt>
 <dd>
@@ -2636,10 +2668,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.FloodAdapt.save_strategy" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.FloodAdapt.save_strategy">save_strategy</h3>
-<div class="sourceCode" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_strategy(strategy: Strategy, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>FloodAdapt.save_strategy(strategy: Strategy, overwrite: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Save a strategy object to the database.</p>
-<section id="parameters-45" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-45">Parameters</h4>
+<section id="parameters-46" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-46">Parameters</h4>
 <dl>
 <dt><code><span class="parameter-name"><strong>strategy</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="..\api_ref/Strategy.html#flood_adapt.objects.Strategy">Strategy</a></span></code></dt>
 <dd>
