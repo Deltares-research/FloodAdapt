@@ -257,9 +257,9 @@ class SfincsAdapter(IHazardAdapter):
         template_path = (
             self.database.static.get_overland_sfincs_model().get_model_root()
         )
-        shutil.copytree(template_path, sim_path, dirs_exist_ok=True)
+        # shutil.copytree(template_path, sim_path, dirs_exist_ok=True)
 
-        with SfincsAdapter(model_root=sim_path) as model:
+        with SfincsAdapter(model_root=template_path) as model:
             model._load_scenario_objects(scenario, event)
             is_risk = "Probabilistic " if model._event_set is not None else ""
             self.logger.info(
