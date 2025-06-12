@@ -1,7 +1,9 @@
 from pathlib import Path
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
+from flood_adapt.misc.exceptions import DatabaseError
 from flood_adapt.objects.events.event_factory import EventFactory
+from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Event
 
 
@@ -10,7 +12,7 @@ class DbsEvent(DbsTemplate[Event]):
     display_name = "Event"
     _object_class = Event
 
-    def get(self, name: str) -> Event:
+    def get(self, name: str, load_all: bool = False) -> Event | EventSet:
         """Return an event object.
 
         Parameters
@@ -28,10 +30,10 @@ class DbsEvent(DbsTemplate[Event]):
 
         # Check if the object exists
         if not Path(event_path).is_file():
-            raise ValueError(f"{self.display_name} '{name}' does not exist.")
+            raise DatabaseError(f"{self.display_name} '{name}' does not exist.")
 
         # Load event
-        return EventFactory.load_file(event_path)
+        return EventFactory.load_file(event_path, load_all=load_all)
 
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if an event is used in a scenario.

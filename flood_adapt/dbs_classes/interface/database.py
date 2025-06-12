@@ -5,14 +5,10 @@ from typing import Any, Optional, Union
 
 import geopandas as gpd
 import numpy as np
-import pandas as pd
-from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
-from flood_adapt.objects.benefits.benefits import Benefit
-from flood_adapt.objects.events.events import Event
 
 
 class IDatabase(ABC):
@@ -57,34 +53,6 @@ class IDatabase(ABC):
     def __init__(
         self, database_path: Union[str, os.PathLike], site_name: str
     ) -> None: ...
-
-    @abstractmethod
-    def interp_slr(self, slr_scenario: str, year: float) -> float:
-        pass
-
-    @abstractmethod
-    def plot_slr_scenarios(self) -> str:
-        pass
-
-    @abstractmethod
-    def write_to_csv(self, name: str, event: Event, df: pd.DataFrame) -> None:
-        pass
-
-    @abstractmethod
-    def write_cyc(self, event: Event, track: TropicalCyclone) -> None:
-        pass
-
-    @abstractmethod
-    def check_benefit_scenarios(self, benefit: Benefit) -> pd.DataFrame:
-        pass
-
-    @abstractmethod
-    def create_benefit_scenarios(self, benefit: Benefit) -> None:
-        pass
-
-    @abstractmethod
-    def run_benefit(self, benefit_name: Union[str, list[str]]) -> None:
-        pass
 
     @abstractmethod
     def get_outputs(self) -> dict[str, Any]:

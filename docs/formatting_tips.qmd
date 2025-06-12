@@ -99,18 +99,24 @@ I want to reference the @fig-logo.
 Create info blocks within your test.
 
 Just use this header (remove quotation mark):
+```markdown
 "::: {.callout-tip}"
 write here the Note. and end with the following footer.
 ":::"
+```
 
 **Example:**
+```markdown
 ::: {.callout-tip}
 create a tip
 :::
+```
 
+```markdown
 ::: {.callout-warning}
 Create a warning .
 :::
+```
 
 #### options
 * note
