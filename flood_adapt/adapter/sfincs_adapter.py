@@ -15,6 +15,7 @@ import plotly.express as px
 import pyproj
 import shapely
 import xarray as xr
+import xugrid as xu
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
@@ -399,7 +400,8 @@ class SfincsAdapter(IHazardAdapter):
 
     def get_mask(self):
         """Get mask with inactive cells from model."""
-        mask = self._model.grid["msk"]
+        mask = self._model.mask
+
         return mask
 
     def get_bedlevel(self):
@@ -780,25 +782,24 @@ class SfincsAdapter(IHazardAdapter):
 
         with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
             # read mask and bed level
-            mask = dummymodel.get_mask().stack(z=("x", "y"))
-            zb = dummymodel.get_bedlevel().stack(z=("x", "y")).to_numpy()
+            mask = dummymodel.get_mask()
+            zb = dummymodel.get_bedlevel()
 
         zs_maps = []
         for simulation_path in sim_paths:
             # read zsmax data from overland sfincs model
             with SfincsAdapter(model_root=simulation_path) as sim:
                 zsmax = sim._get_zsmax().load()
-                zs_stacked = zsmax.stack(z=("x", "y"))
-                zs_maps.append(zs_stacked)
+                zs_maps.append(zsmax)
 
         # Create RP flood maps
 
         # 1a: make a table of all water levels and associated frequencies
-        zs = xr.concat(zs_maps, pd.Index(frequencies, name="frequency"))
+        zs = xu.concat(zs_maps, pd.Index(frequencies, name="frequency"))
         # Get the indices of columns with all NaN values
         nan_cells = np.where(np.all(np.isnan(zs), axis=0))[0]
         # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
-        zs = xr.where(np.isnan(zs), np.tile(zb, (zs.shape[0], 1)), zs)
+        zs = zs.where(~np.isnan(zs), np.tile(zb, (zs.shape[0], 1)))
         # Get table of frequencies
         freq = np.tile(frequencies, (zs.shape[1], 1)).transpose()
 
@@ -856,13 +857,19 @@ class SfincsAdapter(IHazardAdapter):
 
         for ii, rp in enumerate(floodmap_rp):
             # #create single nc
-            zs_rp_single = xr.DataArray(
-                data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
-            ).unstack()
-            zs_rp_single = zs_rp_single.rio.write_crs(
-                zsmax.raster.crs
-            )  # , inplace=True)
-            zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
+            data_ii = xr.DataArray(data=h[ii, :], attrs={"units": "meters"})
+
+            zs_rp_single = xu.UgridDataArray.from_data(
+                data=data_ii, grid=zb.grid, facet="face"
+            )
+
+            if self._model.grid_type == "quadtree":
+                # Rasterize to regular grid with specified resolutionAdd commentMore actions
+                res = 100  # TODO find a way to get finest resolution from model
+                zs_rp_single = zs_rp_single.ugrid.rasterize(resolution=res)
+
+            zs_rp_single = zs_rp_single.rio.write_crs(self._model.crs)
+
             fn_rp = result_path / f"RP_{rp:04d}_max_water_level_map.tif"
             zs_rp_single.transpose("y", "x").rio.to_raster(
                 fn_rp,
@@ -880,7 +887,6 @@ class SfincsAdapter(IHazardAdapter):
             # writing the geotiff to the scenario results folder
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
                 dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
-                zsmax = zs_rp_single.to_array().squeeze().transpose()
                 floodmap_fn = result_path / f"RP_{rp:04d}_FloodMap.tif"
 
                 # convert dem from dem units to floodmap units
