@@ -598,6 +598,8 @@ class SfincsAdapter(IHazardAdapter):
         with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
             if hasattr(zsmax, "ugrid"):
+                # First write netcdf with quadtree water levels
+                zsmax.to_netcdf(results_path / "max_water_level_map_qt.nc")
                 # Rasterize to regular grid with specified resolution
                 res = 100  # TODO find a way to get finest resolution from model
                 zsmax = zsmax.ugrid.rasterize(resolution=res)
@@ -864,6 +866,9 @@ class SfincsAdapter(IHazardAdapter):
             )
 
             if self._model.grid_type == "quadtree":
+                zs_rp_single.to_netcdf(
+                    result_path / f"RP_{rp:04d}_max_water_level_map_qt.nc"
+                )
                 # Rasterize to regular grid with specified resolutionAdd commentMore actions
                 res = 100  # TODO find a way to get finest resolution from model
                 zs_rp_single = zs_rp_single.ugrid.rasterize(resolution=res)
