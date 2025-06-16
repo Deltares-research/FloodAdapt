@@ -401,13 +401,16 @@ class SfincsAdapter(IHazardAdapter):
     def get_mask(self):
         """Get mask with inactive cells from model."""
         mask = self._model.mask
-
+        if self._model.grid_type == "regular":
+            mask = xu.UgridDataArray.from_structured2d(da=mask)
         return mask
 
     def get_bedlevel(self):
         """Get bed level from model."""
         self._model.read_results()
         zb = self._model.results["zb"]
+        if self._model.grid_type == "regular":
+            zb = xu.UgridDataArray.from_structured2d(da=zb)
         return zb
 
     def get_model_boundary(self) -> gpd.GeoDataFrame:
@@ -792,6 +795,9 @@ class SfincsAdapter(IHazardAdapter):
             # read zsmax data from overland sfincs model
             with SfincsAdapter(model_root=simulation_path) as sim:
                 zsmax = sim._get_zsmax().load()
+                # If grid is regular we turn it to xugrid to do the calcs
+                if self._model.grid_type == "regular":
+                    zsmax = xu.UgridDataArray.from_structured2d(da=zsmax)
                 zs_maps.append(zsmax)
 
         # Create RP flood maps
@@ -871,12 +877,27 @@ class SfincsAdapter(IHazardAdapter):
                 zs_rp_single.to_netcdf(
                     result_path / f"RP_{rp:04d}_max_water_level_map_qt.nc"
                 )
-                # Rasterize to regular grid with specified resolutionAdd commentMore actions
+            # Rasterize to regular grid with specified resolution
+            if self._model.grid_type == "regular":
+                # Get the mask and coordinates
+                mask = self._model.mask
+                x_coords = mask.x
+                y_coords = mask.y
+                # Reshape zs_rp_single to 2D array based on mask shape
+                zs_2d = zs_rp_single.to_numpy().reshape(mask.shape)
+                # Create a DataArray with coordinates
+                zs_rp_single = xr.DataArray(
+                    zs_2d,
+                    dims=("y", "x"),
+                    coords={"y": y_coords, "x": x_coords},
+                    name="zsmax",
+                    attrs={"units": "m"},
+                )
+            else:
                 res = 100  # TODO find a way to get finest resolution from model
                 zs_rp_single = zs_rp_single.ugrid.rasterize(resolution=res)
 
             zs_rp_single = zs_rp_single.rio.write_crs(self._model.crs)
-
             fn_rp = result_path / f"RP_{rp:04d}_max_water_level_map.tif"
             zs_rp_single.transpose("y", "x").rio.to_raster(
                 fn_rp,
