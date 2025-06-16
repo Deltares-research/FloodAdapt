@@ -859,11 +859,13 @@ class SfincsAdapter(IHazardAdapter):
 
         for ii, rp in enumerate(floodmap_rp):
             # #create single nc
-            data_ii = xr.DataArray(data=h[ii, :], attrs={"units": "meters"})
+            data_ii = xr.DataArray(data=h[ii, :])
 
             zs_rp_single = xu.UgridDataArray.from_data(
                 data=data_ii, grid=zb.grid, facet="face"
             )
+            zs_rp_single.name = "zsmax"
+            zs_rp_single.attrs["units"] = "m"
 
             if self._model.grid_type == "quadtree":
                 zs_rp_single.to_netcdf(
