@@ -50,6 +50,7 @@ class MeteoHandler:
         ds.raster.set_crs(4326)
 
         # Rename the variables to match what hydromt-sfincs expects
+        # variables: ['wind10_u' (m/s), 'wind10_v' (m/s)]
         ds = ds.rename(
             {
                 "barometric_pressure": "press_msl",
@@ -62,6 +63,14 @@ class MeteoHandler:
         # Convert the longitude to -180 to 180 to match hydromt-sfincs
         if ds["lon"].min() > 180:
             ds["lon"] = ds["lon"] - 360
+
+        # rename coordinates to time, x, y as required by hydromt-sfincs
+        ds = ds.rename(
+            {
+                "lon": "x",
+                "lat": "y",
+            }
+        )
 
         return ds
 
