@@ -53,11 +53,13 @@ class Template(str, Enum):
     def description(self) -> str:
         match self:
             case Template.Historical:
-                return "Select a time period for a historic event. This method can use offshore wind and pressure fields for the selected time period to simulate nearshore water levels or download gauged waterlevels to perform a realistic simulation. These water levels are used together with rainfall and river discharge input to simulate flooding in the site area."
+                return "Select and optionally modify a real event by specifying a past time period."
             case Template.Hurricane:
-                return "Select a historical hurricane track from the hurricane database, and shift the track if desired."
+                return (
+                    "Select a historical hurricane track from the hurricane database."
+                )
             case Template.Synthetic:
-                return "Customize a synthetic event by specifying the waterlevels, wind, rainfall and river discharges without being based on a historical event."
+                return "Build a custom event by specifying wind, water levels, rainfall, and discharge."
             case _:
                 raise ValueError(f"Invalid event template: {self}")
 

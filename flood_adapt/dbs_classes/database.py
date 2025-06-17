@@ -285,6 +285,44 @@ class Database(IDatabase):
                 zsmax = ds["risk_map"][:, :].to_numpy().T
         return zsmax
 
+    def get_flood_map_geotiff(
+        self,
+        scenario_name: str,
+        return_period: Optional[int] = None,
+    ) -> Optional[Path]:
+        """Return the path to the geotiff file with the flood map for the given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of scenario
+        return_period : int, optional
+            return period in years, by default None. Only for risk scenarios.
+
+        Returns
+        -------
+        Optional[Path]
+            path to the flood map geotiff file, or None if it does not exist
+        """
+        if not return_period:
+            file_path = self.scenarios.output_path.joinpath(
+                scenario_name,
+                "Flooding",
+                f"FloodMap_{scenario_name}.tif",
+            )
+        else:
+            file_path = self.scenarios.output_path.joinpath(
+                scenario_name,
+                "Flooding",
+                f"RP_{return_period:04d}_maps.tif",
+            )
+        if not file_path.is_file():
+            self.logger.warning(
+                f"Flood map for scenario '{scenario_name}' at {file_path} does not exist."
+            )
+            return None
+        return file_path
+
     def get_building_footprints(self, scenario_name: str) -> GeoDataFrame:
         """Return a geodataframe of the impacts at the footprint level.
 
