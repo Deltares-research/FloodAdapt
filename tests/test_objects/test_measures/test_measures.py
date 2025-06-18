@@ -13,7 +13,6 @@ from flood_adapt.objects.measures.measures import (
     FloodProof,
     FloodWall,
     GreenInfrastructure,
-    HazardMeasure,
     Measure,
     MeasureType,
     Pump,
@@ -24,7 +23,7 @@ from flood_adapt.objects.measures.measures import (
 def assert_validation_error(
     excinfo: pytest.ExceptionInfo,
     class_name: str,
-    expected_loc: Optional[str] = None,
+    expected_loc: Optional[tuple[str]] = None,
     expected_msg: Optional[str] = None,
     expected_type: Optional[str] = None,
 ):
@@ -60,30 +59,43 @@ class TestMeasure:
             name="test_measure",
             description="test description",
             type=MeasureType.floodwall,
+            selection_type=SelectionType.polyline,
+            polygon_file="test_polygon_file.geojson",
         )
 
         # Assert
         assert measure.name == "test_measure"
         assert measure.description == "test description"
         assert measure.type == "floodwall"
+        assert measure.selection_type == "polyline"
+        assert measure.polygon_file == "test_polygon_file.geojson"
 
-    def test_measure_model_no_description(self):
+    @pytest.mark.parametrize(
+        "missing_variable",
+        [
+            "name",
+            "type",
+            "selection_type",
+        ],
+    )
+    def test_measure_model_missing_variables(self, missing_variable):
         # Arrange
-        measure = Measure(name="test_measure", type=MeasureType.floodwall)
+        attrs = {
+            "name": "test_measure",
+            "type": MeasureType.floodwall,
+            "selection_type": SelectionType.all,
+        }
+        attrs.pop(missing_variable)
 
-        # Assert
-        assert measure.name == "test_measure"
-        assert measure.description == ""
-        assert measure.type == "floodwall"
-
-    def test_measure_model_no_name(self):
-        # Arrange
         with pytest.raises(ValueError) as excinfo:
-            Measure(type=MeasureType.floodwall)
+            Measure(**attrs)
 
         # Assert
-        assert "validation error for Measure\nname\n  Field required" in str(
-            excinfo.value
+        assert_validation_error(
+            excinfo=excinfo,
+            class_name="Measure",
+            expected_loc=(missing_variable,),
+            expected_type="missing",
         )
 
     def test_measure_model_invalid_name(self):
@@ -97,12 +109,13 @@ class TestMeasure:
     def test_measure_model_invalid_type(self):
         # Arrange
         with pytest.raises(ValidationError) as excinfo:
-            data = {
-                "name": "test_measure",
-                "description": "test description",
-                "type": "invalid_type",
-            }
-            Measure.model_validate(data)
+            Measure(
+                name="test_measure",
+                description="test description",
+                type="invalid_type",
+                selection_type=SelectionType.polyline,
+                polygon_file="test_polygon_file.geojson",
+            )
 
         # Assert
         assert len(excinfo.value.errors()) == 1
@@ -110,16 +123,14 @@ class TestMeasure:
         error = excinfo.value.errors()[0]
         assert error["type"] == "enum", error["type"]
 
-
-class TestHazardMeasure:
-    def test_hazard_measure_model_correct_input(self):
+    def test_measure_polygon_correct_input(self):
         # Arrange
-        hazard_measure = HazardMeasure(
+        hazard_measure = Measure(
             name="test_hazard_measure",
             description="test description",
             type=MeasureType.floodwall,
             polygon_file="test_polygon_file",
-            selection_type=SelectionType.aggregation_area,
+            selection_type=SelectionType.polygon,
         )
 
         # Assert
@@ -127,55 +138,111 @@ class TestHazardMeasure:
         assert hazard_measure.description == "test description"
         assert hazard_measure.type == "floodwall"
         assert hazard_measure.polygon_file == "test_polygon_file"
-        assert hazard_measure.selection_type == "aggregation_area"
+        assert hazard_measure.selection_type == "polygon"
 
-    def test_hazard_measure_model_no_polygon_file_aggregation_area(self):
+    def test_measure_polyline_correct_input(self):
         # Arrange
-        hazard_measure = HazardMeasure(
+        hazard_measure = Measure(
             name="test_hazard_measure",
             description="test description",
             type=MeasureType.floodwall,
-            selection_type=SelectionType.aggregation_area,
+            polygon_file="test_polygon_file",
+            selection_type=SelectionType.polyline,
         )
 
         # Assert
         assert hazard_measure.name == "test_hazard_measure"
         assert hazard_measure.description == "test description"
         assert hazard_measure.type == "floodwall"
-        assert hazard_measure.polygon_file is None
-        assert hazard_measure.selection_type == "aggregation_area"
+        assert hazard_measure.polygon_file == "test_polygon_file"
+        assert hazard_measure.selection_type == "polyline"
 
-    def test_hazard_measure_model_no_polygon_file_polygon_input(self):
+    @pytest.mark.parametrize(
+        "selection_type",
+        [
+            SelectionType.polygon,
+            SelectionType.polyline,
+        ],
+    )
+    def test_measure_polygon_file_incorrect_input(self, selection_type):
         # Arrange
-        with pytest.raises(ValueError) as excinfo:
-            HazardMeasure(
+        with pytest.raises(ValidationError) as excinfo:
+            Measure(
                 name="test_hazard_measure",
                 description="test description",
                 type=MeasureType.floodwall,
-                selection_type=SelectionType.polygon,
+                polygon_file=None,
+                selection_type=selection_type,
             )
 
         # Assert
-        assert "`polygon_file` needs to be set" in str(excinfo.value)
+        assert_validation_error(
+            excinfo=excinfo,
+            class_name="Measure",
+            expected_msg="If `selection_type` is 'polygon' or 'polyline', then `polygon_file` needs to be set.",
+            expected_type="value_error",
+        )
 
-    def test_hazard_measure_model_invalid_type(self):
+    def test_measure_aggregation_area_correct(self):
+        # Arrange
+        measure = Measure(
+            name="test_hazard_measure",
+            description="test description",
+            type=MeasureType.floodwall,
+            selection_type=SelectionType.aggregation_area,
+            aggregation_area_name="test_aggregation_area_name",
+            aggregation_area_type="test_aggregation_area_type",
+        )
+
+        # Assert
+        assert measure.name == "test_hazard_measure"
+        assert measure.description == "test description"
+        assert measure.type == "floodwall"
+        assert measure.polygon_file is None
+        assert measure.selection_type == "aggregation_area"
+        assert measure.aggregation_area_name == "test_aggregation_area_name"
+        assert measure.aggregation_area_type == "test_aggregation_area_type"
+
+    def test_measure_aggregation_area_missing_type(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            HazardMeasure(
+            Measure(
                 name="test_hazard_measure",
                 description="test description",
-                type="invalid_type",
-                polygon_file="test_polygon_file",
+                type=MeasureType.floodwall,
                 selection_type=SelectionType.aggregation_area,
+                aggregation_area_name="test_aggregation_area_name",
             )
-
         # Assert
-        assert "HazardMeasure\ntype\n  Input should be " in str(excinfo.value)
+        assert_validation_error(
+            excinfo=excinfo,
+            class_name="Measure",
+            expected_msg="If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set.",
+            expected_type="value_error",
+        )
 
-    def test_hazard_measure_model_invalid_selection_type(self):
+    def test_measure_aggregation_area_missing_name(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            HazardMeasure(
+            Measure(
+                name="test_hazard_measure",
+                description="test description",
+                type=MeasureType.floodwall,
+                selection_type=SelectionType.aggregation_area,
+                aggregation_area_type="test_aggregation_area_type",
+            )
+        # Assert
+        assert_validation_error(
+            excinfo=excinfo,
+            class_name="Measure",
+            expected_msg="If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set.",
+            expected_type="value_error",
+        )
+
+    def test_measure_model_invalid_selection_type(self):
+        # Arrange
+        with pytest.raises(ValueError) as excinfo:
+            Measure(
                 name="test_hazard_measure",
                 description="test description",
                 type=MeasureType.floodwall,
@@ -184,7 +251,7 @@ class TestHazardMeasure:
             )
 
         # Assert
-        assert "HazardMeasure\nselection_type\n  Input should be " in str(excinfo.value)
+        assert "Measure\nselection_type\n  Input should be " in str(excinfo.value)
 
 
 class TestGreenInfrastructure:
@@ -598,8 +665,15 @@ def test_elevate_aggr_area_read_fail(test_db):
         "aggregation_area_name": "test_area",
         "property_type": "RES",
     }
+    with pytest.raises(ValidationError) as excinfo:
+        Elevate(**test_dict)
 
-    Elevate(**test_dict)
+    assert_validation_error(
+        excinfo=excinfo,
+        class_name="Elevate",
+        expected_msg="If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set.",
+        expected_type="value_error",
+    )
 
 
 def test_elevate_aggr_area_save():
@@ -652,9 +726,11 @@ def test_elevate_polygon_read(test_db):
     assert elevate.elevation.units == us.UnitTypesLength.feet
     assert elevate.elevation.type == "floodmap"
     assert elevate.selection_type == "polygon"
-    assert elevate.polygon_file == "raise_property_polygon.geojson"
+    assert elevate.polygon_file == str(
+        test_toml.parent / "raise_property_polygon.geojson"
+    )
 
-    polygon = gpd.read_file(Path(test_toml).parent / elevate.polygon_file)
+    polygon = gpd.read_file(elevate.polygon_file)
     assert isinstance(polygon, gpd.GeoDataFrame)
 
 
@@ -695,14 +771,11 @@ def test_pump_read(test_db):
     assert isinstance(pump.type, MeasureType)
     assert isinstance(pump.discharge, us.UnitfulDischarge)
 
-    test_geojson = test_db.input_path / "measures" / "pump" / pump.polygon_file
-
-    assert test_geojson.is_file()
+    assert Path(pump.polygon_file).is_file()
 
 
 def test_green_infra_read(test_db):
     test_toml = test_db.input_path / "measures" / "green_infra" / "green_infra.toml"
-
     assert test_toml.is_file()
 
     green_infra = GreenInfrastructure.load_file(test_toml)
@@ -713,21 +786,7 @@ def test_green_infra_read(test_db):
     assert isinstance(green_infra.volume, us.UnitfulVolume)
     assert isinstance(green_infra.height, us.UnitfulLength)
 
-    test_geojson = (
-        test_db.input_path / "measures" / "green_infra" / green_infra.polygon_file
-    )
-
-    assert test_geojson.is_file()
-
-    # def test_calculate_area():
-    #     test_toml = (
-    #         test_database
-    #         / "charleston"
-    #         / "input"
-    #         / "measures"
-    #         / "green_infra"
-    #         / "green_infra.toml"
-    #     )
+    assert Path(green_infra.polygon_file).is_file()
 
 
 @pytest.fixture
