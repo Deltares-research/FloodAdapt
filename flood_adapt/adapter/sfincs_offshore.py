@@ -97,14 +97,8 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         # SfincsAdapter.write() doesnt write the bca file apparently so we need to copy the template
         if sim_path.exists():
             shutil.rmtree(sim_path)
-        shutil.copytree(self.template_path, sim_path)
 
-        with SfincsAdapter(model_root=sim_path) as _offshore_model:
-            if _offshore_model.sfincs_completed(sim_path):
-                _offshore_model.logger.info(
-                    f"Skip preprocessing offshore model as it has already been run for `{self.scenario.name}`."
-                )
-                return
+        with SfincsAdapter(model_root=self.template_path) as _offshore_model:
             # Load objects, set root & write template model
             _offshore_model._load_scenario_objects(self.scenario, self.event)
             _offshore_model.write(path_out=sim_path)
