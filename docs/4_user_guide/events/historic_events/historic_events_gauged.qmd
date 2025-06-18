@@ -4,11 +4,18 @@ filters:
   - lightbox
 lightbox: auto
 ---
-<!-- ::: {.callout-tip}
-## Watch our video - historical event using gauged water levels
-Don't feel like reading? No problem! Check out our video about how to add a historical (gauged) event in FloodAdapt.
-{{< video https://www.youtube.com/watch?v=Tq136q3Ke4o?rel=0 >}}
+FloodAdapt gives users the option to select and modify historical events, which they can then build what-if scenarios around. This is a powerful feature that engages stakeholders and facilitates a concrete understanding of risks and effectiveness of measures. For example, if a community experienced a high tide flood event, they can explore how that same event will look in the future as sea level rises, or how it would have been worsened had it coincided with rainfall. They can test out different measures and assess how effective they would be against this type of event. Historical events also allow users to develop confidence in the system (or identify model-improvement needs) by comparing with their experience or measurements of where floods and impacts occurred in the event.
+
+Below is a video that demonstrates the creation of a historical event, followed by complete documentation on all the options for creating and modifying historical events.
+
+::: {.callout-tip}
+## What our video tutorial on creating a historical event
+{{< video https://youtu.be/Ehqs9Ww8pms?rel=0 >}}
 :::
+
+<!--
+{{< video https://www.youtube.com/watch?v=Tq136q3Ke4o?rel=0 >}}
+
 -->
 ![**Event template window for a historical event.**](../../../_static/images/popup_gaugedEventWindow.jpg){#fig-gaugedWindow}
 

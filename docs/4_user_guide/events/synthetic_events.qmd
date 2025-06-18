@@ -4,6 +4,8 @@ filters:
   - lightbox
 lightbox: auto
 ---
+Synthetic events allow users to create a wide array of different types of events, without needing to have any recorded data. Each event component - water levels, wind, rainfall, and river discharge - can be specified using synthetic curves. This documentation walks the user through the different options.
+
 ![**Event template window for a synthetic event.**](../../_static/images/Synthetic.png){#fig-syntheticWindow}
 
 When the user selects the “Synthetic” option from the **Events** tab, they will see the event template window shown in @fig-syntheticWindow. This window allows the user to input synthetic time series for:
