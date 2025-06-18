@@ -13,12 +13,8 @@ website:
         - section: "Events"
           file: "4_user_guide/events/index.qmd"
           contents:
-            - section: "Historical Events"
-              file: "4_user_guide/events/historic_events/index.qmd"
-              contents:
-                - "4_user_guide/events/historic_events/historic_events_hurricane.qmd"
-                - "4_user_guide/events/historic_events/historic_events_gauged.qmd"
-                - "4_user_guide/events/historic_events/historic_events_ungauged.qmd"
+            - "4_user_guide/events/historical.qmd"
+            - "4_user_guide/events/hurricane.qmd"
             - "4_user_guide/events/synthetic_events.qmd"
             - "4_user_guide/events/probabilistic_events.qmd"
         - section: "Projections"

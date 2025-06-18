@@ -9,14 +9,10 @@ FloodAdapt gives users the option to select and modify historical events, which 
 Below is a video that demonstrates the creation of a historical event, followed by complete documentation on all the options for creating and modifying historical events.
 
 ::: {.callout-tip}
-## What our video tutorial on creating a historical event
+## Watch our video tutorial on creating a historical event
 {{< video https://youtu.be/Ehqs9Ww8pms?rel=0 >}}
 :::
 
-<!--
-{{< video https://www.youtube.com/watch?v=Tq136q3Ke4o?rel=0 >}}
-
--->
 ![**Event template window for a historical event.**](../../../_static/images/popup_gaugedEventWindow.jpg){#fig-gaugedWindow}
 
 When a user selects the “Historical” option from the **Events** tab, they will see the event template window shown in @fig-gaugedWindow. This window allows the user to input (historical) time series for:
@@ -38,7 +34,7 @@ The water level time series for the historical event can be specified in differe
 
 2. **CSV** - users can import water level time series as a two-column CSV file. The first column should contain the date and time in the format yyyy-mm-dd hh:mm:ss, and the second column the water level relative to the reference level for the site (for example, mean lower low water). There is an "i" button next to the option to import a time series. Clicking this button will display an example of the format required for the CSV, including the water level units and reference.
 
-3. **Model** - when no gauged water level time series are available, users can select this option to model the nearshore water levels using an offshore model. When using this option, no plot visualization is available, because the nearshore water levels will only be calculated when a scenario using the event is run.
+3. **Model** - when no gauged water level time series are available, users can select this option to model the nearshore water levels using an offshore model. When using this option, no plot visualization is available, because the nearshore water levels will only be calculated when a scenario using the event is run. Note that this option is only shown when an offshore model is configured for the site.
 
 4. **Synthetic** - when users have a historical record of rainfall or river discharge, but water levels were unknown or unmeasured, users can choose to generate a synthetic water level time series. The simple option is to specify a peak water level (default is average high tide), and the duration of the peak. Advanced options are described in the [synthetic event](../synthetic_events.qmd) documentation.
 
@@ -58,12 +54,9 @@ The user has five options for specifying a rainfall time series for the event:
 
 **CSV** - The user can upload a two-column CSV file with the rainfall time series. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, and the second column contains the rainfall intensity (depth/time). The units of the rainfall will depend on how the system is configured. In the event specification window, when you choose 'CSV' for the rainfall source, you will see an "i" button appear. Clicking this button will display an example of the format required for the csv, including the rainfall intensity units. There is an option to increase the rainfall by a fixed amount ("precipitation multiplier"). All rainfall values in the time series will be multiplied by the value entered in this field.
 
-![**Example of the "required format" popup for rainfall when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](../../../_static/images/events_rainfall_TSformat.png){fig-align=left #fig-TS_rain}
-
 **Synthetic** - The synthetic option allows users to build what-if rainfall scenarios to explore what would have happened if they had coincided with historical water level events, like a high tide event. The synthetic options ask a user for the cumulative rainfall, the duration of the rainfall, and a time when the peak rainfall occurred. More details about the synethtic options are covered in the [synthetic event](../synthetic_events.qmd) documentation.
 
 **Meteo** - The 'meteo' option downloads spatially and temporally varying rainfall at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.
-
 
 
 ## Wind
@@ -74,8 +67,6 @@ The user has four options for entering time series for the wind:
 **Constant** - For a constant wind speed, the user is asked to enter the wind speed and wind direction.
 
 **CSV** - The user can upload a wind time series; this should be a three-column csv. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, the second column contains the wind speed, and the third column contains the wind direction. The units of the wind speed and direction will depend on how the system is configured. In the event specification window, when you choose 'CSV' for the wind source, you will see an "i" button appear. Clicking this button will display an example of the format required for the csv, including the units.
-
-![**Example of the "required format" popup for wind when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](../../../_static/images/events_wind_TSformat.png){fig-align=left #fig-TS_wind}
 
 **Meteo** - The 'meteo' option downloads spatially and temporally varying wind data at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.
 
@@ -91,6 +82,4 @@ The river discharge represents the discharge in a river at the model boundary. I
 
 **CSV** - The user can upload a river discharge time series; this should be a two-column csv. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, the second column contains the river discharge. The units of the river discharge will depend on how the system is configured. In the event specification window, when you choose 'timeseries' for the river discharge source, you will see an "i" button appear. Clicking this button will display an example of the format required for the csv, including the units.
 
-![**Example of the "required format" popup for river discharge when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](../../../_static/images/events_discharge_TSformat.png){fig-align=left #fig-TS_discharge}
-
-**Synthetic** - The synthetic option allows users to build a synthetic river discharge time series. The synthetic options ask a user for peak discharge above base discharge, the duration of the discharge wave, and the time when the peak discharge occurs (relative to the start of the selected time period). The base discharge is automatically set to the average discharge, but can be modified. More details about the synethtic options are covered in the [synthetic event](../synthetic_events.qmd) documentation.
+**Synthetic** - The synthetic option allows users to build a synthetic river discharge time series. The synthetic options ask a user for peak discharge above base discharge, the duration of the discharge wave, and the time when the peak discharge occurs (relative to the start of the selected time period). The base discharge is automatically set to the average discharge, but can be modified. More details about the synthetic options are covered in the [synthetic event](../synthetic_events.qmd) documentation.

@@ -1,5 +1,5 @@
 ---
-title: Historical Hurricanes
+title: Hurricanes
 filters:
   - lightbox
 lightbox: auto
