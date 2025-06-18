@@ -30,7 +30,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
 <link href="../../4_user_guide/events/probabilistic_events.html" rel="next">
-<link href="../../4_user_guide/events/historic_events/historic_events_ungauged.html" rel="prev">
+<link href="../../4_user_guide/events/hurricane.html" rel="prev">
 <link href="../../_static/logo.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -346,35 +346,18 @@ ul.task-list li input[type="checkbox"] {
           </a> 
       </div>
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../4_user_guide/events/historic_events/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical Events</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/historic_events/historic_events_hurricane.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical Hurricanes</span></a>
+  <a href="../../4_user_guide/events/historical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Historical events</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/historic_events/historic_events_gauged.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical event with gauged water levels</span></a>
+  <a href="../../4_user_guide/events/hurricane.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hurricanes</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/historic_events/historic_events_ungauged.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical event - without gauged water levels</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../4_user_guide/events/synthetic_events.html" class="sidebar-item-text sidebar-link active">
@@ -393,11 +376,11 @@ ul.task-list li input[type="checkbox"] {
       <div class="sidebar-item-container"> 
             <a href="../../4_user_guide/projections/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Projections</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../4_user_guide/projections/climate.html" class="sidebar-item-text sidebar-link">
@@ -416,11 +399,11 @@ ul.task-list li input[type="checkbox"] {
       <div class="sidebar-item-container"> 
             <a href="../../4_user_guide/measures/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Measures</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../4_user_guide/measures/hydraulic.html" class="sidebar-item-text sidebar-link">
@@ -481,8 +464,7 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#duration-of-the-synthetic-event" id="toc-duration-of-the-synthetic-event" class="nav-link active" data-scroll-target="#duration-of-the-synthetic-event">Duration of the synthetic event</a></li>
-  <li><a href="#water-levels---tide-surge" id="toc-water-levels---tide-surge" class="nav-link" data-scroll-target="#water-levels---tide-surge">Water levels - Tide + Surge</a></li>
+  <li><a href="#water-level" id="toc-water-level" class="nav-link active" data-scroll-target="#water-level">Water level</a></li>
   <li><a href="#rainfall" id="toc-rainfall" class="nav-link" data-scroll-target="#rainfall">Rainfall</a>
   <ul class="collapse">
   <li><a href="#rainfall-curves" id="toc-rainfall-curves" class="nav-link" data-scroll-target="#rainfall-curves">Rainfall curves</a></li>
@@ -515,62 +497,35 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<p>Synthetic events allow users to create a wide array of different types of events, without needing to have any recorded data. Each event component - water levels, wind, rainfall, and river discharge - can be specified using synthetic curves. This documentation walks the user through the different options.</p>
+<div id="fig-syntheticWindow" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-syntheticWindow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../../_static/images/Synthetic.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Event template window for a synthetic event."><img src="../../_static/images/Synthetic.png" class="img-fluid figure-img"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-syntheticWindow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: <strong>Event template window for a synthetic event.</strong>
+</figcaption>
+</figure>
+</div>
 <p>When the user selects the “Synthetic” option from the <strong>Events</strong> tab, they will see the event template window shown in <a href="#fig-syntheticWindow" class="quarto-xref">Figure&nbsp;1</a>. This window allows the user to input synthetic time series for:</p>
 <ol type="1">
-<li><a href="#water-levels---tide-surge">Water level - Tide + Surge</a></li>
+<li><a href="#water-levels---tide-surge">Water level</a></li>
 <li><a href="#wind">Wind</a></li>
 <li><a href="#rainfall">Rainfall</a></li>
 <li><a href="#river-discharge">River discharge</a></li>
 </ol>
-<div id="fig-syntheticWindow" class="quarto-float quarto-figure quarto-figure-center anchored">
+<section id="water-level" class="level2">
+<h2 class="anchored" data-anchor-id="water-level">Water level</h2>
+<p>For a synthetic event, there are two options to specify the water level time series: a simple option, and an advanced option. The simple option is what is shown by default in the event template window (<a href="#fig-syntheticWindow" class="quarto-xref">Figure&nbsp;1</a>). The user only has to specify a peak water level (combined tide and surge) and the duration of the high water. For example, if average high tide is 6 ft + MLLW, a user might select 8 ft MLLW as a peak, with a duration of 12 hours. This superimposes a Gaussian surge of 2 ft with a 12 hour duration on top of the regular tidal series. The simple option always imposes the surge peak at the same time as high tide.</p>
+<p>The advanced options appear when a user clicks the ‘Advanced options’ checkbox (see <a href="#fig-syntheticAdvanced" class="quarto-xref">Figure&nbsp;2</a>). The user then can modify the tide and surge components separately. The tidal time series is defined by an amplitude above or below mean sea level, and a peak time which specifies when the high tide should occur relative to the start of the event. By default the peak time will be the midpoint of the event. The surge is specified by a ‘shape’ which can be a Gaussian, triangular or block shaped curve, the peak surge, the duration of the surge, and the timing of the surge peak relative to the start of the event. In general, the simple option is expected to suffice in most cases. In some cases, for example if a user wants to explore the sensitivity of the timing of a surge peak relative to high tide, the advanced options would be useful.</p>
+<div id="fig-syntheticAdvanced" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-syntheticWindow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="../../_static/images/popup_syntheticEvent.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Event template window for a historic event with gauged water levels."><img src="../../_static/images/popup_syntheticEvent.png" class="img-fluid figure-img"></a>
+<div aria-describedby="fig-syntheticAdvanced-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="../../_static/images/advancedWLoptions.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: Event template window showing the advanced options for the water level time series."><img src="../../_static/images/advancedWLoptions.png" class="img-fluid figure-img"></a>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-syntheticWindow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: <strong>Event template window for a historic event with gauged water levels.</strong>
-</figcaption>
-</figure>
-</div>
-<section id="duration-of-the-synthetic-event" class="level2">
-<h2 class="anchored" data-anchor-id="duration-of-the-synthetic-event">Duration of the synthetic event</h2>
-<p>The duration is specified by the user in the “Timing” block. The start time is given as a duration before T=0 (in hours), and the end time as a duration after T=0 (hours).</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-What is T=0 in a synthetic event
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The time T = 0 is an arbitrary moment when the tide is at its crest. It is essentially a ‘reference time’ to define the duration of an event, and to specify other forcing variables in relation to. <a href="#fig-syntheticDuration" class="quarto-xref">Figure&nbsp;2</a> shows an event with a duration 48 hours before and 12 hours after T=0. You can see the crest of the tide occurs at T=0, and the event runs from 48 hours before until 12 hours after this moment.</p>
-<div id="fig-syntheticDuration" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-syntheticDuration-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="../../_static/images/syntheticEventDuration.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: T=0 and the duration of a sythetic event"><img src="../../_static/images/syntheticEventDuration.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%"></a>
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-syntheticDuration-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: <strong>T=0 and the duration of a sythetic event</strong>
-</figcaption>
-</figure>
-</div>
-</div>
-</div>
-</section>
-<section id="water-levels---tide-surge" class="level2">
-<h2 class="anchored" data-anchor-id="water-levels---tide-surge">Water levels - Tide + Surge</h2>
-<p>For a synthetic event, the water level is treated as a sum of the tidal and surge components, which are specified separately.</p>
-<p>The <strong>tide</strong> is entered as an amplitude above or below mean sea level. The window will open with a default value that was configured when the FloodAdapt system was set up.</p>
-<p>The <strong>surge</strong> timeseries is specified as a Gaussian curve. The user specifies the peak surge, the duration of the surge, and the timing of the peak relative to T=0. <a href="#fig-surgeTiming" class="quarto-xref">Figure&nbsp;3</a> shows an example how a user can adjust the surge timing. The figure shows three panels. The top panel has the tide set to zero, so the timeseries of the surge alone can be viewed. The surge is set as a Gaussian curve with a peak value of 6 ft, and a duration of 12 hours. The second panel shows the timing of the peak surge at -5 hours, with the tide set back to its default value of 3 ft. This is 5 hours before T=0, when the tide was not at its crest. The third panel shows the timing of the peak surge at 0 hours, which is precisely at T=0, when the tide was at its crest. You can s ee that the effect of the surge and high tide coinciding is a much higher total water level than when the peak surge occurs prior to the high tide.</p>
-<div id="fig-surgeTiming" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-surgeTiming-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="../../_static/images/PeakSurgeTiming.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: T=0 and the duration of a sythetic event"><img src="../../_static/images/PeakSurgeTiming.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%"></a>
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-surgeTiming-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: <strong>T=0 and the duration of a sythetic event</strong>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-syntheticAdvanced-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: <strong>Event template window showing the advanced options for the water level time series.</strong>
 </figcaption>
 </figure>
 </div>
@@ -580,32 +535,33 @@ Figure&nbsp;3: <strong>T=0 and the duration of a sythetic event</strong>
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-The zero point and the datums in the water level plots
+Datums in the water level plots
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>There are several datums shown in the water level plot: mean lower low water (MLLW), mean sea level (MSL), and mean higher high water (MHHW). The zero point, which is set to mean lower low water (MLLW) in <a href="#fig-surgeTiming" class="quarto-xref">Figure&nbsp;3</a>, is configurable and chosen at system set-up to be most intuitive for the intended users of the system.</p>
+<p>There are several datums shown in the water level plot (see <a href="#fig-syntheticWindow" class="quarto-xref">Figure&nbsp;1</a> or <a href="#fig-syntheticAdvanced" class="quarto-xref">Figure&nbsp;2</a>): mean lower low water (MLLW), mean sea level (MSL), and mean higher high water (MHHW). These datums, as well as the reference level (the ‘zero’ in the plot), are configurable and chosen at system set-up to be most intuitive for the intended users of the system.</p>
 </div>
 </div>
 </section>
 <section id="rainfall" class="level2">
 <h2 class="anchored" data-anchor-id="rainfall">Rainfall</h2>
-<p>For a synthetic event, can choose <strong>none</strong> (this is the default option), a <strong>constant</strong> intensity that will be applied over the entire duration of the event, or a <strong>shape</strong>, which is a rainfall timeseries based on standard curves.</p>
+<p>For a synthetic event, users can choose <strong>none</strong>, a <strong>constant</strong> intensity that will be applied over the entire duration of the event, or a <strong>synthetic</strong> rainfall (time series) curve.</p>
 <section id="rainfall-curves" class="level3">
 <h3 class="anchored" data-anchor-id="rainfall-curves">Rainfall curves</h3>
-<p>There are three rainfall curves that a user can select to specify the rainfall timeseries:</p>
+<p>There are four rainfall curves that a user can select to specify the rainfall time series. In each case, the user specifies the cumulative rainfall, the duration of the rainfall and the peak time of the rainfall relative to the start of the event.</p>
 <ul>
-<li><p>Gaussian - this is a Gaussian curve where the user specifies the cumulative rainfall, the duration of the rainfall, and the peak time of the rainfall relative to T=0.</p></li>
-<li><p>Block - this is a rectangular shaped curve, which represents constant rainfall intensity over a specified duration. The user specifies the cumulative rainfall and the start and stop time of the rainfall in hours relative to T=0.</p></li>
-<li><p>SCS - These curves are often used in practice in the US, and were developed by the Soil Conservation Service (SCS), now known as the National Resources Conservation Service. There are three SCS rainfall curves for different parts of the US. The curve that a user can select in the event teplate window will already be configured for the site location (part of system set-up). The user specifies the cumulative rainfall, the duration of the rainfall, and the start time in hours (relative to T=0).</p></li>
+<li><p>Gaussian - the rainfall time series is based on a Gaussian curve.</p></li>
+<li><p>SCS - These curves, often used in practice in the US, were developed by the Soil Conservation Service (SCS), now known as the National Resources Conservation Service. They have a more peaked nature than a Gaussian curve and therefore represent a more intense rainfall event. There are three SCS rainfall curves for different parts of the US. The curve that a user can select in the event teplate window will already be configured for the site location (part of system set-up).</p></li>
+<li><p>Block - the rainfall time series has a rectangular shape.</p></li>
+<li><p>Triangle - the rainfall time series has a triangular shape.</p></li>
 </ul>
 <div id="fig-rainfallCurves" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-rainfallCurves-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="../../_static/images/RainfallCurves.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;4: The three rainfall curves for a synthetic event. The top shows the Gaussian curve, the middle shows the SCS curve, and the bottom shows the block curve. All three represent three inches of rainfall over 12 hours (note: the vertical axis ranges are different in each plot)"><img src="../../_static/images/RainfallCurves.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%"></a>
+<a href="../../_static/images/RainfallCurves.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: The Gaussian, SCS, and block rainfall curves for a synthetic event. The top shows the Gaussian curve, the middle shows the SCS curve, and the bottom shows the block curve. All three represent three inches of rainfall over 12 hours (note: the vertical axis ranges are different in each plot)"><img src="../../_static/images/RainfallCurves.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rainfallCurves-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: <strong>The three rainfall curves for a synthetic event. The top shows the Gaussian curve, the middle shows the SCS curve, and the bottom shows the block curve. All three represent three inches of rainfall over 12 hours (note: the vertical axis ranges are different in each plot)</strong>
+Figure&nbsp;3: <strong>The Gaussian, SCS, and block rainfall curves for a synthetic event. The top shows the Gaussian curve, the middle shows the SCS curve, and the bottom shows the block curve. All three represent three inches of rainfall over 12 hours (note: the vertical axis ranges are different in each plot)</strong>
 </figcaption>
 </figure>
 </div>
@@ -613,13 +569,13 @@ Figure&nbsp;4: <strong>The three rainfall curves for a synthetic event. The top 
 </section>
 <section id="wind" class="level2">
 <h2 class="anchored" data-anchor-id="wind">Wind</h2>
-<p>For a synthetic event, the user can only enter either <strong>none</strong> (default), or a <strong>constant</strong> wind speed. When entering a constant wind speed, the user is asked to enter both the wind speed and wind direction. The direction should be entered in nautical degrees. This represents the direction where the wind is coming from. A direction of 0 degrees means wind is blowing from the North, 90 degrees means wind is blowing from the East.</p>
+<p>For a synthetic event, the user can only enter either <strong>none</strong> or a <strong>constant</strong> wind speed. When entering a constant wind speed, the user is asked to enter both the wind speed and wind direction. The direction should be entered in nautical degrees. This represents the direction where the wind is coming from. A direction of 0 degrees means wind is blowing from the North, 90 degrees means wind is blowing from the East.</p>
 </section>
 <section id="river-discharge" class="level2">
 <h2 class="anchored" data-anchor-id="river-discharge">River discharge</h2>
-<p>The river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a <strong>constant</strong> discharge or a <strong>shape</strong>, which is a synthetic timeseries.</p>
+<p>The river discharge represents the discharge time series in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a <strong>constant</strong> discharge or a <strong>synthetic</strong> time series.</p>
 <p><strong>Constant</strong> - A constant discharge is the default option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.</p>
-<p><strong>Shape</strong> - The shape option uses a Gaussian curve. The user must specify the base discharge (this can be left at the default value, which is the average discharge), a peak discharge, a duration, and a peak time. The duration refers to the duration that the river discharge is above its base value.</p>
+<p><strong>Synthetic</strong> - The synthetic option offers the option to use a Gaussian curve, a block shape or a triangle. The user must specify the base discharge (this can be left at the default value, which is the average discharge), a peak discharge, a duration, and a peak time. The duration refers to the duration that the river discharge is above its base value. For a block shape, the ‘peak time’ is referred to as a ‘Midpoint’ and is the time associated with the halfway point of the discharge block.</p>
 
 
 </section>
@@ -1039,8 +995,8 @@ Figure&nbsp;4: <strong>The three rainfall curves for a synthetic event. The top 
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../../4_user_guide/events/historic_events/historic_events_ungauged.html" class="pagination-link" aria-label="Historical event - without gauged water levels">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Historical event - without gauged water levels</span>
+      <a href="../../4_user_guide/events/hurricane.html" class="pagination-link" aria-label="Hurricanes">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Hurricanes</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

@@ -29,7 +29,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../4_user_guide/events/historic_events/index.html" rel="next">
+<link href="../../4_user_guide/events/historical.html" rel="next">
 <link href="../../4_user_guide/site_tab.html" rel="prev">
 <link href="../../_static/logo.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
@@ -346,35 +346,18 @@ ul.task-list li input[type="checkbox"] {
           </a> 
       </div>
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../4_user_guide/events/historic_events/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical Events</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/historic_events/historic_events_hurricane.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical Hurricanes</span></a>
+  <a href="../../4_user_guide/events/historical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Historical events</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/historic_events/historic_events_gauged.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical event with gauged water levels</span></a>
+  <a href="../../4_user_guide/events/hurricane.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hurricanes</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/historic_events/historic_events_ungauged.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical event - without gauged water levels</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../4_user_guide/events/synthetic_events.html" class="sidebar-item-text sidebar-link">
@@ -393,11 +376,11 @@ ul.task-list li input[type="checkbox"] {
       <div class="sidebar-item-container"> 
             <a href="../../4_user_guide/projections/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Projections</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../4_user_guide/projections/climate.html" class="sidebar-item-text sidebar-link">
@@ -416,11 +399,11 @@ ul.task-list li input[type="checkbox"] {
       <div class="sidebar-item-container"> 
             <a href="../../4_user_guide/measures/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Measures</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../4_user_guide/measures/hydraulic.html" class="sidebar-item-text sidebar-link">
@@ -508,14 +491,27 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>FloodAdapt allows users to specify and simulate the flooding and impacts for many different types of (compound) events. These can be either <a href="../../4_user_guide/events/historic_events/index.html"><strong>historically-based</strong></a> or <a href="../../4_user_guide/events/synthetic_events.html"><strong>synthetic</strong></a> events. The historically-based events use historical water levels or hurricane tracks, but allow users to modify event specifics to create what-if event scenarios, for example by adding or intensifying rainfall or shifting a hurricane track.</p>
-<p>There are three historically-based event types, which are described in the coming sections:</p>
+<p>FloodAdapt allows users to specify and simulate the flooding and impacts for many different types of (compound) events. These can be either <strong>historically-based</strong> or <strong>synthetic</strong> events. The historically-based events are referred to as “Historical” when using historical water levels or rainfall, and as “Hurricane” when using a historical hurricane track. Historical events can be modified by users to create what-if event scenarios, for example by adding or intensifying rainfall or shifting a hurricane track.</p>
+<p>There are three event types users can add:</p>
 <ul>
-<li><a href="../../4_user_guide/events/historic_events/historic_events_hurricane.html">Historical hurricane</a></li>
-<li><a href="../../4_user_guide/events/historic_events/historic_events_gauged.html">Historical event with gauged water levels</a></li>
-<li><a href="../../4_user_guide/events/historic_events/historic_events_ungauged.html">Historical event without gauged water levels</a></li>
+<li><a href="../../4_user_guide/events/historic_events/historic_events_gauged.html">Historical</a></li>
+<li><a href="../../4_user_guide/events/historic_events/historic_events_hurricane.html">Hurricane</a></li>
+<li><a href="../../4_user_guide/events/synthetic_events.html">Synthetic</a></li>
 </ul>
-<p>To create an event, the user goes to the Events tab in FloodAdapt (see <a href="#fig-eventTabEmpty" class="quarto-xref">Figure&nbsp;1</a>). Prior to creating any events, there may be one event already shown in the event list window. This will be a <a href="../../4_user_guide/events/probabilistic_events.html">probabilistic event set</a> that is prepared as part of system setup, and is used to calculate risk. Underneath the event set window, the event “Type” is indicated. For event sets this will say “Probabilistic Event Set.” For events that you create in the Events tab, these will say “Single Event”. Next to the event list window there are buttons to add, edit, delete, and copy an event. Prior to creating any events, only the “Add event” button will be active.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why don’t I see hurricanes as an event type?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>FloodAdapt uses two models: an overland model (required) and an offshore model (optional). The overland model simulates flooding from rainfall, river discharge, wind, and water levels—supporting synthetic and historical events. The offshore model adds the ability to simulate hurricanes by translating hurricane wind and pressure into nearshore water levels. If your system doesn’t include an offshore model, the Hurricane event type won’t appear.</p>
+</div>
+</div>
+<p>To create an event, the user goes to the Events tab in FloodAdapt (see <a href="#fig-eventTabEmpty" class="quarto-xref">Figure&nbsp;1</a>). Prior to creating any events, there may be one event already shown in the event list window. This will be a <a href="../../4_user_guide/events/probabilistic_events.html">probabilistic event set</a> that is prepared as part of system setup, and is used to calculate risk. Underneath the event set window, the event “Type” is indicated. For event sets this will say “Probabilistic Event Set.” For events that you create in the Events tab, these will say “Single Event”. Next to the event list window there are buttons to add, edit, delete, and copy an event. Note that when event sets are selected, only the “Add event” button will be active.</p>
 <div id="fig-eventTabEmpty" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-eventTabEmpty-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -526,18 +522,18 @@ Figure&nbsp;1: <strong>The event tab in FloodAdapt prior to creating any events<
 </figcaption>
 </figure>
 </div>
-<p>When a user clicks <strong>Add event</strong> in the event window, they will be prompted to choose from one of the three historical event types or the synthetic event type. Each selection opens a window where the user can specify event information.</p>
+<p>When a user clicks <strong>Add event</strong> in the event window, they will be prompted to choose from one of the three event types. Each selection opens a window where the user can specify event information.</p>
 <div id="fig-eventSelector" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-eventSelector-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="../../_static/images/eventTypeSelector.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: The four event types a user can select"><img src="../../_static/images/eventTypeSelector.png" class="img-fluid figure-img"></a>
+<a href="../../_static/images/eventTypeSelector.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: The three event types a user can select"><img src="../../_static/images/eventTypeSelector.png" class="img-fluid figure-img"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eventSelector-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: <strong>The four event types a user can select</strong>
+Figure&nbsp;2: <strong>The three event types a user can select</strong>
 </figcaption>
 </figure>
 </div>
-<p>Each event type will have unique input that is required, but they also share some common input. The user must provide an event name, and - optionally - a description. Additionally, all historic events require a start and stop time of the event.</p>
+<p>Each event type will have unique input that is required, but they also share some common input. The user must provide an event name, and - optionally - a description. Additionally, the “Historical” and “Hurricane” events require a start and stop date and time for the event.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -548,7 +544,7 @@ Event names and descriptions
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Event names must be unique and cannot have any spaces or special characters (underscores are allowed). Event descriptions are optional and have no syntax restrictions. For example, an event name could be <strong>KingTideNov2021</strong>, and the long name could be <strong>King Tide - November 2021</strong>.</p>
+<p>Event names must be unique, should use only lower-case letters, and cannot have any spaces or special characters (underscores are allowed). Event descriptions are optional and have no syntax restrictions. For example, an “Event Name” could be <strong>king_tide_nov_2021</strong>, and the “Description” could be <strong>King Tide - November 2021</strong>.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -564,27 +560,16 @@ Event start and stop times
 <p>The format for the start and stop time is ‘YYYY-MM-DD hh:mm:ss’, where YYYY = four-digit year, MM = two digit month, DD = two-digit day, hh = two-digit hour, mm = two-digit minutes, and ss = two-digit seconds. The user can type in a date, or select a date from a drop-down calendar.</p>
 </div>
 </div>
-<div id="fig-historicEvent_name_date" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-historicEvent_name_date-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="../../_static/images/event_name_date_entry.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: Screenshot of the event window where the user enters the name, description, and dates of the historic event"><img src="../../_static/images/event_name_date_entry.png" class="img-fluid figure-img"></a>
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-historicEvent_name_date-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: <strong>Screenshot of the event window where the user enters the name, description, and dates of the historic event</strong>
-</figcaption>
-</figure>
-</div>
 <section id="how-are-events-modeled-in-floodadapt" class="level2">
 <h2 class="anchored" data-anchor-id="how-are-events-modeled-in-floodadapt">How are events modeled in FloodAdapt?</h2>
 <p>FloodAdapt supports two levels of hydrodynamic models:</p>
 <ol type="1">
-<li><p>An offshore model that calculates nearshore water levels based on astronomic tides, wind fields and pressure fields. These nearshore water levels are used to force the overland model.</p></li>
-<li><p>An overland model that calculates the inundation over land due to nearshore water levels, local wind, rainfall, and river discharge.</p></li>
+<li><p>An <strong>overland model</strong> that calculates the inundation over land due to nearshore water levels, local wind, rainfall, and river discharge. The overland model can be forced with historical (gauged) or synthetic water levels. Altneratively, an offshore model can calculate the nearshore water levels for specified time periods.</p></li>
+<li><p>An <strong>offshore model</strong> that calculates nearshore water levels (which are passed to the overland model) based on astronomic tides, wind fields and pressure fields. These nearshore water levels are used to force the overland model.</p></li>
 </ol>
-<p>When a user selects a <a href="historic_events_hurricane.qmd">historical hurricane</a>, FloodAdapt will pull in wind and pressure information about the track, and use this information to generate wind and pressure fields using the <a href="https://journals.ametsoc.org/view/journals/mwre/138/12/2010mwr3317.1.xml">Holland 2010 method</a>. It also uses the track information to estimate the rainfall field using the <a href="https://www.sciencedirect.com/science/article/abs/pii/S0022169419309904">IPET method</a>. The wind, pressure, and rainfall fields are used by the offshore model to calculate nearshore water levels. These are then used, together with the same wind, pressure and rainfall fields, to run the overland flood model.</p>
-<p>When a user selects a <a href="historic_events_gauged.qmd">Historical event with gauged water levels</a>, only the overland model will be run, using the gauged water levels as input to the overland model.</p>
-<p>When a user selects a <a href="historic_events_ungauged.qmd">Historical event without gauged water levels</a>, the offshore model will first be run using the wind and pressure data from the <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA Global Forecast System</a> (GFS). The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding.</p>
-<p>When a user selects a <a href="../../4_user_guide/events/synthetic_events.html">Synthetic event</a>, only the overland model will be run, using the tide, surge, rainfall, wind, and river discharge information specified by the user.</p>
+<p>When a user selects a <a href="historic_events_hurricane.qmd">Hurricane</a>, FloodAdapt will pull in wind and pressure information about the track, and use this information to generate wind and pressure fields using the <a href="https://journals.ametsoc.org/view/journals/mwre/138/12/2010mwr3317.1.xml">Holland 2010 method</a>. It also uses the track information to estimate the rainfall field using the <a href="https://www.sciencedirect.com/science/article/abs/pii/S0022169419309904">IPET method</a>. The wind and pressure fields are used by the offshore model to calculate nearshore water levels. These are then used, together with the same wind, pressure and rainfall fields, to run the overland flood model.</p>
+<p>For a <a href="historic_events_gauged.qmd">Historical event</a>, the user can choose between observed nearshore water levels or modeled nearshore water levels. When using observed nearshore water levels, only the overland model will be run. If the user selects ‘modeled’ water levels (for example, in cases where measured water levels are unavailable), the offshore model will first run using the wind and pressure data from the <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA Global Forecast System</a> (GFS). The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding.</p>
+<p>When a user selects a <a href="../../4_user_guide/events/synthetic_events.html">Synthetic event</a>, only the overland model will be run, using the water level, rainfall, wind, and river discharge information specified by the user.</p>
 
 
 </section>
@@ -1009,8 +994,8 @@ Figure&nbsp;3: <strong>Screenshot of the event window where the user enters the 
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../../4_user_guide/events/historic_events/index.html" class="pagination-link" aria-label="Historical Events">
-        <span class="nav-page-text">Historical Events</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../../4_user_guide/events/historical.html" class="pagination-link" aria-label="Historical events">
+        <span class="nav-page-text">Historical events</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
