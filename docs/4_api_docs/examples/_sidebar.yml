@@ -1,0 +1,41 @@
+website:
+  sidebar:
+    - id: examples
+      border: true
+      style: "docked"
+      background: light
+      search: true
+      title: Examples
+      contents:
+        - text: Simple Scenario
+          href: 4_api_docs/examples/scenarios/simple_scenario_scenario.html
+
+        - text: Projections
+          href: 4_api_docs/examples/projections/projections.html
+
+        - text: Measures
+          href: 4_api_docs/examples/measures/measures_strategies.html
+
+        - text: Strategies
+          href: 4_api_docs/examples/strategies/index.qmd
+
+        - section: Events
+          href: 4_api_docs/examples/events/index.qmd
+          contents:
+            - text: Synthetic Event
+              href: 4_api_docs/examples/events/synthetic_event.html
+            - text: Hurricane Event
+              href: 4_api_docs/examples/events/hurricane_event.html
+            - text: Historical Event
+              href: 4_api_docs/examples/events/historical_event.html
+            - text: Event modification
+              href: 4_api_docs/examples/events/event_modification.html
+
+        - text: Advanced Scenario
+          href: 4_api_docs/examples/scenarios/advanced_scenario.html
+
+        - text: Event set for risk assessments
+          href: 4_api_docs/examples/event_set/create_event_set.html
+
+        - text: Benefits
+          href: 4_api_docs/examples/benefits/index.qmd

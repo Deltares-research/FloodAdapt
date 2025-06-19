@@ -7,7 +7,7 @@ page-layout: article
 ## Introduction
 
 This section contains executable examples that demonstrate how to use the FloodAdapt API in practice.
-These notebooks are meant to complement the [User Guide](../../4_user_guide/index.qmd) and [API Reference](../api_ref/api_index.qmd) by showing real-world use cases, recommended workflows, and tips for getting started with your own data.
+These notebooks are meant to complement the [User Guide](../../2_user_guide/index.qmd) and [API Reference](../api_ref/api_index.qmd) by showing real-world use cases, recommended workflows, and tips for getting started with your own data.
 
 Each example focuses on a specific aspect of the FloodAdapt workflow, such as setting up a site, defining events, projections and measures, creating adaptation strategies, or evaluating risk and benefits.
 The notebooks can be run independently, but they are organized in a logical sequence for those following the full workflow from start to finish.

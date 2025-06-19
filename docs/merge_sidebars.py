@@ -39,7 +39,7 @@ def merge_flat_sections(api_sidebar_path, examples_sidebar_path, output_path):
                     "contents": [
                         {
                             "section": "Examples",
-                            "href": "7_backend_user_docs/examples/index.qmd",
+                            "href": "4_api_docs/examples/index.qmd",
                             "contents": examples_contents,
                         },
                         api_section,
@@ -55,7 +55,7 @@ def merge_flat_sections(api_sidebar_path, examples_sidebar_path, output_path):
 if __name__ == "__main__":
     root = Path(__file__).parent
     merge_flat_sections(
-        api_sidebar_path=root / "7_backend_user_docs/api_ref/_sidebar.yml",
-        examples_sidebar_path=root / "7_backend_user_docs/examples/_sidebar.yml",
-        output_path=root / "7_backend_user_docs/_sidebar.yml",
+        api_sidebar_path=root / "4_api_docs/api_ref/_sidebar.yml",
+        examples_sidebar_path=root / "4_api_docs/examples/_sidebar.yml",
+        output_path=root / "4_api_docs/_sidebar.yml",
     )

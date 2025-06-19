@@ -9,9 +9,9 @@ FloodAdapt is intended for end-users who have some technical background, but do 
 
 The [Setup Guide](../3_setup_guide/index.qmd) is intended for those who will "build" or configure FloodAdapt for a new site and set of end-users.
 
-The [User Guide](../4_user_guide/index.qmd) walks the user through all the functionality of FloodAdapt.
+The [User Guide](../2_user_guide/index.qmd) walks the user through all the functionality of FloodAdapt.
 
-The [API documentation](../7_backend_user_docs/index.qmd) outlines the FloodAdapt API and provides executable example notebooks for use in python.
+The [API documentation](../4_api_docs/index.qmd) outlines the FloodAdapt API and provides executable example notebooks for use in python.
 
 
 Chapter 6 provides a demonstration of a CFRSS application, to help the reader understand how FloodAdapt can support adaptation and resilience planning. Appendix A is a technical write-up walking a user through the preparation of a probabilistic event set for calculating risk with FloodAdapt. A tutorial video has been prepared that aligns with the demonstration in Chapter 6 and can be found at the following link: Add link.

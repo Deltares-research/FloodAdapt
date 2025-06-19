@@ -27,9 +27,9 @@ interlinks:
       url: https://numpy.org/doc/stable/
 
 metadata-files:
-  - 4_user_guide/_sidebar.yml                   # User Guide
-  - 5_technical_docs/_sidebar.yml               # Technical Docs
-  - 7_backend_user_docs/_sidebar.yml            # API User Docs: merged sidebar. generated from api.py and merge_sidebars.py
+  - 2_user_guide/_sidebar.yml                   # User Guide
+  - 3_technical_docs/_sidebar.yml               # Technical Docs
+  - 4_api_docs/_sidebar.yml            # API User Docs: merged sidebar. generated from api.py and merge_sidebars.py
   - 8_system_setup/_sidebar.yml                 # System Setup
   - _version.yml                                # Version metadata
 number-sections: false
@@ -38,8 +38,8 @@ quartodoc:
   title: "Flood Adapt v{{< meta version >}}"
   style: pkgdown
   package: flood_adapt
-  dir: 7_backend_user_docs/api_ref
-  out_index: api_index.qmd # generates index at: 7_backend_user_docs/api_ref/api_index.qmd
+  dir: 4_api_docs/api_ref
+  out_index: api_index.qmd # generates index at: 4_api_docs/api_ref/api_index.qmd
   render_interlinks: true
   options: # default options for all sections
     include_attributes: true
@@ -195,11 +195,11 @@ website:
     pinned: true
     left:
       - text: User Guide
-        href: 4_user_guide/index.qmd
+        href: 2_user_guide/index.qmd
       - text: Technical Background
-        href: 5_technical_docs/index.qmd
+        href: 3_technical_docs/index.qmd
       - text: API User Documentation
-        href: 7_api_user_docs/index.qmd
+        href: 4_api_docs/index.qmd
       - text: System Setup
         href: 8_system_setup/index.qmd
 
