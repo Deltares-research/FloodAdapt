@@ -1,8 +1,5 @@
 ---
 title: 	Climate projections
-filters:
-  - lightbox
-lightbox: auto
 ---
 This section will describe how future projections of [sea level rise](#sea-level-rise), [precipitation](#increase-precipitation) and [tropical storm frequencies](#increased-storm-frequency) are specified and implemented in FloodAdapt.
 

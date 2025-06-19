@@ -1,8 +1,5 @@
 ---
 title: Historical
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 There are three types of historical events a user can select. Click on one of the links below or navigate via the side bar to learn more about each of these event types.

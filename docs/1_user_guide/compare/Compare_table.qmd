@@ -1,7 +1,4 @@
 ---
 title: Scenario comparison - metrics
-filters:
-  - lightbox
-lightbox: auto
 ---
 Coming soon.

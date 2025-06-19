@@ -1,8 +1,5 @@
 ---
 title: 	Scenarios
-filters:
-  - lightbox
-lightbox: auto
 ---
 A scenario in FloodAdapt is a what-if situation and consists of a hydro-meteorological event, a climate and/or socio-economic projection, and a strategy. For example, a scenario could be “Hurricane Ian (event) with 1 foot of sea level rise (projection) with a floodwall (strategy)”. This scenario could be compared with “Hurricane Ian with 1 foot of sea level rise with no measures implemented” to see how well a floodwall would prevent flooding and damages for this event under future sea level rise. Once you have defined at least one event, projection, and strategy, you are ready to create a scenario. Users can evaluate both event scenarios and risk scenarios. For a risk scenario, users select an event set instead of a single event; event sets are created as part of system setup.
 

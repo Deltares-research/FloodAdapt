@@ -1,8 +1,5 @@
 ---
 title:	Database Builder (executable)
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 ## Configuration file attributes

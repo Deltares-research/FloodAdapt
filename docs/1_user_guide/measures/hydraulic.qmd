@@ -1,8 +1,5 @@
 ---
 title: 	Hydraulic (grey) measures
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 Hydraulic (grey) measures aim to prevent floodwaters from reaching residents and infrastructure through construction of structures or pumps. More natural measures to prevent flooding are described in the section on [urban green infrastructure](green_infra.qmd). FloodAdapt can simulate two main types of hydraulic (grey) measures: [floodwalls and levees](#floodwalls-and-levees) and [pumps](#pumps). This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.

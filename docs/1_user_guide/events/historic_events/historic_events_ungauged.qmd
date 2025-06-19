@@ -1,8 +1,5 @@
 ---
 title: Historical event - without gauged water levels
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 When the user selects the “Historical event - without gauged water levels” option from the **Events** tab, they will see the event template window shown in @fig-ungaugedWindow. This window allows the user to input timeseries for:

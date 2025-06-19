@@ -1,8 +1,5 @@
 ---
 title: 	Benefits
-filters:
-  - lightbox
-lightbox: auto
 ---
 Flood adaptation measures are designed to reduce flood risk, and are typically evaluated by calculating their risk-reduction **benefits** and the **benefit-cost ratio**, which compares benefits with the implementation and maintenance costs of the measure(s).
 

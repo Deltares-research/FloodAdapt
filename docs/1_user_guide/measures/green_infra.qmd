@@ -1,8 +1,5 @@
 ---
 title: 	Urban green infrastructure
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 Urban green infrastructure integrates natural elements like parks, green roofs, and permeable pavements into city landscapes to absorb, slow down, and manage stormwater runoff, thereby reducing flood risk and enhancing urban resilience. FloodAdapt includes a high-level representation of urban green infrastructure that is intended to help users identify the required capacity of urban green infrastructure solutions and the best placement of these options within the city to achieve community objectives. Currently there are three 'flavors' of urban green infrastructure that can be simulated and evaluated with FloodAdapt: [water square](#water-square), [greening](#greening), and [total storage](#total-storage). This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.

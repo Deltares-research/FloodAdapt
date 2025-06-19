@@ -1,8 +1,5 @@
 ---
 title: Hurricanes
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 ::: {.callout-tip}

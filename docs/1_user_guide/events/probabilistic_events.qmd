@@ -1,8 +1,5 @@
 ---
 title: Probabilistic event set
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 A probabilistic event set is the combination of a set of synthetic events and their occurrence probabilities. These can be both tropical storms (hurricanes), as well as non-tropical events. They should include all event types that can lead to flooding in the site area (now or in the future), and can be *compound* flood events, meaning a combination of different flood drivers, like water level, rainfall, river discharge, or wind. It can be complicated to set up this set of events, and is therefore recommended to be done by an expert during the set-up of FloodAdapt for the site location (see guidance on [setting up an event set](../../4_system_setup/risk_analysis.qmd) in the Setup Guide)

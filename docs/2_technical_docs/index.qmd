@@ -1,9 +1,6 @@
 ---
 title: 	FloodAdapt Technical documentation
 sidebar: technical_docs
-filters:
-  - lightbox
-lightbox: auto
 ---
 Welcome to the FloodAdapt technical documentation. This section is intended for readers with a technical or modeling background who want to better understand the calculations within FloodAdapt.
 

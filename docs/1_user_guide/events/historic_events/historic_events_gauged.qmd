@@ -1,8 +1,5 @@
 ---
 title: Historical events
-filters:
-  - lightbox
-lightbox: auto
 ---
 FloodAdapt gives users the option to select and modify historical events, which they can then build what-if scenarios around. This is a powerful feature that engages stakeholders and facilitates a concrete understanding of risks and effectiveness of measures. For example, if a community experienced a high tide flood event, they can explore how that same event will look in the future as sea level rises, or how it would have been worsened had it coincided with rainfall. They can test out different measures and assess how effective they would be against this type of event. Historical events also allow users to develop confidence in the system (or identify model-improvement needs) by comparing with their experience or measurements of where floods and impacts occurred in the event.
 

@@ -1,8 +1,5 @@
 ---
 title: 	Strategies
-filters:
-  - lightbox
-lightbox: auto
 ---
 A strategy in FloodAdapt refers to a combination of [measures](../measures/index.qmd). Users can define and name these strategies according to their own ideas and terminology. For example, a “business as usual” strategy could consist of no measures; a “protect” strategy could consist of floodwalls and levees, or an “adapt” strategy could consist of elevating, floodproofing, or buying out properties. Defining at least one strategy is mandatory in FloodAdapt to run a scenario.
 

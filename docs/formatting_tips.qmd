@@ -1,8 +1,5 @@
 ---
 title: "Flood Adapt Documentation"
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 I put some styling infos here:
@@ -133,8 +130,8 @@ Cross reference to another page or figure:
 "[Write here the text would want to see]"("add the reference")
 
 ### Cross reference page
-"[Home](1_home/index.qmd)"
-Here I use the reference to the [Home page](1_home/index.qmd)
+"[Home](index.qmd)"
+Here I use the reference to the [Home page](index.qmd)
 
 ### Cross reference Figure
 use the @ before the logo Reference and use the name you gave it as reference above:

@@ -1,8 +1,5 @@
 ---
 title:	Delft-FIAT model-builder
-filters:
-  - lightbox
-lightbox: auto
 execute:
   echo: false
 number-sections: false

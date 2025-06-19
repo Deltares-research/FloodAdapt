@@ -1,9 +1,6 @@
 ---
 title: Setup Guide
 sidebar: setup_guide
-filters:
-  - lightbox
-lightbox: auto
 ---
 The FloodAdapt application can be freely downloaded and used in any coastal community. However, for FloodAdapt to operate, it requires a site-specific database. The FloodAdapt database must contain at minimum an overland flood model (currently the open-source compound flood SFINCS model is supported), a flood impact model (currently the open-source Delft-FIAT model is supported), and some site specific information such as the name and location of the site. The amount of information included in the FloodAdapt database will determine the degree to which its functionalities will be activated (this is described in detail in the [database setup section](database.qmd)). Most notably, to be able to run risk and benefit calculations, an event set must be prepared.
 

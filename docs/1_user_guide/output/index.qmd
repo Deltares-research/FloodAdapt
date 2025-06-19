@@ -1,8 +1,5 @@
 ---
 title: 	Output
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 The FloodAdapt [Output tab](#floodadapt-output-tab) displays flood and impact maps, time series of water levels at observation points, a tabulated summary of metrics, and a visual infographic for simulated scenarios to help users understand and evaluate their scenarios. The output for event scenarios and risk scenarios differs slightly, but output for both types of scenarios is accessible from the Output tab. FloodAdapt additionally places scenario output locally on your computer in an [Output folder](#output-folder) within your FloodAdapt database.

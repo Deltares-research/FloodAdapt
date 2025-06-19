@@ -1,8 +1,5 @@
 ---
 title: 	Socio-economic projections
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 This section will describe how future projections of [population in existing built area](#population-growth---existing-built-area), [population growth in new development areas](#population-growth---new-development-areas) and [economic growth](#economic-growth) are specified and implemented in FloodAdapt.

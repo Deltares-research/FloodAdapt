@@ -1,8 +1,5 @@
 ---
 title:	Event Set
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 This guidance provides support for preparing an **event set** to be used in FloodAdapt to calculate probabilistic flood maps, impacts, and risk. An event set consists of a set of events, defined by variables like surge, tide, and rainfall, and their occurrence frequencies. To see how FloodAdapt uses an event set to calculate risk, take a look at the [FloodAdapt technical documentation on risk analysis](../2_technical_docs/RiskScenario.qmd), particularly the part about the [probabilistic calculator](../2_technical_docs/RiskScenario.qmd#probCalculator).

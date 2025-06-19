@@ -1,8 +1,5 @@
 ---
 title: 	Building-level measures
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 FloodAdapt can simulate different types of building-level adaptation actions: [elevate](#elevate), [buyout](#buyout), and [floodproof](#floodproof) properties. This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.

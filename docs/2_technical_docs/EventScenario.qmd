@@ -1,8 +1,5 @@
 ---
 title: 	Event scenario
-filters:
-  - lightbox
-lightbox: auto
 ---
 The FloodAdapt calculation framework to calculate flooding and impacts for an event scenario will be described here, first for the flooding ([hazard calculation](#hazard-calculation)) and then for the [impact calculation](#impact-calculation).
 

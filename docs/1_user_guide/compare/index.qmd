@@ -1,8 +1,5 @@
 ---
 title: 	Compare tabs
-filters:
-  - lightbox
-lightbox: auto
 ---
 Being able to compare scenarios is important when addressing user questions. For example, consider the question "How would a historic storm look with sea evel rise?" This question is best answered by simulating the historic storm without and then with sea level rise and comparing the output to evaluate where and by how much flooding and impacts would increase.
 

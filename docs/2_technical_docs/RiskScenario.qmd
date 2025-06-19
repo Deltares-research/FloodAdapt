@@ -1,8 +1,5 @@
 ---
 title: 	Risk Scenario
-filters:
-  - lightbox
-lightbox: auto
 ---
 A risk scenario is similar to an event scenario, but instead of running for one single event FloodAdapt runs the flood model for every event in a *probabilistic event set*. This is a set consisting of specifications for different (compound) events that can lead to flooding in the area and their occurrence frequencies. A paper describing how this event set was prepared for Charleston, South Carolina can be found [here](https://asbpa.org/publications/shore-and-beach/shore-beach-in-2023-vol-91/probabilistic-compound-flood-hazard-analysis-for-coastal-risk-assessment-a-case-study-in-charleston-south-carolina/).
 

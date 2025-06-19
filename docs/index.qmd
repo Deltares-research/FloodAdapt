@@ -1,8 +1,5 @@
 ---
 title: Introduction
-filters:
-  - lightbox
-lightbox: auto
 ---
 Welcome to the FloodAdapt documentation!
 

@@ -1,8 +1,5 @@
 ---
 title: Synthetic events
-filters:
-  - lightbox
-lightbox: auto
 ---
 Synthetic events allow users to create a wide array of different types of events, without needing to have any recorded data. Each event component - water levels, wind, rainfall, and river discharge - can be specified using synthetic curves. This documentation walks the user through the different options.
 

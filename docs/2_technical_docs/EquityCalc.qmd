@@ -1,8 +1,5 @@
 ---
 title: 	Equity Calculation
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 Equity methods seek to compensate for the unfair distribution in income when calculating flood damages. They rely on the concept of marginal utility of income, which holds that a loss of $1 for a rich person is not equivalent to the loss of $1 for a poor person. Utility is defined in economics as the satisfaction, usefulness, or happiness derived from - in this case - income. **Equity weights** are a way to correct for the inequality in marginal utility across income classes. Essentially, the equity weight represents the relative size of the marginal utility (a loss in utility due to a change in income - brought on in this case by flood damages) compared to the marginal utility for the community's average income level. This leads to equity weights greater than 1 for incomes below average, and less than 1 for higher-than-average incomes. The equity weights are then used as a multiplicative factor on flood damages.

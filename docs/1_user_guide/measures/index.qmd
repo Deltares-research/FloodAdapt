@@ -1,8 +1,5 @@
 ---
 title: 	Measures
-filters:
-  - lightbox
-lightbox: auto
 ---
 FloodAdapt can simulate several types of adaptation measures. These fall under three categories within FloodAdapt:
 

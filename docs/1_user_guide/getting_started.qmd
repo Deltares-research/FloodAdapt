@@ -1,8 +1,5 @@
 ---
 title: 	Getting Started
-filters:
-  - lightbox
-lightbox: auto
 ---
 This section covers [system requirements](#system-requirements) for running FloodAdapt, initial [installation steps](#installation-steps), [opening FloodAdapt](#opening-floodadapt), and the [FloodAdapt database folder structure](#floodadapt-database).
 

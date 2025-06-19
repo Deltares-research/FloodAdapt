@@ -1,8 +1,5 @@
 ---
 title: 	Projections
-filters:
-  - lightbox
-lightbox: auto
 ---
 FloodAdapt can simulate future climate and socio-economic conditions.
 

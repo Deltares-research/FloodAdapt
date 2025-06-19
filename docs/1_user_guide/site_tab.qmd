@@ -1,8 +1,5 @@
 ---
 title: 	Site tab
-filters:
-  - lightbox
-lightbox: auto
 ---
 
 Don't feel like reading? No problem! Check out our video about the FloodAdapt site tab:
