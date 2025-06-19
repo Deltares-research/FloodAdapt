@@ -34,21 +34,6 @@ website:
         - "4_user_guide/compare/index.qmd"
         - "4_user_guide/benefits.qmd"
 
-    - id: setup_guide
-      title: "Setup Guide"
-      href: 3_setup_guide/index.qmd
-      contents:
-        - section: "SFINCS Setup"
-          file: "3_setup_guide/SFINCS/index.qmd"
-          contents:
-            - "3_setup_guide/SFINCS/hydromt_sfincs_gui.qmd"
-        - section: "Delft FIAT Setup"
-          file: "3_setup_guide/Delft_Fiat/index.qmd"
-          contents:
-            - "3_setup_guide/Delft_Fiat/hydromt_fiat_gui.qmd"
-        - "3_setup_guide/risk_analysis.qmd"
-        - "3_setup_guide/database.qmd"
-
     - id: technical_docs
       title: "Technical Documentation"
       href: "5_technical_docs/index.qmd"
@@ -57,3 +42,19 @@ website:
         - "5_technical_docs/RiskScenario.qmd"
         - "5_technical_docs/EquityCalc.qmd"
         - "5_technical_docs/BenefitCalc.qmd"
+
+    - id: api_user_docs
+      title: "API User Documentation"
+      href: "7_backend_user_docs/index.qmd"
+      contents:
+        - text: API examples
+          href: "examples/index.qmd"
+        - text: API reference
+          href: "api_ref/api_index.qmd"
+
+    - id: system_setup
+      title: "System Setup"
+      href: "8_system_setup/index.qmd"
+      contents:
+        - "3_setup_guide/database.qmd"
+        - "examples/database_builder/index.qmd"

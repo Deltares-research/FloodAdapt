@@ -7,9 +7,6 @@ website:
       search: true
       title: Examples
       contents:
-        - text: Database Builder
-          href: examples/database_builder/index.qmd
-
         - text: Simple Scenario
           href: examples/scenarios/simple_scenario_scenario.html
 

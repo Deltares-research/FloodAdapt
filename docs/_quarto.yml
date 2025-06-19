@@ -192,18 +192,14 @@ website:
     title: FloodAdapt
     pinned: true
     left:
-      - text: Introduction
-        href: 1_introduction/index.qmd
       - text: User Guide
         href: 4_user_guide/index.qmd
-      - text: Setup Guide
-        href: 3_setup_guide/index.qmd
-      - text: Technical Documentation
+      - text: Technical Background
         href: 5_technical_docs/index.qmd
-      - text: API Reference
-        href: api_ref/api_index.qmd
-      - text: Examples
-        href: examples/index.qmd
+      - text: API User Documentation
+        href: 7_backend_user_docs/index.qmd
+      - text: System Setup
+        href: 8_system_setup/index.qmd
 
     right:
       - icon: github

@@ -1,0 +1,18 @@
+---
+title: 	FloodAdapt API user documentation
+sidebar: api_user_docs
+filters:
+  - lightbox
+lightbox: auto
+---
+Welcome to the FloodAdapt backend user documentation. This section is intended for readers with a programming and/or modeling background who want to operate FloodAdapt without the user interface, by interacting directly with the FloodAdapt backend via use of the FloodAdapt API.
+
+The backend-user documentation includes two main sections:
+
+(1) [API reference documentation](../api_ref/api_index.qmd)
+(2) [API usage examples via Python notebooks](../examples/index.qmd)
+
+* Event scenarios (flooding and impacts)
+* Risk scenarios (flooding, impacts, and risk)
+* Equity-weighted expected annual damages
+* Benefits
