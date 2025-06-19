@@ -1,0 +1,21 @@
+# UnitfulLengthRefValue { #flood_adapt.unit_system.UnitfulLengthRefValue }
+
+```python
+unit_system.UnitfulLengthRefValue()
+```
+
+Combination of length and unit with a reference value.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**value**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The length value, must be greater than or equal to 0.
+
+<code>[**units**]{.parameter-name} [:]{.parameter-annotation-sep} [[UnitTypesLength](`flood_adapt.objects.forcing.unit_system.UnitTypesLength`)]{.parameter-annotation}</code>
+
+:   The unit of length.
+
+<code>[**type**]{.parameter-name} [:]{.parameter-annotation-sep} [[VerticalReference](`flood_adapt.objects.forcing.unit_system.VerticalReference`)]{.parameter-annotation}</code>
+
+:   The vertical reference for the length.

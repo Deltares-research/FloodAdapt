@@ -1,0 +1,41 @@
+# HurricaneEvent { #flood_adapt.objects.HurricaneEvent }
+
+```python
+objects.HurricaneEvent()
+```
+
+BaseModel describing the expected variables and data types for parameters of HurricaneEvent that extend the parent class Event.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the event.
+
+<code>[**description**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The description of the event. Defaults to "".
+
+<code>[**time**]{.parameter-name} [:]{.parameter-annotation-sep} [[TimeFrame](`flood_adapt.objects.forcing.time_frame.TimeFrame`)]{.parameter-annotation}</code>
+
+:   The time frame of the event.
+
+<code>[**template**]{.parameter-name} [:]{.parameter-annotation-sep} [[Template](`flood_adapt.objects.events.events.Template`)]{.parameter-annotation}</code>
+
+:   The template of the event. Defaults to Template.Hurricane.
+
+<code>[**mode**]{.parameter-name} [:]{.parameter-annotation-sep} [[Mode](`flood_adapt.objects.events.events.Mode`)]{.parameter-annotation}</code>
+
+:   The mode of the event. Defaults to Mode.single_event.
+
+<code>[**rainfall_multiplier**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The rainfall multiplier of the event. Defaults to 1.0.
+
+<code>[**forcings**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[ForcingType](`flood_adapt.objects.forcing.forcing.ForcingType`), [list](`list`)\[[IForcing](`flood_adapt.objects.forcing.forcing.IForcing`)\]\]]{.parameter-annotation}</code>
+
+:   The forcings of the event.
+
+<code>[**track_name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the hurricane track.

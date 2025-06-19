@@ -1,0 +1,17 @@
+# UnitfulArea { #flood_adapt.unit_system.UnitfulArea }
+
+```python
+unit_system.UnitfulArea()
+```
+
+Combination of area and unit.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**value**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The area value, must be greater than or equal to 0.
+
+<code>[**units**]{.parameter-name} [:]{.parameter-annotation-sep} [[UnitTypesArea](`flood_adapt.objects.forcing.unit_system.UnitTypesArea`)]{.parameter-annotation}</code>
+
+:   The unit of area.

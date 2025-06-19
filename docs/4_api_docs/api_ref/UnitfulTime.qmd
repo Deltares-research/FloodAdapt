@@ -1,0 +1,46 @@
+# UnitfulTime { #flood_adapt.unit_system.UnitfulTime }
+
+```python
+unit_system.UnitfulTime()
+```
+
+Combination of time and unit.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**value**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The time value.
+
+<code>[**units**]{.parameter-name} [:]{.parameter-annotation-sep} [[UnitTypesTime](`flood_adapt.objects.forcing.unit_system.UnitTypesTime`)]{.parameter-annotation}</code>
+
+:   The unit of time.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [from_timedelta](#flood_adapt.unit_system.UnitfulTime.from_timedelta) | Convert given timedelta to UnitfulTime object. |
+| [to_timedelta](#flood_adapt.unit_system.UnitfulTime.to_timedelta) | Convert given time to datetime.deltatime object, relative to UnitfulTime(0, Any). |
+
+### from_timedelta { #flood_adapt.unit_system.UnitfulTime.from_timedelta }
+
+```python
+unit_system.UnitfulTime.from_timedelta(td: timedelta)
+```
+
+Convert given timedelta to UnitfulTime object.
+
+### to_timedelta { #flood_adapt.unit_system.UnitfulTime.to_timedelta }
+
+```python
+unit_system.UnitfulTime.to_timedelta()
+```
+
+Convert given time to datetime.deltatime object, relative to UnitfulTime(0, Any).
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[]{.parameter-name} [:]{.parameter-annotation-sep} [[datetime](`datetime`).[timedelta](`datetime.timedelta`)]{.parameter-annotation}</code>
+
+:   datetime.timedelta object with representation: (days, seconds, microseconds)

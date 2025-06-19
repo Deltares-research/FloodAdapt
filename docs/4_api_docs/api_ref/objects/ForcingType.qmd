@@ -1,0 +1,25 @@
+# ForcingType { #flood_adapt.objects.ForcingType }
+
+```python
+objects.ForcingType()
+```
+
+Enum class for the different types of forcing parameters.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**RAINFALL**]{.parameter-name} [:]{.parameter-annotation-sep} [The type of forcing parameter for rainfall.]{.parameter-annotation}</code>
+
+:
+
+<code>[**WIND**]{.parameter-name} [:]{.parameter-annotation-sep} [The type of forcing parameter for wind.]{.parameter-annotation}</code>
+
+:
+
+<code>[**DISCHARGE**]{.parameter-name} [:]{.parameter-annotation-sep} [The type of forcing parameter for discharge.]{.parameter-annotation}</code>
+
+:
+
+<code>[**WATERLEVEL**]{.parameter-name} [:]{.parameter-annotation-sep} [The type of forcing parameter for water level.]{.parameter-annotation}</code>
+
+:

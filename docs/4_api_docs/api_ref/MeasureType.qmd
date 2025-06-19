@@ -1,0 +1,55 @@
+# MeasureType { #flood_adapt.objects.MeasureType }
+
+```python
+objects.MeasureType()
+```
+
+Class describing the accepted input for the variable 'type' in Measure.
+
+Each type of measure is associated with a category (hazard or impact) and can be used to determine the type of measure.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**floodwall**]{.parameter-name} [:]{.parameter-annotation-sep} [A floodwall measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**thin_dam**]{.parameter-name} [:]{.parameter-annotation-sep} [A thin dam measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**levee**]{.parameter-name} [:]{.parameter-annotation-sep} [A levee measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**pump**]{.parameter-name} [:]{.parameter-annotation-sep} [A pump measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**culvert**]{.parameter-name} [:]{.parameter-annotation-sep} [A culvert measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**water_square**]{.parameter-name} [:]{.parameter-annotation-sep} [A water square measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**greening**]{.parameter-name} [:]{.parameter-annotation-sep} [A greening measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**total_storage**]{.parameter-name} [:]{.parameter-annotation-sep} [A total storage measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**elevate_properties**]{.parameter-name} [:]{.parameter-annotation-sep} [An elevate properties measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**buyout_properties**]{.parameter-name} [:]{.parameter-annotation-sep} [A buyout properties measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**floodproof_properties**]{.parameter-name} [:]{.parameter-annotation-sep} [A floodproof properties measure.]{.parameter-annotation}</code>
+
+:

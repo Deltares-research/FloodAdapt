@@ -1,0 +1,59 @@
+# Strategy { #flood_adapt.objects.Strategy }
+
+```python
+objects.Strategy()
+```
+
+Class representing a strategy in FloodAdapt.
+
+A strategy is a collection of measures that can be applied to a model.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**measures**]{.parameter-name} [:]{.parameter-annotation-sep} [[list](`list`)\[[str](`str`)\]]{.parameter-annotation}</code>
+
+:   A list of measures associated with the strategy. Should be a list of measure names that are saved in the database.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [get_measures](#flood_adapt.objects.Strategy.get_measures) | Get the measures associated with this strategy. |
+| [initialize_measure_objects](#flood_adapt.objects.Strategy.initialize_measure_objects) | Initialize the measure objects associated with this strategy. |
+
+### get_measures { #flood_adapt.objects.Strategy.get_measures }
+
+```python
+objects.Strategy.get_measures()
+```
+
+Get the measures associated with this strategy.
+
+Note that this method will return the measure objects, not just their names.
+The measure objects are initialized using the `initialize_measure_objects` method.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**measures**]{.parameter-name} [:]{.parameter-annotation-sep} [[list](`list`)\[[Measure](`flood_adapt.objects.measures.measures.Measure`)\]]{.parameter-annotation}</code>
+
+:   The list of measure objects associated with this strategy.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[ValueError](`ValueError`)]{.parameter-annotation}</code>
+
+:   If the measure objects have not been initialized.
+
+### initialize_measure_objects { #flood_adapt.objects.Strategy.initialize_measure_objects }
+
+```python
+objects.Strategy.initialize_measure_objects(measures: list[Measure])
+```
+
+Initialize the measure objects associated with this strategy.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**measures**]{.parameter-name} [:]{.parameter-annotation-sep} [[list](`list`)\[[Measure](`flood_adapt.objects.measures.measures.Measure`)\]]{.parameter-annotation}</code>
+
+:   A list of measure objects to be associated with this strategy. Should be a list of measure objects that are saved in the database.

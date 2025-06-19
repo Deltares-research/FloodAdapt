@@ -1,0 +1,17 @@
+# VerticalReference { #flood_adapt.unit_system.VerticalReference }
+
+```python
+unit_system.VerticalReference()
+```
+
+Vertical reference for height.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**floodmap**]{.parameter-name} [:]{.parameter-annotation-sep} [Use the floodmap as reference.]{.parameter-annotation}</code>
+
+:
+
+<code>[**datum**]{.parameter-name} [:]{.parameter-annotation-sep} [Use the datum as reference.]{.parameter-annotation}</code>
+
+:

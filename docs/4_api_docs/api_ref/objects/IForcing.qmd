@@ -1,0 +1,39 @@
+# IForcing { #flood_adapt.objects.IForcing }
+
+```python
+objects.IForcing()
+```
+
+BaseModel describing the expected variables and data types for forcing parameters of hazard model.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [model_dump](#flood_adapt.objects.IForcing.model_dump) | Override the default model_dump to include class variables `type` and `source`. |
+| [save_additional](#flood_adapt.objects.IForcing.save_additional) | Save additional data of the forcing. |
+| [serialize_path](#flood_adapt.objects.IForcing.serialize_path) | Serialize filepath-like fields by saving only the filename. It is assumed that the file will be saved in the same directory. |
+
+### model_dump { #flood_adapt.objects.IForcing.model_dump }
+
+```python
+objects.IForcing.model_dump(**kwargs: Any)
+```
+
+Override the default model_dump to include class variables `type` and `source`.
+
+### save_additional { #flood_adapt.objects.IForcing.save_additional }
+
+```python
+objects.IForcing.save_additional(output_dir: Path | str | os.PathLike)
+```
+
+Save additional data of the forcing.
+
+### serialize_path { #flood_adapt.objects.IForcing.serialize_path }
+
+```python
+objects.IForcing.serialize_path(value: Path)
+```
+
+Serialize filepath-like fields by saving only the filename. It is assumed that the file will be saved in the same directory.

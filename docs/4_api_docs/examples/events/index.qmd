@@ -28,7 +28,7 @@ You can find a list of all available forcing classes [here]() !TODO!
 
 ## Event Types
 
-FloodAdapt supports three types of events:
+FloodAdapt supports three types of events:3_api_docs\examples\index.qmd
 
 To see a full example of how to define an event, refer to the following notebooks:
 
@@ -38,4 +38,4 @@ To see a full example of how to define an event, refer to the following notebook
 
 [**Hurricane Event**](hurricane_event.ipynb): Run an offshore hazard model using wind and pressure fields from cyclone tracks to generate the waterlevels for the overland hazard model. Only available when the database has an offshore model.
 
-[**Event modification**](database_manipulation.ipynb): Modify existing events or build new events from existing ones.
+[**Event modification**](event_modification.ipynb): Modify existing events or build new events from existing ones.

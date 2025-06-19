@@ -1,0 +1,75 @@
+# Event { #flood_adapt.objects.Event }
+
+```python
+objects.Event()
+```
+
+The accepted input for an event in FloodAdapt.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the event.
+
+<code>[**description**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The description of the event. Defaults to "".
+
+<code>[**time**]{.parameter-name} [:]{.parameter-annotation-sep} [[TimeFrame](`flood_adapt.objects.forcing.time_frame.TimeFrame`)]{.parameter-annotation}</code>
+
+:   The time frame of the event.
+
+<code>[**template**]{.parameter-name} [:]{.parameter-annotation-sep} [[Template](`flood_adapt.objects.events.events.Template`)]{.parameter-annotation}</code>
+
+:   The template of the event.
+
+<code>[**mode**]{.parameter-name} [:]{.parameter-annotation-sep} [[Mode](`flood_adapt.objects.events.events.Mode`)]{.parameter-annotation}</code>
+
+:   The mode of the event.
+
+<code>[**rainfall_multiplier**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The rainfall multiplier of the event.
+
+<code>[**forcings**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[ForcingType](`flood_adapt.objects.forcing.forcing.ForcingType`), [list](`list`)\[[IForcing](`flood_adapt.objects.forcing.forcing.IForcing`)\]\]]{.parameter-annotation}</code>
+
+:   The forcings of the event.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [get_forcings](#flood_adapt.objects.Event.get_forcings) | Return a list of all forcings in the event. |
+| [load_file](#flood_adapt.objects.Event.load_file) | Load object from file. |
+| [save_additional](#flood_adapt.objects.Event.save_additional) | Save any additional files associated with the event. |
+
+### get_forcings { #flood_adapt.objects.Event.get_forcings }
+
+```python
+objects.Event.get_forcings()
+```
+
+Return a list of all forcings in the event.
+
+### load_file { #flood_adapt.objects.Event.load_file }
+
+```python
+objects.Event.load_file(file_path: Path | str | os.PathLike)
+```
+
+Load object from file.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**file_path**]{.parameter-name} [:]{.parameter-annotation-sep} [[Path](`pathlib.Path`) \| [str](`str`) \| [os](`os`).[PathLike](`os.PathLike`)]{.parameter-annotation}</code>
+
+:   Path to the file to load.
+
+### save_additional { #flood_adapt.objects.Event.save_additional }
+
+```python
+objects.Event.save_additional(output_dir: Path | str | os.PathLike)
+```
+
+Save any additional files associated with the event.

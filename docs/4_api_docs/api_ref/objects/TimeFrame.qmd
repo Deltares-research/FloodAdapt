@@ -1,0 +1,21 @@
+# TimeFrame { #flood_adapt.objects.TimeFrame }
+
+```python
+objects.TimeFrame()
+```
+
+Class representing a time frame for a simulation.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**start_time**]{.parameter-name} [:]{.parameter-annotation-sep} [[datetime](`datetime.datetime`)]{.parameter-annotation}</code>
+
+:   The start time of the simulation.
+
+<code>[**end_time**]{.parameter-name} [:]{.parameter-annotation-sep} [[datetime](`datetime.datetime`)]{.parameter-annotation}</code>
+
+:   The end time of the simulation.
+
+<code>[**time_step**]{.parameter-name} [:]{.parameter-annotation-sep} [[timedelta](`datetime.timedelta`)]{.parameter-annotation}</code>
+
+:   The time step of the simulation. Default is calculated as 1/1000 of the duration.

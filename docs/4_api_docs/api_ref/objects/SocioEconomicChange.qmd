@@ -1,0 +1,29 @@
+# SocioEconomicChange { #flood_adapt.objects.SocioEconomicChange }
+
+```python
+objects.SocioEconomicChange()
+```
+
+The accepted input for socio-economic change in FloodAdapt.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**population_growth_existing**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The population growth percentage of the existing area. default=0.0
+
+<code>[**economic_growth**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The economic growth percentage. default=0.0.
+
+<code>[**population_growth_new**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The population growth percentage for the new development areas. default=0.0.
+
+<code>[**new_development_elevation**]{.parameter-name} [:]{.parameter-annotation-sep} [[Optional](`typing.Optional`)\[[us](`flood_adapt.objects.forcing.unit_system`).[UnitfulLengthRefValue](`flood_adapt.objects.forcing.unit_system.UnitfulLengthRefValue`)\]]{.parameter-annotation}</code>
+
+:   The elevation of the new development areas. default=None.
+
+<code>[**new_development_shapefile**]{.parameter-name} [:]{.parameter-annotation-sep} [[Optional](`typing.Optional`)\[[str](`str`)\]]{.parameter-annotation}</code>
+
+:   The path to the shapefile of the new development areas. default=None.

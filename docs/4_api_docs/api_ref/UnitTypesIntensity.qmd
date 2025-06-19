@@ -1,0 +1,17 @@
+# UnitTypesIntensity { #flood_adapt.unit_system.UnitTypesIntensity }
+
+```python
+unit_system.UnitTypesIntensity()
+```
+
+Units of intensity.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**inch_hr**]{.parameter-name} [:]{.parameter-annotation-sep} [inch per hour]{.parameter-annotation}</code>
+
+:
+
+<code>[**mm_hr**]{.parameter-name} [:]{.parameter-annotation-sep} [millimeter per hour]{.parameter-annotation}</code>
+
+:

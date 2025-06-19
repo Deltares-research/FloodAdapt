@@ -1,0 +1,64 @@
+# ValueUnitPair { #flood_adapt.unit_system.ValueUnitPair }
+
+```python
+unit_system.ValueUnitPair()
+```
+
+Represents a value with associated units.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**value**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The numerical value.
+
+<code>[**units**]{.parameter-name} [:]{.parameter-annotation-sep} [[Unit](`Unit`)]{.parameter-annotation}</code>
+
+:   The units of the value.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [convert](#flood_adapt.unit_system.ValueUnitPair.convert) | Return the value converted to the new units. |
+| [transform](#flood_adapt.unit_system.ValueUnitPair.transform) | Return a new ValueUnitPair instance with the value converted to the new units. |
+
+### convert { #flood_adapt.unit_system.ValueUnitPair.convert }
+
+```python
+unit_system.ValueUnitPair.convert(new_units: TUnit)
+```
+
+Return the value converted to the new units.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**new_units**]{.parameter-name} [:]{.parameter-annotation-sep} [[Unit](`Unit`)]{.parameter-annotation}</code>
+
+:   The new units.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**converted_value**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The converted value.
+
+### transform { #flood_adapt.unit_system.ValueUnitPair.transform }
+
+```python
+unit_system.ValueUnitPair.transform(new_units: TUnit)
+```
+
+Return a new ValueUnitPair instance with the value converted to the new units.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**new_units**]{.parameter-name} [:]{.parameter-annotation-sep} [[Unit](`Unit`)]{.parameter-annotation}</code>
+
+:   The new units.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**value_unit_pair**]{.parameter-name} [:]{.parameter-annotation-sep} [[ValueUnitPair](`flood_adapt.objects.forcing.unit_system.ValueUnitPair`)]{.parameter-annotation}</code>
+
+:   The new ValueUnitPair instance with the value converted to the new units and the new units.

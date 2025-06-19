@@ -1,0 +1,17 @@
+# UnitTypesVolume { #flood_adapt.unit_system.UnitTypesVolume }
+
+```python
+unit_system.UnitTypesVolume()
+```
+
+Units of volume.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**m3**]{.parameter-name} [:]{.parameter-annotation-sep} [cubic meters]{.parameter-annotation}</code>
+
+:
+
+<code>[**cf**]{.parameter-name} [:]{.parameter-annotation-sep} [cubic feet]{.parameter-annotation}</code>
+
+:

@@ -1,0 +1,21 @@
+# UnitTypesVelocity { #flood_adapt.unit_system.UnitTypesVelocity }
+
+```python
+unit_system.UnitTypesVelocity()
+```
+
+Units of velocity.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**mps**]{.parameter-name} [:]{.parameter-annotation-sep} [meters per second]{.parameter-annotation}</code>
+
+:
+
+<code>[**knots**]{.parameter-name} [:]{.parameter-annotation-sep} [nautical miles per hour]{.parameter-annotation}</code>
+
+:
+
+<code>[**mph**]{.parameter-name} [:]{.parameter-annotation-sep} [miles per hour]{.parameter-annotation}</code>
+
+:

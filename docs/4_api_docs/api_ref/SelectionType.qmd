@@ -1,0 +1,27 @@
+# SelectionType { #flood_adapt.objects.SelectionType }
+
+```python
+objects.SelectionType()
+```
+
+Class describing the accepted input for the variable 'selection_type' in Measures.
+
+It is used to determine where to apply the measure to a model.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**aggregation_area**]{.parameter-name} [:]{.parameter-annotation-sep} [Use aggregation area as geometry for the measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**polygon**]{.parameter-name} [:]{.parameter-annotation-sep} [Use polygon as geometry for the measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**polyline**]{.parameter-name} [:]{.parameter-annotation-sep} [Use polyline as geometry for the measure.]{.parameter-annotation}</code>
+
+:
+
+<code>[**all**]{.parameter-name} [:]{.parameter-annotation-sep} [Apply the measure to all geometries in the database.]{.parameter-annotation}</code>
+
+:

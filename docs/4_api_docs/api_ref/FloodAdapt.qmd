@@ -1,0 +1,1424 @@
+# FloodAdapt { #flood_adapt.FloodAdapt }
+
+```python
+FloodAdapt(database_path: Path)
+```
+
+
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [check_benefit_scenarios](#flood_adapt.FloodAdapt.check_benefit_scenarios) | Return a dataframe with the scenarios needed for this benefit assessment run. |
+| [copy_event](#flood_adapt.FloodAdapt.copy_event) | Copy an event in the database. |
+| [copy_measure](#flood_adapt.FloodAdapt.copy_measure) | Copy a measure in the database. |
+| [copy_projection](#flood_adapt.FloodAdapt.copy_projection) | Copy a projection in the database. |
+| [copy_strategy](#flood_adapt.FloodAdapt.copy_strategy) | Copy a strategy in the database. |
+| [create_benefit](#flood_adapt.FloodAdapt.create_benefit) | Create a new benefit object. |
+| [create_benefit_scenarios](#flood_adapt.FloodAdapt.create_benefit_scenarios) | Create the benefit scenarios. |
+| [create_event](#flood_adapt.FloodAdapt.create_event) | Create a event object from a dictionary of attributes. |
+| [create_event_set](#flood_adapt.FloodAdapt.create_event_set) | Create a event set object from a dictionary of attributes. |
+| [create_measure](#flood_adapt.FloodAdapt.create_measure) | Create a measure from a dictionary of attributes and a type string. |
+| [create_projection](#flood_adapt.FloodAdapt.create_projection) | Create a new projection object. |
+| [create_scenario](#flood_adapt.FloodAdapt.create_scenario) | Create a new scenario object. |
+| [create_strategy](#flood_adapt.FloodAdapt.create_strategy) | Create a new strategy object. |
+| [delete_benefit](#flood_adapt.FloodAdapt.delete_benefit) | Delete a benefit object from the database. |
+| [delete_event](#flood_adapt.FloodAdapt.delete_event) | Delete an event from the database. |
+| [delete_measure](#flood_adapt.FloodAdapt.delete_measure) | Delete an measure from the database. |
+| [delete_projection](#flood_adapt.FloodAdapt.delete_projection) | Delete a projection from the database. |
+| [delete_scenario](#flood_adapt.FloodAdapt.delete_scenario) | Delete a scenario from the database. |
+| [delete_strategy](#flood_adapt.FloodAdapt.delete_strategy) | Delete a strategy from the database. |
+| [get_aggregated_benefits](#flood_adapt.FloodAdapt.get_aggregated_benefits) | Get the aggregation benefits for a benefit assessment. |
+| [get_aggregated_impacts](#flood_adapt.FloodAdapt.get_aggregated_impacts) | Return a dictionary with the aggregated impacts as geodataframes. |
+| [get_aggregation_areas](#flood_adapt.FloodAdapt.get_aggregation_areas) | Get a list of the aggregation areas that are provided in the site configuration. |
+| [get_benefit](#flood_adapt.FloodAdapt.get_benefit) | Get a benefit from the database by name. |
+| [get_benefits](#flood_adapt.FloodAdapt.get_benefits) | Get all benefits from the database. |
+| [get_building_footprint_impacts](#flood_adapt.FloodAdapt.get_building_footprint_impacts) | Return a geodataframe of the impacts at the footprint level. |
+| [get_building_geometries](#flood_adapt.FloodAdapt.get_building_geometries) | Get the buildings exposure that are used in Fiat. |
+| [get_building_types](#flood_adapt.FloodAdapt.get_building_types) | Get the building types/categories that are used in the exposure. |
+| [get_completed_scenarios](#flood_adapt.FloodAdapt.get_completed_scenarios) | Get all completed scenarios from the database. |
+| [get_cyclone_track_by_index](#flood_adapt.FloodAdapt.get_cyclone_track_by_index) | Get a cyclone track from the database by index. |
+| [get_depth_conversion](#flood_adapt.FloodAdapt.get_depth_conversion) | Return the flood depth conversion that is need in the gui to plot the flood map. |
+| [get_event](#flood_adapt.FloodAdapt.get_event) | Get an event from the database by name. |
+| [get_events](#flood_adapt.FloodAdapt.get_events) | Get all events from the database. |
+| [get_green_infra_table](#flood_adapt.FloodAdapt.get_green_infra_table) | Return a table with different types of green infrastructure measures and their infiltration depths. |
+| [get_index_path](#flood_adapt.FloodAdapt.get_index_path) | Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles. |
+| [get_infographic](#flood_adapt.FloodAdapt.get_infographic) | Return the HTML string of the infographic for the given scenario. |
+| [get_infometrics](#flood_adapt.FloodAdapt.get_infometrics) | Return the metrics for the given scenario. |
+| [get_max_water_level_map](#flood_adapt.FloodAdapt.get_max_water_level_map) | Return the maximum water level for the given scenario. |
+| [get_measure](#flood_adapt.FloodAdapt.get_measure) | Get a measure from the database by name. |
+| [get_measures](#flood_adapt.FloodAdapt.get_measures) | Get all measures from the database. |
+| [get_model_boundary](#flood_adapt.FloodAdapt.get_model_boundary) | Get the model boundary that is used in SFINCS. |
+| [get_model_grid](#flood_adapt.FloodAdapt.get_model_grid) | Get the model grid that is used in SFINCS. |
+| [get_obs_point_timeseries](#flood_adapt.FloodAdapt.get_obs_point_timeseries) | Return the HTML strings of the water level timeseries for the given scenario. |
+| [get_obs_points](#flood_adapt.FloodAdapt.get_obs_points) | Get the observation points specified in the site.toml. |
+| [get_projection](#flood_adapt.FloodAdapt.get_projection) | Get a projection from the database by name. |
+| [get_projections](#flood_adapt.FloodAdapt.get_projections) | Get all projections from the database. |
+| [get_road_impacts](#flood_adapt.FloodAdapt.get_road_impacts) | Return a geodataframe of the impacts at roads. |
+| [get_scenario](#flood_adapt.FloodAdapt.get_scenario) | Get a scenario from the database by name. |
+| [get_scenarios](#flood_adapt.FloodAdapt.get_scenarios) | Get all scenarios from the database. |
+| [get_slr_scn_names](#flood_adapt.FloodAdapt.get_slr_scn_names) | Get all sea level rise scenario names from the database. |
+| [get_static_map](#flood_adapt.FloodAdapt.get_static_map) | Get a static map from the database. |
+| [get_strategies](#flood_adapt.FloodAdapt.get_strategies) | Get all strategies from the database. |
+| [get_strategy](#flood_adapt.FloodAdapt.get_strategy) | Get a strategy from the database by name. |
+| [get_svi_map](#flood_adapt.FloodAdapt.get_svi_map) | Get the SVI map that are used in Fiat. |
+| [get_topobathy_path](#flood_adapt.FloodAdapt.get_topobathy_path) | Return the path of the topobathy tiles in order to create flood maps with water level maps. |
+| [interp_slr](#flood_adapt.FloodAdapt.interp_slr) | Interpolate SLR value and reference it to the SLR reference year from the site toml. |
+| [load_static_data](#flood_adapt.FloodAdapt.load_static_data) | Read the static data into the cache. |
+| [plot_event_forcing](#flood_adapt.FloodAdapt.plot_event_forcing) | Plot forcing data for an event. |
+| [plot_slr_scenarios](#flood_adapt.FloodAdapt.plot_slr_scenarios) | Plot sea level rise scenarios. |
+| [run_benefit](#flood_adapt.FloodAdapt.run_benefit) | Run the benefit assessment. |
+| [run_scenario](#flood_adapt.FloodAdapt.run_scenario) | Run a scenario hazard and impacts. |
+| [save_benefit](#flood_adapt.FloodAdapt.save_benefit) | Save a benefit object to the database. |
+| [save_event](#flood_adapt.FloodAdapt.save_event) | Save an event object to the database. |
+| [save_measure](#flood_adapt.FloodAdapt.save_measure) | Save a measure object to the database. |
+| [save_projection](#flood_adapt.FloodAdapt.save_projection) | Save a projection object to the database. |
+| [save_scenario](#flood_adapt.FloodAdapt.save_scenario) | Save the scenario to the database. |
+| [save_strategy](#flood_adapt.FloodAdapt.save_strategy) | Save a strategy object to the database. |
+
+### check_benefit_scenarios { #flood_adapt.FloodAdapt.check_benefit_scenarios }
+
+```python
+FloodAdapt.check_benefit_scenarios(benefit: Benefit)
+```
+
+Return a dataframe with the scenarios needed for this benefit assessment run.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**benefit**]{.parameter-name} [:]{.parameter-annotation-sep} [[Benefit](`flood_adapt.objects.benefits.benefits.Benefit`)]{.parameter-annotation}</code>
+
+:   The benefit object to check.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**scenarios**]{.parameter-name} [:]{.parameter-annotation-sep} [[pd](`pandas`).[DataFrame](`pandas.DataFrame`)]{.parameter-annotation}</code>
+
+:   A dataframe with the scenarios needed for this benefit assessment run.
+
+### copy_event { #flood_adapt.FloodAdapt.copy_event }
+
+```python
+FloodAdapt.copy_event(old_name: str, new_name: str, new_description: str)
+```
+
+Copy an event in the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**old_name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the event to copy.
+
+<code>[**new_name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the new event.
+
+<code>[**new_description**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The description of the new event
+
+### copy_measure { #flood_adapt.FloodAdapt.copy_measure }
+
+```python
+FloodAdapt.copy_measure(old_name: str, new_name: str, new_description: str)
+```
+
+Copy a measure in the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**old_name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the measure to copy.
+
+<code>[**new_name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the new measure.
+
+<code>[**new_description**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The description of the new measure
+
+### copy_projection { #flood_adapt.FloodAdapt.copy_projection }
+
+```python
+FloodAdapt.copy_projection(old_name: str, new_name: str, new_description: str)
+```
+
+Copy a projection in the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**old_name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the projection to copy.
+
+<code>[**new_name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the new projection.
+
+<code>[**new_description**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The description of the new projection
+
+### copy_strategy { #flood_adapt.FloodAdapt.copy_strategy }
+
+```python
+FloodAdapt.copy_strategy(old_name: str, new_name: str, new_description: str)
+```
+
+Copy a strategy in the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**old_name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the strategy to copy.
+
+<code>[**new_name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the new strategy.
+
+<code>[**new_description**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The description of the new strategy
+
+### create_benefit { #flood_adapt.FloodAdapt.create_benefit }
+
+```python
+FloodAdapt.create_benefit(attrs: dict[str, Any])
+```
+
+Create a new benefit object.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**attrs**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   The attributes of the benefit object to create. Should adhere to the Benefit schema.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**benefit**]{.parameter-name} [:]{.parameter-annotation-sep} [[Benefit](`flood_adapt.objects.benefits.benefits.Benefit`)]{.parameter-annotation}</code>
+
+:   The benefit object created from the attributes.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[ValueError](`ValueError`)]{.parameter-annotation}</code>
+
+:   If the attributes do not adhere to the Benefit schema.
+
+### create_benefit_scenarios { #flood_adapt.FloodAdapt.create_benefit_scenarios }
+
+```python
+FloodAdapt.create_benefit_scenarios(benefit: Benefit)
+```
+
+Create the benefit scenarios.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**benefit**]{.parameter-name} [:]{.parameter-annotation-sep} [[Benefit](`flood_adapt.objects.benefits.benefits.Benefit`)]{.parameter-annotation}</code>
+
+:   The benefit object to create scenarios for.
+
+### create_event { #flood_adapt.FloodAdapt.create_event }
+
+```python
+FloodAdapt.create_event(attrs: dict[str, Any] | Event)
+```
+
+Create a event object from a dictionary of attributes.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**attrs**]{.parameter-name} [:]{.parameter-annotation-sep} [[Event](`flood_adapt.objects.events.events.Event`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   Dictionary of attributes
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**event**]{.parameter-name} [:]{.parameter-annotation-sep} [[Event](`flood_adapt.objects.events.events.Event`)]{.parameter-annotation}</code>
+
+:   Depending on attrs.template an event object. Can be of type: Synthetic, Historical, Hurricane.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[ValueError](`ValueError`)]{.parameter-annotation}</code>
+
+:   If the attributes do not adhere to the Event schema.
+
+### create_event_set { #flood_adapt.FloodAdapt.create_event_set }
+
+```python
+FloodAdapt.create_event_set(
+    attrs: dict[str, Any] | EventSet,
+    sub_events: list[Event],
+)
+```
+
+Create a event set object from a dictionary of attributes.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**attrs**]{.parameter-name} [:]{.parameter-annotation-sep} [[EventSet](`flood_adapt.objects.events.event_set.EventSet`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   Dictionary of attributes
+
+<code>[**sub_events**]{.parameter-name} [:]{.parameter-annotation-sep} [[list](`list`)\[[Event](`flood_adapt.objects.events.events.Event`)\]]{.parameter-annotation}</code>
+
+:   List of events in the event set
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**event_set**]{.parameter-name} [:]{.parameter-annotation-sep} [[EventSet](`flood_adapt.objects.events.event_set.EventSet`)]{.parameter-annotation}</code>
+
+:   EventSet object
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[ValueError](`ValueError`)]{.parameter-annotation}</code>
+
+:   If the attributes do not adhere to the EventSet schema.
+
+### create_measure { #flood_adapt.FloodAdapt.create_measure }
+
+```python
+FloodAdapt.create_measure(attrs: dict[str, Any], type: str = None)
+```
+
+Create a measure from a dictionary of attributes and a type string.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**attrs**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   Dictionary of attributes for the measure.
+
+<code>[**type**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation} [ = ]{.parameter-default-sep} [None]{.parameter-default}</code>
+
+:   Type of measure to create.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**measure**]{.parameter-name} [:]{.parameter-annotation-sep} [[Measure](`flood_adapt.objects.measures.measures.Measure`)]{.parameter-annotation}</code>
+
+:   Measure object.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[ValueError](`ValueError`)]{.parameter-annotation}</code>
+
+:   If the type is not valid or if the attributes do not adhere to the Measure schema.
+
+### create_projection { #flood_adapt.FloodAdapt.create_projection }
+
+```python
+FloodAdapt.create_projection(attrs: dict[str, Any])
+```
+
+Create a new projection object.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**attrs**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   The attributes of the projection object to create. Should adhere to the Projection schema.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**projection**]{.parameter-name} [:]{.parameter-annotation-sep} [[Projection](`flood_adapt.objects.projections.projections.Projection`)]{.parameter-annotation}</code>
+
+:   The projection object created from the attributes.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[ValueError](`ValueError`)]{.parameter-annotation}</code>
+
+:   If the attributes do not adhere to the Projection schema.
+
+### create_scenario { #flood_adapt.FloodAdapt.create_scenario }
+
+```python
+FloodAdapt.create_scenario(attrs: dict[str, Any])
+```
+
+Create a new scenario object.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**attrs**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   The attributes of the scenario object to create. Should adhere to the Scenario schema.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**scenario**]{.parameter-name} [:]{.parameter-annotation-sep} [[Scenario](`flood_adapt.objects.scenarios.scenarios.Scenario`)]{.parameter-annotation}</code>
+
+:   The scenario object created from the attributes.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[ValueError](`ValueError`)]{.parameter-annotation}</code>
+
+:   If the attributes do not adhere to the Scenario schema.
+
+### create_strategy { #flood_adapt.FloodAdapt.create_strategy }
+
+```python
+FloodAdapt.create_strategy(attrs: dict[str, Any])
+```
+
+Create a new strategy object.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**attrs**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   The attributes of the strategy object to create. Should adhere to the Strategy schema.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**strategy**]{.parameter-name} [:]{.parameter-annotation-sep} [[Strategy](`flood_adapt.objects.strategies.strategies.Strategy`)]{.parameter-annotation}</code>
+
+:   The strategy object
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[ValueError](`ValueError`)]{.parameter-annotation}</code>
+
+:   If attrs does not adhere to the Strategy schema.
+
+### delete_benefit { #flood_adapt.FloodAdapt.delete_benefit }
+
+```python
+FloodAdapt.delete_benefit(name: str)
+```
+
+Delete a benefit object from the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the benefit object to delete.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the benefit object does not exist.
+
+### delete_event { #flood_adapt.FloodAdapt.delete_event }
+
+```python
+FloodAdapt.delete_event(name: str)
+```
+
+Delete an event from the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the event to delete.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the event does not exist. If the event is used in a scenario.
+
+### delete_measure { #flood_adapt.FloodAdapt.delete_measure }
+
+```python
+FloodAdapt.delete_measure(name: str)
+```
+
+Delete an measure from the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the measure to delete.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the measure does not exist.
+
+### delete_projection { #flood_adapt.FloodAdapt.delete_projection }
+
+```python
+FloodAdapt.delete_projection(name: str)
+```
+
+Delete a projection from the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the projection to delete.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the projection does not exist. If the projection is used in a scenario.
+
+### delete_scenario { #flood_adapt.FloodAdapt.delete_scenario }
+
+```python
+FloodAdapt.delete_scenario(name: str)
+```
+
+Delete a scenario from the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the scenario to delete.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the scenario does not exist.
+
+### delete_strategy { #flood_adapt.FloodAdapt.delete_strategy }
+
+```python
+FloodAdapt.delete_strategy(name: str)
+```
+
+Delete a strategy from the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the strategy to delete.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the strategy does not exist.
+
+### get_aggregated_benefits { #flood_adapt.FloodAdapt.get_aggregated_benefits }
+
+```python
+FloodAdapt.get_aggregated_benefits(name: str)
+```
+
+Get the aggregation benefits for a benefit assessment.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the benefit assessment.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**aggregated_benefits**]{.parameter-name} [:]{.parameter-annotation-sep} [[gpd](`geopandas`).[GeoDataFrame](`geopandas.GeoDataFrame`)]{.parameter-annotation}</code>
+
+:   The aggregation benefits for the benefit assessment.
+
+### get_aggregated_impacts { #flood_adapt.FloodAdapt.get_aggregated_impacts }
+
+```python
+FloodAdapt.get_aggregated_impacts(name: str)
+```
+
+Return a dictionary with the aggregated impacts as geodataframes.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the scenario.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**aggr_impacts**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [gpd](`geopandas`).[GeoDataFrame](`geopandas.GeoDataFrame`)\]]{.parameter-annotation}</code>
+
+:   The aggregated impacts for the scenario.
+
+### get_aggregation_areas { #flood_adapt.FloodAdapt.get_aggregation_areas }
+
+```python
+FloodAdapt.get_aggregation_areas()
+```
+
+Get a list of the aggregation areas that are provided in the site configuration.
+
+These are expected to much the ones in the FIAT model.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**aggregation_areas**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [GeoDataFrame](`GeoDataFrame`)\]]{.parameter-annotation}</code>
+
+:   list of geodataframes with the polygons defining the aggregation areas
+
+### get_benefit { #flood_adapt.FloodAdapt.get_benefit }
+
+```python
+FloodAdapt.get_benefit(name: str)
+```
+
+Get a benefit from the database by name.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the benefit to retrieve.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**benefit**]{.parameter-name} [:]{.parameter-annotation-sep} [[Benefit](`flood_adapt.objects.benefits.benefits.Benefit`)]{.parameter-annotation}</code>
+
+:   The benefit object with the given name. See [Benefit](/api_ref/) for details.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the benefit with the given name does not exist.
+
+### get_benefits { #flood_adapt.FloodAdapt.get_benefits }
+
+```python
+FloodAdapt.get_benefits()
+```
+
+Get all benefits from the database.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**benefits**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   A dictionary containing all benefits. Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects' Each value is a list of the corresponding attribute for each benefit.
+
+### get_building_footprint_impacts { #flood_adapt.FloodAdapt.get_building_footprint_impacts }
+
+```python
+FloodAdapt.get_building_footprint_impacts(name: str)
+```
+
+Return a geodataframe of the impacts at the footprint level.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the scenario.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**footprints**]{.parameter-name} [:]{.parameter-annotation-sep} [[gpd](`geopandas`).[GeoDataFrame](`geopandas.GeoDataFrame`)]{.parameter-annotation}</code>
+
+:   The impact footprints for the scenario.
+
+### get_building_geometries { #flood_adapt.FloodAdapt.get_building_geometries }
+
+```python
+FloodAdapt.get_building_geometries()
+```
+
+Get the buildings exposure that are used in Fiat.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**buildings**]{.parameter-name} [:]{.parameter-annotation-sep} [[gpd](`geopandas`).[GeoDataFrame](`geopandas.GeoDataFrame`)]{.parameter-annotation}</code>
+
+:   gpd.GeoDataFrames with the buildings from FIAT exposure
+
+### get_building_types { #flood_adapt.FloodAdapt.get_building_types }
+
+```python
+FloodAdapt.get_building_types()
+```
+
+Get the building types/categories that are used in the exposure.
+
+These are used to filter the buildings in the FIAT model, and can include types like:
+'Residential', 'Commercial', 'Industrial', etc.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**building_types**]{.parameter-name} [:]{.parameter-annotation-sep} [[list](`list`)\[[str](`str`)\]]{.parameter-annotation}</code>
+
+:   list of building types
+
+### get_completed_scenarios { #flood_adapt.FloodAdapt.get_completed_scenarios }
+
+```python
+FloodAdapt.get_completed_scenarios()
+```
+
+Get all completed scenarios from the database.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**scenarios**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   A dictionary containing all scenarios. Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects' Each value is a list of the corresponding attribute for each output.
+
+### get_cyclone_track_by_index { #flood_adapt.FloodAdapt.get_cyclone_track_by_index }
+
+```python
+FloodAdapt.get_cyclone_track_by_index(index: int)
+```
+
+Get a cyclone track from the database by index.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**index**]{.parameter-name} [:]{.parameter-annotation-sep} [[int](`int`)]{.parameter-annotation}</code>
+
+:   The index of the cyclone track to retrieve.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**cyclone**]{.parameter-name} [:]{.parameter-annotation-sep} [[TropicalCyclone](`cht_cyclones.tropical_cyclone.TropicalCyclone`)]{.parameter-annotation}</code>
+
+:   The cyclone track object with the given index.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the cyclone track database is not defined in the site configuration. If the cyclone track with the given index does not exist.
+
+### get_depth_conversion { #flood_adapt.FloodAdapt.get_depth_conversion }
+
+```python
+FloodAdapt.get_depth_conversion()
+```
+
+Return the flood depth conversion that is need in the gui to plot the flood map.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**fdc**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The flood depth conversion.
+
+### get_event { #flood_adapt.FloodAdapt.get_event }
+
+```python
+FloodAdapt.get_event(name: str)
+```
+
+Get an event from the database by name.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the event to retrieve.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**event**]{.parameter-name} [:]{.parameter-annotation-sep} [[Union](`typing.Union`)\[[Event](`flood_adapt.objects.events.events.Event`), [EventSet](`flood_adapt.objects.events.event_set.EventSet`)\]]{.parameter-annotation}</code>
+
+:   The event with the given name.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the event with the given name does not exist.
+
+### get_events { #flood_adapt.FloodAdapt.get_events }
+
+```python
+FloodAdapt.get_events()
+```
+
+Get all events from the database.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**events**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   A dictionary containing all events. Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects' Each value is a list of the corresponding attribute for each benefit.
+
+### get_green_infra_table { #flood_adapt.FloodAdapt.get_green_infra_table }
+
+```python
+FloodAdapt.get_green_infra_table(measure_type: str)
+```
+
+Return a table with different types of green infrastructure measures and their infiltration depths.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**measure_type**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The type of green infrastructure measure.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**table**]{.parameter-name} [:]{.parameter-annotation-sep} [[pd](`pandas`).[DataFrame](`pandas.DataFrame`)]{.parameter-annotation}</code>
+
+:   A table with different types of green infrastructure measures and their infiltration depths.
+
+### get_index_path { #flood_adapt.FloodAdapt.get_index_path }
+
+```python
+FloodAdapt.get_index_path()
+```
+
+Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**index_path**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The path to the index file.
+
+### get_infographic { #flood_adapt.FloodAdapt.get_infographic }
+
+```python
+FloodAdapt.get_infographic(name: str)
+```
+
+Return the HTML string of the infographic for the given scenario.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the scenario.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**html**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The HTML string of the infographic.
+
+### get_infometrics { #flood_adapt.FloodAdapt.get_infometrics }
+
+```python
+FloodAdapt.get_infometrics(name: str)
+```
+
+Return the metrics for the given scenario.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the scenario.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**metrics**]{.parameter-name} [:]{.parameter-annotation-sep} [[pd](`pandas`).[DataFrame](`pandas.DataFrame`)]{.parameter-annotation}</code>
+
+:   The metrics for the scenario.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[FileNotFoundError](`FileNotFoundError`)]{.parameter-annotation}</code>
+
+:   If the metrics file does not exist.
+
+### get_max_water_level_map { #flood_adapt.FloodAdapt.get_max_water_level_map }
+
+```python
+FloodAdapt.get_max_water_level_map(name: str, rp: int = None)
+```
+
+Return the maximum water level for the given scenario.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the scenario.
+
+<code>[**rp**]{.parameter-name} [:]{.parameter-annotation-sep} [[int](`int`)]{.parameter-annotation} [ = ]{.parameter-default-sep} [None]{.parameter-default}</code>
+
+:   The return period of the water level, by default None
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**water_level_map**]{.parameter-name} [:]{.parameter-annotation-sep} [[np](`numpy`).[ndarray](`numpy.ndarray`)]{.parameter-annotation}</code>
+
+:   2D gridded map with the maximum waterlevels for each cell.
+
+### get_measure { #flood_adapt.FloodAdapt.get_measure }
+
+```python
+FloodAdapt.get_measure(name: str)
+```
+
+Get a measure from the database by name.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the measure to retrieve.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**measure**]{.parameter-name} [:]{.parameter-annotation-sep} [[Measure](`flood_adapt.objects.measures.measures.Measure`)]{.parameter-annotation}</code>
+
+:   The measure object with the given name.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the measure with the given name does not exist.
+
+### get_measures { #flood_adapt.FloodAdapt.get_measures }
+
+```python
+FloodAdapt.get_measures()
+```
+
+Get all measures from the database.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**measures**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   A dictionary containing all measures. Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects' Each value is a list of the corresponding attribute for each measure.
+
+### get_model_boundary { #flood_adapt.FloodAdapt.get_model_boundary }
+
+```python
+FloodAdapt.get_model_boundary()
+```
+
+Get the model boundary that is used in SFINCS.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**model_boundary**]{.parameter-name} [:]{.parameter-annotation-sep} [[GeoDataFrame](`GeoDataFrame`)]{.parameter-annotation}</code>
+
+:   GeoDataFrame with the model boundary
+
+### get_model_grid { #flood_adapt.FloodAdapt.get_model_grid }
+
+```python
+FloodAdapt.get_model_grid()
+```
+
+Get the model grid that is used in SFINCS.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**grid**]{.parameter-name} [:]{.parameter-annotation-sep} [[QuadtreeGrid](`hydromt_sfincs.quadtree.QuadtreeGrid`)]{.parameter-annotation}</code>
+
+:   QuadtreeGrid with the model grid
+
+### get_obs_point_timeseries { #flood_adapt.FloodAdapt.get_obs_point_timeseries }
+
+```python
+FloodAdapt.get_obs_point_timeseries(name: str)
+```
+
+Return the HTML strings of the water level timeseries for the given scenario.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the scenario.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**html_path**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The HTML strings of the water level timeseries
+
+### get_obs_points { #flood_adapt.FloodAdapt.get_obs_points }
+
+```python
+FloodAdapt.get_obs_points()
+```
+
+Get the observation points specified in the site.toml.
+
+These are also added to the flood hazard model. They are used as marker locations to plot water level time series in the output tab.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**observation_points**]{.parameter-name} [:]{.parameter-annotation-sep} [[gpd](`geopandas`).[GeoDataFrame](`geopandas.GeoDataFrame`)]{.parameter-annotation}</code>
+
+:   gpd.GeoDataFrame with observation points from the site.toml.
+
+### get_projection { #flood_adapt.FloodAdapt.get_projection }
+
+```python
+FloodAdapt.get_projection(name: str)
+```
+
+Get a projection from the database by name.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the projection to retrieve.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**projection**]{.parameter-name} [:]{.parameter-annotation-sep} [[Projection](`flood_adapt.objects.projections.projections.Projection`)]{.parameter-annotation}</code>
+
+:   The projection object with the given name.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the projection with the given name does not exist.
+
+### get_projections { #flood_adapt.FloodAdapt.get_projections }
+
+```python
+FloodAdapt.get_projections()
+```
+
+Get all projections from the database.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**projections**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   A dictionary containing all projections. Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects' Each value is a list of the corresponding attribute for each projection.
+
+### get_road_impacts { #flood_adapt.FloodAdapt.get_road_impacts }
+
+```python
+FloodAdapt.get_road_impacts(name: str)
+```
+
+Return a geodataframe of the impacts at roads.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the scenario.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**roads**]{.parameter-name} [:]{.parameter-annotation-sep} [[gpd](`geopandas`).[GeoDataFrame](`geopandas.GeoDataFrame`)]{.parameter-annotation}</code>
+
+:   The impacted roads for the scenario.
+
+### get_scenario { #flood_adapt.FloodAdapt.get_scenario }
+
+```python
+FloodAdapt.get_scenario(name: str)
+```
+
+Get a scenario from the database by name.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the scenario to retrieve.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**scenario**]{.parameter-name} [:]{.parameter-annotation-sep} [[Scenario](`flood_adapt.objects.scenarios.scenarios.Scenario`)]{.parameter-annotation}</code>
+
+:   The scenario object with the given name.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the scenario with the given name does not exist.
+
+### get_scenarios { #flood_adapt.FloodAdapt.get_scenarios }
+
+```python
+FloodAdapt.get_scenarios()
+```
+
+Get all scenarios from the database.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**scenarios**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   A dictionary containing all scenarios. Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'. Each value is a list of the corresponding attribute for each scenario.
+
+### get_slr_scn_names { #flood_adapt.FloodAdapt.get_slr_scn_names }
+
+```python
+FloodAdapt.get_slr_scn_names()
+```
+
+Get all sea level rise scenario names from the database.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**names**]{.parameter-name} [:]{.parameter-annotation-sep} [[List](`typing.List`)\[[str](`str`)\]]{.parameter-annotation}</code>
+
+:   List of scenario names
+
+### get_static_map { #flood_adapt.FloodAdapt.get_static_map }
+
+```python
+FloodAdapt.get_static_map(path: Union[str, Path])
+```
+
+Get a static map from the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**path**]{.parameter-name} [:]{.parameter-annotation-sep} [[Union](`typing.Union`)\[[str](`str`), [Path](`pathlib.Path`)\]]{.parameter-annotation}</code>
+
+:   path to the static map
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**static_map**]{.parameter-name} [:]{.parameter-annotation-sep} [[gpd](`geopandas`).[GeoDataFrame](`geopandas.GeoDataFrame`)]{.parameter-annotation}</code>
+
+:   gpd.GeoDataFrame with the static map
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the static map with the given path does not exist.
+
+### get_strategies { #flood_adapt.FloodAdapt.get_strategies }
+
+```python
+FloodAdapt.get_strategies()
+```
+
+Get all strategies from the database.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**strategies**]{.parameter-name} [:]{.parameter-annotation-sep} [[dict](`dict`)\[[str](`str`), [Any](`typing.Any`)\]]{.parameter-annotation}</code>
+
+:   A dictionary containing all strategies. Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects' Each value is a list of the corresponding attribute for each strategy.
+
+### get_strategy { #flood_adapt.FloodAdapt.get_strategy }
+
+```python
+FloodAdapt.get_strategy(name: str)
+```
+
+Get a strategy from the database by name.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the strategy to retrieve.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**strategy**]{.parameter-name} [:]{.parameter-annotation-sep} [[Strategy](`flood_adapt.objects.strategies.strategies.Strategy`)]{.parameter-annotation}</code>
+
+:   The strategy object with the given name.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the strategy with the given name does not exist.
+
+### get_svi_map { #flood_adapt.FloodAdapt.get_svi_map }
+
+```python
+FloodAdapt.get_svi_map()
+```
+
+Get the SVI map that are used in Fiat.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**svi_map**]{.parameter-name} [:]{.parameter-annotation-sep} [[gpd](`geopandas`).[GeoDataFrame](`geopandas.GeoDataFrame`)]{.parameter-annotation}</code>
+
+:   gpd.GeoDataFrames with the SVI map, None if not available
+
+### get_topobathy_path { #flood_adapt.FloodAdapt.get_topobathy_path }
+
+```python
+FloodAdapt.get_topobathy_path()
+```
+
+Return the path of the topobathy tiles in order to create flood maps with water level maps.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**topo_path**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The path to the topobathy file.
+
+### interp_slr { #flood_adapt.FloodAdapt.interp_slr }
+
+```python
+FloodAdapt.interp_slr(slr_scenario: str, year: float)
+```
+
+Interpolate SLR value and reference it to the SLR reference year from the site toml.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**slr_scenario**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   SLR scenario name from the coulmn names in static/slr/slr.csv
+
+<code>[**year**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   year to evaluate
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**interpolated**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The interpolated sea level rise for the given scenario and year.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[ValueError](`ValueError`)]{.parameter-annotation}</code>
+
+:   if the reference year is outside of the time range in the slr.csv file
+
+<code>[:]{.parameter-annotation-sep} [[ValueError](`ValueError`)]{.parameter-annotation}</code>
+
+:   if the year to evaluate is outside of the time range in the slr.csv file
+
+### load_static_data { #flood_adapt.FloodAdapt.load_static_data }
+
+```python
+FloodAdapt.load_static_data()
+```
+
+Read the static data into the cache.
+
+This is used to speed up the loading of the static data.
+
+### plot_event_forcing { #flood_adapt.FloodAdapt.plot_event_forcing }
+
+```python
+FloodAdapt.plot_event_forcing(event: Event, forcing_type: ForcingType)
+```
+
+Plot forcing data for an event.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**event**]{.parameter-name} [:]{.parameter-annotation-sep} [[Event](`flood_adapt.objects.events.events.Event`)]{.parameter-annotation}</code>
+
+:   The event object
+
+<code>[**forcing_type**]{.parameter-name} [:]{.parameter-annotation-sep} [[ForcingType](`flood_adapt.objects.forcing.forcing.ForcingType`)]{.parameter-annotation}</code>
+
+:   The type of forcing data to plot
+
+### plot_slr_scenarios { #flood_adapt.FloodAdapt.plot_slr_scenarios }
+
+```python
+FloodAdapt.plot_slr_scenarios()
+```
+
+Plot sea level rise scenarios.
+
+#### Returns {.doc-section .doc-section-returns}
+
+<code>[**html_path**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The path to the html plot of the sea level rise scenarios.
+
+### run_benefit { #flood_adapt.FloodAdapt.run_benefit }
+
+```python
+FloodAdapt.run_benefit(name: Union[str, list[str]])
+```
+
+Run the benefit assessment.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[Union](`typing.Union`)\[[str](`str`), [list](`list`)\[[str](`str`)\]\]]{.parameter-annotation}</code>
+
+:   The name of the benefit object to run.
+
+### run_scenario { #flood_adapt.FloodAdapt.run_scenario }
+
+```python
+FloodAdapt.run_scenario(scenario_name: Union[str, list[str]])
+```
+
+Run a scenario hazard and impacts.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**scenario_name**]{.parameter-name} [:]{.parameter-annotation-sep} [[Union](`typing.Union`)\[[str](`str`), [list](`list`)\[[str](`str`)\]\]]{.parameter-annotation}</code>
+
+:   name(s) of the scenarios to run.
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[RuntimeError](`RuntimeError`)]{.parameter-annotation}</code>
+
+:   If an error occurs while running one of the scenarios
+
+### save_benefit { #flood_adapt.FloodAdapt.save_benefit }
+
+```python
+FloodAdapt.save_benefit(benefit: Benefit, overwrite: bool = False)
+```
+
+Save a benefit object to the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**benefit**]{.parameter-name} [:]{.parameter-annotation-sep} [[Benefit](`flood_adapt.objects.benefits.benefits.Benefit`)]{.parameter-annotation}</code>
+
+:   The benefit object to save.
+
+<code>[**overwrite**]{.parameter-name} [:]{.parameter-annotation-sep} [[bool](`bool`)]{.parameter-annotation} [ = ]{.parameter-default-sep} [False]{.parameter-default}</code>
+
+:   Whether to overwrite an existing benefit with the same name (default is False).
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the benefit object is not valid.
+
+### save_event { #flood_adapt.FloodAdapt.save_event }
+
+```python
+FloodAdapt.save_event(event: Event, overwrite: bool = False)
+```
+
+Save an event object to the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**event**]{.parameter-name} [:]{.parameter-annotation-sep} [[Event](`flood_adapt.objects.events.events.Event`)]{.parameter-annotation}</code>
+
+:   The event object to save.
+
+<code>[**overwrite**]{.parameter-name} [:]{.parameter-annotation-sep} [[bool](`bool`)]{.parameter-annotation} [ = ]{.parameter-default-sep} [False]{.parameter-default}</code>
+
+:   Whether to overwrite an existing event with the same name (default is False).
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the event object is not valid.
+
+### save_measure { #flood_adapt.FloodAdapt.save_measure }
+
+```python
+FloodAdapt.save_measure(measure: Measure, overwrite: bool = False)
+```
+
+Save a measure object to the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**measure**]{.parameter-name} [:]{.parameter-annotation-sep} [[Measure](`flood_adapt.objects.measures.measures.Measure`)]{.parameter-annotation}</code>
+
+:   The measure object to save.
+
+<code>[**overwrite**]{.parameter-name} [:]{.parameter-annotation-sep} [[bool](`bool`)]{.parameter-annotation} [ = ]{.parameter-default-sep} [False]{.parameter-default}</code>
+
+:   Whether to overwrite an existing measure with the same name (default is False).
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the measure object is not valid.
+
+### save_projection { #flood_adapt.FloodAdapt.save_projection }
+
+```python
+FloodAdapt.save_projection(projection: Projection, overwrite: bool = False)
+```
+
+Save a projection object to the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**projection**]{.parameter-name} [:]{.parameter-annotation-sep} [[Projection](`flood_adapt.objects.projections.projections.Projection`)]{.parameter-annotation}</code>
+
+:   The projection object to save.
+
+<code>[**overwrite**]{.parameter-name} [:]{.parameter-annotation-sep} [[bool](`bool`)]{.parameter-annotation} [ = ]{.parameter-default-sep} [False]{.parameter-default}</code>
+
+:   Whether to overwrite an existing projection with the same name (default is False).
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the projection object is not valid.
+
+### save_scenario { #flood_adapt.FloodAdapt.save_scenario }
+
+```python
+FloodAdapt.save_scenario(scenario: Scenario, overwrite: bool = False)
+```
+
+Save the scenario to the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**scenario**]{.parameter-name} [:]{.parameter-annotation-sep} [[Scenario](`flood_adapt.objects.scenarios.scenarios.Scenario`)]{.parameter-annotation}</code>
+
+:   The scenario to save.
+
+<code>[**overwrite**]{.parameter-name} [:]{.parameter-annotation-sep} [[bool](`bool`)]{.parameter-annotation} [ = ]{.parameter-default-sep} [False]{.parameter-default}</code>
+
+:   Whether to overwrite an existing scenario with the same name (default is False).
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the scenario object is not valid or if it already exists and overwrite is False.
+
+### save_strategy { #flood_adapt.FloodAdapt.save_strategy }
+
+```python
+FloodAdapt.save_strategy(strategy: Strategy, overwrite: bool = False)
+```
+
+Save a strategy object to the database.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+<code>[**strategy**]{.parameter-name} [:]{.parameter-annotation-sep} [[Strategy](`flood_adapt.objects.strategies.strategies.Strategy`)]{.parameter-annotation}</code>
+
+:   The strategy object to save.
+
+<code>[**overwrite**]{.parameter-name} [:]{.parameter-annotation-sep} [[bool](`bool`)]{.parameter-annotation} [ = ]{.parameter-default-sep} [False]{.parameter-default}</code>
+
+:   Whether to overwrite an existing strategy with the same name (default is False).
+
+#### Raises {.doc-section .doc-section-raises}
+
+<code>[:]{.parameter-annotation-sep} [[DatabaseError](`flood_adapt.misc.exceptions.DatabaseError`)]{.parameter-annotation}</code>
+
+:   If the strategy object is not valid. If the strategy object already exists.

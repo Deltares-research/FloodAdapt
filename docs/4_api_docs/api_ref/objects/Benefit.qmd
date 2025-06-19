@@ -1,0 +1,53 @@
+# Benefit { #flood_adapt.objects.Benefit }
+
+```python
+objects.Benefit()
+```
+
+BaseModel describing the expected variables and data types of a Benefit analysis object.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the benefit analysis.
+
+<code>[**description**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The description of the benefit analysis. Defaults to "".
+
+<code>[**strategy**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the strategy. Should be a strategy saved in the database.
+
+<code>[**event_set**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the event set. Should be an event set saved in the database.
+
+<code>[**projection**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the projection. Should be a projection saved in the database.
+
+<code>[**future_year**]{.parameter-name} [:]{.parameter-annotation-sep} [[int](`int`)]{.parameter-annotation}</code>
+
+:   The future year for the analysis.
+
+<code>[**current_situation**]{.parameter-name} [:]{.parameter-annotation-sep} [[CurrentSituationModel](`flood_adapt.objects.benefits.benefits.CurrentSituationModel`)]{.parameter-annotation}</code>
+
+:   The current situation model.
+
+<code>[**baseline_strategy**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the baseline strategy.
+
+<code>[**discount_rate**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The discount rate for the analysis.
+
+<code>[**implementation_cost**]{.parameter-name} [:]{.parameter-annotation-sep} [[Optional](`typing.Optional`)\[[float](`float`)\]]{.parameter-annotation}</code>
+
+:   The implementation cost of the strategy. Defaults to None.
+
+<code>[**annual_maint_cost**]{.parameter-name} [:]{.parameter-annotation-sep} [[Optional](`typing.Optional`)\[[float](`float`)\]]{.parameter-annotation}</code>
+
+:   The annual maintenance cost of the strategy. Defaults to None.

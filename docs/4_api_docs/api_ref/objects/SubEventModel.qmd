@@ -1,0 +1,17 @@
+# SubEventModel { #flood_adapt.objects.SubEventModel }
+
+```python
+objects.SubEventModel()
+```
+
+The accepted input for a sub event in FloodAdapt.
+
+## Attributes {.doc-section .doc-section-attributes}
+
+<code>[**name**]{.parameter-name} [:]{.parameter-annotation-sep} [[str](`str`)]{.parameter-annotation}</code>
+
+:   The name of the sub event.
+
+<code>[**frequency**]{.parameter-name} [:]{.parameter-annotation-sep} [[float](`float`)]{.parameter-annotation}</code>
+
+:   The frequency of the sub event.
