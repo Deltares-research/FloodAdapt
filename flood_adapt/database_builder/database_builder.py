@@ -623,12 +623,7 @@ class DatabaseBuilder:
 
     def create_fiat_config(self) -> FiatConfigModel:
         # Make sure only csv objects have geometries
-        for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
-            keep = geoms[_FIAT_COLUMNS.object_id].isin(
-                self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.object_id]
-            )
-            geoms = geoms[keep].reset_index(drop=True)
-            self.fiat_model.exposure.exposure_geoms[i] = geoms
+        self._delete_extra_geometries()
 
         footprints = self.create_footprints()
         if footprints is not None:
@@ -644,7 +639,7 @@ class DatabaseBuilder:
         roads_gpkg = self.create_roads()
         non_building_names = []
         if roads_gpkg is not None:
-            non_building_names.append("road")
+            non_building_names.append("road")  # TODO this should not be hardcoded
 
         # Update elevations
         self.update_fiat_elevation()
@@ -707,58 +702,25 @@ class DatabaseBuilder:
 
         exposure = self.fiat_model.exposure.exposure_db
         dem = rxr.open_rasterio(dem_file)
-        # TODO make sure only fiat_model object changes take place!
-        if self.config.fiat_roads_name in self.fiat_model.exposure.geom_names:
-            roads = self.fiat_model.exposure.exposure_geoms[
-                self._get_fiat_road_index()
-            ].to_crs(dem.spatial_ref.crs_wkt)
-            roads["centroid"] = roads.geometry.centroid  # get centroids
 
-            x_points = xr.DataArray(roads["centroid"].x, dims="points")
-            y_points = xr.DataArray(roads["centroid"].y, dims="points")
-            roads["elev"] = (
-                dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
-                * conversion_factor
-            )
-
-            exposure.loc[
-                exposure[_FIAT_COLUMNS.primary_object_type] == "road",
-                _FIAT_COLUMNS.ground_floor_height,
-            ] = 0
-            exposure = exposure.merge(
-                roads[[_FIAT_COLUMNS.object_id, "elev"]],
-                on=_FIAT_COLUMNS.object_id,
-                how="left",
-            )
-            exposure.loc[
-                exposure[_FIAT_COLUMNS.primary_object_type] == "road",
-                _FIAT_COLUMNS.ground_elevation,
-            ] = exposure.loc[
-                exposure[_FIAT_COLUMNS.primary_object_type] == "road", "elev"
-            ]
-            del exposure["elev"]
-            self.fiat_model.exposure.exposure_db = exposure
-
-        buildings = self.fiat_model.exposure.exposure_geoms[
-            self._get_fiat_building_index()
-        ].to_crs(dem.spatial_ref.crs_wkt)
-        buildings["geometry"] = buildings.geometry.centroid
-        x_points = xr.DataArray(buildings["geometry"].x, dims="points")
-        y_points = xr.DataArray(buildings["geometry"].y, dims="points")
-        buildings["elev"] = (
+        gdf = self._get_fiat_gdf_full()
+        gdf["centroid"] = gdf.geometry.centroid
+        x_points = xr.DataArray(gdf["centroid"].x, dims="points")
+        y_points = xr.DataArray(gdf["centroid"].y, dims="points")
+        gdf["elev"] = (
             dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
             * conversion_factor
         )
+
         exposure = exposure.merge(
-            buildings[[_FIAT_COLUMNS.object_id, "elev"]],
+            gdf[[_FIAT_COLUMNS.object_id, "elev"]],
             on=_FIAT_COLUMNS.object_id,
             how="left",
         )
-        exposure.loc[
-            exposure[_FIAT_COLUMNS.primary_object_type] != "road",
-            _FIAT_COLUMNS.ground_elevation,
-        ] = exposure.loc[exposure[_FIAT_COLUMNS.primary_object_type] != "road", "elev"]
+        exposure[_FIAT_COLUMNS.ground_elevation] = exposure["elev"]
         del exposure["elev"]
+
+        self.fiat_model.exposure.exposure_db = exposure
 
     def read_damage_unit(self) -> str:
         if self.fiat_model.exposure.damage_unit is not None:
@@ -1002,10 +964,9 @@ class DatabaseBuilder:
                     )
                 # Do spatial join of FIAT objects and aggregation areas
                 exposure_csv = self.fiat_model.exposure.exposure_db
-                buildings_joined, aggr_areas = self.spatial_join(
-                    objects=self.fiat_model.exposure.exposure_geoms[
-                        self._get_fiat_building_index()
-                    ],
+                gdf = self._get_fiat_gdf_full()
+                gdf_joined, aggr_areas = self.spatial_join(
+                    objects=gdf[[_FIAT_COLUMNS.object_id, "geometry"]],
                     layer=str(self._check_exists_and_absolute(aggr.file)),
                     field_name=aggr.field_name,
                     rename=_FIAT_COLUMNS.aggregation_label.format(name=aggr_name),
@@ -1016,7 +977,7 @@ class DatabaseBuilder:
                 aggr_path.parent.mkdir(parents=True, exist_ok=True)
                 aggr_areas.to_file(aggr_path)
                 exposure_csv = exposure_csv.merge(
-                    buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
+                    gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
                 )
                 self.fiat_model.exposure.exposure_db = exposure_csv
                 # Update spatial joins in FIAT model
@@ -1067,16 +1028,15 @@ class DatabaseBuilder:
             aggregation_areas.append(aggr)
 
             # Add column in FIAT
-            buildings_joined, _ = self.spatial_join(
-                objects=self.fiat_model.exposure.exposure_geoms[
-                    self._get_fiat_building_index()
-                ],
+            gdf = self._get_fiat_gdf_full()
+            gdf_joined, aggr_areas = self.spatial_join(
+                objects=gdf[[_FIAT_COLUMNS.object_id, "geometry"]],
                 layer=region,
                 field_name="aggr_id",
                 rename=_FIAT_COLUMNS.aggregation_label.format(name="region"),
             )
             exposure_csv = exposure_csv.merge(
-                buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
+                gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
             self.fiat_model.exposure.exposure_db = exposure_csv
             self.logger.warning(
@@ -1943,9 +1903,8 @@ class DatabaseBuilder:
         -------
         None
         """
-        gdf = self.fiat_model.exposure.get_full_gdf(
-            self.fiat_model.exposure.exposure_db
-        )
+        gdf = self._get_fiat_gdf_full()
+
         crs = gdf.crs
         sfincs_extend = self.sfincs_overland_model.region
         sfincs_extend = sfincs_extend.to_crs(crs)
@@ -1955,55 +1914,21 @@ class DatabaseBuilder:
         self.fiat_model.geoms["region"] = clipped_region
 
         # Clip the exposure geometries
-        # Filter buildings and roads
-        road_inds = gdf[_FIAT_COLUMNS.primary_object_type].str.contains("road")
-        # Ensure road_inds is a boolean Series
-        if not road_inds.dtype == bool:
-            road_inds = road_inds.astype(bool)
-        # Clip buildings
-        gdf_buildings = gdf[~road_inds]
-        gdf_buildings = self._clip_gdf(
-            gdf_buildings, clipped_region, predicate="within"
-        ).reset_index(drop=True)
-
-        if road_inds.any():
-            # Clip roads
-            gdf_roads = gdf[road_inds]
-            gdf_roads = self._clip_gdf(
-                gdf_roads, clipped_region, predicate="within"
-            ).reset_index(drop=True)
-
-            idx_buildings = self.fiat_model.exposure.geom_names.index(
-                self.config.fiat_buildings_name
-            )
-            idx_roads = self.fiat_model.exposure.geom_names.index(
-                self.config.fiat_roads_name
-            )
-            self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
-                [_FIAT_COLUMNS.object_id, "geometry"]
-            ]
-            self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
-                [_FIAT_COLUMNS.object_id, "geometry"]
-            ]
-            gdf = pd.concat([gdf_buildings, gdf_roads])
-        else:
-            gdf = gdf_buildings
-            self.fiat_model.exposure.exposure_geoms[0] = gdf[
-                [_FIAT_COLUMNS.object_id, "geometry"]
-            ]
+        gdf = self._clip_gdf(gdf, sfincs_extend, predicate="within")
 
         # Save exposure dataframe
         del gdf["geometry"]
         self.fiat_model.exposure.exposure_db = gdf.reset_index(drop=True)
+
+        # Make
+        self._delete_extra_geometries()
 
         # Clip the building footprints
         fieldname = "BF_FID"
         if clip_footprints and not self.fiat_model.building_footprint.empty:
             # Get buildings after filtering and their footprint id
             self.fiat_model.building_footprint = self.fiat_model.building_footprint[
-                self.fiat_model.building_footprint[fieldname].isin(
-                    gdf_buildings[fieldname]
-                )
+                self.fiat_model.building_footprint[fieldname].isin(gdf[fieldname])
             ].reset_index(drop=True)
 
     @staticmethod
@@ -2190,6 +2115,40 @@ class DatabaseBuilder:
         ) as f:
             bin_colors = tomli.load(f)
         return bin_colors
+
+    def _delete_extra_geometries(self) -> None:
+        """
+        Remove extra geometries from the exposure_geoms list that do not have a corresponding object_id in the exposure_db DataFrame.
+
+        Returns
+        -------
+            None
+        """
+        # Make sure only csv objects have geometries
+        for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
+            keep = geoms[_FIAT_COLUMNS.object_id].isin(
+                self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.object_id]
+            )
+            geoms = geoms[keep].reset_index(drop=True)
+            self.fiat_model.exposure.exposure_geoms[i] = geoms
+
+    def _get_fiat_gdf_full(self) -> gpd.GeoDataFrame:
+        """
+        Get the full GeoDataFrame of the Fiat model.
+
+        Returns
+        -------
+            gpd.GeoDataFrame: The full GeoDataFrame of the Fiat model.
+        """
+        gdf = self.fiat_model.exposure.get_full_gdf(
+            self.fiat_model.exposure.exposure_db
+        )
+        # Keep only unique "object_id" rows, keeping the first occurrence
+        gdf = gdf.drop_duplicates(
+            subset=_FIAT_COLUMNS.object_id, keep="first"
+        ).reset_index(drop=True)
+
+        return gdf
 
 
 if __name__ == "__main__":
