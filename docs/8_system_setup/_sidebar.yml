@@ -1,0 +1,8 @@
+website:
+  sidebar:
+    - id: system_setup
+      title: "System Setup"
+      href: "8_system_setup/index.qmd"
+      contents:
+        - "3_setup_guide/database.qmd"
+        - "examples/database_builder/index.qmd"

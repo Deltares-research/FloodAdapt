@@ -4,6 +4,7 @@ project:
   pre-render:
     - version.py
     - api.py
+    - merge_sidebars.py
   render:
     - "*.qmd"
     - "*.ipynb"
@@ -26,18 +27,19 @@ interlinks:
       url: https://numpy.org/doc/stable/
 
 metadata-files:
-  - user_documentation.yml # user guide + sidebar
-  - examples/_sidebar.yml  # examples + sidebar
-  - api_ref/_sidebar.yml   # api reference + sidebar
-  - _version.yml           # version information
+  - 4_user_guide/_sidebar.yml                   # User Guide
+  - 5_technical_docs/_sidebar.yml               # Technical Docs
+  - 7_backend_user_docs/_sidebar.yml            # API User Docs: merged sidebar. generated from api.py and merge_sidebars.py
+  - 8_system_setup/_sidebar.yml                 # System Setup
+  - _version.yml                                # Version metadata
 number-sections: false
 
 quartodoc:
   title: "Flood Adapt v{{< meta version >}}"
   style: pkgdown
   package: flood_adapt
-  dir: api_ref
-  out_index: api_index.qmd # generates index at: api_ref/api_index.qmd
+  dir: 7_backend_user_docs/api_ref
+  out_index: api_index.qmd # generates index at: 7_backend_user_docs/api_ref/api_index.qmd
   render_interlinks: true
   options: # default options for all sections
     include_attributes: true

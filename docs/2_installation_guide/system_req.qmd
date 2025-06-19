@@ -1,4 +1,0 @@
----
-title:	CFRSS system requirements
----
-Coming soon.

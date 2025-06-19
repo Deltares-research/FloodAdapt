@@ -195,7 +195,7 @@ def create_tree(
                 "collapse-level": 2,
                 "contents": {
                     "section": "API Reference",
-                    "href": "api_ref/api_index.qmd",
+                    "href": "7_backend_user_docs/api_ref/api_index.qmd",
                     "contents": content,
                 },
                 "id": rel_dir,

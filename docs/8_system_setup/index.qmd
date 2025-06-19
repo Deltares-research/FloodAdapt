@@ -5,7 +5,7 @@ filters:
   - lightbox
 lightbox: auto
 ---
-To get started with FloodAdapt in a new location, a site-specific FloodAdapt database needs to be created. To support users in the creation of this database, the FloodAdapt program includes a database builder. This documentation describes the information needed by the database builder, and how to provide that information based on whether you want to [work in a Python environment](../examples/database_builder/index.qmd), or prefer to [work with an executable](../3_setup_guide/database.qmd) (no Python needed).
+To get started with FloodAdapt in a new location, a site-specific FloodAdapt database needs to be created. To support users in the creation of this database, the FloodAdapt program includes a database builder. This documentation describes the information needed by the database builder, and how to provide that information based on whether you want to [work in a Python environment](../7_backend_user_docs/examples/database_builder/index.qmd), or prefer to [work with an executable](../3_setup_guide/database.qmd) (no Python needed).
 
 ::: {.callout-tip}
 #### SFINCS and Delft-FIAT models

@@ -7,3 +7,5 @@
 *.jupyter_cache/
 objects.json
 _version.yml
+7_backend_user_docs/_sidebar.yml
+7_backend_user_docs/api_ref/
