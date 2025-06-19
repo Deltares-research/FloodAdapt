@@ -199,7 +199,7 @@ website:
       - text: Technical Background
         href: 5_technical_docs/index.qmd
       - text: API User Documentation
-        href: 7_backend_user_docs/index.qmd
+        href: 7_api_user_docs/index.qmd
       - text: System Setup
         href: 8_system_setup/index.qmd
 
