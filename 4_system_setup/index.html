@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>System setup – Flood Adapt Documentation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-2fef5ea3f8957b3e4ecc936fc74692ca.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-0a88f9bf3c7dc6da7549435e9e0a9869.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 5,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../_static/styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">FloodAdapt</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../1_user_guide/index.html"> 
+<span class="menu-text">User Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../2_technical_docs/index.html"> 
+<span class="menu-text">Technical Background</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../3_api_docs/index.html"> 
+<span class="menu-text">API Documentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../4_system_setup/index.html" aria-current="page"> 
+<span class="menu-text">System Setup</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/Deltares-research/FloodAdapt"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">System setup</li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../4_system_setup/database.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Database Builder (executable)</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../3_api_docs/examples/database_builder/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Database Builder (python)</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#floodadapt-capabilities-based-on-configuration" id="toc-floodadapt-capabilities-based-on-configuration" class="nav-link active" data-scroll-target="#floodadapt-capabilities-based-on-configuration">FloodAdapt capabilities based on configuration</a>
+  <ul class="collapse">
+  <li><a href="#baseline-floodadapt-configuration" id="toc-baseline-floodadapt-configuration" class="nav-link" data-scroll-target="#baseline-floodadapt-configuration">Baseline FloodAdapt configuration</a></li>
+  <li><a href="#risk-and-benefit-analysis" id="toc-risk-and-benefit-analysis" class="nav-link" data-scroll-target="#risk-and-benefit-analysis">Risk and benefit analysis</a></li>
+  <li><a href="#simulating-hurricane-events-and-ungauged-historical-events" id="toc-simulating-hurricane-events-and-ungauged-historical-events" class="nav-link" data-scroll-target="#simulating-hurricane-events-and-ungauged-historical-events">Simulating hurricane events and ‘ungauged’ historical events</a></li>
+  <li><a href="#downloading-historical-water-levels" id="toc-downloading-historical-water-levels" class="nav-link" data-scroll-target="#downloading-historical-water-levels">Downloading historical water levels</a></li>
+  <li><a href="#social-vulnerability-insights" id="toc-social-vulnerability-insights" class="nav-link" data-scroll-target="#social-vulnerability-insights">Social vulnerability insights</a></li>
+  <li><a href="#visualizing-water-level-output-time-series" id="toc-visualizing-water-level-output-time-series" class="nav-link" data-scroll-target="#visualizing-water-level-output-time-series">Visualizing water level output time series</a></li>
+  <li><a href="#elevating-buildings-above-base-flood-elevation-bfe" id="toc-elevating-buildings-above-base-flood-elevation-bfe" class="nav-link" data-scroll-target="#elevating-buildings-above-base-flood-elevation-bfe">Elevating buildings above base flood elevation (BFE)</a></li>
+  <li><a href="#sea-level-rise-scenario-selection" id="toc-sea-level-rise-scenario-selection" class="nav-link" data-scroll-target="#sea-level-rise-scenario-selection">Sea level rise scenario selection</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/4_system_setup/index.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">System setup</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>To get started with FloodAdapt in a new location, a site-specific FloodAdapt database needs to be created. To support users in the creation of this database, the FloodAdapt program includes a database builder. This documentation describes the information needed by the database builder, and how to provide that information based on whether you want to <a href="../3_api_docs/examples/database_builder/index.html">work in a Python environment</a>, or prefer to <a href="../4_system_setup/database.html">work with an executable</a> (no Python needed).</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+SFINCS and Delft-FIAT models
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Two important components of a FloodAdapt database are the flood and impact models (SFINCS overland and (optionally) offshore models and a Delft-FIAT impact model). Documentation on how to setup these models can be found ADD REFS HERE. The documentation on database setup provided here assumes that these components have already been prepared.</p>
+</div>
+</div>
+<p>The FloodAdapt database-builder is intended to greatly simplify the process of setting up FloodAdapt in a new location. The FloodAdapt software is an ‘empty shell’ that must be connected to a site-specific database. The database-builder aids the user in setting up this database.</p>
+<p>The most critical components of the FloodAdapt database are the SFINCS and Delft-FIAT models, both of which can now be generated with greater ease using the <a href="../_archive/setup_guide/SFINCS/index.qmd">SFINCS model-builder</a> and the <a href="../_archive/setup_guide/Delft_Fiat/index.qmd">Delft-FIAT model-builder</a>. Once these have been created, users can run the FloodAdapt database-builder to generate a complete database for a functioning FloodAdapt application at their site.</p>
+<p>To run the database-builder, a user double-clicks the FloodAdapt database-builder executable. This opens a screen where the user can enter a file path to the database-builder configuration file.</p>
+<p>This documentation will describe the FloodAdapt database-builder configuration file. Depending on the amount of information included in the configuration file, different FloodAdapt functionalities will be activated. This is described in the section <a href="#floodadapt-capabilities-based-on-configuration">FloodAdapt capabilities based on configuration</a>. It starts by outlining the minimum information required to generate a functional FloodAdapt system, and then specifies additional functionalities and the required information in the configuration file to activate them. The section <a href="#configuration-file-attributes">Configuration file attributes</a> specifies all of the attributes that can be included in the database-builder configuration and includes details about their format and use.</p>
+<section id="floodadapt-capabilities-based-on-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="floodadapt-capabilities-based-on-configuration">FloodAdapt capabilities based on configuration</h2>
+<p>There are different functionalities that are activated in FloodAdapt depending on the information contained in the configuration file. This section starts by describing the information needed for the <a href="#baseline-floodadapt-configuration">baseline FloodAdapt configuration</a>, which is the minimum needed to set up a functional FloodAdapt system. Note that an important requirement is that a Delft-FIAT model and an overland SFINCS model have been set up for the site. The subsequent sections then describe additional FloodAdapt functionality that is activated with additional configuration input.</p>
+<section id="baseline-floodadapt-configuration" class="level3">
+<h3 class="anchored" data-anchor-id="baseline-floodadapt-configuration">Baseline FloodAdapt configuration</h3>
+<p>A baseline FloodAdapt configuration is a functional version of FloodAdapt that requires the minimum amount of configuration file input. This version allows users to run event scenarios for either a synthetic event or a historical gauged event. All measures and future projections are available for analysis. Note that because it only supports event scenarios, the risk and benefits options are not available for this baseline configuration.</p>
+<p>A baseline FloodAdapt configuration allows users to get started with FloodAdapt with relatively little required information. The following is all that is required for a baseline configuration:</p>
+<ul>
+<li>A name for your site</li>
+<li>The path to your overland SFINCS model folder</li>
+<li>The path to your Delft-FIAT model folder</li>
+<li>The unit system you want to work in (imperial or metric)</li>
+<li>Max values for output maps displayed in the FloodAdapt user interface</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Including the baseline configuration attributes in the database configuration file
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The name of your site, paths to your SFINCS and Delft-FIAT models, and the unit system are all specified in the header section of the configuration file which is described under ‘Configuration file attributes’ in the <a href="#header-attributes">Header attributes section</a>. The max values for output maps are specified in the <a href="#gui-attributes">GUI attributes section</a>.</p>
+</div>
+</div>
+</section>
+<section id="risk-and-benefit-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="risk-and-benefit-analysis">Risk and benefit analysis</h3>
+<p>The baseline FloodAdapt configuration allows users to simulate event scenarios, which can be very insightful. However, risk scenarios allow users to understand the current and future risk to a community (considering many types of events), with and without adaptation options, and to calculate the risk-reduction benefits of adaptation strategies. To activate the risk scenario and benefit analysis functionality, a <a href="../4_system_setup/risk_analysis.html">probabilistic event set</a> is required. When this set is included in the FloodAdapt database, FloodAdapt can calculate the flooding for all the events in the set and uses a probabilistic calculator to calculate return period flooding, impacts, and risk.</p>
+<!-- :: {.callout-note}
+#### What is the difference between an event scenario and a risk scenario
+For an event scenario FloodAdapt calculates the flooding and impacts for one single weather event, such as a hurricane or a king tide with rainfall. The scenario can include future projections and measures, but always represents just one single event. For a risk scenario, in contrast, FloodAdapt calculates flooding for a set of events with different probabilities. From this output, FloodAdapt derives return period flood maps (such as the 10-year, 25-year, or 100-year flood maps) and return period damage maps. It then combines this information to further derive *expected annual damages*, which is the metric associated with economic risk.
+:::-->
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Including a probabilistic event set in the database configuration file
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Specifying a probabilistic event set is done in the Header section of the configuration file. See the attributes in the Header section under ‘Configuration file attributes’ in the <a href="#header-attributes">Header attributes section</a>.</p>
+</div>
+</div>
+</section>
+<section id="simulating-hurricane-events-and-ungauged-historical-events" class="level3">
+<h3 class="anchored" data-anchor-id="simulating-hurricane-events-and-ungauged-historical-events">Simulating hurricane events and ‘ungauged’ historical events</h3>
+<p>For FloodAdapt users to simulate a scenario with a historical hurricane, or to simulate a historical event for which there are no measured nearshore water levels, an offshore SFINCS model needs to be included in the FloodAdapt database (this can be created with the <a href="../_archive/setup_guide/SFINCS/index.qmd">SFINCS model-builder</a>). Once an offshore model is included, users will see additional event types that can be selected when they click “Add Event” in the FloodAdapt Events tab (see <a href="#fig-DB_offshore" class="quarto-xref">Figure&nbsp;1</a>). If a specific cyclone basin is specified in the database configuration file, only hurricanes in the specified basin will be included in the database and displayed in the hurricane selector window (which appears when the ‘Historical - hurricane’ option is chosen); see <a href="#fig-DB_cyclonesNA" class="quarto-xref">Figure&nbsp;2</a>. Note that if hurricanes are not relevant in an area, but an offshore model is included to simulate ungauged historical events, the hurricane event option can be “turned off” in the database configuration file. <!-- Many offshore SFINCS models have been created for the U.S. East and Gulf coasts and may be available for use at no cost
+In addition to specifying an offshore model, the user can also indicate which 'cyclone basin' is relevant for them. @fig-DB_cyclonesNA shows the hurricane selection window for the example of choosing "North America" as the cyclone basin.--></p>
+<div id="fig-DB_offshore" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DB_offshore-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/database_offshore.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DB_offshore-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: <strong>Adding an offshore model activates the ability to select a hurricane event, as well as an ‘ungauged’ historical event. Both of these event types make use of the offshore model. The left window shows the “Add event” popup window for the baseline FloodAdapt configuration, and the right shows with the addition of an offshore model</strong>
+</figcaption>
+</figure>
+</div>
+<div id="fig-DB_cyclonesNA" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DB_cyclonesNA-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/database_cyclones_NA.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DB_cyclonesNA-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: <strong>Hurricane selection window when a user has selected “NA” for North America as the ‘cyclone basin’</strong>
+</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Including an offshore model and cyclone basin in the database configuration file
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Specifying an offshore SFINCS model and a cyclone basin is done in the Header section of the configuration file. See the attributes in the Header section under ‘Configuration file attributes’ in the <a href="#header-attributes">Header attributes section</a>.</p>
+</div>
+</div>
+</section>
+<section id="downloading-historical-water-levels" class="level3">
+<h3 class="anchored" data-anchor-id="downloading-historical-water-levels">Downloading historical water levels</h3>
+<p>FloodAdapt allows users to simulate historical events. In the baseline FloodAdapt configuration, FloodAdapt users need to import their own water level time series for historical events. When a tide gauge (or alternatively a long time series CSV file) is added to the FloodAdapt database, this activates a ‘Download Observed Water Levels’ button in the specification window for a historical event. FloodAdapt users can then easily download water levels for a historical event by selecting a start and end date and clicking that button. <a href="#fig-DB_comp_tideGauge" class="quarto-xref">Figure&nbsp;3</a> shows the baseline FloodAdapt configuration on the left and with the inclusion of a tide gauge on the right. For sites in the U.S. tide gauges can be added automatically based on the site location via the <a href="https://tidesandcurrents.noaa.gov/stations.html">NOAA COOPS</a> website. The NOAA site also includes datum differences at gauge locations, so that users have the option to view water levels relative to a (potentially) more familiar datum (see <a href="#fig-DB_comp_tideGauge" class="quarto-xref">Figure&nbsp;3</a>).</p>
+<div id="fig-DB_comp_tideGauge" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DB_comp_tideGauge-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/database_comp_tideGauge.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DB_comp_tideGauge-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: <strong>Adding a tide gauge allows a user to activate the ‘Download observed water levels’ button. Additionally, it also allows users to specify different references they can view with the water level time series, and to set a different reference level (‘zero’) than mean sea level (MSL). The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of a tide gauge.</strong>
+</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Including a tide gauge in the database configuration file
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Details how to include a tide gauge (or long water level time series) to activate the ‘Download Observed Water Levels’ button are described under ‘Configuration file attributes’ in the <a href="#tide-gauge">Tide Gauge section</a>.</p>
+</div>
+</div>
+</section>
+<section id="social-vulnerability-insights" class="level3">
+<h3 class="anchored" data-anchor-id="social-vulnerability-insights">Social vulnerability insights</h3>
+<p>FloodAdapt automatically generates an infographic and a metrics table which helps FloodAdapt users understand the impacts of a simulated scenario. Social vulnerability is based on a collection of socio-economic attributes that indicate a longer or harder recovery from a flood event. When a social vulnerability index (SVI) layer is included in the FloodAdapt database, FloodAdapt shows additional information in the infographic and metrics table related to how socially vulnerable people are affected in a simulated scenario. Users can also view the SVI layer in both the <a href="../1_user_guide/measures/index.html">Measures</a> and <a href="../1_user_guide/output/index.html">Output</a> tabs, helping to identify where to explore measures and understand the impacts to socially vulnerable people. <a href="#fig-DB_SVI_comp" class="quarto-xref">Figure&nbsp;4</a> highlights the added information in the infographic and metrics table. It shows the baseline configuration on the left, and the configuration with an SVI layer added on the right. With the SVI layer included, users can see in the infographic the proportion of highly-vulnerable residential buildings that were damaged and destroyed. In the metrics table, they can see how many highly vulnerable residential properties were flooded.</p>
+<div id="fig-DB_SVI_comp" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DB_SVI_comp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/database_SVI_comp.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DB_SVI_comp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: <strong>When an SVI layer and a threshold are included, the infographic will include an additional graphic showing the distribution of residential impacts on high and low socially vulnerable homes </strong>
+</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Including an SVI layer in the database configuration file
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The attributes needed to include an SVI layer are described under ‘Configuration file attributes’ in the <a href="#SVI_attributes">Social vulnerability index section</a>.</p>
+</div>
+</div>
+</section>
+<section id="visualizing-water-level-output-time-series" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-water-level-output-time-series">Visualizing water level output time series</h3>
+<p>FloodAdapt allows users to view modeled water level time series at observation points in the FloodAdapt <a href="../1_user_guide/output/index.html">Output tab</a>. The spatial flood map in the FloodAdapt Output tab is static and represents the maximum flood depth during an event. Having observation points helps users understand how the water levels evolved <em>during</em> an event. To activate this functionality, observation points can be added to the database-builder configuration file.</p>
+<div id="fig-DB_obscomp" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DB_obscomp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/database_obsComp.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DB_obscomp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: <strong>Adding observation points activates the functionality to view water level time series output at these points in the FloodAdapt <a href="../1_user_guide/output/index.html">Output tab</a>. The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of observation points.</strong>
+</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Including observation points in the database configuration file
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The attributes needed to include observation points are described under ‘Configuration file attributes’ in the <a href="#observation-points">Observation Points section</a>.</p>
+</div>
+</div>
+</section>
+<section id="elevating-buildings-above-base-flood-elevation-bfe" class="level3">
+<h3 class="anchored" data-anchor-id="elevating-buildings-above-base-flood-elevation-bfe">Elevating buildings above base flood elevation (BFE)</h3>
+<p>FloodAdapt allows users to explore home elevations as an adaptation measure. With the base configuration, FloodAdapt users can specify how high a home should be elevated relative to a datum. However, in the U.S. standards for home elevations or elevations of new buildings are often specified relative to <em>base flood elevation</em> (BFE). This is a regulatory 100-year flood level calculated by the federal government. When users reference a base flood elevation layer in the configuration file, FloodAdapt users can choose to elevate homes above a datum or to a height above BFE.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Including a BFE layer in the database configuration file
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The attributes needed to include a BFE layer are described under ‘Configuration file attributes’ in the <a href="#BFE_attributes">Base Flood Elevation section</a>.</p>
+</div>
+</div>
+<div id="fig-DB_obscomp" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DB_obscomp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/database_bfe_comp.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DB_obscomp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: <strong>Adding a base flood elevation (BFE) layer activates the ability to elevate homes relative to BFE in addition to elevating relative to datum</strong>
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="sea-level-rise-scenario-selection" class="level3">
+<h3 class="anchored" data-anchor-id="sea-level-rise-scenario-selection">Sea level rise scenario selection</h3>
+<p>FloodAdapt allows users to explore the flooding and impacts for future sea level rise projections. In the base configuration case, users have access to this functionality, and can enter a sea level rise explicitly, for example “0.5 feet”. However, FloodAdapt users may want to explore flooding and impacts at a specific point in the future, for example in 15 or 20 years, and they may not know the sea level rise to expect in that future year. To facilitate these users, a sea level rise scenario CSV file can be included in the database setup. There are many sources for sea level rise scenarios, such as the <a href="https://sealevel.globalchange.gov/resources/2022-sea-level-rise-technical-report/">interagency sea level task force</a>. There is no limit to the number of SLR scenarios a user can include. FloodAdapt uses this file to generate a visualization showing the different SLR scenario curves in the <a href="../1_user_guide/projections/index.html">Projections</a> selection window. It also allows a user to enter a future year and select a SLR scenario, and then automatically calculates the sea level rise for that year.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Including SLR scenarios in the database configuration file
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The attributes needed to specify SLR scenarios are described under ‘Configuration file attributes’ in the <a href="#sea-level-rise-slr-scenarios">Sea Level Rise Scenarois section</a>.</p>
+</div>
+</div>
+<div id="fig-DB_slrComp" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DB_slrComp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/database_SLR_comp.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DB_slrComp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: <strong>Including a sea level rise scenario CSV file allows a user to select one of the SLR scenarios and a future year, and FloodAdapt automatically calculates the sea level rise</strong>
+</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+What about when sea level rise scenarios change?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Sea level rise scenarios are updating every few years. Updating the sea level rise scenarios in FloodAdapt is a simple as updating the CSV file with the years and projected sea level rise. FloodAdapt will then automatically use the new information when a FloodAdapt user selects a future year and a sea level rise scenario.</p>
+</div>
+</div>
+
+
+</section>
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/4_system_setup/index.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Event Set – Flood Adapt Documentation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-2fef5ea3f8957b3e4ecc936fc74692ca.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-0a88f9bf3c7dc6da7549435e9e0a9869.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 5,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../_static/styles.css">
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">FloodAdapt</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../1_user_guide/index.html"> 
+<span class="menu-text">User Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../2_technical_docs/index.html"> 
+<span class="menu-text">Technical Background</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../3_api_docs/index.html"> 
+<span class="menu-text">API Documentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../4_system_setup/index.html"> 
+<span class="menu-text">System Setup</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/Deltares-research/FloodAdapt"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#steps-to-prepare-an-event-set" id="toc-steps-to-prepare-an-event-set" class="nav-link active" data-scroll-target="#steps-to-prepare-an-event-set">Steps to prepare an event set</a></li>
+  <li><a href="#identify-relevant-define-variables" id="toc-identify-relevant-define-variables" class="nav-link" data-scroll-target="#identify-relevant-define-variables">Step 1 - Identify flood drivers and define variables</a></li>
+  <li><a href="#quantify-probs" id="toc-quantify-probs" class="nav-link" data-scroll-target="#quantify-probs">Step 2 - Calculate probabilities of variables</a></li>
+  <li><a href="#calculate-joint-probs" id="toc-calculate-joint-probs" class="nav-link" data-scroll-target="#calculate-joint-probs">Step 3 - Calculate joint probabilities</a></li>
+  <li><a href="#select-events" id="toc-select-events" class="nav-link" data-scroll-target="#select-events">Step 4 - Select events and calculate their frequencies</a></li>
+  <li><a href="#format-events" id="toc-format-events" class="nav-link" data-scroll-target="#format-events">Step 5 - Format the events for FloodAdapt</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/4_system_setup/risk_analysis.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Event Set</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This guidance provides support for preparing an <strong>event set</strong> to be used in FloodAdapt to calculate probabilistic flood maps, impacts, and risk. An event set consists of a set of events, defined by variables like surge, tide, and rainfall, and their occurrence frequencies. To see how FloodAdapt uses an event set to calculate risk, take a look at the <a href="../2_technical_docs/RiskScenario.html">FloodAdapt technical documentation on risk analysis</a>, particularly the part about the <a href="../2_technical_docs/RiskScenario.html#probCalculator">probabilistic calculator</a>.</p>
+<p>The method described in this guidance is known as the Joint Probability Method (JPM). In the JPM, all types of hydro-meteorological events that may lead to flooding in an area of interest are identified. Subsequently, a representative set of (synthetic) events is selected, covering as much as possible the whole range of events that may contribute substantially to the overall flood risk. The likelihood of occurrence of each event is estimated from key statistics of the relevant flood drivers like rainfall, river discharge, and sea level.</p>
+<p>Note that this guide focuses on non-hurricane events. For the derivation of a hurricane event set, which can be combined with a set of non-hurricane events, please see the <a href="https://www.fema.gov/sites/default/files/documents/Coastal_Statistical_Simulation_Methods_Nov_2023.pdf">comprehensive FEMA guide from 2023</a>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Event-based approach versus time-series approach
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The joint probability method supports an event-based approach, like the one used in FloodAdapt. In this approach, synthetic events are generated and their occurrence frequencies are determined based on the joint probability of the variables defining the event (like surge and rainfall). Another approach is a time-series approach, where simulations are based on either a historical or synthetic time series of flood drivers. Probabilities do not need to be quantified in a time-series approach because correlations will be represented by the long time series. The time-series approach is easier to apply and easier to standardize, but requires long good-quality records of all relevant flood drivers, which are usually not available.</p>
+</div>
+</div>
+<section id="steps-to-prepare-an-event-set" class="level2">
+<h2 class="anchored" data-anchor-id="steps-to-prepare-an-event-set">Steps to prepare an event set</h2>
+<p>This guide is organized around key steps in preparing an event set.</p>
+<ol type="1">
+<li><p><a href="#identify-relevant-define-variables">Identify flood drivers and define variables</a></p>
+<p>Determine the flood drivers that have a significant impact on the flood risk in the area (e.g.&nbsp;rainfall, river discharge, sea levels), and select appropriate variables that best represent the characteristics of the identified flood drivers.</p></li>
+<li><p><a href="#quantify-probs">Calculate probabilities of variables</a></p>
+<p>Calculate the probability distribution of the flood driver variables.</p></li>
+<li><p><a href="#calculate-joint-probs">Calculate joint probabilities</a></p>
+<p>Calculate correlation between variables and the joint probability of occurrence of the flood driver variables.</p></li>
+<li><p><a href="#select-events">Select events and calculate their frequencies</a></p>
+<p>Select a set of events (defined as a combination of flood driver variables) and quantify their occurrence frequencies.</p></li>
+<li><p><a href="#format-events">Format the events for FloodAdapt</a></p>
+<p>Prepare the set of events (event specs and frequencies) in the format required for FloodAdapt.</p></li>
+</ol>
+</section>
+<section id="identify-relevant-define-variables" class="level2">
+<h2 class="anchored" data-anchor-id="identify-relevant-define-variables">Step 1 - Identify flood drivers and define variables</h2>
+<p>The initial step in setting up a probabilistic flood risk assessment involves identifying the most relevant flood drivers in the project area. In coastal zones, floods may be caused by (combinations of) intense rainfall (pluvial flooding), high river discharges (fluvial flooding), groundwater tables rising above the ground surface (groundwater flooding), and high tides, storm surges, and waves (coastal flooding). In a probabilistic analysis, these flood drivers are represented by variables that quantify a specific characteristic of the flood driver, such as daily rainfall or peak storm surge. These variables are sometimes referred to as “stochastic variables” or “random variables,” acknowledging the fact that they can take on a range of values that have probabilities of occurrence/exceedance associated with them.</p>
+<p>The choice of the most suitable variable to represent a flood driver depends on the system under consideration. For example, for an assessment of a storm sewage system, a suitable variable may be the 15-minute or 1-hour rainfall, whereas for larger catchments the daily rainfall or multi-day rainfall is more relevant. For the design of river embankments, the peak discharge is a suitable choice, whereas for the design of a reservoir the total volume of flow during the entire flood event is also relevant. In some cases, it may be worth considering representing a flood driver with multiple variables. For example, river discharge can be represented by a combination of peak flow and flow volume.</p>
+<p>Limiting the number of variables in a probabilistic flood risk assessment is crucial due to the exponential increase in the required model simulations, which can impact practical feasibility and computational resources. Consider a scenario where only two variables—rainfall and storm surge—are selected, each with five possible realizations. This setup yields 25 possible combinations (5×5), necessitating 25 model runs to assess flood conditions and impacts. This number of simulations is generally manageable. However, increasing the variables to four, each with five realizations, results in 625 possible combinations (5×5×5×5), significantly increasing the simulation time. If the number of variables increases to six, this leads to a staggering 15,625 combinations (5^6), which may not all need simulation but illustrate the potential scale of the assessment.</p>
+<p>While a comprehensive analysis ideally covers all relevant flood events, practical constraints often necessitate a balance. The choice of the number of model simulations is a trade-off between accuracy and simulation time. It is important to understand the relationship between the flood drivers and flood response, which may come from existing knowledge of the area or from exploratory simulations with a Hydrologic/Hydraulic (H&amp;H) model. Conducting a sensitivity analysis with the H&amp;H model for each candidate variable allows quantification of the sensitivity of the flood hazard and impact. Variables for which this sensitivity is relatively small can be replaced by a constant value, reducing the complexity of the analysis and computation times. For example, while the peak river discharge is a critical variable if a project area is along a river, in coastal areas where water levels are dominated by the sea, a constant river discharge might suffice, verified through sensitivity analysis to assess its impact. This demonstrates the essential balance between accuracy and practicality in setting up probabilistic flood risk assessments, aiming to include as many variables as necessary but as few as possible to maintain manageability and effectiveness, particularly if scenarios need to be re-evaluated frequently due to changing climate conditions or socio-economic factors.</p>
+</section>
+<section id="quantify-probs" class="level2">
+<h2 class="anchored" data-anchor-id="quantify-probs">Step 2 - Calculate probabilities of variables</h2>
+<p>Flood events are described as a combination of realizations of the selected flood driver variables. For each event considered in the probabilistic analysis, the probability of occurrence is needed to be able to quantify the contribution of such an event to the overall risk. The event probabilities are derived from probabilities of the flood event variables. In some cases, probability distributions of variables are readily available. NOAA, for example, offers nation-wide statistics on rainfall (NOAA rainfall). In other instances, probabilities need to be derived either from gauge records or from expert judgement.This section focuses on deriving probabilities/statistics from gauge data.</p>
+<p>The main steps in deriving (joint) probabilities of the flood variables are:</p>
+<ul>
+<li><p><strong><a href="#data-gathering-and-validation">Data gathering and validation</a></strong> - this step involves collecting and ensuring the quality of time series of the variables for which we want to derive probability distributions</p></li>
+<li><p><strong><a href="#dealing-with-nonstationarities">Correcting for non-stationarity</a></strong> - this step involves correcting for changes in the system or trends which would make distribution fitting techniques invalid</p></li>
+<li><p><strong><a href="#EVA">Extreme value analysis</a></strong>- this step fits distributions to the extreme tails of the flood variable distributions</p></li>
+<li><p><strong><a href="#combining-statistics">Combining statistics of extreme events and average conditions</a></strong> - this step creates a distribution that is correct for both average values of the variables and extreme values</p></li>
+</ul>
+<section id="data-gathering-and-validation" class="level4">
+<h4 class="anchored" data-anchor-id="data-gathering-and-validation">Data Gathering and Validation</h4>
+<p>Data gathering is a critical step in flood risk assessment. Important considerations include the record length, temporal resolution, number of stations, and data validation processes. Long records are preferable as they provide more comprehensive information on “extremes,” which are crucial for analyzing flood risks.</p>
+<ul>
+<li><p><strong>Record Length</strong>: Longer records are more valuable because they include more rare events, which are important for understanding the full range of possible scenarios. They also allow for more robust statistical analyses.</p></li>
+<li><p><strong>Temporal Resolution</strong>: The temporal resolution of the data should align with the scale of the hydrological processes being modeled. For urban drainage studies, minute-by-minute data may be necessary, whereas for river basin studies, daily values may suffice.</p></li>
+<li><p><strong>Number of Stations</strong>: Gathering data from multiple stations is generally preferred over using data from only one station. This provides valuable information on spatial variability. Furthermore, comparing data between nearby stations is an excellent way to validate data.</p></li>
+<li><p><strong>Data Validation</strong>: It is critical to validate the data to ensure its accuracy and reliability. This involves checking for anomalies or errors, such as outliers that might indicate data recording errors, especially for extreme values.</p></li>
+</ul>
+</section>
+<section id="dealing-with-nonstationarities" class="level4">
+<h4 class="anchored" data-anchor-id="dealing-with-nonstationarities">Dealing with Non-Stationarities</h4>
+<p>Sometimes, data is collected from a period when the system under consideration was significantly different from the current situation. As a result, the recorded time series may be non-stationary, meaning that probabilities of occurrence/exceedance can change over time. Various factors could cause changes in the system over the years, including climate change, sea level rise, urbanization, morphological changes, and human interventions like reservoirs. In such cases, caution is needed when using this data, as it could lead to over- or underestimation of current flood risk. One option is to discard earlier data, but this removes potentially useful information and may leave too little data to derive reliable statistics. Alternatively, ‘corrections’ can be applied to make the data set (approximately) stationary again. The aim of these corrections is to estimate what the observed time series would have looked like if the system conditions had been the same as they are today.</p>
+<p>For coastal systems, corrections for sea level rise are almost always necessary. Due to sea level rise, the exceedance probabilities of sea water levels increase over time, making early observations non-representative of current conditions. A simple correction is to add the amount of observed sea level rise since year Y to all observations from that year. For instance, if sea levels have risen by 0.5 ft since 1990, all water levels observed in 1990 should be increased by 0.5 ft to reflect current conditions. This adjustment requires an understanding of the extent of sea level rise, which is complicated by year-to-year fluctuations that can obscure the long-term trend. To address this, a trend line might be fitted through the data, although this process can be somewhat subjective.</p>
+<div id="fig-trendLine" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-trendLine-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_trendLine.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-trendLine-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: <strong>Observed annual mean sea levels, linear trend line from NOAA and fitted LOWESS trendline</strong>
+</figcaption>
+</figure>
+</div>
+<p><a href="#fig-trendLine" class="quarto-xref">Figure&nbsp;1</a> illustrates annual average observed sea water levels from 1996-2020 in Charleston, SC (blue dots), with the black line representing a linear trend line as derived by NOAA (NOAA SWL trend), and the red line showing a non-linear trend line using the LOWESS method (Cleveland, 1979). The estimated average sea level in 2020 differs by approximately 0.3 feet between the two methods, indicating that the choice of method can significantly influence the estimated flood risk. The linear fit does not account for the notable increase in sea water levels observed since 2014, suggesting the LOWESS fit might be more appropriate. However, this increase could be an anomaly; a similar sharp rise occurred in the 1940s, but by the late 1950s, the data returned to align with the linear trend. This variability demonstrates that past sea level rise is uncertain, and it may be prudent to consider both trend lines when assessing potential impacts on flood risk.</p>
+<p>In cases like these (sea level rise, implementation of a reservoir) the recorded time series are clearly non-stationary and the cause of the non-stationarity is known. In other situations, there may be an observed trend for which it is unclear if this is due to a change in the system or if it is merely a coincidence. In that case, statistical tests can be applied to assess the likelihood of the trend being just a coincidence. IExamples of such tests are the Mann-Kendall test (Mann, 1945; Kendall, 1975) and the Wilcoxon-Mann-Whitney test (Wilcoxon, 1945; Mann and Whitney, 1947).</p>
+</section>
+<section id="EVA" class="level4">
+<h4 class="anchored" data-anchor-id="EVA">Extreme Value Analysis</h4>
+<p>Extreme value analysis is used to derive statistics of the “extremes” in a record, based on limited information. For floods, this is important because often it is the extreme values of the flood variables that lead to a flood event, but these occur infrequently. Extreme value analysis involves selecting peaks (either annual maxima or peaks over threshold) and fitting them to appropriate probability distribution functions.</p>
+<section id="selection-of-peaks" class="level5">
+<h5 class="anchored" data-anchor-id="selection-of-peaks"><strong>Selection of peaks</strong></h5>
+<p>The first step in the process is to select a subset of the record that contains the extreme variable values. This is generally either the set of highest recordings in each year, known as annual maxima (AM) or the set of recordings that exceed a user defined threshold, known as peaks over threshold (POT).</p>
+<p>For annual maxima the selection can be done for each calendar year, but it can also be done for a “water year” which may have a different start date than January 1st. The start of the water year should preferably be chosen in a season where little or no extremes are expected. This way, the chance is small an extreme event occurs right around the start of the year and is selected as the annual maximum for two consecutive years (for example, if high peaks occur on December 31st and January 1st that are caused by the same meteorological event).</p>
+<p>For peaks over threshold, only a single value per event should be selected. So, for example, if a river discharge exceeds the threshold for five consecutive days, these can all be considered part of the same event and only the highest observed discharge during these five days should be selected as the peak discharge. It is recommended to define a time window during which only one peak can be selected to assure the selected peaks all represent independent events. The size of the window depends on the system/process under consideration. For a small mountain stream, a window of one or two days may suffice, whereas for a large river basin (&gt; 25,000 square miles) the window should be at least 10 days. A suitable choice of the threshold in a POT analysis also depends on the system under consideration. A lower threshold has the advantage that a larger number of peaks is selected which decreases the uncertainty in the probability distribution function that is subsequently derived from the selected peaks. On the other hand, it also results in lower peaks to be selected, which may be less representative of the extremes for which probabilities need to be derived, which may not be representative for the extremes for which statistics are derived. A pragmatic strategy is to choose the threshold in such a way that the number of selected peaks is equal to the number of years. This strategy is sometimes referred to as “Annual Exceedance” (AE). Note that this series is not the same as AM, even though they both have the same number of peaks.</p>
+</section>
+<section id="selection-of-a-probability-distribution-function" class="level5">
+<h5 class="anchored" data-anchor-id="selection-of-a-probability-distribution-function"><strong>Selection of a probability distribution function</strong></h5>
+<p>The next step is to select a probability distribution function that will be fitted to the selected set of peaks. According to the extreme value theorem, the set of maxima of intervals of a fixed length (such as a year) has a Generalized Extreme Value (GEV) distribution. POT data follows a Generalized Pareto Distribution (GPD). Both GEV and GPD are three-parameter distribution functions with a location-, scale- and shape-parameter.</p>
+<p>The GEV and GPD are generalized distributions of which other probability distributions are special cases: Gumbel, Fréchet and Weibull (GEV) and exponential and Pareto (GPD). The value of the shape parameter determines which of the underlying distributions is applicable for the data. If the shape parameter is approximately equal to zero, the Gumbel (GEV) and exponential (GPD) distribution functions should be used. If the shape parameter differs from zero, the Fréchet and Weibull (GEV) and Pareto (GPD) should be used. The value of the shape parameters can be derived from the selected set of peaks (see later this section on fitting distribution functions).</p>
+<p><a href="#fig-GEVGPD" class="quarto-xref">Figure&nbsp;2</a> shows examples of these distribution functions for daily rainfall. The rainfall is plotted against the corresponding exceedance probability on a semi-logarithmic scale. It shows that the two distribution functions for which the scale parameter is equal to 0 (Gumbel and exponential) are straight lines on this scale. The Weibull distribution is curved “downward”, while the Fréchet distribution is curved “upward”. Similar upward and downward curves can be seen for the GPD (right plot); in both cases the distribution function is called the Pareto distribution. According to the theory, only the GEV and GPD or one of the underlying probability distribution functions (Gumbel, Fréchet, Weibull, exponential and Pareto) should be used to fit the set of selected extremes. In practice, however, other probability distribution functions are used as well. For example, the Log-Pearson Type 3 was adopted by US federal agencies for applications in flood frequency analysis.</p>
+<div id="fig-GEVGPD" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-GEVGPD-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_GEV_GPD.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-GEVGPD-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: <strong>Examples of the GEV and GPD and underlying distributions. The plots show the probability of exceedance of annual maxima (left) and Peaks Over Threshold (right). </strong>
+</figcaption>
+</figure>
+</div>
+<p>The graphs in <a href="#fig-GEVGPD" class="quarto-xref">Figure&nbsp;2</a> show the probability of exceedance of annual maxima (left) and peaks over threshold (right) data. The exceedance probability of AM also represents the annual exceedance probability of the variable for which the distribution function was derived. For POT data, this is not the case because the number of peaks in a POT data set can be larger or smaller than the number of years. To convert to an annual exceedance probability, the derived exceedance probabilities of POT data must be multiplied by the average number of exceedances of the selected threshold in a year (denoted <span class="math inline">\(\lambda\)</span>). Parameter <span class="math inline">\(\lambda\)</span> can be estimated by dividing the number of selected peaks by the number of years in the record. Note that <span class="math inline">\(\lambda\)</span> is a frequency of occurrence (per year). Multiplication of this frequency with a probability of exceedance from the POT data results in a frequency of exceedance.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Probability and Frequency
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The terms “probability” and “frequency” are often used interchangeably to quantify the likelihood of a specific event occurring within a defined period. These two terms are similar, but not the same. Probability refers to the chance that an event will occur in a fixed period, typically a year. Frequency refers to how often such an event will occur on average during a fixed period. For example, at some location the probability of more than 5 inches of rainfall in a day may be estimated at 1/20 per year. That means each year there is a probability of 1 in 20 that more than 5 inches of rainfall is recorded in a day. In this case, the frequency is also equal to 1/20 per year, indicating such an event will occur on average once every 20 years. However, for events that occur more often, probability and frequency differ. For example, an event with more than 2 inches of rainfall in a day may occur on average twice per year. That means such an event has a frequency of 2 (per year). The probability of such an event happening in a year will be less than 1 since probabilities are, by definition, between 0 and 1. Probability is a quantification of the chance of such an event occurring at least once in a year, whereas frequency is a quantification of the number of times such an event occurs on average in a year. For very rare events, probability and frequency are (approximately) equal, because such events are not expected to occur more than once per year.</p>
+</div>
+</div>
+</section>
+<section id="fitting-probability-distributions" class="level5">
+<h5 class="anchored" data-anchor-id="fitting-probability-distributions"><strong>Fitting probability distributions</strong></h5>
+<p>The next step is to fit the selected distribution function to the set of extremes (AM or POT). This means the parameter values of the distribution function are chosen such that key statistical characteristics of the distribution function correspond as much as possible with those of the set of extremes. There are several methods for deriving the parameter values, such as the maximum likelihood method, the method of moments, probability weighted moments and L-moments. Such methods are available in computational programming languages like Matlab, Python and R. Alternatively, dedicated software for flood frequency analysis can be used such as PeakFQ. In principle, any of these methods will do, but it is worth considering applying several methods to verify which one provides the best fit. There are statistical methods to quantify the goodness-of-fit like the Kolmogorov-Smirnov test, the Chi Square test or Anderson-Darling test. Each of these tests compares key characteristics of the data set with the fitted distribution function; smaller differences imply a better fit. The outcome of such a test could be that a fit is “rejected”. In that case an alternative distribution function and/or fit method should be considered. The fact that there are different tests to choose from indicates there is some subjectivity involved in determining the “best” fit. It is recommended to also visually compare the fitted distribution function with the data, similar to the example of <a href="#fig-fitGPD" class="quarto-xref">Figure&nbsp;3</a>. If the visual fit is not to satisfaction, a different distribution function and/or different fit methods should be considered.</p>
+<div id="fig-fitGPD" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-fitGPD-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_fittingGPD.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-fitGPD-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: <strong>Example fit of the GPD function to Peaks Over Threshold data.</strong>
+</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="combining-statistics" class="level4">
+<h4 class="anchored" data-anchor-id="combining-statistics">Combining statistics of extreme events and average conditions</h4>
+<p>In flood risk analysis, the extremes as described in the previous section are the most relevant subset of the data. However, in areas with compound flooding, extremes of flood drivers do not necessarily coincide in time. For example, high intensity rainfall may occur during a period with negligible, low or moderate storm surge, and vice versa. This may result in a (substantially) different flood hazard compared to when both flood drivers are high/extreme. For a flood risk analysis with multiple flood drivers it is therefore necessary to also consider events where only a subset of the flood drivers is extreme. This means it is required to also derive probabilities of moderate/average conditions of flood drivers.</p>
+<p>Similar to the extreme value analysis of the previous section, probability distribution functions can be selected and fitted to the available data set. The main difference is that in this case the entire data record is used instead of a small selection. With this larger data set, the use of an empirical distribution may be more practical than fitting a parametric probability distribution function. The advantage of using an empirical distribution functions is that it is relatively straightforward to derive and does not involve subjective choices of a distribution function and fit method. The empirical distribution is a direct reflection of the data set. For example, if a daily rainfall depth of 0.1 inch is exceeded in 12% of all days in the record, this means the exceedance probability of 0.1 inch/day in the empirical distribution function is estimated to be 0.12. So, by simply counting the number of exceedances of each threshold of interest and dividing by the total number of recordings, the empirical probability is obtained.</p>
+<p>To derive the empirical probability distribution, sort the data in descending order. The largest value has an empirical probability of exceedance of 1/(n+1), where n is the total number of recordings. The second largest value has an empirical probability of exceedance of 2/(n+1), the third largest has an empirical probability of exceedance of 3/(n+1), and this continues all the way down to the smallest value with an empirical probability of exceedance of n/(n+1). Note that these are probabilities per time step of the time series. So, in case of a daily rainfall time series, these are exceedance probabilities per day. These can be translated to exceedance frequencies per year by multiplication with 365 (i.e.&nbsp;the number of days per year). Similarly, derived empirical probabilities of tidal peaks should be multiplied with 705 (i.e., the number of tidal periods in a year) to derive exceedance frequencies per year.</p>
+<div id="fig-combiningDists" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-combiningDists-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_combiningDists.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-combiningDists-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: <strong>Example combination of an empirical distribution and an extreme value distribution.</strong>
+</figcaption>
+</figure>
+</div>
+<p>The variable of interest now has an empirical distribution function, quantifying probabilities of all observed values, and an extreme value distribution function, quantifying exceedance probabilities of extremes. So, for the highest observed values in the record there are two probability estimates available. Ideally, these two probability estimates are the same, but this is often not the case. Especially for variables for which high peaks typically occur in clusters, there will most likely be a substantial difference in the two probability estimates due to the differences in the way these two probabilities were derived. <a href="#fig-combiningDists" class="quarto-xref">Figure&nbsp;4</a> shows the empirical probability distribution (black line) and fitted extreme value distribution (red line) of the tidal peaks at an example location. It shows the exceedance frequencies according to the empirical distribution are higher than those according to the extreme value distribution function. The green dashed line shows a pragmatic way to connect the two distributions and combine them into a single probability distribution function. An alternative approach could be to “lift” the extreme value distribution such that is better connects with the empirical distribution. Such methods may seem like they are corrupting the results, but it is a necessary work-around to combine two distributions that are based on different approaches. The first approach (“each tidal peak should be included”) is valid for average/moderate conditions, whereas the second (“only the highest peak of each event is included”) is valid for extreme events.</p>
+</section>
+</section>
+<section id="calculate-joint-probs" class="level2">
+<h2 class="anchored" data-anchor-id="calculate-joint-probs">Step 3 - Calculate joint probabilities</h2>
+<p>Event probabilities are the joint probabilities of the variables that define the event. If the variables are mutually independent, the joint probability can be calculated as the product of the the probabilities of the individual variables. However, some variables may be impacted by the same hydro-meteorological processes, which means they are not independent. For example, a storm event may cause both high storm surges and high rainfall intensities. In that case, high values of rainfall and storm surge are more likely to coincide, which means rainfall and storm surge are not independent. This needs to be accounted for when estimating event probabilities.</p>
+<p>Statistical dependence between two or more variables can be quantified with Pearson’s correlation coefficient, <span class="math inline">\(\rho\)</span>, which can take any value in the range from -1 to 1. A value of 0 indicates two variables are independent, which means the value of one variable provides no information on the likelihood of the value of the other variable. If <span class="math inline">\(\rho\)</span> deviates substantially from 0, the variables are dependent. Positive values of <span class="math inline">\(\rho\)</span> imply that high values of one variable usually coincide with high values of the other variable, and similarly that low values generally coincide as well. Negative values of <span class="math inline">\(\rho\)</span> imply that high values of one variable usually coincide with low values of the other variable and vice versa. <a href="#fig-corr" class="quarto-xref">Figure&nbsp;5</a> shows samples of hypothetical variables <em>x</em> and <em>y</em> for six different values of Pearson’s correlation coefficient.</p>
+<div id="fig-corr" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-corr-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_correlation.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-corr-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: <strong>Samples of hypothetical variables <em>x</em> and <em>y</em> for six different values of correlation coefficient .</strong>
+</figcaption>
+</figure>
+</div>
+<p>Pearson’s correlation coefficient assumes a linear relation between the correlated variables, which is not always the case. If two variables are perfectly correlated, but their relation is non-linear, the value of <span class="math inline">\(\rho\)</span> will be less than 1, indicating non-perfect correlation. This is one of the reasons why a rank correlation may be preferred over Pearson’s correlation coefficient. The two most well-known options are Spearman’s and Kendall’s rank correlation coefficients. Similar to Pearson’s correlation coefficient, these two rank correlation coefficients take on values between -1 and 1.</p>
+<p>Even though the correlation coefficient generally is an informative measure of statistical dependence, it does not provide the complete picture on dependency structures. In some cases, for instance, the dependence between variables is higher for extremes than for moderate events due to a common cause that is especially profound during extreme events. This phenomenon is sometimes observed in discharge records of two neighboring rivers. If one river experiences extremely high discharges, this is likely to be the result of an exceptional rainfall event that may also cause high discharges in the other river.</p>
+<p>An effective approach to incorporate these types of correlation structures is the use of “copula functions” or “copulas”, which model the dependence structure of two or more random variables. A multivariate distribution function is then constructed using the individual probability distribution functions of the variables in combination with the copula. One of the key advantages of this method is that the derived individual probability distributions are preserved, which is not necessarily the case with alternative methods for deriving multivariate statistics.</p>
+<p><a href="#fig-copulas" class="quarto-xref">Figure&nbsp;6</a> shows example realizations of copula variables x and y for four different copulas: the Gumbel-Hougard, Frank, Clayton and Gaussian copula. In each case, the correlation coefficient is equal to 0.8, but there are differences in the overall dependence structure. Application of the Gumbel-Hougard copula results in strong dependence for values of x and y close to 1. In other words, if a sample of the first random variable (x) is relatively large, the accompanying sample of the second variable most likely is relatively large as well. The Clayton copula, on the other hand, generates a stronger dependence structure for low values of x and y. In that respect the Frank copula and the Gaussian copula are more symmetrical, where the latter shows stronger correlation in the extremes (both left and right).</p>
+<div id="fig-copulas" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-copulas-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_copulas.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-copulas-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: <strong>Illustration of four different copulas. In all cases the correlation coefficient was assumed to be 0.8.</strong>
+</figcaption>
+</figure>
+</div>
+<p>Copula variables are uniformly distributed over the interval between 0 and 1. Hydro-meteorological variables like rainfall, river discharge or water level are typically not uniformly distributed and can take on values outside the interval between 0 and 1. Therefore, in order to use the copula to model dependency between hydro-meteorological variables, a statistical transformation is applied. This transformation is done based on “equal probability of exceedance”. The transformation process is illustrated in <a href="#fig-varTransform" class="quarto-xref">Figure&nbsp;7</a>.</p>
+<div id="fig-varTransform" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-varTransform-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_varTransform.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-varTransform-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: <strong>Transformation from copula-variable y to storm surge variable s. F(s) is the cumulative probability distribution function of s.</strong>
+</figcaption>
+</figure>
+</div>
+<p>Since copula-variables x and y are correlated, the corresponding real-world variables (e.g.&nbsp;rainfall, surge) will be correlated as well. This way, a set of correlated samples of storm surge and rainfall can be generated. Conversely, the copula function and transformations can also be used to compute the probability of an event of, for example, a river discharge of more than 5,000 cfs in combination with a storm surge of more than 2 feet. To do this, these thresholds of discharge (5,000 cfs) and storm surge (2 feet) need to be translated to their corresponding copula-parameters x and y, using their respective probability distributions.</p>
+<p><a href="#fig-copulas" class="quarto-xref">Figure&nbsp;6</a> showed patterns of four copulas, but there are many other copulas available, covering essentially any correlation pattern imaginable. A copula needs to be selected that best matches the observed data. Plotting of observed joint occurrences of correlated variables may reveal which copula(s) best describe the correlation between the variables involved. For example, if the data indicate the dependency increases for large values, the Gumbel-Hougard copula is a possible candidate, whereas if the dependency increases for low values, the Clayton copula is a possible candidate. Another strategy is to try out a large set of copulas and verify which one provides the best fit of the data. There are several statistical tests available that quantify the goodness-of-fit of the copula to the data, similar to the goodness-of-fit tests for extreme value distribution functions. Such methods are available in computational software packages like Python and R.</p>
+</section>
+<section id="select-events" class="level2">
+<h2 class="anchored" data-anchor-id="select-events">Step 4 - Select events and calculate their frequencies</h2>
+<p>When considering the selection of events, it is important to remember its purpose: the set of events will be used to calculate return period flooding and expected annual damages. The key to event selection is to ensure that the set of events is sufficient to reliably (consistently) estimate these important variables. There are two primary ways to select events and estimate their occurrence frequencies. One is to use a Monte Carlo approach, which is most recommended when there are a lot of variables that influence the flooding. The second is numerical integration, which is is more straight-forward and advantageous (in terms of required number of events) when the number of variables is limited to two - which may be the case for many areas.</p>
+<p>With <strong>Monte Carlo</strong> sampling, a set of synthetic events is generated from the joint probability distribution of the event variables. This can be considered a representative set of possible events that may occur. For example, if an event with a joint occurrence of a peak river discharge between <em>Q1</em> and <em>Q2</em> and a peak sea water level between <em>H1</em> and <em>H2</em> has a probability of 0.05 per year according to the joint distribution, the sampling will lead to 5% of the simulated years containing an event in this range. However, since the sampling process is random by nature, the resulting percentage can also be lower or higher.</p>
+<p>In a Monte Carlo Simulation, events are sampled directly from the multivariate probability distribution function of the flood drivers. The event set for FloodAdapt would consist of this set sampled events. The associated probability for each event is set equal to <span class="math inline">\(1/n\)</span>, where <span class="math inline">\(n\)</span> is the total number of sampled events. Note that this is not the actual probability of each event. However, by applying this probability as input in FloodAdapt, the computation of flood probabilities will be according to the Monte Carlo Simulation method. In other words, the computed probability of flooding will be equal to the number of sampled events leading to flooding, divided by the total number of simulated events.</p>
+<p>With <strong>numerical integration</strong>, the range of potential combinations of flood drivers is discretized in an n-dimensional computational grid (n being the number of flood drivers), so that all combinations are considered. <a href="#fig-NIgrid" class="quarto-xref">Figure&nbsp;8</a> shows an example for two flood drivers: river discharge and sea water level. In <a href="#fig-NIgrid" class="quarto-xref">Figure&nbsp;8</a>, each rectangular grid cell has a center point, representing a single event with that combination of sea water level and river discharge. The event occurrence frequency is then taken as equal to the joint occurrence frequency of the variables. The range of variables that should be included, and the spacing of the computational grid, depend on when the values of interest (flooding probabilities and risk) stabilize. Extreme combinations of variables that have a very low occurrence frequency may not contribute a noticeable amount to flood probabilities or risk. Similarly, high-frequency low values of the variables that do not lead to flooding may also be negligible. For the latter, it is important to consider if they will still be negligible under future conditions before omitting them from the event set.</p>
+<p>Both for Monte Carlo and for numerical integration, more events means better accuracy, but comes at a computational cost. For the Monte Carlo approach, a higher number of samples leads to better accuracy. For the Numerical Integration approach, a finer discretization of the variables leads to better accuracy. In each case, simulations with FloodAdapt can be done to assess the trade-off between number of events and accuracy of the risk and flood probability metrics.</p>
+<div id="fig-NIgrid" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-NIgrid-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_NIgrid.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NIgrid-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: <strong>Schematic view of selected grids for numerical integration.</strong>
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="format-events" class="level2">
+<h2 class="anchored" data-anchor-id="format-events">Step 5 - Format the events for FloodAdapt</h2>
+<p>Once you have selected events and calculated their occurrence frquencies, they must be put in the correct format for FloodAdapt. <a href="#fig-eventSet_folderDiagram" class="quarto-xref">Figure&nbsp;9</a> shows the overall structure of the event set folder. The folder contains a sub-folder for each event in the event set and an event-set TOML file that gives the event names (which should align with the folder names) and the occurrence frequencies of the events. Each event folder should contain an event TOML file defining the event, and the time series (for the event duration) of the flood variables. More details about the <a href="#event-folder-contents">event folder contents</a> and the <a href="#eventset-toml-file">event set TOML file</a> are given below.</p>
+<div id="fig-eventSet_folderDiagram" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-eventSet_folderDiagram-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_folderDiagram.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:55.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eventSet_folderDiagram-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: <strong>Overview of the setup process for FloodAdapt</strong>
+</figcaption>
+</figure>
+</div>
+<section id="event-folder-contents" class="level5">
+<h5 class="anchored" data-anchor-id="event-folder-contents"><strong>Event folder contents</strong></h5>
+<p>Each event folder must contain a TOML file, with the name [EVENT_NAME].TOML, where [EVENT_NAME] should be replaced with the name of your event (which is also the name of the event folder). For example, if your event is called myEvent001, then the event folder should be called myEvent100, and the TOML file should be called myEvent001.TOML. In addition, the event folder must contain a time series file (CSV format) for each of the event variables that are varying over the duration of the event. <a href="#fig-eventSet_eventFolderContents" class="quarto-xref">Figure&nbsp;10</a> shows the contents for an event named event_001.</p>
+<div id="fig-eventSet_eventFolderContents" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-eventSet_eventFolderContents-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_eventFolderContents.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:55.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eventSet_eventFolderContents-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: <strong>Contents of an event folder (example)</strong>
+</figcaption>
+</figure>
+</div>
+<p>The time series CSV files are two-column files that contain a datetime in the first column and the variable value in the second column. The units of the variable will depend if you are working with imperial or metric units:</p>
+<ul>
+<li>Rainfall - inches/hour (imperial) or mm/hour (metric)</li>
+<li>Tide - feet+MSL (imperial) or meters+MSL (metric)</li>
+<li>Surge - feet (imperial) or meters (metric)</li>
+<li>River discharge - cubic feet per section (imperial) or cubic meters per second (metric)</li>
+<li>Wind - knots (imperial) or m^3/s (metric)</li>
+</ul>
+<p>The TOML file specifies the event. <a href="#fig-eventSet_eventTOML" class="quarto-xref">Figure&nbsp;11</a> shows the template for an event TOML file, which includes forcing fields for river discharge, wind, rainfall, tide, and surge. In this example, there are two probabilistic event variables: rainfall and total sea water level (which includes both tide and surge). The river discharge is treated as a constant and wind is omitted because its effects are already accounted for in the total water level (which includes surge). Because the total water level variable includes both tide and surge, the surge variable is omitted (set to “none”) and the total water level time series is used for the “tide” field. A couple of notes about the event specifications:</p>
+<ul>
+<li>All potential flood drivers must be defined, even if they are set to zero or none. For example, in <a href="#fig-eventSet_eventTOML" class="quarto-xref">Figure&nbsp;11</a>, the wind is set to “none”. Similarly, the discharge is set to “constant” because it is not treated probabilistically in this event set.</li>
+<li>Although the events are synthetic they use the “Historical_nearshore” template because the event variables are being represented by time series like a historical event. This means that a start time and end time must be given. These can be anything in the past, as long as the duration matches the duration in the variable time series files.</li>
+</ul>
+<div id="fig-eventSet_eventTOML" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-eventSet_eventTOML-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_eventTOML.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eventSet_eventTOML-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11: <strong>Example TOML file for an event named “event_0000”</strong>
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="eventset-toml-file" class="level5">
+<h5 class="anchored" data-anchor-id="eventset-toml-file"><strong>Event set TOML file</strong></h5>
+<p>The event set folder must contain an event set TOML file. This file will specify the names and occurrence frequencies of all of the events in the set. Every event specified in this TOML file must also have an associated event folder. <a href="#fig-eventSet_probSetToml" class="quarto-xref">Figure&nbsp;12</a> shows an example of a TOML file for a set named “probabilistic_set”.</p>
+<div id="fig-eventSet_probSetToml" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-eventSet_probSetToml-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../_static/images/eventSet_probSetToml.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eventSet_probSetToml-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12: <strong>Example TOML file for an event</strong>
+</figcaption>
+</figure>
+</div>
+<p>The required fields are:</p>
+<ul>
+<li>name - this should also be the name of the event-set folder</li>
+<li>description - this can be anything</li>
+<li>mode - this should be set to “risk”</li>
+<li>subevent_name - this is a list of the events for which event folders have been created</li>
+<li>frequency - this is a list of occurrence frequencies for the events in the subevent_name list</li>
+</ul>
+<p>Once the event set folder is created, you can reference it in the <a href="../../4_system_setup/database.qmd">database builder</a> configuration file and it will be included in the FloodAdapt database so users can calculate risk and risk-reduction benefits of adaptation options.</p>
+
+
+</section>
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/4_system_setup/risk_analysis.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
