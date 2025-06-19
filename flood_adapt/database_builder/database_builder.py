@@ -301,6 +301,7 @@ class ConfigModel(BaseModel):
     svi: Optional[SviConfigModel] = None
     road_width: Optional[float] = 5
     return_periods: list[int] = Field(default_factory=list)
+    floodmap_type: Optional[FloodmapType] = None
 
     # SFINCS
     references: WaterlevelReferenceModel = WaterlevelReferenceModel(
@@ -770,14 +771,17 @@ class DatabaseBuilder:
             return "$"
 
     def read_floodmap_type(self) -> FloodmapType:
-        # If there is at least on object that uses the area method, use water depths for FA calcs
-        if (
-            self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.extraction_method]
-            == "area"
-        ).any():
-            return FloodmapType.water_depth
+        if self.config.floodmap_type is not None:
+            return self.config.floodmap_type
         else:
-            return FloodmapType.water_level
+            # If there is at least on object that uses the area method, use water depths for FA calcs
+            if (
+                self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.extraction_method]
+                == "area"
+            ).any():
+                return FloodmapType.water_depth
+            else:
+                return FloodmapType.water_level
 
     def create_roads(self) -> Optional[str]:
         # Make sure that FIAT roads are polygons
