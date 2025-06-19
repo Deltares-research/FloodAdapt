@@ -243,32 +243,52 @@ class ConfigModel(BaseModel):
     ----------
     name : str
         The name of the site.
-    description : Optional[str], default ""
+    description : Optional[str], default None
         The description of the site.
     database_path : Optional[str], default None
         The path to the database where all the sites are located.
-    sfincs : str
-        The SFINCS model path.
-    sfincs_offshore : Optional[str], default None
-        The offshore SFINCS model path.
-    fiat : str
-        The FIAT model path.
     unit_system : UnitSystems
         The unit system.
-    gui : GuiModel
+    gui : GuiConfigModel
         The GUI model representing scaling values for the layers.
-    building_footprints : Optional[SpatialJoinModel], default None
-        The building footprints model.
-    slr_scenarios : Optional[SlrModelDef], default SlrModelDef()
-        The sea level rise model.
-    tide_gauge : Optional[TideGaugeConfigModel], default None
-        The tide gauge model.
+    infographics : Optional[bool], default True
+        Indicates if infographics are enabled.
+    fiat : str
+        The FIAT model path.
+    aggregation_areas : Optional[list[SpatialJoinModel]], default None
+        The list of aggregation area models.
+    building_footprints : Optional[SpatialJoinModel | FootprintsOptions], default FootprintsOptions.OSM
+        The building footprints model or OSM option.
+    fiat_buildings_name : Optional[str], default "buildings"
+        The name of the buildings geometry in the FIAT model.
+    fiat_roads_name : Optional[str], default "roads"
+        The name of the roads geometry in the FIAT model.
     bfe : Optional[SpatialJoinModel], default None
         The BFE model.
-    svi : Optional[SviModel], default None
+    svi : Optional[SviConfigModel], default None
         The SVI model.
-    road_width : Optional[float], default 2
+    road_width : Optional[float], default 5
         The road width in meters.
+    return_periods : list[int], default []
+        The list of return periods for risk calculations.
+    floodmap_type : Optional[FloodmapType], default None
+        The type of floodmap to use.
+    references : WaterlevelReferenceModel, default WaterlevelReferenceModel(...)
+        The water level reference model.
+    sfincs_overland : FloodModel
+        The overland SFINCS model.
+    sfincs_offshore : Optional[FloodModel], default None
+        The offshore SFINCS model.
+    dem : Optional[DemModel], default None
+        The DEM model.
+    excluded_datums : list[str], default []
+        List of datums to exclude from plotting.
+    slr_scenarios : Optional[SlrScenariosModel], default None
+        The sea level rise scenarios model.
+    scs : Optional[SCSModel], default None
+        The SCS model.
+    tide_gauge : Optional[TideGaugeConfigModel], default None
+        The tide gauge model.
     cyclones : Optional[bool], default True
         Indicates if cyclones are enabled.
     cyclone_basin : Optional[Basins], default None
@@ -277,8 +297,6 @@ class ConfigModel(BaseModel):
         The list of observation point models.
     probabilistic_set : Optional[str], default None
         The probabilistic set path.
-    infographics : Optional[bool], default True
-        Indicates if infographics are enabled.
     """
 
     # General
@@ -301,6 +319,7 @@ class ConfigModel(BaseModel):
     svi: Optional[SviConfigModel] = None
     road_width: Optional[float] = 5
     return_periods: list[int] = Field(default_factory=list)
+    floodmap_type: Optional[FloodmapType] = None
 
     # SFINCS
     references: WaterlevelReferenceModel = WaterlevelReferenceModel(
@@ -770,14 +789,17 @@ class DatabaseBuilder:
             return "$"
 
     def read_floodmap_type(self) -> FloodmapType:
-        # If there is at least on object that uses the area method, use water depths for FA calcs
-        if (
-            self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.extraction_method]
-            == "area"
-        ).any():
-            return FloodmapType.water_depth
+        if self.config.floodmap_type is not None:
+            return self.config.floodmap_type
         else:
-            return FloodmapType.water_level
+            # If there is at least on object that uses the area method, use water depths for FA calcs
+            if (
+                self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.extraction_method]
+                == "area"
+            ).any():
+                return FloodmapType.water_depth
+            else:
+                return FloodmapType.water_level
 
     def create_roads(self) -> Optional[str]:
         # Make sure that FIAT roads are polygons
