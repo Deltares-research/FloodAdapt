@@ -800,7 +800,7 @@ class SfincsAdapter(IHazardAdapter):
             # writing the geotiff to the scenario results folder
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
                 dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
-                zsmax = zs_rp_single.to_array().squeeze().transpose()
+                zsmax = zs_rp_single.to_array().squeeze()
                 floodmap_fn = fn_rp.with_suffix(".tif")
 
                 # convert dem from dem units to floodmap units
