@@ -533,7 +533,7 @@ class Database(IDatabase):
             if dir.name not in [
                 path.name for path in input_scenarios
             ] or not finished_file_exists(dir):
-                shutil.rmtree(dir, onexc=_call_garbage_collector)
+                shutil.rmtree(dir, onerror=_call_garbage_collector)
             # If the scenario is finished, delete the simulation folders
             elif finished_file_exists(dir):
                 self._delete_simulations(dir.name)
