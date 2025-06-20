@@ -39,6 +39,7 @@ class Layer(BaseModel):
 class FloodMapLayer(Layer):
     zbmax: float
     depth_min: float
+    roads_min_zoom_level: int = 14
 
 
 class AggregationDmgLayer(Layer):
