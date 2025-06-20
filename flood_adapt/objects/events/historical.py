@@ -34,17 +34,17 @@ class HistoricalEvent(Event):
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [
             ForcingSource.CSV,
-            ForcingSource.METEO,
+            # ForcingSource.METEO, # Temporarily excluded due to bug in hydromt-sfincs. fixed in v1.3.0
             ForcingSource.SYNTHETIC,
             ForcingSource.CONSTANT,
         ],
         ForcingType.WIND: [
             ForcingSource.CSV,
-            ForcingSource.METEO,
+            # ForcingSource.METEO, # Temporarily excluded due to bug in hydromt-sfincs. fixed in v1.3.0
             ForcingSource.CONSTANT,
         ],
         ForcingType.WATERLEVEL: [
-            ForcingSource.MODEL,
+            # ForcingSource.MODEL, # Temporarily excluded due to the METEO bug in hydromt-sfincs. fixed in v1.3.0
             ForcingSource.CSV,
             ForcingSource.SYNTHETIC,
             ForcingSource.GAUGED,
