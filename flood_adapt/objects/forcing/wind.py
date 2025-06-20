@@ -115,7 +115,7 @@ class WindNetCDF(IWind):
 
     def read(self) -> xr.Dataset:
         required_vars = ("wind10_v", "wind10_u", "press_msl")
-        required_coords = ("time", "lat", "lon")
+        required_coords = ("time", "y", "x")
         with xr.open_dataset(self.path) as ds:
             validated_ds = validate_netcdf_forcing(ds, required_vars, required_coords)
         return validated_ds
