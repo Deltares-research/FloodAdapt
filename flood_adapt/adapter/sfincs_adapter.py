@@ -764,16 +764,15 @@ class SfincsAdapter(IHazardAdapter):
 
         with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
             # read mask and bed level
-            mask = dummymodel.get_mask().stack(z=("x", "y"))
-            zb = dummymodel.get_bedlevel().stack(z=("x", "y")).to_numpy()
+            mask = dummymodel.get_mask()
+            zb = dummymodel.get_bedlevel()
 
         zs_maps = []
         for simulation_path in sim_paths:
             # read zsmax data from overland sfincs model
             with SfincsAdapter(model_root=simulation_path) as sim:
                 zsmax = sim._get_zsmax().load()
-                zs_stacked = zsmax.stack(z=("x", "y"))
-                zs_maps.append(zs_stacked)
+                zs_maps.append(zsmax)
 
         # Create RP flood maps
         self.logger.info("Calculating flood risk maps, this may take some time")
@@ -1799,11 +1798,63 @@ class SfincsAdapter(IHazardAdapter):
     def calc_rp_maps(
         floodmaps: list[xr.DataArray],
         frequencies: list[float],
-        zb: np.ndarray,
+        zb: xr.DataArray,
         mask: xr.DataArray,
         return_periods: list[float],
     ) -> list[xr.DataArray]:
-        # Create RP flood maps
+        """
+        Calculate return period (RP) flood maps from a set of flood simulation results.
+
+        This function processes multiple flood simulation outputs (water level maps) and their associated frequencies
+        to generate hazard maps for specified return periods. It interpolates water levels for each return period
+        using exceedance probabilities and handles masked or dry cells appropriately.
+
+        Args:
+            floodmaps (list[xr.DataArray]): List of water level maps (xarray DataArrays), one for each simulation.
+            frequencies (list[float]): List of frequencies (probabilities of occurrence) corresponding to each floodmap.
+            zb (np.ndarray): Array of bed elevations for each grid cell.
+            mask (xr.DataArray): Mask indicating valid (1) and invalid (0) grid cells.
+            return_periods (list[float]): List of return periods (in years) for which to generate hazard maps.
+
+        Returns
+        -------
+            list[xr.DataArray]: List of xarray DataArrays, each representing the hazard map for a given return period.
+                                Each DataArray contains water levels (meters) for the corresponding return period.
+        """
+        # Check that all floodmaps have the same shape and dimensions
+        first_shape = floodmaps[0].shape
+        first_dims = floodmaps[0].dims
+        for i, floodmap in enumerate(floodmaps):
+            if floodmap.shape != first_shape or floodmap.dims != first_dims:
+                raise ValueError(
+                    f"Floodmap at index {i} does not match the shape or dimensions of the first floodmap. "
+                    f"Expected shape {first_shape} and dims {first_dims}, got shape {floodmap.shape} and dims {floodmap.dims}."
+                )
+
+        # Check that zb and mask have the same shape
+        if zb.shape != mask.shape:
+            raise ValueError(
+                "Bed elevation array (zb) and mask must have the same shape."
+            )
+
+        # Check that floodmaps, zb, and mask all have the same shape
+        if (
+            len(first_shape) != len(zb.shape)
+            or first_shape != zb.shape
+            or first_shape != mask.shape
+        ):
+            raise ValueError(
+                f"Floodmaps, bed elevation array (zb), and mask must all have the same shape. "
+                f"Floodmap shape: {first_shape}, zb shape: {zb.shape}, mask shape: {mask.shape}."
+            )
+
+        # stack dimensions if floodmaps are 2D
+        if len(floodmaps[0].shape) > 1:
+            stacking = True
+            for i, floodmap in enumerate(floodmaps):
+                floodmaps[i] = floodmap.stack(z=("x", "y"))
+            zb = zb.stack(z=("x", "y"))
+            mask = mask.stack(z=("x", "y"))
 
         # 1a: make a table of all water levels and associated frequencies
         zs = xr.concat(floodmaps, pd.Index(frequencies, name="frequency"))
@@ -1867,13 +1918,12 @@ class SfincsAdapter(IHazardAdapter):
 
         rp_maps = []
         for ii, rp in enumerate(return_periods):
-            # #create single nc
-            rp_maps.append(
-                xr.DataArray(
-                    data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
-                ).unstack()
+            da = xr.DataArray(
+                data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
             )
-
-        # rp_maps = xr.concat(rp_maps, pd.Index(return_periods, name="return_period"))
+            if stacking:
+                da = da.unstack()
+            # #create single nc
+            rp_maps.append(da)
 
         return rp_maps
