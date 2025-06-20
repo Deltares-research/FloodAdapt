@@ -764,89 +764,32 @@ class SfincsAdapter(IHazardAdapter):
 
         with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
             # read mask and bed level
-            mask = dummymodel.get_mask().stack(z=("x", "y"))
-            zb = dummymodel.get_bedlevel().stack(z=("x", "y")).to_numpy()
+            mask = dummymodel.get_mask()
+            zb = dummymodel.get_bedlevel()
 
         zs_maps = []
         for simulation_path in sim_paths:
             # read zsmax data from overland sfincs model
             with SfincsAdapter(model_root=simulation_path) as sim:
                 zsmax = sim._get_zsmax().load()
-                zs_stacked = zsmax.stack(z=("x", "y"))
-                zs_maps.append(zs_stacked)
+                zs_maps.append(zsmax)
 
         # Create RP flood maps
-
-        # 1a: make a table of all water levels and associated frequencies
-        zs = xr.concat(zs_maps, pd.Index(frequencies, name="frequency"))
-        # Get the indices of columns with all NaN values
-        nan_cells = np.where(np.all(np.isnan(zs), axis=0))[0]
-        # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
-        zs = xr.where(np.isnan(zs), np.tile(zb, (zs.shape[0], 1)), zs)
-        # Get table of frequencies
-        freq = np.tile(frequencies, (zs.shape[1], 1)).transpose()
-
-        # 1b: sort water levels in descending order and include the frequencies in the sorting process
-        # (i.e. each h-value should be linked to the same p-values as in step 1a)
-        sort_index = zs.argsort(axis=0)
-        sorted_prob = np.flipud(np.take_along_axis(freq, sort_index, axis=0))
-        sorted_zs = np.flipud(np.take_along_axis(zs.values, sort_index, axis=0))
-
-        # 1c: Compute exceedance probabilities of water depths
-        # Method: accumulate probabilities from top to bottom
-        prob_exceed = np.cumsum(sorted_prob, axis=0)
-
-        # 1d: Compute return periods of water depths
-        # Method: simply take the inverse of the exceedance probability (1/Pex)
-        rp_zs = 1.0 / prob_exceed
-
-        # For each return period (T) of interest do the following:
-        # For each grid cell do the following:
-        # Use the table from step [1d] as a “lookup-table” to derive the T-year water depth. Use a 1-d interpolation technique:
-        # h(T) = interp1 (log(T*), h*, log(T))
-        # in which t* and h* are the values from the table and T is the return period (T) of interest
-        # The resulting T-year water depths for all grids combined form the T-year hazard map
-        rp_da = xr.DataArray(rp_zs, dims=zs.dims)
-
-        # no_data_value = -999  # in SFINCS
-        # sorted_zs = xr.where(sorted_zs == no_data_value, np.nan, sorted_zs)
-
-        valid_cells = np.where(mask == 1)[
-            0
-        ]  # only loop over cells where model is not masked
-        h = matlib.repmat(
-            np.copy(zb), len(floodmap_rp), 1
-        )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
-
         self.logger.info("Calculating flood risk maps, this may take some time")
-        for jj in valid_cells:  # looping over all non-masked cells.
-            # linear interpolation for all return periods to evaluate
-            h[:, jj] = np.interp(
-                np.log10(floodmap_rp),
-                np.log10(rp_da[::-1, jj]),
-                sorted_zs[::-1, jj],
-                left=0,
-            )
-
-        # Re-fill locations that had nan water level for all simulations with nans
-        h[:, nan_cells] = np.full(h[:, nan_cells].shape, np.nan)
-
-        # If a cell has the same water-level as the bed elevation it should be dry (turn to nan)
-        diff = h - np.tile(zb, (h.shape[0], 1))
-        dry = (
-            diff < 10e-10
-        )  # here we use a small number instead of zero for rounding errors
-        h[dry] = np.nan
+        rp_flood_maps = self.calc_rp_maps(
+            floodmaps=zs_maps,
+            frequencies=frequencies,
+            zb=zb,
+            mask=mask,
+            return_periods=floodmap_rp,
+        )
 
         for ii, rp in enumerate(floodmap_rp):
-            # #create single nc
-            zs_rp_single = xr.DataArray(
-                data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
-            ).unstack()
+            zs_rp_single = rp_flood_maps[ii]
             zs_rp_single = zs_rp_single.rio.write_crs(
                 zsmax.raster.crs
             )  # , inplace=True)
-            zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
+            zs_rp_single = zs_rp_single.to_dataset(name="risk_map").transpose()
             fn_rp = result_path / f"RP_{rp:04d}_maps.nc"
             zs_rp_single.to_netcdf(fn_rp)
 
@@ -1850,3 +1793,144 @@ class SfincsAdapter(IHazardAdapter):
         fig["data"][0]["name"] = "model"
         fig["data"][1]["name"] = "measurement"
         fig.update_layout(showlegend=True)
+
+    @staticmethod
+    def calc_rp_maps(
+        floodmaps: list[xr.DataArray],
+        frequencies: list[float],
+        zb: xr.DataArray,
+        mask: xr.DataArray,
+        return_periods: list[float],
+    ) -> list[xr.DataArray]:
+        """
+        Calculate return period (RP) flood maps from a set of flood simulation results.
+
+        This function processes multiple flood simulation outputs (water level maps) and their associated frequencies
+        to generate hazard maps for specified return periods. It interpolates water levels for each return period
+        using exceedance probabilities and handles masked or dry cells appropriately.
+
+        Args:
+            floodmaps (list[xr.DataArray]): List of water level maps (xarray DataArrays), one for each simulation.
+            frequencies (list[float]): List of frequencies (probabilities of occurrence) corresponding to each floodmap.
+            zb (np.ndarray): Array of bed elevations for each grid cell.
+            mask (xr.DataArray): Mask indicating valid (1) and invalid (0) grid cells.
+            return_periods (list[float]): List of return periods (in years) for which to generate hazard maps.
+
+        Returns
+        -------
+            list[xr.DataArray]: List of xarray DataArrays, each representing the hazard map for a given return period.
+                                Each DataArray contains water levels (meters) for the corresponding return period.
+        """
+        floodmaps = floodmaps.copy()  # avoid modifying the original list
+        # Check that all floodmaps have the same shape and dimensions
+        first_shape = floodmaps[0].shape
+        first_dims = floodmaps[0].dims
+        for i, floodmap in enumerate(floodmaps):
+            if floodmap.shape != first_shape or floodmap.dims != first_dims:
+                raise ValueError(
+                    f"Floodmap at index {i} does not match the shape or dimensions of the first floodmap. "
+                    f"Expected shape {first_shape} and dims {first_dims}, got shape {floodmap.shape} and dims {floodmap.dims}."
+                )
+
+        # Check that zb and mask have the same shape
+        if zb.shape != mask.shape:
+            raise ValueError(
+                "Bed elevation array (zb) and mask must have the same shape."
+            )
+
+        # Check that floodmaps, zb, and mask all have the same shape
+        if (
+            len(first_shape) != len(zb.shape)
+            or first_shape != zb.shape
+            or first_shape != mask.shape
+        ):
+            raise ValueError(
+                f"Floodmaps, bed elevation array (zb), and mask must all have the same shape. "
+                f"Floodmap shape: {first_shape}, zb shape: {zb.shape}, mask shape: {mask.shape}."
+            )
+
+        # stack dimensions if floodmaps are 2D
+        if len(floodmaps[0].shape) > 1:
+            stacking = True
+            for i, floodmap in enumerate(floodmaps):
+                floodmaps[i] = floodmap.stack(z=("x", "y"))
+            zb = zb.stack(z=("x", "y"))
+            mask = mask.stack(z=("x", "y"))
+        else:
+            stacking = False
+
+        # 1a: make a table of all water levels and associated frequencies
+        zs = xr.concat(floodmaps, pd.Index(frequencies, name="frequency"))
+        # Get the indices of columns with all NaN values
+        nan_cells = np.where(np.all(np.isnan(zs), axis=0))[0]
+        # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
+        zs = xr.where(np.isnan(zs), np.tile(zb, (zs.shape[0], 1)), zs)
+        # Get table of frequencies
+        freq = np.tile(frequencies, (zs.shape[1], 1)).transpose()
+
+        # 1b: sort water levels in descending order and include the frequencies in the sorting process
+        # (i.e. each h-value should be linked to the same p-values as in step 1a)
+        sort_index = zs.argsort(axis=0)
+        sorted_prob = np.flipud(np.take_along_axis(freq, sort_index, axis=0))
+        sorted_zs = np.flipud(np.take_along_axis(zs.values, sort_index, axis=0))
+
+        # 1c: Compute exceedance probabilities of water depths
+        # Method: accumulate probabilities from top to bottom
+        prob_exceed = np.cumsum(sorted_prob, axis=0)
+
+        # 1d: Compute return periods of water depths
+        # Method: simply take the inverse of the exceedance probability (1/Pex)
+        rp_zs = 1.0 / prob_exceed
+
+        # For each return period (T) of interest do the following:
+        # For each grid cell do the following:
+        # Use the table from step [1d] as a “lookup-table” to derive the T-year water depth. Use a 1-d interpolation technique:
+        # h(T) = interp1 (log(T*), h*, log(T))
+        # in which t* and h* are the values from the table and T is the return period (T) of interest
+        # The resulting T-year water depths for all grids combined form the T-year hazard map
+        rp_da = xr.DataArray(rp_zs, dims=zs.dims)
+
+        # no_data_value = -999  # in SFINCS
+        # sorted_zs = xr.where(sorted_zs == no_data_value, np.nan, sorted_zs)
+
+        valid_cells = np.where(mask == 1)[
+            0
+        ]  # only loop over cells where model is not masked
+        h = matlib.repmat(
+            np.copy(zb), len(return_periods), 1
+        )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
+
+        for jj in valid_cells:  # looping over all non-masked cells.
+            # linear interpolation for all return periods to evaluate
+            h[:, jj] = np.interp(
+                np.log10(return_periods),
+                np.log10(rp_da[::-1, jj]),
+                sorted_zs[::-1, jj],
+                left=0,
+            )
+
+        # Re-fill locations that had nan water level for all simulations with nans
+        h[:, nan_cells] = np.full(h[:, nan_cells].shape, np.nan)
+
+        # If a cell has the same water-level as the bed elevation it should be dry (turn to nan)
+        diff = h - np.tile(zb, (h.shape[0], 1))
+        dry = (
+            diff < 10e-10
+        )  # here we use a small number instead of zero for rounding errors
+        h[dry] = np.nan
+
+        rp_maps = []
+        for ii, rp in enumerate(return_periods):
+            da = xr.DataArray(
+                data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
+            )
+            if stacking:
+                # Ensure unstacking creates (y, x) dimensions in the correct order
+                da = da.unstack()
+                # Reorder dimensions if needed
+                if set(da.dims) == {"y", "x"} and da.dims != ("y", "x"):
+                    da = da.transpose("y", "x")
+            # #create single nc
+            rp_maps.append(da)
+
+        return rp_maps
