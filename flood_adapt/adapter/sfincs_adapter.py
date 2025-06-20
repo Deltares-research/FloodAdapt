@@ -1821,6 +1821,7 @@ class SfincsAdapter(IHazardAdapter):
             list[xr.DataArray]: List of xarray DataArrays, each representing the hazard map for a given return period.
                                 Each DataArray contains water levels (meters) for the corresponding return period.
         """
+        floodmaps = floodmaps.copy()  # avoid modifying the original list
         # Check that all floodmaps have the same shape and dimensions
         first_shape = floodmaps[0].shape
         first_dims = floodmaps[0].dims
@@ -1855,6 +1856,8 @@ class SfincsAdapter(IHazardAdapter):
                 floodmaps[i] = floodmap.stack(z=("x", "y"))
             zb = zb.stack(z=("x", "y"))
             mask = mask.stack(z=("x", "y"))
+        else:
+            stacking = False
 
         # 1a: make a table of all water levels and associated frequencies
         zs = xr.concat(floodmaps, pd.Index(frequencies, name="frequency"))
@@ -1922,7 +1925,11 @@ class SfincsAdapter(IHazardAdapter):
                 data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
             )
             if stacking:
+                # Ensure unstacking creates (y, x) dimensions in the correct order
                 da = da.unstack()
+                # Reorder dimensions if needed
+                if set(da.dims) == {"y", "x"} and da.dims != ("y", "x"):
+                    da = da.transpose("y", "x")
             # #create single nc
             rp_maps.append(da)
 
