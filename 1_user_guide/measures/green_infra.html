@@ -46,6 +46,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/bootstrap/bootstrap-dark-0a88f9bf3c7dc6da7549435e9e0a9869.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <link href="../../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -486,7 +489,7 @@ ul.task-list li input[type="checkbox"] {
 <div id="fig-measures_buildingLevel" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-measures_buildingLevel-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/measures_greenInfra.png" class="img-fluid quarto-figure quarto-figure-left figure-img">
+<a href="../../_static/images/measures_greenInfra.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Green infrastructure options in FloodAdapt include: water squares, greening, and total storage"><img src="../../_static/images/measures_greenInfra.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measures_buildingLevel-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: <strong>Green infrastructure options in FloodAdapt include: water squares, greening, and total storage</strong>
@@ -526,7 +529,7 @@ How are green infrastructure measures represented in the modeling?
 <p>All the green infrastructure measure types in FloodAdapt are represented in the modeling in the same way. The total storage volume from the green infrastructure is added to the underlying flood model in the cells where the green infrastructure is placed. When green infrastructure is implemented over multiple flood model cells, the volume is distributed over the cells proportionally according to their share of the green infrastructure area. For example, in the figure below, 80% of the storage volume would go into the cell with 80% of the area, and 20% would go to the cell with 20% of the area. When you run a scenario, the flood model removes water entering the cells where green infrastructure is placed until the storage volume for that cell has been reached. Note that the storage volume in each cell is handled uniformly throughout the cell, so you may have flood reductions in areas within the cell but outside the green infrastructure polygon.</p>
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p><img src="../../_static/images/measures_greenInfra_distributionOfStorageVolume.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%"></p>
+<p><a href="../../_static/images/measures_greenInfra_distributionOfStorageVolume.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/measures_greenInfra_distributionOfStorageVolume.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%"></a></p>
 </figure>
 </div>
 </div>
@@ -537,7 +540,7 @@ How are green infrastructure measures represented in the modeling?
 <div id="fig-measures_waterSquare_schematic" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-measures_waterSquare_schematic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/measures_GI_waterSquare_example.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:30.0%">
+<a href="../../_static/images/measures_GI_waterSquare_example.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;2: A water square schematic, from https://urbangreenbluegrids.com/measures/water-squares/"><img src="../../_static/images/measures_GI_waterSquare_example.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:30.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measures_waterSquare_schematic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;2: <strong>A water square schematic, from https://urbangreenbluegrids.com/measures/water-squares/</strong>
@@ -554,7 +557,7 @@ Figure&nbsp;2: <strong>A water square schematic, from https://urbangreenbluegrid
 <div id="fig-measures_waterSquare" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-measures_waterSquare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/measures_GI_waterSquare.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%">
+<a href="../../_static/images/measures_GI_waterSquare.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;3: Implementing a water square in FloodAdapt. This water square would affect two cells in the flood model by increasing their storage"><img src="../../_static/images/measures_GI_waterSquare.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measures_waterSquare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;3: <strong>Implementing a water square in FloodAdapt. This water square would affect two cells in the flood model by increasing their storage</strong>
@@ -566,7 +569,7 @@ Figure&nbsp;3: <strong>Implementing a water square in FloodAdapt. This water squ
 <div id="fig-measures_waterSquare_specs" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-measures_waterSquare_specs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/measures_GI_waterSquare_specs.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%">
+<a href="../../_static/images/measures_GI_waterSquare_specs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;4: Water square specification window"><img src="../../_static/images/measures_GI_waterSquare_specs.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measures_waterSquare_specs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;4: <strong>Water square specification window</strong>
@@ -576,7 +579,7 @@ Figure&nbsp;4: <strong>Water square specification window</strong>
 <div id="fig-measures_lookup" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-measures_lookup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/measures_GI_lookupTable.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%">
+<a href="../../_static/images/measures_GI_lookupTable.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;5: Lookup table with suggestions on infiltration depths for different types of green infrastructure solutions"><img src="../../_static/images/measures_GI_lookupTable.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measures_lookup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;5: <strong>Lookup table with suggestions on infiltration depths for different types of green infrastructure solutions</strong>
@@ -603,7 +606,7 @@ Where do the suggested infiltration depths come from?
 <div id="fig-measure_building_poly_buyout_specification" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-measure_building_poly_buyout_specification-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/measures_GI_greening_options.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%">
+<a href="../../_static/images/measures_GI_greening_options.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;6: Examples of different green infrastructure measures (source: https://crctool.org/en/set-measure)"><img src="../../_static/images/measures_GI_greening_options.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:50.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measure_building_poly_buyout_specification-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;6: <strong>Examples of different green infrastructure measures (source: https://crctool.org/en/set-measure)</strong>
@@ -621,7 +624,7 @@ Figure&nbsp;6: <strong>Examples of different green infrastructure measures (sour
 <div id="fig-measures_buildingLevel_GUI" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-measures_buildingLevel_GUI-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/measures_GI_greening.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%">
+<a href="../../_static/images/measures_GI_greening.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Figure&nbsp;7: Selecting an aggregation area for applying the green infrastructure option “greening”."><img src="../../_static/images/measures_GI_greening.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measures_buildingLevel_GUI-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;7: <strong>Selecting an aggregation area for applying the green infrastructure option “greening”.</strong>
@@ -632,7 +635,7 @@ Figure&nbsp;7: <strong>Selecting an aggregation area for applying the green infr
 <div id="fig-measures_waterSquare_specs" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-measures_waterSquare_specs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/measures_GI_greening_specs.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%">
+<a href="../../_static/images/measures_GI_greening_specs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;8: Greening specification window"><img src="../../_static/images/measures_GI_greening_specs.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measures_waterSquare_specs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;8: <strong>Greening specification window</strong>
@@ -655,7 +658,7 @@ Figure&nbsp;8: <strong>Greening specification window</strong>
 <div id="fig-measures_totalStorage_specs" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-measures_totalStorage_specs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/measures_GI_totalStorage_specs.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%">
+<a href="../../_static/images/measures_GI_totalStorage_specs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Figure&nbsp;9: Total storage specification window"><img src="../../_static/images/measures_GI_totalStorage_specs.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measures_totalStorage_specs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;9: <strong>Total storage specification window</strong>
@@ -1105,6 +1108,38 @@ Figure&nbsp;9: <strong>Total storage specification window</strong>
     </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

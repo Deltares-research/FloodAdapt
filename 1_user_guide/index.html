@@ -44,6 +44,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/bootstrap/bootstrap-dark-0a88f9bf3c7dc6da7549435e9e0a9869.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <link href="../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -504,7 +507,7 @@ Example user question
 <div id="fig-GUItabs_landing" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-GUItabs_landing-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../_static/images/FA_GUI_userGuide.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%">
+<a href="../_static/images/FA_GUI_userGuide.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: FloodAdapt opens to the “Site” tab. The user walks through the various tabs to create events, projections, measures, strategies, and scenarios for simulation. There are also tabs for viewing output and for creating benefit analyses. This guide describes the process for each of the FloodAdapt tabs"><img src="../_static/images/FA_GUI_userGuide.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-GUItabs_landing-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: <strong>FloodAdapt opens to the “Site” tab. The user walks through the various tabs to create events, projections, measures, strategies, and scenarios for simulation. There are also tabs for viewing output and for creating benefit analyses. This guide describes the process for each of the FloodAdapt tabs</strong>
@@ -527,13 +530,13 @@ Running a scenario calls the SFINCS and Delft-FIAT models to start the simulatio
 -->
 <ul>
 <li><p>The <a href="../1_user_guide/output/index.html"><strong>Output</strong></a> tab is where a user can view maps showing the flooding and impacts and see infometrics and an infographic for scenarios that have been run.</p></li>
-<li><p>The user can compare scenarios spatially (map comparison) in the <a href="../1_user_guide/compare/Compare_map.html"><strong>Compare - map</strong></a> tab and can compare scenarios based on their tabulated metrics in the <a href="../1_user_guide/compare/Compare_table.html"><strong>Compare - table</strong></a> tab.</p></li>
+<li><p>The user can compare scenarios spatially (map comparison) in the <a href="compare/Compare_map.qmd"><strong>Compare - map</strong></a> tab and can compare scenarios based on their tabulated metrics in the <a href="compare/Compare_table.qmd"><strong>Compare - table</strong></a> tab.</p></li>
 <li><p>The user can evaluate the risk-reduction benefits of an adaptation strategy, including spatial distribution of benefits, and equity-weighted benefits in the <a href="../1_user_guide/benefits.html"><strong>Benefits</strong></a> tab.</p></li>
 </ul>
 <div id="fig-GUItabs" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-GUItabs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../_static/images/GUI_Tabs.jpg" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%">
+<a href="../_static/images/GUI_Tabs.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: Tabs of the FloodAdapt user interface. Blue-grey fill indicates required user input, and the arrows show the flow of information from one tab to another."><img src="../_static/images/GUI_Tabs.jpg" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-GUItabs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;2: <strong>Tabs of the FloodAdapt user interface. Blue-grey fill indicates required user input, and the arrows show the flow of information from one tab to another.</strong>
@@ -970,6 +973,38 @@ Figure&nbsp;2: <strong>Tabs of the FloodAdapt user interface. Blue-grey fill ind
     </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

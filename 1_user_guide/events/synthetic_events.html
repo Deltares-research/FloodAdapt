@@ -46,6 +46,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/bootstrap/bootstrap-dark-0a88f9bf3c7dc6da7549435e9e0a9869.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <link href="../../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -490,7 +493,7 @@ ul.task-list li input[type="checkbox"] {
 <div id="fig-syntheticWindow" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-syntheticWindow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/Synthetic.png" class="img-fluid figure-img">
+<a href="../../_static/images/Synthetic.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Event template window for a synthetic event."><img src="../../_static/images/Synthetic.png" class="img-fluid figure-img"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-syntheticWindow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: <strong>Event template window for a synthetic event.</strong>
@@ -511,7 +514,7 @@ Figure&nbsp;1: <strong>Event template window for a synthetic event.</strong>
 <div id="fig-syntheticAdvanced" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-syntheticAdvanced-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/advancedWLoptions.png" class="img-fluid figure-img">
+<a href="../../_static/images/advancedWLoptions.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: Event template window showing the advanced options for the water level time series."><img src="../../_static/images/advancedWLoptions.png" class="img-fluid figure-img"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-syntheticAdvanced-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;2: <strong>Event template window showing the advanced options for the water level time series.</strong>
@@ -547,7 +550,7 @@ Datums in the water level plots
 <div id="fig-rainfallCurves" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-rainfallCurves-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="../../_static/images/RainfallCurves.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%">
+<a href="../../_static/images/RainfallCurves.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: The Gaussian, SCS, and block rainfall curves for a synthetic event. The top shows the Gaussian curve, the middle shows the SCS curve, and the bottom shows the block curve. All three represent three inches of rainfall over 12 hours (note: the vertical axis ranges are different in each plot)"><img src="../../_static/images/RainfallCurves.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rainfallCurves-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;3: <strong>The Gaussian, SCS, and block rainfall curves for a synthetic event. The top shows the Gaussian curve, the middle shows the SCS curve, and the bottom shows the block curve. All three represent three inches of rainfall over 12 hours (note: the vertical axis ranges are different in each plot)</strong>
@@ -1008,6 +1011,38 @@ Figure&nbsp;3: <strong>The Gaussian, SCS, and block rainfall curves for a synthe
     </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 
