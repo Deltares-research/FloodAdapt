@@ -897,6 +897,10 @@ class SfincsAdapter(IHazardAdapter):
             shutil.rmtree(sim_path, ignore_errors=True)
             self.logger.info(f"Deleted simulation folder: {sim_path}")
 
+        if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
+            # Remove the parent directory `simulations` if it is empty
+            sim_path.parent.rmdir()
+
     def _run_risk_scenario(self, scenario: Scenario):
         """Run the whole workflow for a risk scenario.
 

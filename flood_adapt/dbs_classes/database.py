@@ -556,6 +556,7 @@ class Database(IDatabase):
             if sub_events:
                 for sub_event in sub_events:
                     overland._delete_simulation_folder(scn, sub_event=sub_event)
+
             else:
                 overland._delete_simulation_folder(scn)
 
@@ -570,11 +571,20 @@ class Database(IDatabase):
                         if sim_path.exists():
                             shutil.rmtree(sim_path, ignore_errors=True)
                             self.logger.info(f"Deleted simulation folder: {sim_path}")
+                        if sim_path.parent.exists() and not any(
+                            sim_path.parent.iterdir()
+                        ):
+                            # Remove the parent directory `simulations` if it is empty
+                            sim_path.parent.rmdir()
                 else:
                     sim_path = offshore._get_simulation_path_offshore(scn)
                     if sim_path.exists():
                         shutil.rmtree(sim_path, ignore_errors=True)
                         self.logger.info(f"Deleted simulation folder: {sim_path}")
+
+                    if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
+                        # Remove the parent directory `simulations` if it is empty
+                        sim_path.parent.rmdir()
 
         if not self.site.fiat.config.save_simulation:
             # Delete FIAT
