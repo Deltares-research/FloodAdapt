@@ -295,7 +295,7 @@ class ConfigModel(BaseModel):
     building_footprints: Optional[SpatialJoinModel | FootprintsOptions] = (
         FootprintsOptions.OSM
     )
-    fiat_buildings_name: Optional[str] = "buildings"
+    fiat_buildings_name: str | list[str] = "buildings"
     fiat_roads_name: Optional[str] = "roads"
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SviConfigModel] = None
@@ -637,9 +637,16 @@ class DatabaseBuilder:
         self._aggregation_areas = self.create_aggregation_areas()
 
         roads_gpkg = self.create_roads()
-        non_building_names = []
-        if roads_gpkg is not None:
-            non_building_names.append("road")  # TODO this should not be hardcoded
+
+        # Get classes of non-building objects
+        non_buildings = ~self.fiat_model.exposure.exposure_db[
+            _FIAT_COLUMNS.object_id
+        ].isin(self._get_fiat_building_geoms()[_FIAT_COLUMNS.object_id])
+        non_building_names = list(
+            self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.primary_object_type][
+                non_buildings
+            ].unique()
+        )
 
         # Update elevations
         self.update_fiat_elevation()
@@ -671,6 +678,12 @@ class DatabaseBuilder:
                     self.fiat_model.config["exposure"]["geom"][key]
                 ).name
         self.fiat_model.config["output"]["geom"] = output_geom
+        # Make sure objects are ordered based on object id
+        self.fiat_model.exposure.exposure_db = (
+            self.fiat_model.exposure.exposure_db.sort_values(
+                by=[_FIAT_COLUMNS.object_id], ignore_index=True
+            )
+        )
         # Update FIAT model with the new config
         self.fiat_model.write()
 
@@ -819,9 +832,7 @@ class DatabaseBuilder:
             return path
         # Then check if geometries are already footprints
         elif isinstance(
-            self.fiat_model.exposure.exposure_geoms[
-                self._get_fiat_building_index()
-            ].geometry.iloc[0],
+            self._get_fiat_building_geoms().geometry.iloc[0],
             (Polygon, MultiPolygon),
         ):
             self.logger.info(
@@ -875,7 +886,7 @@ class DatabaseBuilder:
 
         # Spatially join buildings and map
         buildings_joined, bfe = self.spatial_join(
-            self.fiat_model.exposure.exposure_geoms[self._get_fiat_building_index()],
+            self._get_fiat_building_geoms(),
             bfe_file,
             self.config.bfe.field_name,
         )
@@ -1049,9 +1060,7 @@ class DatabaseBuilder:
             svi_file = self._check_exists_and_absolute(self.config.svi.file)
             exposure_csv = self.fiat_model.exposure.exposure_db
             buildings_joined, svi = self.spatial_join(
-                self.fiat_model.exposure.exposure_geoms[
-                    self._get_fiat_building_index()
-                ],
+                self._get_fiat_building_geoms(),
                 svi_file,
                 self.config.svi.field_name,
                 rename="SVI",
@@ -1498,11 +1507,7 @@ class DatabaseBuilder:
         if not self.fiat_model.region.empty:
             center = self.fiat_model.region.dissolve().centroid.to_crs(4326)[0]
         else:
-            center = (
-                self.fiat_model.exposure.exposure_geoms[self._get_fiat_building_index()]
-                .dissolve()
-                .centroid.to_crs(4326)[0]
-            )
+            center = self._get_fiat_building_geoms().dissolve().centroid.to_crs(4326)[0]
         return center.x, center.y
 
     def create_gui_config(self) -> GuiModel:
@@ -1816,6 +1821,22 @@ class DatabaseBuilder:
         else:
             raise ValueError(f"Path {path} is not absolute.")
 
+    def _get_fiat_building_geoms(self) -> gpd.GeoDataFrame:
+        """
+        Get the building geometries from the FIAT model.
+
+        Returns
+        -------
+        gpd.GeoDataFrame
+            A GeoDataFrame containing the building geometries.
+        """
+        building_indices = self._get_fiat_building_index()
+        buildings = pd.concat(
+            [self.fiat_model.exposure.exposure_geoms[i] for i in building_indices],
+            ignore_index=True,
+        )
+        return buildings
+
     def _join_building_footprints(
         self, building_footprints: gpd.GeoDataFrame, field_name: str
     ) -> Path:
@@ -1838,9 +1859,7 @@ class DatabaseBuilder:
         7. Updates the site attributes with the relative path to the saved building footprints.
         8. Logs the location where the building footprints are saved.
         """
-        buildings = self.fiat_model.exposure.exposure_geoms[
-            self._get_fiat_building_index()
-        ]
+        buildings = self._get_fiat_building_geoms()
         exposure_csv = self.fiat_model.exposure.exposure_db
         if "BF_FID" in exposure_csv.columns:
             self.logger.warning(
@@ -1995,9 +2014,19 @@ class DatabaseBuilder:
             layer = layer.rename(columns={field_name: rename})
         return objects_joined, layer
 
-    def _get_fiat_building_index(self) -> int:
-        return self.fiat_model.exposure.geom_names.index(
-            self.config.fiat_buildings_name
+    def _get_fiat_building_index(self) -> list[int]:
+        names = self.config.fiat_buildings_name
+        if isinstance(names, str):
+            names = [names]
+        indices = [
+            self.fiat_model.exposure.geom_names.index(name)
+            for name in names
+            if name in self.fiat_model.exposure.geom_names
+        ]
+        if indices:
+            return indices
+        raise ValueError(
+            f"None of the specified building geometry names {names} found in FIAT model exposure geom_names."
         )
 
     def _get_fiat_road_index(self) -> int:
