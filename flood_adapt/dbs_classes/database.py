@@ -28,6 +28,7 @@ from flood_adapt.misc.path_builder import (
     db_path,
 )
 from flood_adapt.misc.utils import finished_file_exists
+from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
@@ -129,11 +130,10 @@ class Database(IDatabase):
             self, standard_objects=self.site.standard_objects.projections
         )
         self._benefits = DbsBenefit(self)
-
-        # Delete any unfinished/crashed scenario output
-        self.cleanup()
-
         self._init_done = True
+
+        # Delete any unfinished/crashed scenario output after initialization
+        self.cleanup()
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
@@ -509,6 +509,9 @@ class Database(IDatabase):
             (self.scenarios.output_path / dir).resolve()
             for dir in os.listdir(self.scenarios.output_path)
         ]
+        self.logger.info(
+            f"Cleaning up scenario outputs: {len(output_scenarios)} scenarios found."
+        )
 
         def _call_garbage_collector(func, path, exc_info, retries=5, delay=0.1):
             """Retry deletion up to 5 times if the file is locked."""
@@ -531,3 +534,59 @@ class Database(IDatabase):
                 path.name for path in input_scenarios
             ] or not finished_file_exists(dir):
                 shutil.rmtree(dir, onerror=_call_garbage_collector)
+            # If the scenario is finished, delete the simulation folders
+            elif finished_file_exists(dir):
+                self._delete_simulations(dir.name)
+
+    def _delete_simulations(self, scenario_name: str) -> None:
+        """Delete all simulation folders for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario to delete simulations for.
+        """
+        scn = self.scenarios.get(scenario_name)
+        event = self.events.get(scn.event, load_all=True)
+        sub_events = event._events if event.mode == Mode.risk else None
+
+        if not self.site.sfincs.config.save_simulation:
+            # Delete SFINCS overland
+            overland = self.static.get_overland_sfincs_model()
+            if sub_events:
+                for sub_event in sub_events:
+                    overland._delete_simulation_folder(scn, sub_event=sub_event)
+
+            else:
+                overland._delete_simulation_folder(scn)
+
+            # Delete SFINCS offshore
+            if self.site.sfincs.config.offshore_model:
+                offshore = self.static.get_offshore_sfincs_model()
+                if sub_events:
+                    for sub_event in sub_events:
+                        sim_path = offshore._get_simulation_path_offshore(
+                            scn, sub_event=sub_event
+                        )
+                        if sim_path.exists():
+                            shutil.rmtree(sim_path, ignore_errors=True)
+                            self.logger.info(f"Deleted simulation folder: {sim_path}")
+                        if sim_path.parent.exists() and not any(
+                            sim_path.parent.iterdir()
+                        ):
+                            # Remove the parent directory `simulations` if it is empty
+                            sim_path.parent.rmdir()
+                else:
+                    sim_path = offshore._get_simulation_path_offshore(scn)
+                    if sim_path.exists():
+                        shutil.rmtree(sim_path, ignore_errors=True)
+                        self.logger.info(f"Deleted simulation folder: {sim_path}")
+
+                    if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
+                        # Remove the parent directory `simulations` if it is empty
+                        sim_path.parent.rmdir()
+
+        if not self.site.fiat.config.save_simulation:
+            # Delete FIAT
+            fiat = self.static.get_fiat_model()
+            fiat._delete_simulation_folder(scn)
