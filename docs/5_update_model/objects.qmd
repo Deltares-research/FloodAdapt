@@ -1,4 +1,0 @@
----
-title:	Adding / updating objects in the exposure data
----
-Coming soon.

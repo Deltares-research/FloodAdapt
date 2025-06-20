@@ -1,4 +1,0 @@
----
-title: Updating damage functions
----
-Coming soon.
