@@ -789,7 +789,7 @@ class SfincsAdapter(IHazardAdapter):
             zs_rp_single = zs_rp_single.rio.write_crs(
                 zsmax.raster.crs
             )  # , inplace=True)
-            zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
+            zs_rp_single = zs_rp_single.to_dataset(name="risk_map").transpose()
             fn_rp = result_path / f"RP_{rp:04d}_maps.nc"
             zs_rp_single.to_netcdf(fn_rp)
 
@@ -800,7 +800,7 @@ class SfincsAdapter(IHazardAdapter):
             # writing the geotiff to the scenario results folder
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
                 dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
-                zsmax = zs_rp_single.to_array().squeeze()
+                zsmax = zs_rp_single.to_array().squeeze().transpose()
                 floodmap_fn = fn_rp.with_suffix(".tif")
 
                 # convert dem from dem units to floodmap units
