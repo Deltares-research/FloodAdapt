@@ -1,7 +1,0 @@
----
-title: General event information
-filters:
-  - lightbox
-lightbox: auto
----
-Coming soon.

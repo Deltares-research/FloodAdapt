@@ -1,5 +1,0 @@
----
-title: Updating FloodAdapt
----
-
-Coming soon.
