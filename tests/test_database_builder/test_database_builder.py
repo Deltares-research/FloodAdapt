@@ -198,7 +198,7 @@ class TestDataBaseBuilder:
 
         builder.fiat_model.exposure.exposure_geoms = mock_exposure_geoms
         builder.fiat_model.exposure.exposure_db.columns = ["not BF_FID"]
-
+        builder.fiat_model.exposure.geom_names = ["buildings"]
         # Act
         footprints = builder.create_footprints()
 
