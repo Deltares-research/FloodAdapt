@@ -22,15 +22,15 @@ def write_mock_nc_file(meteo_dir: Path, time: TimeFrame) -> xr.Dataset:
         time_coord = time_range[0] + timedelta(hours=3 * i)
         ds = xr.Dataset(
             {
-                "wind_u": (("lat", "lon"), gen.random((2, 2))),
-                "wind_v": (("lat", "lon"), gen.random((2, 2))),
-                "barometric_pressure": (("lat", "lon"), gen.random((2, 2))),
-                "precipitation": (("lat", "lon"), gen.random((2, 2))),
+                "wind_u": (("y", "x"), gen.random((2, 2))),
+                "wind_v": (("y", "x"), gen.random((2, 2))),
+                "barometric_pressure": (("y", "x"), gen.random((2, 2))),
+                "precipitation": (("y", "x"), gen.random((2, 2))),
             },
             coords={
                 "time": [time_coord],
-                "lat": [30.0, 30.1],
-                "lon": [-90.0, -90.1],
+                "y": [30.0, 30.1],
+                "x": [-90.0, -90.1],
             },
         )
         time_str = time_coord.strftime(METEO_DATETIME_FORMAT)
@@ -126,7 +126,7 @@ class TestMeteoHandler:
                 assert var in result, f"Expected `{var}` in databaset, but not found"
 
             assert (
-                result["lon"].min() > -180 and result["lon"].max() < 180
+                result["x"].min() > -180 and result["x"].max() < 180
             ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"
 
     def test_read_meteo_multiple_nc_files(
@@ -155,5 +155,5 @@ class TestMeteoHandler:
                 assert var in result, f"Expected `{var}` in databaset, but not found"
 
             assert (
-                result["lon"].min() > -180 and result["lon"].max() < 180
+                result["x"].min() > -180 and result["x"].max() < 180
             ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"
