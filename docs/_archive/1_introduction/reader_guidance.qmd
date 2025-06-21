@@ -1,0 +1,17 @@
+---
+title: Reader Guidance
+---
+
+FloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Set-up of FloodAdapt and developing a set of events and probabilities for risk assessment require additional capabilities. @fig-readerGuidance provides a reading guide for this documentation. It shows the intended reader and the relative technical skills required for the different sections in this documentation.
+
+The [Setup Guide](../4_system_setup/index.qmd) is intended for those who will "build" or configure FloodAdapt for a new site and set of end-users.
+
+The [User Guide](../1_user_guide/index.qmd) walks the user through all the functionality of FloodAdapt.
+
+The [API documentation](../3_api_docs/index.qmd) outlines the FloodAdapt API and provides executable example notebooks for use in python.
+
+
+Chapter 6 provides a demonstration of a CFRSS application, to help the reader understand how FloodAdapt can support adaptation and resilience planning. Appendix A is a technical write-up walking a user through the preparation of a probabilistic event set for calculating risk with FloodAdapt. A tutorial video has been prepared that aligns with the demonstration in Chapter 6 and can be found at the following link: Add link.
+
+
+![Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section](../_static/images/readerGuidance.svg){#fig-readerGuidance}

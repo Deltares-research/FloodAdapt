@@ -1,0 +1,54 @@
+---
+title: Introduction
+---
+Welcome to the FloodAdapt documentation!
+
+In this introduction, you will find an [overview of FloodAdapt](#overview), information on its [intended uses](#intended-uses-of-floodadapt), and [reader guidance](#reader-guidance) explaining the information you will find in this documentation.
+
+::: {.callout-note}
+## FloodAdapt Introduction Video
+{{< video https://youtu.be/yj_ROYmbIWA?rel=0 >}}
+:::
+
+## Overview
+FloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful "what-if" scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.
+
+<!--:::{.callout-note}
+### Introduction video
+Coming soon...
+Stay tuned for a FloodAdapt introduction video
+:::
+-->
+
+<!--{{< video https://www.youtube.com/watch?v=VYd-G7yE0o4
+    title='Introduction video to FloodAdapt'
+>}}
+-->
+
+FloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”
+
+Users specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.
+
+The backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model [SFINCS](https://github.com/Deltares/SFINCS){.external link-external-newwindow=true} that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool [Delft-FIAT](https://github.com/Deltares/Delft-FIAT){.external link-external-newwindow=true}. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.
+
+When a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.
+
+![Schematic showing the design concepts behind the FloodAdapt software](_static/images/floodadapt.png){#fig-logo}
+
+## Intended Uses of FloodAdapt
+FloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to aid in prioritizing investments, and to assess the effectiveness and longevity of different adaptation options.
+
+FloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.
+
+FloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt.
+
+## Reader Guidance
+FloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Setting up FloodAdapt in a new location requires additional capabilities.
+
+* **[User Guide](../1_user_guide/index.qmd)** The user guide provides information on how to get started with FloodAdapt, and describes how to use all the FloodAdapt functionalities.
+
+* **[Technical background](../2_technical_docs/index.qmd)** - The technical docs provide detailed information on the calculation methods within FloodAdapt.
+
+* **[API documentation](../3_api_docs/index.qmd)** - The API of FloodAdapt and example notebooks outlining usage.
+
+* **[Setup Guide](../4_system_setup/index.qmd)** - The setup guides users in setting up FloodAdapt in their area of interest.

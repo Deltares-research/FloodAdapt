@@ -7,3 +7,4 @@
 *.jupyter_cache/
 objects.json
 _version.yml
+3_api_docs/_sidebar.yml

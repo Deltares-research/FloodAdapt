@@ -1,8 +1,5 @@
 ---
 title: Introduction
-filters:
-  - lightbox
-lightbox: auto
 ---
 Welcome to the FloodAdapt documentation!
 
@@ -48,8 +45,10 @@ FloodAdapt is not intended for use in the detailed engineering design of adaptat
 ## Reader Guidance
 FloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Setting up FloodAdapt in a new location requires additional capabilities.
 
-* **[User Guide](/4_user_guide/index.qmd)** The user guide provides information on how to get started with FloodAdapt, and describes how to use all the FloodAdapt functionalities.
+* **[User Guide](1_user_guide/index.qmd)** The user guide provides information on how to get started with FloodAdapt, and describes how to use all the FloodAdapt functionalities.
 
-* **[Setup Guide](/3_setup_guide/index.qmd)** - The setup guides users in setting up FloodAdapt in their area of interest.
+* **[Technical background](2_technical_docs/index.qmd)** - The technical docs provide detailed information on the calculation methods within FloodAdapt.
 
-* **[Technical docs](5_technical_docs/index.qmd)** - The technical docs provide detailed information on the calculation methods within FloodAdapt.
+* **[API documentation](3_api_docs/index.qmd)** - The API of FloodAdapt and example notebooks outlining usage.
+
+* **[Setup Guide](4_system_setup/index.qmd)** - The setup guides users in setting up FloodAdapt in their area of interest.
