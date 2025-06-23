@@ -10,6 +10,7 @@ from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
+from flood_adapt.misc.exceptions import DatabaseError
 
 
 def cache_method_wrapper(func: Callable) -> Callable:
@@ -38,6 +39,20 @@ class DbsStatic(IDbsStatic):
     def __init__(self, database: IDatabase):
         """Initialize any necessary attributes."""
         self._database = database
+
+    def load_static_data(self):
+        """Read data into the cache.
+
+        This is used to read data from the database and store it in the cache.
+        """
+        self.get_aggregation_areas()
+        self.get_model_boundary()
+        self.get_model_grid()
+        self.get_obs_points()
+        if self._database.site.sfincs.slr_scenarios is not None:
+            self.get_slr_scn_names()
+        self.get_buildings()
+        self.get_property_types()
 
     @cache_method_wrapper
     def get_aggregation_areas(self) -> dict[str, gpd.GeoDataFrame]:
@@ -123,13 +138,13 @@ class DbsStatic(IDbsStatic):
 
         Raises
         ------
-        FileNotFoundError
+        DatabaseError
             If the file is not found
         """
         # Read the map
         full_path = self._database.static_path / path
         if not full_path.is_file():
-            raise FileNotFoundError(f"File {full_path} not found")
+            raise DatabaseError(f"File {full_path} not found")
         return gpd.read_file(full_path, engine="pyogrio").to_crs(4326)
 
     @cache_method_wrapper
@@ -221,7 +236,7 @@ class DbsStatic(IDbsStatic):
     def get_offshore_sfincs_model(self) -> SfincsAdapter:
         """Get the template overland Sfincs model."""
         if self._database.site.sfincs.config.offshore_model is None:
-            raise ValueError("No offshore model defined in the site configuration.")
+            raise DatabaseError("No offshore model defined in the site configuration.")
 
         offshore_path = (
             self._database.static_path
@@ -234,12 +249,12 @@ class DbsStatic(IDbsStatic):
     def get_fiat_model(self) -> FiatAdapter:
         """Get the path to the FIAT model."""
         if self._database.site.fiat is None:
-            raise ValueError("No FIAT model defined in the site configuration.")
+            raise DatabaseError("No FIAT model defined in the site configuration.")
         template_path = self._database.static_path / "templates" / "fiat"
         with FiatAdapter(
             model_root=template_path,
             config=self._database.site.fiat.config,
-            exe_path=Settings().fiat_path,
+            exe_path=Settings().fiat_bin_path,
             delete_crashed_runs=Settings().delete_crashed_runs,
             config_base_path=self._database.static_path,
         ) as fm:
@@ -248,7 +263,7 @@ class DbsStatic(IDbsStatic):
     @cache_method_wrapper
     def get_cyclone_track_database(self) -> CycloneTrackDatabase:
         if self._database.site.sfincs.cyclone_track_database is None:
-            raise ValueError(
+            raise DatabaseError(
                 "No cyclone track database defined in the site configuration."
             )
         database_file = str(

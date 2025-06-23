@@ -11,6 +11,7 @@ class DbsScenario(DbsTemplate[Scenario]):
     dir_name = "scenarios"
     display_name = "Scenario"
     _object_class = Scenario
+    _higher_lvl_object = "Benefit"
 
     def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the events that currently exist in the database.
@@ -48,7 +49,7 @@ class DbsScenario(DbsTemplate[Scenario]):
 
         Raises
         ------
-        ValueError
+        DatabaseError
             Raise error if scenario to be deleted is already in use.
         """
         # First delete the scenario
@@ -78,7 +79,7 @@ class DbsScenario(DbsTemplate[Scenario]):
         used_in_benefit = []
         for benefit in benefits:
             runner = BenefitRunner(database=self._database, benefit=benefit)
-            scenarios = runner.check_scenarios()["scenario created"].to_list()
+            scenarios = runner.scenarios["scenario created"].to_list()
             for scenario in scenarios:
                 if name == scenario:
                     used_in_benefit.append(benefit.name)

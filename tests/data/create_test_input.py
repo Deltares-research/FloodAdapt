@@ -33,7 +33,6 @@ from flood_adapt.objects.forcing.discharge import (
 from flood_adapt.objects.forcing.forcing import ForcingType
 from flood_adapt.objects.forcing.rainfall import (
     RainfallConstant,
-    RainfallMeteo,
     RainfallTrack,
 )
 from flood_adapt.objects.forcing.time_frame import TimeFrame
@@ -50,7 +49,6 @@ from flood_adapt.objects.forcing.waterlevels import (
 )
 from flood_adapt.objects.forcing.wind import (
     WindConstant,
-    WindMeteo,
     WindTrack,
 )
 from flood_adapt.objects.measures.measures import (
@@ -70,6 +68,7 @@ from flood_adapt.objects.projections.projections import (
 )
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
+from flood_adapt.workflows.benefit_runner import BenefitRunner
 
 DATA_DIR = Path(__file__).parent
 
@@ -119,7 +118,8 @@ def update_database_input(database_path: Path):
         database.scenarios.save(scenario)
 
     for benefit in create_benefits():
-        database.create_benefit_scenarios(benefit)
+        runner = BenefitRunner(database, benefit)
+        runner.create_benefit_scenarios()
         database.benefits.save(benefit)
 
     # Cleanup singleton
@@ -177,6 +177,7 @@ def create_projections():
                 units=us.UnitTypesLength.feet,
                 type=VerticalReference.floodmap,
             ),
+            new_development_shapefile=str(DATA_DIR / "new_areas.geojson"),
         ),
     )
 
@@ -705,9 +706,35 @@ def _create_single_events():
                     ),
                 ),
             ],
-            ForcingType.RAINFALL: [RainfallMeteo()],
-            ForcingType.WIND: [WindMeteo()],
-            ForcingType.WATERLEVEL: [WaterlevelModel()],
+            # ForcingType.RAINFALL: [RainfallMeteo()],      # Temporarily excluded due to bug in hydromt-sfincs. fixed in v1.3.0
+            # ForcingType.WIND: [WindMeteo()],              # Temporarily excluded due to bug in hydromt-sfincs. fixed in v1.3.0
+            # ForcingType.WATERLEVEL: [WaterlevelModel()],  # Temporarily excluded due to bug in hydromt-sfincs. fixed in v1.3.0
+            ForcingType.WATERLEVEL: [
+                WaterlevelSynthetic(
+                    surge=SurgeModel(
+                        timeseries=TimeseriesFactory.from_args(
+                            shape_type=ShapeType.triangle,
+                            duration=us.UnitfulTime(
+                                value=1, units=us.UnitTypesTime.days
+                            ),
+                            peak_time=us.UnitfulTime(
+                                value=8, units=us.UnitTypesTime.hours
+                            ),
+                            peak_value=us.UnitfulLength(
+                                value=1, units=us.UnitTypesLength.meters
+                            ),
+                        )
+                    ),
+                    tide=TideModel(
+                        harmonic_amplitude=us.UnitfulLength(
+                            value=1, units=us.UnitTypesLength.meters
+                        ),
+                        harmonic_phase=us.UnitfulTime(
+                            value=0, units=us.UnitTypesTime.hours
+                        ),
+                    ),
+                )
+            ],
         },
     )
     return EXTREME_12FT, EXTREME_12FT_RIVERSHAPE_WINDCONST, FLORENCE, KINGTIDE_NOV2021

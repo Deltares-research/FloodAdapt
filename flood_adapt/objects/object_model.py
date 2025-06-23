@@ -1,9 +1,10 @@
 import os
+import re
 from pathlib import Path
 
 import tomli
 import tomli_w
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class Object(BaseModel):
@@ -17,13 +18,18 @@ class Object(BaseModel):
         Description of the object. defaults to "".
     """
 
-    name: str = Field(
-        ...,
-        description="Name of the object.",
-        min_length=1,
-        pattern='^[^<>:"/\\\\|?* ]*$',
-    )
+    name: str = Field(..., description="Name of the object.")
     description: str = Field(default="", description="Description of the object.")
+
+    @field_validator("name")
+    def validate_name(cls, value: str) -> str:
+        if not len(value) > 0:
+            raise ValueError("Name must be at least one character long.")
+        if not re.match(r"^[A-Za-z0-9_-]+$", value):
+            raise ValueError(
+                "Name can only contain letters, numbers, underscores (_), and hyphens (-)."
+            )
+        return value
 
     @classmethod
     def load_file(cls, file_path: Path | str | os.PathLike) -> "Object":

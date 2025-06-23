@@ -12,7 +12,6 @@ import hydromt_sfincs.utils as utils
 import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import pyproj
 import shapely
 import xarray as xr
@@ -36,8 +35,8 @@ from flood_adapt.misc.path_builder import (
 from flood_adapt.misc.utils import cd, resolve_filepath
 from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Event, Mode, Template
-from flood_adapt.objects.events.historical import HistoricalEvent
 from flood_adapt.objects.events.hurricane import TranslationModel
+from flood_adapt.objects.events.synthetic import SyntheticEvent
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
@@ -201,7 +200,7 @@ class SfincsAdapter(IHazardAdapter):
         with cd(path):
             self.logger.info(f"Running SFINCS in {path}")
             process = subprocess.run(
-                str(Settings().sfincs_path),
+                str(Settings().sfincs_bin_path),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -258,9 +257,8 @@ class SfincsAdapter(IHazardAdapter):
         template_path = (
             self.database.static.get_overland_sfincs_model().get_model_root()
         )
-        shutil.copytree(template_path, sim_path, dirs_exist_ok=True)
 
-        with SfincsAdapter(model_root=sim_path) as model:
+        with SfincsAdapter(model_root=template_path) as model:
             model._load_scenario_objects(scenario, event)
             is_risk = "Probabilistic " if model._event_set is not None else ""
             self.logger.info(
@@ -677,7 +675,8 @@ class SfincsAdapter(IHazardAdapter):
             )
 
             event = self.database.events.get(scenario.event)
-            self._add_tide_gauge_plot(fig, event, units=gui_units)
+            if self.settings.obs_point[ii].name == self.settings.tide_gauge.name:
+                self._add_tide_gauge_plot(fig, event, units=gui_units)
 
             # write html to results folder
             station_name = gdf.iloc[ii]["Name"]
@@ -686,26 +685,27 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_obs_points(self):
         """Add observation points provided in the site toml to SFINCS model."""
-        if self.settings.obs_point is not None:
-            self.logger.info("Adding observation points to the overland flood model")
+        if self.settings.obs_point is None:
+            return
+        self.logger.info("Adding observation points to the overland flood model")
 
-            obs_points = self.settings.obs_point
-            names = []
-            lat = []
-            lon = []
-            for pt in obs_points:
-                names.append(pt.name)
-                lat.append(pt.lat)
-                lon.append(pt.lon)
+        obs_points = self.settings.obs_point
+        names = []
+        lat = []
+        lon = []
+        for pt in obs_points:
+            names.append(pt.name)
+            lat.append(pt.lat)
+            lon.append(pt.lon)
 
-            # create GeoDataFrame from obs_points in site file
-            df = pd.DataFrame({"name": names})
-            gdf = gpd.GeoDataFrame(
-                df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
-            )
+        # create GeoDataFrame from obs_points in site file
+        df = pd.DataFrame({"name": names})
+        gdf = gpd.GeoDataFrame(
+            df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+        )
 
-            # Add locations to SFINCS file
-            self._model.setup_observation_points(locations=gdf, merge=False)
+        # Add locations to SFINCS file
+        self._model.setup_observation_points(locations=gdf, merge=False)
 
     def get_wl_df_from_offshore_his_results(self) -> pd.DataFrame:
         """Create a pd.Dataframe with waterlevels from the offshore model at the bnd locations of the overland model.
@@ -738,7 +738,7 @@ class SfincsAdapter(IHazardAdapter):
 
         TODO: make this robust and more efficient for bigger datasets.
         """
-        event: EventSet = self.database.events.get(scenario.event)
+        event: EventSet = self.database.events.get(scenario.event, load_all=True)
         if not isinstance(event, EventSet):
             raise ValueError("This function is only available for risk scenarios.")
 
@@ -764,89 +764,32 @@ class SfincsAdapter(IHazardAdapter):
 
         with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
             # read mask and bed level
-            mask = dummymodel.get_mask().stack(z=("x", "y"))
-            zb = dummymodel.get_bedlevel().stack(z=("x", "y")).to_numpy()
+            mask = dummymodel.get_mask()
+            zb = dummymodel.get_bedlevel()
 
         zs_maps = []
         for simulation_path in sim_paths:
             # read zsmax data from overland sfincs model
             with SfincsAdapter(model_root=simulation_path) as sim:
                 zsmax = sim._get_zsmax().load()
-                zs_stacked = zsmax.stack(z=("x", "y"))
-                zs_maps.append(zs_stacked)
+                zs_maps.append(zsmax)
 
         # Create RP flood maps
-
-        # 1a: make a table of all water levels and associated frequencies
-        zs = xr.concat(zs_maps, pd.Index(frequencies, name="frequency"))
-        # Get the indices of columns with all NaN values
-        nan_cells = np.where(np.all(np.isnan(zs), axis=0))[0]
-        # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
-        zs = xr.where(np.isnan(zs), np.tile(zb, (zs.shape[0], 1)), zs)
-        # Get table of frequencies
-        freq = np.tile(frequencies, (zs.shape[1], 1)).transpose()
-
-        # 1b: sort water levels in descending order and include the frequencies in the sorting process
-        # (i.e. each h-value should be linked to the same p-values as in step 1a)
-        sort_index = zs.argsort(axis=0)
-        sorted_prob = np.flipud(np.take_along_axis(freq, sort_index, axis=0))
-        sorted_zs = np.flipud(np.take_along_axis(zs.values, sort_index, axis=0))
-
-        # 1c: Compute exceedance probabilities of water depths
-        # Method: accumulate probabilities from top to bottom
-        prob_exceed = np.cumsum(sorted_prob, axis=0)
-
-        # 1d: Compute return periods of water depths
-        # Method: simply take the inverse of the exceedance probability (1/Pex)
-        rp_zs = 1.0 / prob_exceed
-
-        # For each return period (T) of interest do the following:
-        # For each grid cell do the following:
-        # Use the table from step [1d] as a “lookup-table” to derive the T-year water depth. Use a 1-d interpolation technique:
-        # h(T) = interp1 (log(T*), h*, log(T))
-        # in which t* and h* are the values from the table and T is the return period (T) of interest
-        # The resulting T-year water depths for all grids combined form the T-year hazard map
-        rp_da = xr.DataArray(rp_zs, dims=zs.dims)
-
-        # no_data_value = -999  # in SFINCS
-        # sorted_zs = xr.where(sorted_zs == no_data_value, np.nan, sorted_zs)
-
-        valid_cells = np.where(mask == 1)[
-            0
-        ]  # only loop over cells where model is not masked
-        h = matlib.repmat(
-            np.copy(zb), len(floodmap_rp), 1
-        )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
-
         self.logger.info("Calculating flood risk maps, this may take some time")
-        for jj in valid_cells:  # looping over all non-masked cells.
-            # linear interpolation for all return periods to evaluate
-            h[:, jj] = np.interp(
-                np.log10(floodmap_rp),
-                np.log10(rp_da[::-1, jj]),
-                sorted_zs[::-1, jj],
-                left=0,
-            )
-
-        # Re-fill locations that had nan water level for all simulations with nans
-        h[:, nan_cells] = np.full(h[:, nan_cells].shape, np.nan)
-
-        # If a cell has the same water-level as the bed elevation it should be dry (turn to nan)
-        diff = h - np.tile(zb, (h.shape[0], 1))
-        dry = (
-            diff < 10e-10
-        )  # here we use a small number instead of zero for rounding errors
-        h[dry] = np.nan
+        rp_flood_maps = self.calc_rp_maps(
+            floodmaps=zs_maps,
+            frequencies=frequencies,
+            zb=zb,
+            mask=mask,
+            return_periods=floodmap_rp,
+        )
 
         for ii, rp in enumerate(floodmap_rp):
-            # #create single nc
-            zs_rp_single = xr.DataArray(
-                data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
-            ).unstack()
+            zs_rp_single = rp_flood_maps[ii]
             zs_rp_single = zs_rp_single.rio.write_crs(
                 zsmax.raster.crs
             )  # , inplace=True)
-            zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
+            zs_rp_single = zs_rp_single.to_dataset(name="risk_map").transpose()
             fn_rp = result_path / f"RP_{rp:04d}_maps.nc"
             zs_rp_single.to_netcdf(fn_rp)
 
@@ -884,16 +827,29 @@ class SfincsAdapter(IHazardAdapter):
         self.preprocess(scenario, event)
         self.process(scenario, event)
         self.postprocess(scenario, event)
-        shutil.rmtree(
-            self._get_simulation_path(scenario, sub_event=event), ignore_errors=True
-        )
+
+        if self.settings.config.save_simulation:
+            self._delete_simulation_folder(scenario, sub_event=event)
+
+    def _delete_simulation_folder(
+        self, scenario: Scenario, sub_event: Optional[Event] = None
+    ):
+        """Delete the simulation folder for a given scenario and optional sub-event."""
+        sim_path = self._get_simulation_path(scenario, sub_event=sub_event)
+        if sim_path.exists():
+            shutil.rmtree(sim_path, ignore_errors=True)
+            self.logger.info(f"Deleted simulation folder: {sim_path}")
+
+        if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
+            # Remove the parent directory `simulations` if it is empty
+            sim_path.parent.rmdir()
 
     def _run_risk_scenario(self, scenario: Scenario):
         """Run the whole workflow for a risk scenario.
 
         This means preprocessing and running the SFINCS model for each event in the event set, and then postprocessing the results.
         """
-        event_set: EventSet = self.database.events.get(scenario.event)
+        event_set: EventSet = self.database.events.get(scenario.event, load_all=True)
         total = len(event_set._events)
 
         for i, sub_event in enumerate(event_set._events):
@@ -910,11 +866,12 @@ class SfincsAdapter(IHazardAdapter):
         self.calculate_rp_floodmaps(scenario)
 
         # Cleanup
-        for i, sub_event in enumerate(event_set._events):
-            shutil.rmtree(
-                self._get_simulation_path(scenario, sub_event=sub_event),
-                ignore_errors=True,
-            )
+        if not self.settings.config.save_simulation:
+            for i, sub_event in enumerate(event_set._events):
+                shutil.rmtree(
+                    self._get_simulation_path(scenario, sub_event=sub_event),
+                    ignore_errors=True,
+                )
 
     def _ensure_no_existing_forcings(self):
         """Check for existing forcings in the model and raise an error if any are found."""
@@ -1818,8 +1775,7 @@ class SfincsAdapter(IHazardAdapter):
     def _add_tide_gauge_plot(
         self, fig, event: Event, units: us.UnitTypesLength
     ) -> None:
-        # check if event is historic
-        if not isinstance(event, HistoricalEvent):
+        if isinstance(event, SyntheticEvent):
             return
         if self.settings.tide_gauge is None:
             return
@@ -1831,21 +1787,161 @@ class SfincsAdapter(IHazardAdapter):
             units=us.UnitTypesLength(units),
         )
 
-        if df_gauge is not None:
-            gauge_reference_height = self.settings.water_level.get_datum(
-                self.settings.tide_gauge.reference
-            ).height.convert(units)
-
-            waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
-
-            # If data is available, add to plot
-            fig.add_trace(
-                go.Scatter(
-                    x=pd.DatetimeIndex(df_gauge.index),
-                    y=waterlevel,
-                    line_color="#ea6404",
-                )
+        if df_gauge is None:
+            self.logger.warning(
+                "No water level data available for the tide gauge. Could not add it to the plot."
             )
-            fig["data"][0]["name"] = "model"
-            fig["data"][1]["name"] = "measurement"
-            fig.update_layout(showlegend=True)
+            return
+
+        gauge_reference_height = self.settings.water_level.get_datum(
+            self.settings.tide_gauge.reference
+        ).height.convert(units)
+
+        waterlevel = df_gauge.iloc[:, 0] + gauge_reference_height
+
+        # If data is available, add to plot
+        fig.add_trace(px.line(waterlevel, color_discrete_sequence=["#ea6404"]).data[0])
+        fig["data"][0]["name"] = "model"
+        fig["data"][1]["name"] = "measurement"
+        fig.update_layout(showlegend=True)
+
+    @staticmethod
+    def calc_rp_maps(
+        floodmaps: list[xr.DataArray],
+        frequencies: list[float],
+        zb: xr.DataArray,
+        mask: xr.DataArray,
+        return_periods: list[float],
+    ) -> list[xr.DataArray]:
+        """
+        Calculate return period (RP) flood maps from a set of flood simulation results.
+
+        This function processes multiple flood simulation outputs (water level maps) and their associated frequencies
+        to generate hazard maps for specified return periods. It interpolates water levels for each return period
+        using exceedance probabilities and handles masked or dry cells appropriately.
+
+        Args:
+            floodmaps (list[xr.DataArray]): List of water level maps (xarray DataArrays), one for each simulation.
+            frequencies (list[float]): List of frequencies (probabilities of occurrence) corresponding to each floodmap.
+            zb (np.ndarray): Array of bed elevations for each grid cell.
+            mask (xr.DataArray): Mask indicating valid (1) and invalid (0) grid cells.
+            return_periods (list[float]): List of return periods (in years) for which to generate hazard maps.
+
+        Returns
+        -------
+            list[xr.DataArray]: List of xarray DataArrays, each representing the hazard map for a given return period.
+                                Each DataArray contains water levels (meters) for the corresponding return period.
+        """
+        floodmaps = floodmaps.copy()  # avoid modifying the original list
+        # Check that all floodmaps have the same shape and dimensions
+        first_shape = floodmaps[0].shape
+        first_dims = floodmaps[0].dims
+        for i, floodmap in enumerate(floodmaps):
+            if floodmap.shape != first_shape or floodmap.dims != first_dims:
+                raise ValueError(
+                    f"Floodmap at index {i} does not match the shape or dimensions of the first floodmap. "
+                    f"Expected shape {first_shape} and dims {first_dims}, got shape {floodmap.shape} and dims {floodmap.dims}."
+                )
+
+        # Check that zb and mask have the same shape
+        if zb.shape != mask.shape:
+            raise ValueError(
+                "Bed elevation array (zb) and mask must have the same shape."
+            )
+
+        # Check that floodmaps, zb, and mask all have the same shape
+        if (
+            len(first_shape) != len(zb.shape)
+            or first_shape != zb.shape
+            or first_shape != mask.shape
+        ):
+            raise ValueError(
+                f"Floodmaps, bed elevation array (zb), and mask must all have the same shape. "
+                f"Floodmap shape: {first_shape}, zb shape: {zb.shape}, mask shape: {mask.shape}."
+            )
+
+        # stack dimensions if floodmaps are 2D
+        if len(floodmaps[0].shape) > 1:
+            stacking = True
+            for i, floodmap in enumerate(floodmaps):
+                floodmaps[i] = floodmap.stack(z=("x", "y"))
+            zb = zb.stack(z=("x", "y"))
+            mask = mask.stack(z=("x", "y"))
+        else:
+            stacking = False
+
+        # 1a: make a table of all water levels and associated frequencies
+        zs = xr.concat(floodmaps, pd.Index(frequencies, name="frequency"))
+        # Get the indices of columns with all NaN values
+        nan_cells = np.where(np.all(np.isnan(zs), axis=0))[0]
+        # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
+        zs = xr.where(np.isnan(zs), np.tile(zb, (zs.shape[0], 1)), zs)
+        # Get table of frequencies
+        freq = np.tile(frequencies, (zs.shape[1], 1)).transpose()
+
+        # 1b: sort water levels in descending order and include the frequencies in the sorting process
+        # (i.e. each h-value should be linked to the same p-values as in step 1a)
+        sort_index = zs.argsort(axis=0)
+        sorted_prob = np.flipud(np.take_along_axis(freq, sort_index, axis=0))
+        sorted_zs = np.flipud(np.take_along_axis(zs.values, sort_index, axis=0))
+
+        # 1c: Compute exceedance probabilities of water depths
+        # Method: accumulate probabilities from top to bottom
+        prob_exceed = np.cumsum(sorted_prob, axis=0)
+
+        # 1d: Compute return periods of water depths
+        # Method: simply take the inverse of the exceedance probability (1/Pex)
+        rp_zs = 1.0 / prob_exceed
+
+        # For each return period (T) of interest do the following:
+        # For each grid cell do the following:
+        # Use the table from step [1d] as a “lookup-table” to derive the T-year water depth. Use a 1-d interpolation technique:
+        # h(T) = interp1 (log(T*), h*, log(T))
+        # in which t* and h* are the values from the table and T is the return period (T) of interest
+        # The resulting T-year water depths for all grids combined form the T-year hazard map
+        rp_da = xr.DataArray(rp_zs, dims=zs.dims)
+
+        # no_data_value = -999  # in SFINCS
+        # sorted_zs = xr.where(sorted_zs == no_data_value, np.nan, sorted_zs)
+
+        valid_cells = np.where(mask == 1)[
+            0
+        ]  # only loop over cells where model is not masked
+        h = matlib.repmat(
+            np.copy(zb), len(return_periods), 1
+        )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
+
+        for jj in valid_cells:  # looping over all non-masked cells.
+            # linear interpolation for all return periods to evaluate
+            h[:, jj] = np.interp(
+                np.log10(return_periods),
+                np.log10(rp_da[::-1, jj]),
+                sorted_zs[::-1, jj],
+                left=0,
+            )
+
+        # Re-fill locations that had nan water level for all simulations with nans
+        h[:, nan_cells] = np.full(h[:, nan_cells].shape, np.nan)
+
+        # If a cell has the same water-level as the bed elevation it should be dry (turn to nan)
+        diff = h - np.tile(zb, (h.shape[0], 1))
+        dry = (
+            diff < 10e-10
+        )  # here we use a small number instead of zero for rounding errors
+        h[dry] = np.nan
+
+        rp_maps = []
+        for ii, rp in enumerate(return_periods):
+            da = xr.DataArray(
+                data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
+            )
+            if stacking:
+                # Ensure unstacking creates (y, x) dimensions in the correct order
+                da = da.unstack()
+                # Reorder dimensions if needed
+                if set(da.dims) == {"y", "x"} and da.dims != ("y", "x"):
+                    da = da.transpose("y", "x")
+            # #create single nc
+            rp_maps.append(da)
+
+        return rp_maps

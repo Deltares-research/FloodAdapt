@@ -115,7 +115,7 @@ def test_sub_event() -> SyntheticEvent:
 def test_eventset(
     test_sub_event: SyntheticEvent,
     setup_nearshore_event: HistoricalEvent,
-    setup_offshore_meteo_event: HistoricalEvent,
+    # setup_offshore_meteo_event: HistoricalEvent, # uncomment when hydromt-sfincs 1.3.0 is released
 ) -> EventSet:
     sub_event_models: list[SubEventModel] = []
     sub_events = []
@@ -123,10 +123,14 @@ def test_eventset(
     hurricane = _create_hurricane_event("sub_hurricane")
     synthetic = test_sub_event
     historical_nearshore = setup_nearshore_event
-    historical_offshore = setup_offshore_meteo_event
+    # historical_offshore = setup_offshore_meteo_event # uncomment when hydromt-sfincs 1.3.0 is released
 
     for i, event in enumerate(
-        [hurricane, synthetic, historical_nearshore, historical_offshore]
+        [
+            hurricane,
+            synthetic,
+            historical_nearshore,
+        ]  # , historical_offshore] # uncomment when hydromt-sfincs 1.3.0 is released
     ):
         event.name = f"{event.name}_{i + 1:04d}"
         sub_event_models.append(SubEventModel(name=event.name, frequency=i + 1))

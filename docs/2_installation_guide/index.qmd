@@ -1,4 +1,0 @@
----
-title: Getting started with FloodAdapt
----
-Coming soon.

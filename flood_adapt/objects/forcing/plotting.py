@@ -118,6 +118,14 @@ def plot_discharge(
         river_names.append(river.name)
         river_descriptions.append(river.description or river.name)
 
+    if event.template == Template.Synthetic:
+        data.index = (
+            data.index - data.index[0]
+        ).total_seconds() / 3600  # Convert to hours
+        x_title = "Hours from start"
+    else:
+        x_title = "Time"
+
     # Plot actual thing
     fig = go.Figure()
     for ii, col in enumerate(data.columns):
@@ -139,7 +147,7 @@ def plot_discharge(
         title_font={"size": 10, "color": "black", "family": "Arial"},
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis_title={"text": "Time"},
+        xaxis_title={"text": x_title},
         yaxis_title={"text": f"River discharge [{units.value}]"},
         xaxis={"range": [event.time.start_time, event.time.end_time]},
     )
@@ -306,6 +314,14 @@ def plot_rainfall(
     # Add multiplier
     data *= event.rainfall_multiplier
 
+    if event.template == Template.Synthetic:
+        data.index = (
+            data.index - data.index[0]
+        ).total_seconds() / 3600  # Convert to hours
+        x_title = "Hours from start"
+    else:
+        x_title = "Time"
+
     # Plot actual thing
     fig = px.line(data_frame=data)
 
@@ -319,7 +335,7 @@ def plot_rainfall(
         legend=None,
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis_title={"text": "Time"},
+        xaxis_title={"text": x_title},
         yaxis_title={
             "text": f"Rainfall intensity [{site.gui.units.default_intensity_units.value}]"
         },
@@ -369,6 +385,14 @@ def plot_wind(
         )
         return "", None
 
+    if event.template == Template.Synthetic:
+        data.index = (
+            data.index - data.index[0]
+        ).total_seconds() / 3600  # Convert to hours
+        x_title = "Hours from start"
+    else:
+        x_title = "Time"
+
     # Plot actual thing
     fig = px.line(x=data.index, y=data.iloc[:, 0])
 
@@ -380,14 +404,14 @@ def plot_wind(
         font={"size": 10, "color": "black", "family": "Arial"},
         title_font={"size": 10, "color": "black", "family": "Arial"},
         legend=None,
+        showlegend=False,  
+        xaxis={"range": [event.time.start_time, event.time.end_time]},
+        xaxis_title={"text": x_title},
+        xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},     
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis_title={"text": "Time"},
         yaxis_title={
             "text": f"Wind speed [{site.gui.units.default_velocity_units.value}]"
         },
-        showlegend=False,
-        xaxis={"range": [event.time.start_time, event.time.end_time]},
     )
 
     # Only save to the the event folder if that has been created already.

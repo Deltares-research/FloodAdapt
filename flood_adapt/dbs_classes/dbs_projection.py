@@ -6,27 +6,7 @@ class DbsProjection(DbsTemplate[Projection]):
     dir_name = "projections"
     display_name = "Projection"
     _object_class = Projection
-
-    def _check_standard_objects(self, name: str) -> bool:
-        """Check if a projection is a standard projection.
-
-        Parameters
-        ----------
-        name : str
-            name of the projection to be checked
-
-        Raises
-        ------
-        ValueError
-            Raise error if projection is a standard projection.
-        """
-        # Check if projection is a standard projection
-        if self._database.site.standard_objects:
-            if self._database.site.standard_objects.projections:
-                if name in self._database.site.standard_objects.projections:
-                    return True
-
-        return False
+    _higher_lvl_object = "Scenario"
 
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a projection is used in a scenario.

@@ -1,7 +1,0 @@
----
-title: Scenario comparison - map
-filters:
-  - lightbox
-lightbox: auto
----
-Coming soon.
