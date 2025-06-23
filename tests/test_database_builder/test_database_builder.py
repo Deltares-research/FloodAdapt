@@ -1064,7 +1064,7 @@ class TestDataBaseBuilder:
         self, full_config: ConfigModel, caplog, loglevel: int, expected: bool
     ):
         # Arrange
-        FloodAdaptLogging.setLevel(level=loglevel)
+        FloodAdaptLogging(level=loglevel)
         caplog.set_level(loglevel, logger="FloodAdapt")
 
         # Act

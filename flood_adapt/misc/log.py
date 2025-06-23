@@ -15,26 +15,24 @@ class FloodAdaptLogging:
     def __init__(
         self,
         file_path: Optional[Path] = None,
-        loglevel_console: int = logging.WARNING,
-        loglevel_root: int = logging.INFO,
-        loglevel_files: int = logging.DEBUG,
+        level: int = logging.INFO,
         formatter: logging.Formatter = _DEFAULT_FORMATTER,
         ignore_warnings: Optional[list[type[Warning]]] = None,
     ) -> None:
         """Initialize the logging system for the FloodAdapt."""
         self._formatter = formatter
 
-        self._root_logger.setLevel(loglevel_root)
+        self._root_logger.setLevel(level)
         if self._root_logger.hasHandlers():
             self._root_logger.handlers.clear()
 
         # Add file handler if provided
         if file_path is not None:
-            self.add_file_handler(file_path, loglevel_files, formatter)
+            self.add_file_handler(file_path, level, formatter)
 
         # Add console handler
         console_handler = logging.StreamHandler()
-        console_handler.setLevel(loglevel_console)
+        console_handler.setLevel(level)
         console_handler.setFormatter(formatter)
         self._root_logger.addHandler(console_handler)
 
@@ -46,7 +44,7 @@ class FloodAdaptLogging:
     def add_file_handler(
         cls,
         file_path: Path,
-        loglevel: int = logging.DEBUG,
+        level: int = logging.DEBUG,
         formatter: Optional[logging.Formatter] = None,
     ) -> None:
         """Add a file handler to the logger that directs outputs to a the file."""
@@ -60,7 +58,7 @@ class FloodAdaptLogging:
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
         file_handler = logging.FileHandler(filename=file_path, mode="a")
-        file_handler.setLevel(loglevel)
+        file_handler.setLevel(level)
 
         formatter = formatter or cls._DEFAULT_FORMATTER
         file_handler.setFormatter(formatter)
@@ -108,9 +106,11 @@ class FloodAdaptLogging:
         return logger
 
     @classmethod
-    def setLevel(cls, level: int) -> None:
-        """Set the logging level for the root logger."""
-        cls.getLogger().setLevel(level)
+    def set_global_level(cls, level: int) -> None:
+        """Set the logging level for FloodAdapt."""
+        loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+        for logger in loggers:
+            logger.setLevel(level)
 
     @classmethod
     def shutdown(cls):
@@ -128,7 +128,7 @@ class FloodAdaptLogging:
         cls,
         *,
         file_path: Path,
-        loglevel: int = logging.DEBUG,
+        level: int = logging.DEBUG,
         formatter: logging.Formatter = _DEFAULT_FORMATTER,
     ):
         """Open a file at filepath to write logs to. Does not affect other loggers.
@@ -139,7 +139,7 @@ class FloodAdaptLogging:
             raise ValueError(
                 "file_path must be provided as a key value pair: 'file_path=<file_path>'."
             )
-        cls.add_file_handler(file_path, loglevel, formatter)
+        cls.add_file_handler(file_path, level, formatter)
         try:
             yield
         finally:
