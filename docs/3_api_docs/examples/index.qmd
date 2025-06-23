@@ -1,0 +1,38 @@
+---
+title: "Examples"
+format: html
+page-layout: article
+---
+
+## Introduction
+
+This section contains executable examples that demonstrate how to use the FloodAdapt API in practice.
+These notebooks are meant to complement the [User Guide](../../1_user_guide/index.qmd) and [API Reference](../api_ref/api_index.qmd) by showing real-world use cases, recommended workflows, and tips for getting started with your own data.
+
+Each example focuses on a specific aspect of the FloodAdapt workflow, such as setting up a site, defining events, projections and measures, creating adaptation strategies, or evaluating risk and benefits.
+The notebooks can be run independently, but they are organized in a logical sequence for those following the full workflow from start to finish.
+
+---
+
+## How to Run
+
+All notebooks in this section are runnable with standard Python tools such as `jupyter` or `quarto preview`.
+They assume that FloodAdapt and its `core` dependencies as well as the optional `docs` dependencies are correctly installed.
+Refer to the [Setup Guide](../../4_system_setup/index.qmd) for help with installation and configuration.
+To run these locally, make sure to select the correct python interpreter.
+
+Each notebook includes narrative explanations and inline code cells. You can copy/modify the code to adapt it to your own use cases.
+
+---
+
+## Examples
+- [1. Database Builder](database_builder/index.qmd) Demonstrates how to initialize a FloodAdapt project by building the required database structure. This includes importing and configuring SFINCS and Delft-FIAT models, setting up spatial data, and preparing the backend for scenario analysis.
+- [2. Simple Scenario](scenarios/simple_scenario.ipynb) Walks through a basic flood scenario setup using predefined hazard and exposure data. Ideal for first-time users, this example illustrates the core workflow of defining a flood event, running simulations, and interpreting impact results.
+- [3. Events](events/index.qmd) Explains how to configure and manage flood events within FloodAdapt. Learn to define event characteristics such as rainfall intensity, duration, and spatial distribution, and understand how these parameters influence flood modeling outcomes.
+- [4. Projections](projections/projections.ipynb) Covers the integration of long-term projections into flood risk assessments. This includes modeling future conditions like sea level rise, land subsidence, and socio-economic changes to evaluate their impact on flood hazards and vulnerabilities.
+- [5. Measures & Strategies](measures/measures_strategies.ipynb) Explores the implementation of adaptation measures such as levees, floodwalls, and green infrastructure. Learn how to simulate their effectiveness in reducing flood risks and assess their feasibility within different scenarios. Demonstrates how to develop and compare comprehensive adaptation strategies by combining multiple measures. This example guides users through evaluating trade-offs, cost-effectiveness, and overall risk reduction potential.
+- [6. Advanced scenario](scenarios/advanced_scenario.ipynb) Provides an in-depth look at modeling compound flood scenarios involving multiple hazard sources (e.g., riverine and coastal flooding) and cascading impacts. Ideal for advanced users seeking to analyze intricate risk profiles.
+- [7. Event set / risk](event_set/create_event_set.ipynb) Illustrates the creation of probabilistic event sets for comprehensive risk analysis. Learn to generate a range of flood events with varying probabilities to assess potential impacts and inform robust adaptation planning.
+- [8. Benefits](benefits/index.qmd) Focuses on evaluating the benefits of implemented adaptation strategies. This includes quantifying risk reduction, economic savings, and social advantages to support evidence-based decision-making.
+
+---

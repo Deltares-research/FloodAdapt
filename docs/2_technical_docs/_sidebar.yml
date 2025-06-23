@@ -1,0 +1,10 @@
+website:
+  sidebar:
+    - id: technical_docs
+      title: "Technical Documentation"
+      href: "2_technical_docs/index.qmd"
+      contents:
+        - "2_technical_docs/EventScenario.qmd"
+        - "2_technical_docs/RiskScenario.qmd"
+        - "2_technical_docs/EquityCalc.qmd"
+        - "2_technical_docs/BenefitCalc.qmd"

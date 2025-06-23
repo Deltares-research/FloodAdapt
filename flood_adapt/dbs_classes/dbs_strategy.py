@@ -10,6 +10,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
     dir_name = "strategies"
     display_name = "Strategy"
     _object_class = Strategy
+    _higher_lvl_object = "Scenario"
 
     def get(self, name: str) -> Strategy:
         strategy = super().get(name)
