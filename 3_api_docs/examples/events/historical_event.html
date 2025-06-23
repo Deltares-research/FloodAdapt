@@ -940,16 +940,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    DATABASE_NAME<span class="op">=</span><span class="st">"charleston_test"</span></span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2025-06-23 01:33:16 PM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
+</div>
 </div>
 </section>
 <section id="step-2.-define-the-simulation-time-frame" class="level2">
 <h2 class="anchored" data-anchor-id="step-2.-define-the-simulation-time-frame">🗓️ Step 2. Define the Simulation Time Frame</h2>
 <p>We specify a one-day time frame for the historical event, from January 1 to January 2, 2025.</p>
 <div id="4" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an time frame for the simulation</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>start_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2020</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>end_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2020</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>time_frame <span class="op">=</span> TimeFrame(start_time<span class="op">=</span>start_time, end_time<span class="op">=</span>end_time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an time frame for the simulation</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>start_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2020</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>end_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2020</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>time_frame <span class="op">=</span> TimeFrame(start_time<span class="op">=</span>start_time, end_time<span class="op">=</span>end_time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-3.-define-water-level-forcing" class="level2">
@@ -962,48 +965,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Model</strong>: Generate the storm surge to be used for the overland simulation by running an offshore model. For historic events, this model uses weather re-analysis data (wind and pressure) from the <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA GFS model</a>.</li>
 </ul>
 <div id="6" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Recorded water levels from a CSV file</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>csv_file <span class="op">=</span> STATIC_DATA_DIR <span class="op">/</span> <span class="st">"tide.csv"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>water_levels <span class="op">=</span> f.WaterlevelCSV(path<span class="op">=</span>csv_file)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>wl_df <span class="op">=</span> water_levels.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Alternative: Water levels downloaded from a tide gauge</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>tide_gauge <span class="op">=</span> fa.database.site.sfincs.tide_gauge</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>df_tide_gauge <span class="op">=</span> tide_gauge.get_waterlevels_in_time_frame(</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>water_levels_gauged <span class="op">=</span> f.WaterlevelGauged()</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Alternative: Water levels simulated by an offshore model</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>water_levels_from_offshore <span class="op">=</span> f.WaterlevelModel()</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>wl_df.plot(</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Water Level from CSV"</span>,</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Water Level (m)"</span>,</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">False</span>,</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>df_tide_gauge.plot(</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Water Level from Tide Gauge"</span>,</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Water Level (m)"</span>,</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">False</span>,</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Recorded water levels from a CSV file</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>csv_file <span class="op">=</span> STATIC_DATA_DIR <span class="op">/</span> <span class="st">"tide.csv"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>water_levels <span class="op">=</span> f.WaterlevelCSV(path<span class="op">=</span>csv_file)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>wl_df <span class="op">=</span> water_levels.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Alternative: Water levels downloaded from a tide gauge</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>tide_gauge <span class="op">=</span> fa.database.site.sfincs.tide_gauge</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>df_tide_gauge <span class="op">=</span> tide_gauge.get_waterlevels_in_time_frame(</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>water_levels_gauged <span class="op">=</span> f.WaterlevelGauged()</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Alternative: Water levels simulated by an offshore model</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>water_levels_from_offshore <span class="op">=</span> f.WaterlevelModel()</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>wl_df.plot(</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Water Level from CSV"</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Water Level (m)"</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>df_tide_gauge.plot(</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Water Level from Tide Gauge"</span>,</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Water Level (m)"</span>,</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2025-06-23 01:33:17 PM - FloodAdapt.TideGauge - INFO - Retrieving waterlevels for tide gauge 8665530 for 2020-01-01 00:00:00 - 2020-01-02 00:00:00</code></pre>
+</div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="historical_event_files/figure-html/cell-4-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="historical_event_files/figure-html/cell-4-output-1.png" class="img-fluid figure-img"></a></p>
+<p><a href="historical_event_files/figure-html/cell-4-output-2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="historical_event_files/figure-html/cell-4-output-2.png" class="img-fluid figure-img"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="historical_event_files/figure-html/cell-4-output-2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="historical_event_files/figure-html/cell-4-output-2.png" class="img-fluid figure-img"></a></p>
+<p><a href="historical_event_files/figure-html/cell-4-output-3.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="historical_event_files/figure-html/cell-4-output-3.png" class="img-fluid figure-img"></a></p>
 </figure>
 </div>
 </div>
@@ -1014,22 +1020,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Given a <code>water level forcing</code>, and a <code>TimeFrame</code>, you can create the simplest possible event in FloodAdapt as shown below.</p>
 <p>In many cases, it is interesting to to investigate a combination of different forcings. In steps 5 - 9, we will show the creation of various forcings and how to add them to an event.</p>
 <div id="8" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>simple_event <span class="op">=</span> HistoricalEvent(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"simple_event"</span>,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels], </span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="co"># or [water_levels_gauged], [water_levels_from_offshore]</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>simple_event <span class="op">=</span> HistoricalEvent(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"simple_event"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels], </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="co"># or [water_levels_gauged], [water_levels_from_offshore]</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-5.-define-meteo-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="step-5.-define-meteo-forcing">🌧️ Step 5. Define Meteo Forcing</h2>
 <p>Historic events have several options to define wind and rainfall, see also <a href="../../../3_api_docs/examples/events/synthetic_event.html">Synthetic event</a>. Additionally, FloodAdapt provides an easy connection to <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA GFS model re-analysis</a> data for rainfall and wind that is automatically downloaded based on the event’s ‘TimeFrame’.</p>
 <div id="10" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>meteo_dataset <span class="op">=</span> f.MeteoHandler().read(time_frame)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(meteo_dataset) <span class="co"># </span><span class="al">TODO</span><span class="co"> make sure the meteo files are already downloaded in the database to circumvent flaky noaa coops API calls</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>meteo_dataset <span class="op">=</span> f.MeteoHandler().read(time_frame)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(meteo_dataset) <span class="co"># </span><span class="al">TODO</span><span class="co"> make sure the meteo files are already downloaded in the database to circumvent flaky noaa coops API calls</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Requested meteo data already available
 &lt;xarray.Dataset&gt; Size: 485kB
@@ -1051,25 +1057,25 @@ Data variables:
 <p>It can be difficult to visualize spatially varying timeseries data. So, below is a simple animation generator to do some basic data checks on the downloaded NOAA GFS data.</p>
 <p>Choose any of the available timeseries data variables and generate the animation.</p>
 <div id="12" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> HTML</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>to_plot <span class="op">=</span> <span class="st">'press_msl'</span> <span class="co"># available variables: 'wind10_u' or 'wind10_v' or 'press_msl' or 'precip'</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>var <span class="op">=</span> meteo_dataset[to_plot] </span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>plot <span class="op">=</span> var.isel(time<span class="op">=</span><span class="dv">0</span>).plot(ax<span class="op">=</span>ax, cmap<span class="op">=</span><span class="st">'viridis'</span>, add_colorbar<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update(frame):</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    ax.clear()</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    var.isel(time<span class="op">=</span>frame).plot(ax<span class="op">=</span>ax, cmap<span class="op">=</span><span class="st">'viridis'</span>, add_colorbar<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f'Time: </span><span class="sc">{</span><span class="bu">str</span>(var.time[frame].values)<span class="sc">}</span><span class="ss">'</span>)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(fig, update, frames<span class="op">=</span><span class="bu">len</span>(var.time), interval<span class="op">=</span><span class="dv">200</span>)</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>plt.close(fig)</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>HTML(ani.to_jshtml()) <span class="co"># </span><span class="al">TODO</span><span class="co"> look at hvplot or other options to display the animation</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> HTML</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>to_plot <span class="op">=</span> <span class="st">'press_msl'</span> <span class="co"># available variables: 'wind10_u' or 'wind10_v' or 'press_msl' or 'precip'</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>var <span class="op">=</span> meteo_dataset[to_plot] </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>plot <span class="op">=</span> var.isel(time<span class="op">=</span><span class="dv">0</span>).plot(ax<span class="op">=</span>ax, cmap<span class="op">=</span><span class="st">'viridis'</span>, add_colorbar<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update(frame):</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    ax.clear()</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    var.isel(time<span class="op">=</span>frame).plot(ax<span class="op">=</span>ax, cmap<span class="op">=</span><span class="st">'viridis'</span>, add_colorbar<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f'Time: </span><span class="sc">{</span><span class="bu">str</span>(var.time[frame].values)<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(fig, update, frames<span class="op">=</span><span class="bu">len</span>(var.time), interval<span class="op">=</span><span class="dv">200</span>)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>plt.close(fig)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>HTML(ani.to_jshtml()) <span class="co"># </span><span class="al">TODO</span><span class="co"> look at hvplot or other options to display the animation</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
@@ -1255,36 +1261,36 @@ input[type=range].anim-slider {
 </style>
 
 <div class="animation">
-  <img id="_anim_img8f0452d4eee942219bc8c3d57f8b0f80">
+  <img id="_anim_img32a03606c00345c3bbd51669758ef93c">
   <div class="anim-controls">
-    <input id="_anim_slider8f0452d4eee942219bc8c3d57f8b0f80" type="range" class="anim-slider" name="points" min="0" max="1" step="1" value="0" oninput="anim8f0452d4eee942219bc8c3d57f8b0f80.set_frame(parseInt(this.value));">
+    <input id="_anim_slider32a03606c00345c3bbd51669758ef93c" type="range" class="anim-slider" name="points" min="0" max="1" step="1" value="0" oninput="anim32a03606c00345c3bbd51669758ef93c.set_frame(parseInt(this.value));">
     <div class="anim-buttons">
-      <button title="Decrease speed" aria-label="Decrease speed" onclick="anim8f0452d4eee942219bc8c3d57f8b0f80.slower()">
+      <button title="Decrease speed" aria-label="Decrease speed" onclick="anim32a03606c00345c3bbd51669758ef93c.slower()">
           <i class="fa fa-minus"></i></button>
-      <button title="First frame" aria-label="First frame" onclick="anim8f0452d4eee942219bc8c3d57f8b0f80.first_frame()">
+      <button title="First frame" aria-label="First frame" onclick="anim32a03606c00345c3bbd51669758ef93c.first_frame()">
         <i class="fa fa-fast-backward"></i></button>
-      <button title="Previous frame" aria-label="Previous frame" onclick="anim8f0452d4eee942219bc8c3d57f8b0f80.previous_frame()">
+      <button title="Previous frame" aria-label="Previous frame" onclick="anim32a03606c00345c3bbd51669758ef93c.previous_frame()">
           <i class="fa fa-step-backward"></i></button>
-      <button title="Play backwards" aria-label="Play backwards" onclick="anim8f0452d4eee942219bc8c3d57f8b0f80.reverse_animation()">
+      <button title="Play backwards" aria-label="Play backwards" onclick="anim32a03606c00345c3bbd51669758ef93c.reverse_animation()">
           <i class="fa fa-play fa-flip-horizontal"></i></button>
-      <button title="Pause" aria-label="Pause" onclick="anim8f0452d4eee942219bc8c3d57f8b0f80.pause_animation()">
+      <button title="Pause" aria-label="Pause" onclick="anim32a03606c00345c3bbd51669758ef93c.pause_animation()">
           <i class="fa fa-pause"></i></button>
-      <button title="Play" aria-label="Play" onclick="anim8f0452d4eee942219bc8c3d57f8b0f80.play_animation()">
+      <button title="Play" aria-label="Play" onclick="anim32a03606c00345c3bbd51669758ef93c.play_animation()">
           <i class="fa fa-play"></i></button>
-      <button title="Next frame" aria-label="Next frame" onclick="anim8f0452d4eee942219bc8c3d57f8b0f80.next_frame()">
+      <button title="Next frame" aria-label="Next frame" onclick="anim32a03606c00345c3bbd51669758ef93c.next_frame()">
           <i class="fa fa-step-forward"></i></button>
-      <button title="Last frame" aria-label="Last frame" onclick="anim8f0452d4eee942219bc8c3d57f8b0f80.last_frame()">
+      <button title="Last frame" aria-label="Last frame" onclick="anim32a03606c00345c3bbd51669758ef93c.last_frame()">
           <i class="fa fa-fast-forward"></i></button>
-      <button title="Increase speed" aria-label="Increase speed" onclick="anim8f0452d4eee942219bc8c3d57f8b0f80.faster()">
+      <button title="Increase speed" aria-label="Increase speed" onclick="anim32a03606c00345c3bbd51669758ef93c.faster()">
           <i class="fa fa-plus"></i></button>
     </div>
-    <form title="Repetition mode" aria-label="Repetition mode" action="#n" name="_anim_loop_select8f0452d4eee942219bc8c3d57f8b0f80" class="anim-state">
-      <input type="radio" name="state" value="once" id="_anim_radio1_8f0452d4eee942219bc8c3d57f8b0f80">
-      <label for="_anim_radio1_8f0452d4eee942219bc8c3d57f8b0f80">Once</label>
-      <input type="radio" name="state" value="loop" id="_anim_radio2_8f0452d4eee942219bc8c3d57f8b0f80" checked="">
-      <label for="_anim_radio2_8f0452d4eee942219bc8c3d57f8b0f80">Loop</label>
-      <input type="radio" name="state" value="reflect" id="_anim_radio3_8f0452d4eee942219bc8c3d57f8b0f80">
-      <label for="_anim_radio3_8f0452d4eee942219bc8c3d57f8b0f80">Reflect</label>
+    <form title="Repetition mode" aria-label="Repetition mode" action="#n" name="_anim_loop_select32a03606c00345c3bbd51669758ef93c" class="anim-state">
+      <input type="radio" name="state" value="once" id="_anim_radio1_32a03606c00345c3bbd51669758ef93c">
+      <label for="_anim_radio1_32a03606c00345c3bbd51669758ef93c">Once</label>
+      <input type="radio" name="state" value="loop" id="_anim_radio2_32a03606c00345c3bbd51669758ef93c" checked="">
+      <label for="_anim_radio2_32a03606c00345c3bbd51669758ef93c">Loop</label>
+      <input type="radio" name="state" value="reflect" id="_anim_radio3_32a03606c00345c3bbd51669758ef93c">
+      <label for="_anim_radio3_32a03606c00345c3bbd51669758ef93c">Reflect</label>
     </form>
   </div>
 </div>
@@ -1294,9 +1300,9 @@ input[type=range].anim-slider {
   /* Instantiate the Animation class. */
   /* The IDs given should match those used in the template above. */
   (function() {
-    var img_id = "_anim_img8f0452d4eee942219bc8c3d57f8b0f80";
-    var slider_id = "_anim_slider8f0452d4eee942219bc8c3d57f8b0f80";
-    var loop_select_id = "_anim_loop_select8f0452d4eee942219bc8c3d57f8b0f80";
+    var img_id = "_anim_img32a03606c00345c3bbd51669758ef93c";
+    var slider_id = "_anim_slider32a03606c00345c3bbd51669758ef93c";
+    var loop_select_id = "_anim_loop_select32a03606c00345c3bbd51669758ef93c";
     var frames = new Array(9);
     
   frames[0] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAHgCAYAAAB6jN80AAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90\
@@ -5826,7 +5832,7 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
     /* set a timeout to make sure all the above elements are created before
        the object is initialized. */
     setTimeout(function() {
-        anim8f0452d4eee942219bc8c3d57f8b0f80 = new Animation(frames, img_id, slider_id, 200.0,
+        anim32a03606c00345c3bbd51669758ef93c = new Animation(frames, img_id, slider_id, 200.0,
                                  loop_select_id);
     }, 0);
   })()
@@ -5840,35 +5846,35 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
 <p>To use the downloaded NOAA’s GFS hindcast data in FloodAdapt, you need to create Meteo forcings and add them to your event.</p>
 <p>Under the hood, the meteo forcings use the MeteoHandler to download the data, and then return slices of that dataset.</p>
 <div id="14" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>rainfall <span class="op">=</span> f.RainfallMeteo()</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>wind <span class="op">=</span> f.WindMeteo()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>rainfall <span class="op">=</span> f.RainfallMeteo()</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>wind <span class="op">=</span> f.WindMeteo()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-7.-define-river-discharge-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="step-7.-define-river-discharge-forcing">🏞️ Step 7. Define River Discharge Forcing</h2>
 <p>Discharge is required to be defined for the pre-configured river(s). These rivers must be registered in the hazard model configuration beforehand.</p>
 <div id="16" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The available rivers are defined in the hazard model when creating the database.</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># You cannot add new rivers to the model in an event</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># You can only set the discharge of each given river.</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of available rivers: </span><span class="sc">{</span><span class="bu">len</span>(fa.database.site.sfincs.river)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>river <span class="op">=</span> fa.database.site.sfincs.river[<span class="dv">0</span>]</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>discharge_constant <span class="op">=</span> f.DischargeConstant(</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    river<span class="op">=</span>river,</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    discharge<span class="op">=</span>us.UnitfulDischarge(value<span class="op">=</span><span class="dv">100</span>, units<span class="op">=</span>us.UnitTypesDischarge.cms)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> discharge_constant.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>df.plot(</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Constant Discharge River"</span>,</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Discharge (cms)"</span>,</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The available rivers are defined in the hazard model when creating the database.</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># You cannot add new rivers to the model in an event</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># You can only set the discharge of each given river.</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of available rivers: </span><span class="sc">{</span><span class="bu">len</span>(fa.database.site.sfincs.river)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>river <span class="op">=</span> fa.database.site.sfincs.river[<span class="dv">0</span>]</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>discharge_constant <span class="op">=</span> f.DischargeConstant(</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    river<span class="op">=</span>river,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    discharge<span class="op">=</span>us.UnitfulDischarge(value<span class="op">=</span><span class="dv">100</span>, units<span class="op">=</span>us.UnitTypesDischarge.cms)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> discharge_constant.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>df.plot(</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Constant Discharge River"</span>,</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Discharge (cms)"</span>,</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Number of available rivers: 1</code></pre>
 </div>
@@ -5888,26 +5894,26 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
 <p><strong>NOTE</strong>: each event can only have 1 forcing of the types: <code>water level</code>, <code>rainfall</code> and <code>wind</code>. For <code>discharge</code> however, each river is required to have a forcing associated with it.</p>
 </blockquote>
 <div id="18" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a HistoricalEvent with the forcings and time frame</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>event <span class="op">=</span> HistoricalEvent(</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"example_historical_event"</span>,</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels], </span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># or one of `water_levels_gauged` or `water_levels_from_offshore`,</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.RAINFALL: [rainfall],</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WIND: [wind],</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.DISCHARGE: [discharge_constant],</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    },</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a HistoricalEvent with the forcings and time frame</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>event <span class="op">=</span> HistoricalEvent(</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"example_historical_event"</span>,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels], </span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># or one of `water_levels_gauged` or `water_levels_from_offshore`,</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.RAINFALL: [rainfall],</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WIND: [wind],</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.DISCHARGE: [discharge_constant],</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-9.-save-the-event-to-a-floodadapt-database" class="level2">
 <h2 class="anchored" data-anchor-id="step-9.-save-the-event-to-a-floodadapt-database">💾 Step 9. Save the Event to a FloodAdapt Database</h2>
 <p>Finally, we save the event to a FloodAdapt database.</p>
 <div id="20" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the event to the database</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>event)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the event to the database</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>event)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

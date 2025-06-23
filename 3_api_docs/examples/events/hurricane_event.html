@@ -934,16 +934,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    DATABASE_NAME<span class="op">=</span><span class="st">"charleston_test"</span></span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2025-06-23 01:33:33 PM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
+</div>
 </div>
 </section>
 <section id="step-2.-define-the-simulation-time-frame" class="level2">
 <h2 class="anchored" data-anchor-id="step-2.-define-the-simulation-time-frame">🗓️ Step 2. Define the Simulation Time Frame</h2>
 <p>We specify a one-day time frame for the hurricane event, from January 1 to January 2, 2025. Make sure the time frame covers the tinme specified in your hurricane track file.</p>
 <div id="4" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an time frame for the simulation</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>start_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2025</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>end_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2025</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>time_frame <span class="op">=</span> TimeFrame(start_time<span class="op">=</span>start_time, end_time<span class="op">=</span>end_time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an time frame for the simulation</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>start_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2025</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>end_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2025</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>time_frame <span class="op">=</span> TimeFrame(start_time<span class="op">=</span>start_time, end_time<span class="op">=</span>end_time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-3.-define-water-level-forcing" class="level2">
@@ -951,7 +954,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Water levels for Hurricane Events are computed by taking the Hurricane Track, and generating a pressure and wind field along its track.</p>
 <p>These fields are then used as forcing inputs to the offshore simulation, which generates the storm surge to be used for the overland simulation. So for waterlevels, we only need to specify to use the offshore model as the input, denoted with <code>WaterlevelModel</code></p>
 <div id="6" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>water_levels <span class="op">=</span> f.WaterlevelModel()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>water_levels <span class="op">=</span> f.WaterlevelModel()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-3.-obtain-a-hurricane-track" class="level2">
@@ -961,48 +964,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>NOTE:</strong> Hurricane events are only available in FloodAdapt when you have an offshore flood hazard model in your database that simulates the surge from the hurricane track.</p>
 </blockquote>
 <div id="8" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the cyclone database</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>cyclone_db <span class="op">=</span> fa.database.static.get_cyclone_track_database()</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>ian_index <span class="op">=</span> cyclone_db.list_names().index(<span class="st">"IAN"</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Not all cyclone tracks have names, in addition to duplicate names existing, so the index is required</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>track <span class="op">=</span> fa.get_cyclone_track_by_index(index<span class="op">=</span>ian_index) </span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>track_file <span class="op">=</span> STATIC_DATA_DIR <span class="op">/</span> <span class="st">"IAN.cyc"</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>track.write_track(filename<span class="op">=</span>track_file, fmt<span class="op">=</span><span class="st">"ddb_cyc"</span>)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Optionally translate the cyclone track from what is defined in the file</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>translation <span class="op">=</span> TranslationModel(</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    eastwest_translation<span class="op">=</span>us.UnitfulLength(value<span class="op">=</span><span class="dv">3000</span>, units<span class="op">=</span>us.UnitTypesLength.meters),</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    northsouth_translation<span class="op">=</span>us.UnitfulLength(value<span class="op">=</span><span class="dv">5000</span>, units<span class="op">=</span>us.UnitTypesLength.meters),</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the cyclone database</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>cyclone_db <span class="op">=</span> fa.database.static.get_cyclone_track_database()</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>ian_index <span class="op">=</span> cyclone_db.list_names().index(<span class="st">"IAN"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Not all cyclone tracks have names, in addition to duplicate names existing, so the index is required</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>track <span class="op">=</span> fa.get_cyclone_track_by_index(index<span class="op">=</span>ian_index) </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>track_file <span class="op">=</span> STATIC_DATA_DIR <span class="op">/</span> <span class="st">"IAN.cyc"</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>track.write_track(filename<span class="op">=</span>track_file, fmt<span class="op">=</span><span class="st">"ddb_cyc"</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Optionally translate the cyclone track from what is defined in the file</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>translation <span class="op">=</span> TranslationModel(</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    eastwest_translation<span class="op">=</span>us.UnitfulLength(value<span class="op">=</span><span class="dv">3000</span>, units<span class="op">=</span>us.UnitTypesLength.meters),</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    northsouth_translation<span class="op">=</span>us.UnitfulLength(value<span class="op">=</span><span class="dv">5000</span>, units<span class="op">=</span>us.UnitTypesLength.meters),</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-4.-define-track-forcings" class="level2">
 <h2 class="anchored" data-anchor-id="step-4.-define-track-forcings">🌧️ Step 4. Define Track forcings</h2>
 <p>Given a Hurricane track, the wind field is always computer from the track. You can choose to model the rainfall based on a parametric model around the hurricane track or choose any iother rainfall option.</p>
 <div id="10" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># We want to include the rainfall and wind from the hurricane track</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>rainfall <span class="op">=</span> f.RainfallTrack(path<span class="op">=</span>track_file)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>wind <span class="op">=</span> f.WindTrack(path<span class="op">=</span>track_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># We want to include the rainfall and wind from the hurricane track</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>rainfall <span class="op">=</span> f.RainfallTrack(path<span class="op">=</span>track_file)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>wind <span class="op">=</span> f.WindTrack(path<span class="op">=</span>track_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-5.-define-river-discharge-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="step-5.-define-river-discharge-forcing">🏞️ Step 5. Define River Discharge Forcing</h2>
 <p>Discharge is defined for two pre-configured rivers in this example. These rivers must be registered in the hazard model configuration beforehand, see [Database builder].</p>
 <div id="12" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The available rivers are defined in the hazard model when creating the database.</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># You cannot add new rivers to the model in an event</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># You can only set the discharge of each given river.</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>river <span class="op">=</span> fa.database.site.sfincs.river[<span class="dv">0</span>]</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>discharge <span class="op">=</span> f.DischargeConstant(</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    river<span class="op">=</span>river,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    discharge<span class="op">=</span>us.UnitfulDischarge(value<span class="op">=</span><span class="dv">100</span>, units<span class="op">=</span>us.UnitTypesDischarge.cms)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> discharge.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>df.plot(title<span class="op">=</span><span class="st">"Constant Discharge River"</span>, xlabel<span class="op">=</span><span class="st">"Time"</span>, ylabel<span class="op">=</span><span class="st">"Discharge (cms)"</span>, legend<span class="op">=</span><span class="va">True</span>, figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The available rivers are defined in the hazard model when creating the database.</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># You cannot add new rivers to the model in an event</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># You can only set the discharge of each given river.</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>river <span class="op">=</span> fa.database.site.sfincs.river[<span class="dv">0</span>]</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>discharge <span class="op">=</span> f.DischargeConstant(</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    river<span class="op">=</span>river,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    discharge<span class="op">=</span>us.UnitfulDischarge(value<span class="op">=</span><span class="dv">100</span>, units<span class="op">=</span>us.UnitTypesDischarge.cms)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> discharge.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>df.plot(title<span class="op">=</span><span class="st">"Constant Discharge River"</span>, xlabel<span class="op">=</span><span class="st">"Time"</span>, ylabel<span class="op">=</span><span class="st">"Discharge (cms)"</span>, legend<span class="op">=</span><span class="va">True</span>, figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1019,27 +1022,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>NOTE</strong>: each event can only have 1 forcing of the types: <code>water level</code>, <code>rainfall</code> and <code>wind</code>. For <code>discharge</code> however, each river is required to have a forcing associated with it.</p>
 </blockquote>
 <div id="14" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a hurricaneEvent with the forcings and time frame</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>event <span class="op">=</span> HurricaneEvent(</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"example_hurricane_event"</span>,</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    forcings <span class="op">=</span> {</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels],</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.RAINFALL: [rainfall],</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WIND: [wind],</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.DISCHARGE: [discharge],</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    },</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    track_name<span class="op">=</span>track.name,</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    hurricane_translation<span class="op">=</span>translation,</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a hurricaneEvent with the forcings and time frame</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>event <span class="op">=</span> HurricaneEvent(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"example_hurricane_event"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    forcings <span class="op">=</span> {</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels],</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.RAINFALL: [rainfall],</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WIND: [wind],</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.DISCHARGE: [discharge],</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    track_name<span class="op">=</span>track.name,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    hurricane_translation<span class="op">=</span>translation,</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-7.-save-the-event-to-a-floodadapt-database" class="level2">
 <h2 class="anchored" data-anchor-id="step-7.-save-the-event-to-a-floodadapt-database">💾 Step 7. Save the Event to a FloodAdapt Database</h2>
 <p>Finally, we save the event to a FloodAdapt database.</p>
 <div id="16" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the event to the database</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>event)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the event to the database</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>event)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

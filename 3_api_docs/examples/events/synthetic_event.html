@@ -934,59 +934,62 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    DATABASE_NAME<span class="op">=</span><span class="st">"charleston_test"</span></span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2025-06-23 01:33:46 PM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
+</div>
 </div>
 </section>
 <section id="step-2.-define-the-simulation-time-frame" class="level2">
 <h2 class="anchored" data-anchor-id="step-2.-define-the-simulation-time-frame">🗓️ Step 2. Define the Simulation Time Frame</h2>
 <p>We specify a one-day time frame for the <code>SyntheticEvent</code>, from January 1 to January 2, 2025.</p>
 <div id="4" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an time frame for the simulation</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>start_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2025</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>end_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2025</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>time_frame <span class="op">=</span> TimeFrame(start_time<span class="op">=</span>start_time, end_time<span class="op">=</span>end_time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an time frame for the simulation</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>start_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2025</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>end_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2025</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>time_frame <span class="op">=</span> TimeFrame(start_time<span class="op">=</span>start_time, end_time<span class="op">=</span>end_time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-3.-define-water-level-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="step-3.-define-water-level-forcing">🌊 Step 3. Define Water Level Forcing</h2>
 <p>Synthetic water levels are constructed from a combination of tidal and surge components. All FloodAdapt events require exactly 1 water level forcing, all other forcings are optional.</p>
 <div id="6" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Synthetic water levels can be computed from a combination of surge and tide.</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>surge <span class="op">=</span> f.SurgeModel(</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    timeseries<span class="op">=</span>f.GaussianTimeseries(</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        duration<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Choose the middle of the time frame for peak time</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        peak_time<span class="op">=</span>us.UnitfulTime.from_timedelta(time_frame.duration <span class="op">/</span> <span class="dv">2</span>), </span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        peak_value<span class="op">=</span>us.UnitfulLength(value<span class="op">=</span><span class="dv">2</span>, units<span class="op">=</span>us.UnitTypesLength.meters),</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>tide <span class="op">=</span> f.TideModel(</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    harmonic_amplitude<span class="op">=</span>us.UnitfulLength(value<span class="op">=</span><span class="dv">1</span>, units<span class="op">=</span>us.UnitTypesLength.meters),</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Choose the middle of the time frame for peak time</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    harmonic_phase<span class="op">=</span>us.UnitfulTime.from_timedelta(time_frame.duration <span class="op">/</span> <span class="dv">2</span>), </span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    harmonic_period<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="fl">12.4</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>water_levels_synthetic <span class="op">=</span> f.WaterlevelSynthetic(</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    surge<span class="op">=</span>surge,</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    tide<span class="op">=</span>tide,</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>gaussian <span class="op">=</span> surge.timeseries.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>gaussian.columns <span class="op">=</span> [<span class="st">"Surge"</span>]</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>harmonic <span class="op">=</span> tide.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>harmonic.columns <span class="op">=</span> [<span class="st">"Tide"</span>]</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>total <span class="op">=</span> water_levels_synthetic.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>total.columns <span class="op">=</span> [<span class="st">"Water levels"</span>]</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>df_combined <span class="op">=</span> gaussian.join(harmonic).join(total)</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>df_combined.plot(</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Synthetic Water Levels (Surge + Tide)"</span>,</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Water Level (m)"</span>,</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Synthetic water levels can be computed from a combination of surge and tide.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>surge <span class="op">=</span> f.SurgeModel(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    timeseries<span class="op">=</span>f.GaussianTimeseries(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        duration<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Choose the middle of the time frame for peak time</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        peak_time<span class="op">=</span>us.UnitfulTime.from_timedelta(time_frame.duration <span class="op">/</span> <span class="dv">2</span>), </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        peak_value<span class="op">=</span>us.UnitfulLength(value<span class="op">=</span><span class="dv">2</span>, units<span class="op">=</span>us.UnitTypesLength.meters),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>tide <span class="op">=</span> f.TideModel(</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    harmonic_amplitude<span class="op">=</span>us.UnitfulLength(value<span class="op">=</span><span class="dv">1</span>, units<span class="op">=</span>us.UnitTypesLength.meters),</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Choose the middle of the time frame for peak time</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    harmonic_phase<span class="op">=</span>us.UnitfulTime.from_timedelta(time_frame.duration <span class="op">/</span> <span class="dv">2</span>), </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    harmonic_period<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="fl">12.4</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>water_levels_synthetic <span class="op">=</span> f.WaterlevelSynthetic(</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    surge<span class="op">=</span>surge,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    tide<span class="op">=</span>tide,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>gaussian <span class="op">=</span> surge.timeseries.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>gaussian.columns <span class="op">=</span> [<span class="st">"Surge"</span>]</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>harmonic <span class="op">=</span> tide.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>harmonic.columns <span class="op">=</span> [<span class="st">"Tide"</span>]</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>total <span class="op">=</span> water_levels_synthetic.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>total.columns <span class="op">=</span> [<span class="st">"Water levels"</span>]</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>df_combined <span class="op">=</span> gaussian.join(harmonic).join(total)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>df_combined.plot(</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Synthetic Water Levels (Surge + Tide)"</span>,</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Water Level (m)"</span>,</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1001,13 +1004,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Given a <code>water level forcing</code>, and a <code>TimeFrame</code>, you can create the simplest possible event in FloodAdapt as shown below.</p>
 <p>In many cases, it is interesting to to investigate a combination of different forcings. In steps 5 - 9, we will show the creation of various forcings and how to add them to an event.</p>
 <div id="8" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>simple_event <span class="op">=</span> SyntheticEvent(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"simple_event"</span>,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels_synthetic],</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>simple_event <span class="op">=</span> SyntheticEvent(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"simple_event"</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels_synthetic],</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-5.-define-rainfall-forcing" class="level2">
@@ -1019,37 +1022,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>CSV</strong>: Custom rainfall intensity from a csv file applied spatially uniform across the entire model domain.</li>
 </ul>
 <div id="10" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rainfall_constant <span class="op">=</span> f.RainfallConstant(</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    intensity<span class="op">=</span>us.UnitfulIntensity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>rainfall_synthetic <span class="op">=</span> f.RainfallSynthetic(</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    timeseries<span class="op">=</span>f.GaussianTimeseries(</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        duration<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Choose the middle of the time frame for peak time</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        peak_time<span class="op">=</span>us.UnitfulTime.from_timedelta(time_frame.duration <span class="op">/</span> <span class="dv">2</span>), </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        peak_value<span class="op">=</span>us.UnitfulIntensity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr),</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>rainfall_csv <span class="op">=</span> f.RainfallCSV(path<span class="op">=</span>STATIC_DATA_DIR <span class="op">/</span> <span class="st">"rainfall.csv"</span>)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>df_constant <span class="op">=</span> rainfall_constant.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>df_constant.columns <span class="op">=</span> [<span class="st">"Constant"</span>]</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>df_synthetic <span class="op">=</span> rainfall_synthetic.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>df_synthetic.columns <span class="op">=</span> [<span class="st">"Synthetic"</span>]</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>df_csv <span class="op">=</span> rainfall_csv.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>df_csv.columns <span class="op">=</span> [<span class="st">"CSV"</span>]</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>df_combined <span class="op">=</span> df_constant.join(df_synthetic).join(df_csv)</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>df_combined.plot(</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Synthetic Rainfall (Constant, Gaussian, CSV)"</span>,</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Rainfall Intensity (mm/hr)"</span>,</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>rainfall_constant <span class="op">=</span> f.RainfallConstant(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    intensity<span class="op">=</span>us.UnitfulIntensity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>rainfall_synthetic <span class="op">=</span> f.RainfallSynthetic(</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    timeseries<span class="op">=</span>f.GaussianTimeseries(</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        duration<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Choose the middle of the time frame for peak time</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        peak_time<span class="op">=</span>us.UnitfulTime.from_timedelta(time_frame.duration <span class="op">/</span> <span class="dv">2</span>), </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        peak_value<span class="op">=</span>us.UnitfulIntensity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>rainfall_csv <span class="op">=</span> f.RainfallCSV(path<span class="op">=</span>STATIC_DATA_DIR <span class="op">/</span> <span class="st">"rainfall.csv"</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>df_constant <span class="op">=</span> rainfall_constant.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>df_constant.columns <span class="op">=</span> [<span class="st">"Constant"</span>]</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>df_synthetic <span class="op">=</span> rainfall_synthetic.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>df_synthetic.columns <span class="op">=</span> [<span class="st">"Synthetic"</span>]</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>df_csv <span class="op">=</span> rainfall_csv.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>df_csv.columns <span class="op">=</span> [<span class="st">"CSV"</span>]</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>df_combined <span class="op">=</span> df_constant.join(df_synthetic).join(df_csv)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>df_combined.plot(</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Synthetic Rainfall (Constant, Gaussian, CSV)"</span>,</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Rainfall Intensity (mm/hr)"</span>,</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1070,27 +1073,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Note:</strong> Wind set up in embayments, lagoons etc is only included for the water bodies included in the overland model. Large scale wind effects creating surges and wind set up are typically included in the water level forcing. When the water level forcing is set to “Model” (see <a href="../../../3_api_docs/examples/events/historical_event.html">‘Historical Event’</a>), this effect can be simulated by FloodAdapt in the offshore model.</p>
 </blockquote>
 <div id="12" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>wind_constant <span class="op">=</span> f.WindConstant(</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    speed<span class="op">=</span>us.UnitfulVelocity(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesVelocity.mps), </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    direction<span class="op">=</span>us.UnitfulDirection(value<span class="op">=</span><span class="dv">2</span>, units<span class="op">=</span>us.UnitTypesDirection.degrees) </span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 0 degrees is North, 90 degrees is East, 180 degrees is South, and 270 degrees is West</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>wind_csv <span class="op">=</span> f.WindCSV(path<span class="op">=</span>STATIC_DATA_DIR <span class="op">/</span> <span class="st">"wind.csv"</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> wind_constant.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>df.columns <span class="op">=</span> [<span class="st">"speed"</span>, <span class="st">"direction"</span>]</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>df_csv <span class="op">=</span> wind_csv.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>df_csv.columns <span class="op">=</span> [<span class="st">"speed"</span>, <span class="st">"direction"</span>]</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>df_combined <span class="op">=</span> df.join(df_csv, lsuffix<span class="op">=</span><span class="st">"_constant"</span>, rsuffix<span class="op">=</span><span class="st">"_csv"</span>)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>df_combined.plot(</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Synthetic Wind (Constant, CSV)"</span>,</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Wind Speed (m/s)"</span>,</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>),</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>wind_constant <span class="op">=</span> f.WindConstant(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    speed<span class="op">=</span>us.UnitfulVelocity(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesVelocity.mps), </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    direction<span class="op">=</span>us.UnitfulDirection(value<span class="op">=</span><span class="dv">2</span>, units<span class="op">=</span>us.UnitTypesDirection.degrees) </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 0 degrees is North, 90 degrees is East, 180 degrees is South, and 270 degrees is West</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>wind_csv <span class="op">=</span> f.WindCSV(path<span class="op">=</span>STATIC_DATA_DIR <span class="op">/</span> <span class="st">"wind.csv"</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> wind_constant.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>df.columns <span class="op">=</span> [<span class="st">"speed"</span>, <span class="st">"direction"</span>]</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>df_csv <span class="op">=</span> wind_csv.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>df_csv.columns <span class="op">=</span> [<span class="st">"speed"</span>, <span class="st">"direction"</span>]</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>df_combined <span class="op">=</span> df.join(df_csv, lsuffix<span class="op">=</span><span class="st">"_constant"</span>, rsuffix<span class="op">=</span><span class="st">"_csv"</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>df_combined.plot(</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Synthetic Wind (Constant, CSV)"</span>,</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Wind Speed (m/s)"</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>),</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1110,47 +1113,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Synthetic</strong>: Custom discharge timeseries built from key parameters. The key parameters can be used to describe either a gaussian-, block- or triangle-shaped rainfall curve.</li>
 </ul>
 <div id="14" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The available rivers are defined in the hazard model when creating the database.</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># You cannot add new rivers to the model in an event, you can only set the discharge of each given river.</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of available rivers: </span><span class="sc">{</span><span class="bu">len</span>(fa.database.site.sfincs.river)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>river <span class="op">=</span> fa.database.site.sfincs.river[<span class="dv">0</span>]</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>discharge_constant <span class="op">=</span> f.DischargeConstant(</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    river<span class="op">=</span>river,</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    discharge<span class="op">=</span>us.UnitfulDischarge(value<span class="op">=</span><span class="dv">100</span>, units<span class="op">=</span>us.UnitTypesDischarge.cms)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>discharge_synthetic <span class="op">=</span> f.DischargeSynthetic(</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    river<span class="op">=</span>river,</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    timeseries<span class="op">=</span>f.BlockTimeseries(</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        duration<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Choose the middle of the time frame for peak time</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        peak_time<span class="op">=</span>us.UnitfulTime.from_timedelta(time_frame.duration <span class="op">/</span> <span class="dv">2</span>), </span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        peak_value<span class="op">=</span>us.UnitfulDischarge(value<span class="op">=</span><span class="dv">80</span>, units<span class="op">=</span>us.UnitTypesDischarge.cms),</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>discharge_csv <span class="op">=</span> f.DischargeCSV(</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    river<span class="op">=</span>river,</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    path<span class="op">=</span>STATIC_DATA_DIR <span class="op">/</span> <span class="st">"discharge.csv"</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>df_constant <span class="op">=</span> discharge_constant.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>df_constant.columns <span class="op">=</span> [<span class="st">"Constant"</span>]</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>df_synthetic <span class="op">=</span> discharge_synthetic.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>df_synthetic.columns <span class="op">=</span> [<span class="st">"Synthetic"</span>]</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>df_csv <span class="op">=</span> discharge_csv.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>df_csv.columns <span class="op">=</span> [<span class="st">"CSV"</span>]</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>df_combined <span class="op">=</span> df_constant.join(df_synthetic).join(df_csv)</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>df_combined.plot(</span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Synthetic Discharge (Constant, Gaussian, CSV)"</span>,</span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Discharge (cms)"</span>,</span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The available rivers are defined in the hazard model when creating the database.</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># You cannot add new rivers to the model in an event, you can only set the discharge of each given river.</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of available rivers: </span><span class="sc">{</span><span class="bu">len</span>(fa.database.site.sfincs.river)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>river <span class="op">=</span> fa.database.site.sfincs.river[<span class="dv">0</span>]</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>discharge_constant <span class="op">=</span> f.DischargeConstant(</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    river<span class="op">=</span>river,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    discharge<span class="op">=</span>us.UnitfulDischarge(value<span class="op">=</span><span class="dv">100</span>, units<span class="op">=</span>us.UnitTypesDischarge.cms)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>discharge_synthetic <span class="op">=</span> f.DischargeSynthetic(</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    river<span class="op">=</span>river,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    timeseries<span class="op">=</span>f.BlockTimeseries(</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        duration<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Choose the middle of the time frame for peak time</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        peak_time<span class="op">=</span>us.UnitfulTime.from_timedelta(time_frame.duration <span class="op">/</span> <span class="dv">2</span>), </span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        peak_value<span class="op">=</span>us.UnitfulDischarge(value<span class="op">=</span><span class="dv">80</span>, units<span class="op">=</span>us.UnitTypesDischarge.cms),</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>discharge_csv <span class="op">=</span> f.DischargeCSV(</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    river<span class="op">=</span>river,</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    path<span class="op">=</span>STATIC_DATA_DIR <span class="op">/</span> <span class="st">"discharge.csv"</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>df_constant <span class="op">=</span> discharge_constant.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>df_constant.columns <span class="op">=</span> [<span class="st">"Constant"</span>]</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>df_synthetic <span class="op">=</span> discharge_synthetic.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>df_synthetic.columns <span class="op">=</span> [<span class="st">"Synthetic"</span>]</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>df_csv <span class="op">=</span> discharge_csv.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>df_csv.columns <span class="op">=</span> [<span class="st">"CSV"</span>]</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>df_combined <span class="op">=</span> df_constant.join(df_synthetic).join(df_csv)</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>df_combined.plot(</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Synthetic Discharge (Constant, Gaussian, CSV)"</span>,</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    xlabel<span class="op">=</span><span class="st">"Time"</span>,</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Discharge (cms)"</span>,</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Number of available rivers: 1</code></pre>
 </div>
@@ -1170,26 +1173,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>NOTE</strong>: each event can only have 1 forcing of the types: <code>water level</code>, <code>rainfall</code> and <code>wind</code>. For <code>discharge</code> however, each river is required to have a forcing associated with it.</p>
 </blockquote>
 <div id="16" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a SyntheticEvent with the forcings and time frame</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>full_event <span class="op">=</span> SyntheticEvent(</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"example_synthetic_event"</span>,</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels_synthetic],</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.RAINFALL: [rainfall_constant],</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WIND: [wind_csv],</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.DISCHARGE: [discharge_synthetic], </span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># The discharge list needs to be exactly as long as the number of rivers in the hazard model</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    },</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a SyntheticEvent with the forcings and time frame</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>full_event <span class="op">=</span> SyntheticEvent(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"example_synthetic_event"</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels_synthetic],</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.RAINFALL: [rainfall_constant],</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WIND: [wind_csv],</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.DISCHARGE: [discharge_synthetic], </span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># The discharge list needs to be exactly as long as the number of rivers in the hazard model</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-8.-save-the-event-to-a-floodadapt-database" class="level2">
 <h2 class="anchored" data-anchor-id="step-8.-save-the-event-to-a-floodadapt-database">💾 Step 8. Save the Event to a FloodAdapt Database</h2>
 <p>Finally, we save the event to a FloodAdapt database.</p>
 <div id="18" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the event to the database</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>full_event)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the event to the database</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>full_event)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

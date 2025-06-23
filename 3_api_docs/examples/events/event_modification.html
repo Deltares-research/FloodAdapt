@@ -918,6 +918,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    DATABASE_NAME<span class="op">=</span><span class="st">"charleston_test"</span>,</span>
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2025-06-23 01:33:06 PM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
+</div>
 </div>
 <section id="analyze-the-effect-of-different-rainfall-forcings" class="level2">
 <h2 class="anchored" data-anchor-id="analyze-the-effect-of-different-rainfall-forcings">Analyze the effect of different rainfall forcings</h2>
@@ -931,55 +934,55 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <p>Of course, this approach also works for analyzing the difference between any other forcings.</p>
 <div id="3" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Create an event or load it from the database</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>event_name<span class="op">=</span><span class="st">"database_manipulation_event"</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>event <span class="op">=</span> HistoricalEvent(</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span>event_name,</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    description<span class="op">=</span><span class="st">"Some event description"</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>TimeFrame(</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        start_time<span class="op">=</span>datetime(<span class="dv">2020</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        end_time<span class="op">=</span>datetime(<span class="dv">2020</span>, <span class="dv">1</span>, <span class="dv">2</span>),</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [f.WaterlevelGauged()]</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>event)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Create rainfall forcings</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>rainfall_constant <span class="op">=</span> f.RainfallConstant(</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    intensity<span class="op">=</span>us.UnitfulIntensity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr)</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>rainfall_synthetic <span class="op">=</span> f.RainfallSynthetic(</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    timeseries<span class="op">=</span>f.GaussianTimeseries(</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>        duration<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Choose the middle of the time frame for peak time</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        peak_time<span class="op">=</span>us.UnitfulTime.from_timedelta(event.time.duration <span class="op">/</span> <span class="dv">2</span>), </span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        peak_value<span class="op">=</span>us.UnitfulIntensity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr),</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>rainfall_csv <span class="op">=</span> f.RainfallCSV(path<span class="op">=</span>STATIC_DATA_DIR <span class="op">/</span> <span class="st">"rainfall.csv"</span>)</span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>rainfall_forcings <span class="op">=</span> [</span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    (rainfall_constant, <span class="st">"constant"</span>),</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    (rainfall_synthetic, <span class="st">"synthetic"</span>),</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    (rainfall_csv, <span class="st">"csv"</span>)</span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> forcing, fsource <span class="kw">in</span> rainfall_forcings:</span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. Update the event</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    event.forcings[f.ForcingType.RAINFALL] <span class="op">=</span> [forcing]</span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    event.name <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>event_name<span class="sc">}</span><span class="ss">_rainfall_</span><span class="sc">{</span>fsource<span class="sc">}</span><span class="ss">"</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. Save the event</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    fa.save_event(event<span class="op">=</span>event)</span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>fa.get_events()[<span class="st">"name"</span>]</span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. Now the events can be used as the components for scenario creation. Similar to how the rainfall forcings are used to create various events</span></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="co"># For more information on how to create scenarios, see the scenario creation example</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Create an event or load it from the database</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>event_name<span class="op">=</span><span class="st">"database_manipulation_event"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>event <span class="op">=</span> HistoricalEvent(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span>event_name,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    description<span class="op">=</span><span class="st">"Some event description"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>TimeFrame(</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        start_time<span class="op">=</span>datetime(<span class="dv">2020</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        end_time<span class="op">=</span>datetime(<span class="dv">2020</span>, <span class="dv">1</span>, <span class="dv">2</span>),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [f.WaterlevelGauged()]</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>event)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Create rainfall forcings</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>rainfall_constant <span class="op">=</span> f.RainfallConstant(</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    intensity<span class="op">=</span>us.UnitfulIntensity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>rainfall_synthetic <span class="op">=</span> f.RainfallSynthetic(</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    timeseries<span class="op">=</span>f.GaussianTimeseries(</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        duration<span class="op">=</span>us.UnitfulTime(value<span class="op">=</span><span class="dv">12</span>, units<span class="op">=</span>us.UnitTypesTime.hours),</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Choose the middle of the time frame for peak time</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        peak_time<span class="op">=</span>us.UnitfulTime.from_timedelta(event.time.duration <span class="op">/</span> <span class="dv">2</span>), </span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        peak_value<span class="op">=</span>us.UnitfulIntensity(value<span class="op">=</span><span class="dv">10</span>, units<span class="op">=</span>us.UnitTypesIntensity.mm_hr),</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>rainfall_csv <span class="op">=</span> f.RainfallCSV(path<span class="op">=</span>STATIC_DATA_DIR <span class="op">/</span> <span class="st">"rainfall.csv"</span>)</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>rainfall_forcings <span class="op">=</span> [</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    (rainfall_constant, <span class="st">"constant"</span>),</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    (rainfall_synthetic, <span class="st">"synthetic"</span>),</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    (rainfall_csv, <span class="st">"csv"</span>)</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> forcing, fsource <span class="kw">in</span> rainfall_forcings:</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. Update the event</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    event.forcings[f.ForcingType.RAINFALL] <span class="op">=</span> [forcing]</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    event.name <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>event_name<span class="sc">}</span><span class="ss">_rainfall_</span><span class="sc">{</span>fsource<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. Save the event</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    fa.save_event(event<span class="op">=</span>event)</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>fa.get_events()[<span class="st">"name"</span>]</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. Now the events can be used as the components for scenario creation. Similar to how the rainfall forcings are used to create various events</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="co"># For more information on how to create scenarios, see the scenario creation example</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="2">
 <pre><code>['database_manipulation_event',
  'database_manipulation_event_rainfall_constant',
@@ -999,29 +1002,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><code>event = fa.get_event(event_name)</code> -&gt; update <code>event</code> -&gt; <code>fa.edit_event(event)</code></li>
 </ol>
 <div id="5" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Initial:"</span>, fa.get_events()[<span class="st">"name"</span>])</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy all events</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> fa.get_events()[<span class="st">"name"</span>]:</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    new_name <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">_copy"</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    fa.copy_event(old_name<span class="op">=</span>name, new_name<span class="op">=</span>new_name, new_description<span class="op">=</span><span class="ss">f"Copy of </span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Names after `Copy`:"</span>, fa.get_events()[<span class="st">"name"</span>])</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Delete all copied events</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> fa.get_events()[<span class="st">"name"</span>]:</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"copy"</span> <span class="kw">in</span> name:</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        fa.delete_event(name)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Names after `Delete`:"</span>, fa.get_events()[<span class="st">"name"</span>])</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Edit an existing event</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>unedited_event <span class="op">=</span> fa.get_event(event_name)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Description before `Edit`:"</span>, unedited_event.description)</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>unedited_event.description <span class="op">=</span> <span class="ss">f"Updated description"</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>unedited_event, overwrite<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>edited_event <span class="op">=</span> fa.get_event(event_name)</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Description after `Edit`:"</span>, edited_event.description)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Initial:"</span>, fa.get_events()[<span class="st">"name"</span>])</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy all events</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> fa.get_events()[<span class="st">"name"</span>]:</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    new_name <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">_copy"</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    fa.copy_event(old_name<span class="op">=</span>name, new_name<span class="op">=</span>new_name, new_description<span class="op">=</span><span class="ss">f"Copy of </span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Names after `Copy`:"</span>, fa.get_events()[<span class="st">"name"</span>])</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Delete all copied events</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> fa.get_events()[<span class="st">"name"</span>]:</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"copy"</span> <span class="kw">in</span> name:</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        fa.delete_event(name)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Names after `Delete`:"</span>, fa.get_events()[<span class="st">"name"</span>])</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Edit an existing event</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>unedited_event <span class="op">=</span> fa.get_event(event_name)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Description before `Edit`:"</span>, unedited_event.description)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>unedited_event.description <span class="op">=</span> <span class="ss">f"Updated description"</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>unedited_event, overwrite<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>edited_event <span class="op">=</span> fa.get_event(event_name)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Description after `Edit`:"</span>, edited_event.description)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Initial: ['database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_synthetic', 'event_set', 'test_set']
 Names after `Copy`: ['database_manipulation_event', 'database_manipulation_event_copy', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_constant_copy', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_csv_copy', 'database_manipulation_event_rainfall_synthetic', 'database_manipulation_event_rainfall_synthetic_copy', 'event_set', 'event_set_copy', 'test_set', 'test_set_copy']
