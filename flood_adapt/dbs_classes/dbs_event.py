@@ -11,6 +11,7 @@ class DbsEvent(DbsTemplate[Event]):
     dir_name = "events"
     display_name = "Event"
     _object_class = Event
+    _higher_lvl_object = "Scenario"
 
     def get(self, name: str, load_all: bool = False) -> Event | EventSet:
         """Return an event object.
