@@ -404,10 +404,10 @@ def plot_wind(
         font={"size": 10, "color": "black", "family": "Arial"},
         title_font={"size": 10, "color": "black", "family": "Arial"},
         legend=None,
-        showlegend=False,  
+        showlegend=False,
         xaxis={"range": [event.time.start_time, event.time.end_time]},
         xaxis_title={"text": x_title},
-        xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},     
+        xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         yaxis_title={
             "text": f"Wind speed [{site.gui.units.default_velocity_units.value}]"
