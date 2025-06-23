@@ -1,4 +1,0 @@
----
-title: Scenario comparison - metrics
----
-Coming soon.
