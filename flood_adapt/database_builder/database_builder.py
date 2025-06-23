@@ -428,7 +428,9 @@ class DatabaseBuilder:
     _aggregation_areas: Optional[list] = None
     _probabilistic_set_name: Optional[str] = None
 
-    def __init__(self, config: ConfigModel, overwrite: bool = True):
+    def __init__(
+        self, config: ConfigModel, overwrite: bool = True, log_level: str = "INFO"
+    ):
         self.config = config
 
         # Set database root
@@ -438,6 +440,23 @@ class DatabaseBuilder:
             raise ValueError(
                 "Database path is not provided. Please provide a path using the 'database_path' attribute."
             )
+
+        # Set logging level
+        match log_level:
+            case "DEBUG":
+                level = logging.DEBUG
+            case "INFO":
+                level = logging.INFO
+            case "WARNING":
+                level = logging.WARNING
+            case _:
+                print(
+                    f"Log level `{log_level}` not recognized. Defaulting to INFO. Please choose from: `DEBUG`, `INFO`, `WARNING`."
+                )
+                log_level = "INFO"
+                level = logging.INFO
+
+        FloodAdaptLogging(level=level)
 
         # Read info that needs to be used to create other models
         self.unit_system = self.create_default_units()
@@ -2272,25 +2291,10 @@ def main():
             "From most verbose to least verbose: `DEBUG`, `INFO`, `WARNING`.'n"
         )
         log_level = input("Enter log level: ")
-        match log_level:
-            case "DEBUG":
-                level = logging.DEBUG
-            case "INFO":
-                level = logging.INFO
-            case "WARNING":
-                level = logging.WARNING
-            case _:
-                print(
-                    f"Log level `{log_level}` not recognized. Defaulting to INFO. Please choose from: `DEBUG`, `INFO`, `WARNING`."
-                )
-                log_level = "INFO"
-                level = logging.INFO
-
-        FloodAdaptLogging(level=level)
 
         try:
             config = ConfigModel.read(config_path)
-            dbs = DatabaseBuilder(config)
+            dbs = DatabaseBuilder(config, log_level=log_level)
             dbs.build()
         except Exception as e:
             print(e)
