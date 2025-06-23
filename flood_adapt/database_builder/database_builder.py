@@ -2260,12 +2260,6 @@ class DatabaseBuilder:
         return gdf
 
 
-@debug_timer
-def test_func():
-    """Test function to check if the database builder is working."""
-    print("Test function is working. Database builder is functional.")
-
-
 def main():
     while True:
         config_path = Path(
@@ -2291,10 +2285,8 @@ def main():
                 )
                 log_level = "INFO"
                 level = logging.INFO
-        print("Log level set to: ", log_level)
 
         FloodAdaptLogging(level=level)
-        test_func()
 
         try:
             config = ConfigModel.read(config_path)
