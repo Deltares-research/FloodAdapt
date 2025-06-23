@@ -1056,10 +1056,16 @@ class TestDataBaseBuilder:
         db = Database(str(full_config.database_path), full_config.name)
         assert db is not None
 
-    def test_debug_timer(self, full_config: ConfigModel, caplog):
+    @pytest.mark.parametrize(
+        "loglevel, expected",
+        [(logging.DEBUG, True), (logging.INFO, False), (logging.WARNING, False)],
+    )
+    def test_debug_timer(
+        self, full_config: ConfigModel, caplog, loglevel: int, expected: bool
+    ):
         # Arrange
-        FloodAdaptLogging.setLevel(logging.DEBUG)
-        caplog.set_level(logging.DEBUG, logger="FloodAdapt")
+        FloodAdaptLogging.setLevel(level=loglevel)
+        caplog.set_level(loglevel, logger="FloodAdapt")
 
         # Act
         DatabaseBuilder(full_config)  # __init__ will call create_default_units
@@ -1073,8 +1079,16 @@ class TestDataBaseBuilder:
             for msg in caplog.messages
         )
 
-        assert start_logged, "Start log not captured for 'create_default_units'"
-        assert end_logged, "End log not captured for 'create_default_units'"
+        if expected:
+            assert start_logged, "Expected 'Started' message not captured"
+            assert end_logged, "Expected 'Finished' message not captured"
+        else:
+            assert (
+                not start_logged
+            ), "Unexpected 'Started' message found at this log level"
+            assert (
+                not end_logged
+            ), "Unexpected 'Finished' message found at this log level"
 
     @pytest.fixture(scope="function")
     def full_config(self):
