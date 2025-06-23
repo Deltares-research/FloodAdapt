@@ -219,6 +219,9 @@ format:
     grid:
       content-mode: standard
     url-format: relative
+    filters:
+      - lightbox
+    lightbox: auto
 
 execute:
   freeze: auto
