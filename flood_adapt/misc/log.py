@@ -79,7 +79,7 @@ class FloodAdaptLogging:
 
     @classmethod
     def getLogger(
-        cls, name: Optional[str] = None, level: int = logging.INFO
+        cls, name: Optional[str] = None, level: Optional[int] = None
     ) -> logging.Logger:
         """Get a logger with the specified name. If no name is provided, return the root logger.
 
@@ -101,8 +101,16 @@ class FloodAdaptLogging:
             logger = cls._root_logger
         else:
             logger = logging.getLogger(f"FloodAdapt.{name}")
-        logger.setLevel(level)
+
+        if level:
+            logger.setLevel(level)
+
         return logger
+
+    @classmethod
+    def setLevel(cls, level: int) -> None:
+        """Set the logging level for the root logger."""
+        cls.getLogger().setLevel(level)
 
     @classmethod
     def shutdown(cls):

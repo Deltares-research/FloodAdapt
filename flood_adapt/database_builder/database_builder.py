@@ -89,14 +89,19 @@ logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 def debug_timer(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        logger.debug(f"Started '{func.__name__}'")
-        start_time = time.perf_counter()
+        logger = FloodAdaptLogging.getLogger("DatabaseBuilder")  # No forced log level
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f"Started '{func.__name__}'")
+            start_time = time.perf_counter()
 
-        result = func(*args, **kwargs)
+            result = func(*args, **kwargs)
 
-        end_time = time.perf_counter()
-        elapsed = end_time - start_time
-        logger.debug(f"Finished '{func.__name__}' in {elapsed:.4f} seconds")
+            end_time = time.perf_counter()
+            elapsed = end_time - start_time
+            logger.debug(f"Finished '{func.__name__}' in {elapsed:.4f} seconds")
+        else:
+            result = func(*args, **kwargs)
+
         return result
 
     return wrapper
@@ -2281,11 +2286,8 @@ def main():
                 log_level = "INFO"
                 level = logging.INFO
         print("Log level set to: ", log_level)
-        FloodAdaptLogging(
-            loglevel_root=level,
-            loglevel_console=level,
-            loglevel_files=level,
-        )
+        FloodAdaptLogging.setLevel(level)
+
         try:
             config = ConfigModel.read(config_path)
             dbs = DatabaseBuilder(config)
