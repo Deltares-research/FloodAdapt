@@ -53,7 +53,7 @@ class HurricaneEvent(Event):
             ForcingSource.CSV,
             ForcingSource.SYNTHETIC,
             ForcingSource.TRACK,
-            ForcingSource.METEO,
+            # ForcingSource.METEO, # Temporarily excluded due to bug in hydromt-sfincs. fixed in v1.3.0
         ],
         ForcingType.WIND: [ForcingSource.TRACK],
         ForcingType.WATERLEVEL: [ForcingSource.MODEL],
