@@ -828,10 +828,21 @@ class SfincsAdapter(IHazardAdapter):
         self.process(scenario, event)
         self.postprocess(scenario, event)
 
-        if not self.settings.config.save_simulation:
-            shutil.rmtree(
-                self._get_simulation_path(scenario, sub_event=event), ignore_errors=True
-            )
+        if self.settings.config.save_simulation:
+            self._delete_simulation_folder(scenario, sub_event=event)
+
+    def _delete_simulation_folder(
+        self, scenario: Scenario, sub_event: Optional[Event] = None
+    ):
+        """Delete the simulation folder for a given scenario and optional sub-event."""
+        sim_path = self._get_simulation_path(scenario, sub_event=sub_event)
+        if sim_path.exists():
+            shutil.rmtree(sim_path, ignore_errors=True)
+            self.logger.info(f"Deleted simulation folder: {sim_path}")
+
+        if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
+            # Remove the parent directory `simulations` if it is empty
+            sim_path.parent.rmdir()
 
     def _run_risk_scenario(self, scenario: Scenario):
         """Run the whole workflow for a risk scenario.
