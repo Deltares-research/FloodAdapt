@@ -9,6 +9,7 @@ class DbsBenefit(DbsTemplate[Benefit]):
     display_name = "Benefit"
     dir_name = "benefits"
     _object_class = Benefit
+    _higher_lvl_object = ""
 
     def save(self, object_model: Benefit, overwrite: bool = False):
         """Save a benefit object in the database.

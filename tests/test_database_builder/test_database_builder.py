@@ -1,3 +1,4 @@
+import logging
 import shutil
 import tempfile
 from datetime import datetime
@@ -11,7 +12,7 @@ import shapely
 import tomli
 from shapely import Polygon
 
-from flood_adapt import Settings
+from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt import unit_system as us
 from flood_adapt.config.fiat import (
     AggregationModel,
@@ -1054,6 +1055,40 @@ class TestDataBaseBuilder:
         # Assert
         db = Database(str(full_config.database_path), full_config.name)
         assert db is not None
+
+    @pytest.mark.parametrize(
+        "loglevel, expected",
+        [(logging.DEBUG, True), (logging.INFO, False), (logging.WARNING, False)],
+    )
+    def test_debug_timer(
+        self, full_config: ConfigModel, caplog, loglevel: int, expected: bool
+    ):
+        # Arrange
+        FloodAdaptLogging(level=loglevel)
+        caplog.set_level(loglevel, logger="FloodAdapt")
+
+        # Act
+        DatabaseBuilder(full_config)  # __init__ will call create_default_units
+
+        # Assert
+        start_logged = any(
+            "Started 'create_default_units'" in msg for msg in caplog.messages
+        )
+        end_logged = any(
+            "Finished 'create_default_units' in" in msg and "seconds" in msg
+            for msg in caplog.messages
+        )
+
+        if expected:
+            assert start_logged, "Expected 'Started' message not captured"
+            assert end_logged, "Expected 'Finished' message not captured"
+        else:
+            assert (
+                not start_logged
+            ), "Unexpected 'Started' message found at this log level"
+            assert (
+                not end_logged
+            ), "Unexpected 'Finished' message found at this log level"
 
     @pytest.fixture(scope="function")
     def full_config(self):

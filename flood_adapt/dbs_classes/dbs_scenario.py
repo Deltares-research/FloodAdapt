@@ -11,6 +11,7 @@ class DbsScenario(DbsTemplate[Scenario]):
     dir_name = "scenarios"
     display_name = "Scenario"
     _object_class = Scenario
+    _higher_lvl_object = "Benefit"
 
     def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the events that currently exist in the database.

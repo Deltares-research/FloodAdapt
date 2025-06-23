@@ -14,6 +14,7 @@ class DbsMeasure(DbsTemplate[Measure]):
     dir_name = "measures"
     display_name = "Measure"
     _object_class = Measure
+    _higher_lvl_object = "Strategy"
 
     def get(self, name: str) -> Measure:
         """Return a measure object.

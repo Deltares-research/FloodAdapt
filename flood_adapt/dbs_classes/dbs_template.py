@@ -18,6 +18,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
     display_name: str
     dir_name: str
     _object_class: type[T_OBJECTMODEL]
+    _higher_lvl_object: str
 
     def __init__(
         self, database: IDatabase, standard_objects: Optional[list[str]] = None
@@ -161,7 +162,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         # Check if object is used in a higher level object. If it is, raise an error
         if used_in := self.check_higher_level_usage(name):
             raise DatabaseError(
-                f"{self.display_name}: '{name}' cannot be deleted/modified since it is already used in: {', '.join(used_in)}"
+                f"{self.display_name}: '{name}' cannot be deleted/modified since it is already used in the {self._higher_lvl_object.capitalize()}(s): {', '.join(used_in)}"
             )
 
         # Once all checks are passed, delete the object
