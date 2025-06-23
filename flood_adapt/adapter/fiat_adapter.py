@@ -153,11 +153,16 @@ class FiatAdapter(IImpactAdapter):
 
     def close_files(self):
         """Close all open files and clean up file handles."""
-        if hasattr(self.logger, "handlers"):
-            for handler in self.logger.handlers:
-                if isinstance(handler, logging.FileHandler):
-                    handler.close()
-                    self.logger.removeHandler(handler)
+        loggers = [self.logger]
+        if self._model is not None:
+            loggers.append(self._model.logger)
+
+        for logger in loggers:
+            if hasattr(logger, "handlers"):
+                for handler in logger.handlers:
+                    if isinstance(handler, logging.FileHandler):
+                        handler.close()
+                        logger.removeHandler(handler)
 
     def __enter__(self) -> "FiatAdapter":
         return self
@@ -198,11 +203,10 @@ class FiatAdapter(IImpactAdapter):
         ------
             OSError: If the directory cannot be deleted.
         """
-        self.logger.info("Deleting Delft-FIAT simulation folder")
-        try:
+        self.close_files()
+        if self.model_root.exists():
+            self.logger.info(f"Deleting {self.model_root}")
             shutil.rmtree(self.model_root)
-        except OSError as e_info:
-            self.logger.warning(f"{e_info}\nCould not delete {self.model_root}.")
 
     def fiat_completed(self) -> bool:
         """Check if fiat has run as expected.
@@ -1539,3 +1543,25 @@ class FiatAdapter(IImpactAdapter):
                         if line.startswith("#"):
                             line = "#" + " " * hash_spacing + line.lstrip("#")
                         file.write(line)
+
+    def _delete_simulation_folder(self, scn: Scenario):
+        """
+        Delete the Delft-FIAT simulation folder for a given scenario.
+
+        Parameters
+        ----------
+        scn : Scenario
+            The scenario for which the simulation folder should be deleted.
+
+        Raises
+        ------
+        OSError
+            If the directory cannot be deleted.
+        """
+        simulation_path = (
+            self.database.scenarios.output_path / scn.name / "Impacts" / "fiat_model"
+        )
+        if simulation_path.exists():
+            self.close_files()
+            shutil.rmtree(simulation_path)
+            self.logger.info(f"Deleted Delft-FIAT simulation folder: {simulation_path}")
