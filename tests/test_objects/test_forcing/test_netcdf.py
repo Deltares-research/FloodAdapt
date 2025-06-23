@@ -17,7 +17,7 @@ def required_vars():
 
 @pytest.fixture
 def required_coords():
-    return ("time", "lat", "lon")
+    return ("time", "y", "x")
 
 
 def time_model_2_hr_timestep() -> TimeFrame:
@@ -30,7 +30,7 @@ def get_test_dataset(
     time: TimeFrame = time_model_2_hr_timestep(),
     lat: int = -80,
     lon: int = 32,
-    coords: tuple[str, ...] = ("time", "lat", "lon"),
+    coords: tuple[str, ...] = ("time", "y", "x"),
     data_vars: tuple[str, ...] = ("wind10_u", "wind10_v", "press_msl", "precip"),
 ) -> xr.Dataset:
     gen = np.random.default_rng(42)
@@ -46,8 +46,8 @@ def get_test_dataset(
 
     _coords = {
         "time": _time,
-        "lat": _lat,
-        "lon": _lon,
+        "y": _lat,
+        "x": _lon,
     }
     coords_dict = {name: _coords.get(name, np.arange(10)) for name in coords}
 

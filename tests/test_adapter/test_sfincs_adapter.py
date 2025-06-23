@@ -254,14 +254,14 @@ def _mock_meteohandler_read(
 
     ds = xr.Dataset(
         data_vars={
-            "wind10_u": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
-            "wind10_v": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
-            "press_msl": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
-            "precip": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
+            "wind10_u": (("time", "y", "x"), gen.random((len(_time), 2, 2))),
+            "wind10_v": (("time", "y", "x"), gen.random((len(_time), 2, 2))),
+            "press_msl": (("time", "y", "x"), gen.random((len(_time), 2, 2))),
+            "precip": (("time", "y", "x"), gen.random((len(_time), 2, 2))),
         },
         coords={
-            "lat": lat,
-            "lon": lon,
+            "y": lat,
+            "x": lon,
             "time": _time,
         },
         attrs={
@@ -271,8 +271,8 @@ def _mock_meteohandler_read(
     ds.raster.set_crs(4326)
 
     # Convert the longitude to -180 to 180 to match hydromt-sfincs
-    if ds["lon"].min() > 180:
-        ds["lon"] = ds["lon"] - 360
+    if ds["x"].min() > 180:
+        ds["x"] = ds["x"] - 360
 
     return ds
 
