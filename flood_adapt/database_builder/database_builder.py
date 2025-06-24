@@ -1400,6 +1400,13 @@ class DatabaseBuilder:
                     f"Tide gauge reference not provided. '{self.water_level_references.reference}' is assumed as the reference of the water levels in the file."
                 )
                 self.config.tide_gauge.ref = self.water_level_references.reference
+            else:
+                if self.config.tide_gauge.ref not in [
+                    datum.name for datum in self.water_level_references.datums
+                ]:
+                    raise ValueError(
+                        f"Provided tide gauge reference '{self.config.tide_gauge.ref}' not found in the water level references!"
+                    )
 
             tide_gauge_file = self._check_exists_and_absolute(
                 self.config.tide_gauge.file
@@ -1431,11 +1438,6 @@ class DatabaseBuilder:
             else:
                 ref = "MLLW"  # If reference is not provided use MLLW
 
-            self.water_level_references.reference = (
-                ref  # update the water level reference
-            )
-            logger.warning(f"Main water level reference set to '{ref}'.")
-
             if self.config.tide_gauge.id is None:
                 station_id = self._get_closest_station()
                 logger.info(
@@ -1448,20 +1450,10 @@ class DatabaseBuilder:
                 )
             station = self._get_station_metadata(station_id=station_id, ref=ref)
             if station is not None:
-                # Add tide_gauge information in site toml
-                tide_gauge = TideGauge(
-                    name=station["name"],
-                    description=f"observations from '{self.config.tide_gauge.source}' api",
-                    source=self.config.tide_gauge.source,
-                    reference=ref,
-                    ID=int(station["id"]),
-                    lon=station["lon"],
-                    lat=station["lat"],
-                    units=us.UnitTypesLength.meters,  # the api always asks for SI units right now
-                )
-
+                # First create water level references based on station
                 # Get datums
                 datums = []
+                # Get local datum
                 datums.append(
                     DatumModel(
                         name=station["datum_name"],
@@ -1470,7 +1462,7 @@ class DatabaseBuilder:
                         ).transform(self.unit_system.default_length_units),
                     )
                 )
-
+                # Get MSL
                 datums.append(
                     DatumModel(
                         name="MSL",
@@ -1479,7 +1471,7 @@ class DatabaseBuilder:
                         ).transform(self.unit_system.default_length_units),
                     )
                 )
-
+                # Get extras
                 for name in ["MLLW", "MHHW"]:
                     height = us.UnitfulLength(
                         value=station[name.lower()], units=station["units"]
@@ -1490,6 +1482,24 @@ class DatabaseBuilder:
                         height=height,
                     )
                     datums.append(wl_info)
+
+                station_refs = WaterlevelReferenceModel(reference=ref, datums=datums)
+
+                # Check if we can translate the rest of the datums
+                if self.water_level_references.reference != station_refs.reference:
+                    for dat in self.water_level_references.datums:
+                        if dat.name not in [
+                            datum.name for datum in station_refs.datums
+                        ]:
+                            # If datum is not in the datums, try to convert it
+                            h1 = dat.height
+                            ref1 = self.water_level_references.reference
+                            h2 = h1 + station_refs.get_datum(ref1).height
+                            # Replace the datum in self.water_level_references.datums
+                            dat.height = h2
+                            logger.warning(
+                                f"Datum '{dat.name}' converted to reference '{ref1}' with new height {h2}."
+                            )
 
                 # Check if datums already exist in the water level references and replace
                 for datum in datums:
@@ -1507,6 +1517,24 @@ class DatabaseBuilder:
                             f"Datum '{datum.name}' already exists in config reference. Replacing it based on NOAA station data."
                         )
                     self.water_level_references.datums.append(datum)
+
+                # Update reference datum
+                self.water_level_references.reference = (
+                    ref  # update the water level reference
+                )
+                logger.warning(f"Main water level reference set to '{ref}'.")
+
+                # Add tide_gauge information in site toml
+                tide_gauge = TideGauge(
+                    name=station["name"],
+                    description=f"observations from '{self.config.tide_gauge.source}' api",
+                    source=self.config.tide_gauge.source,
+                    reference=ref,
+                    ID=int(station["id"]),
+                    lon=station["lon"],
+                    lat=station["lat"],
+                    units=us.UnitTypesLength.meters,  # the api always asks for SI units right now
+                )
 
             return tide_gauge
         else:
