@@ -428,7 +428,7 @@ class DatabaseBuilder:
     _aggregation_areas: Optional[list] = None
     _probabilistic_set_name: Optional[str] = None
 
-    def __init__(self, config: ConfigModel, overwrite: bool = True):
+    def __init__(self, config: ConfigModel):
         self.config = config
 
         # Set database root
@@ -787,13 +787,12 @@ class DatabaseBuilder:
         self.fiat_model.exposure.exposure_db = exposure
 
     def read_damage_unit(self) -> str:
-        if self.fiat_model.exposure.damage_unit is not None:
-            return self.fiat_model.exposure.damage_unit
-        else:
+        if self.fiat_model.exposure.damage_unit is None:
             logger.warning(
                 "Delft-FIAT model was missing damage units so '$' was assumed."
             )
-            return "$"
+            self.fiat_model.exposure.damage_unit = "$"
+        return self.fiat_model.exposure.damage_unit
 
     @debug_timer
     def read_floodmap_type(self) -> FloodmapType:
@@ -1028,9 +1027,10 @@ class DatabaseBuilder:
                     aggr_name = Path(aggr.file).stem
                 # If aggregation area already in FIAT model raise Error
                 if aggr_name in [aggr.name for aggr in aggregation_areas]:
-                    raise ValueError(
-                        f"Aggregation area '{aggr_name}' already exists in the FIAT model."
+                    logger.warning(
+                        f"Aggregation area '{aggr_name}' already exists in the FIAT model. The input aggregation area will be ignored."
                     )
+                    continue
                 # Do spatial join of FIAT objects and aggregation areas
                 exposure_csv = self.fiat_model.exposure.exposure_db
                 gdf = self._get_fiat_gdf_full()
@@ -1219,7 +1219,9 @@ class DatabaseBuilder:
         try:
             urlretrieve(url, fn)
         except Exception:
-            raise RuntimeError(f"Could not retrieve cyclone track database from {url}")
+            logger.warning(f"Could not retrieve cyclone track database from {url}")
+            logger.warning("No cyclones will be available in the database.")
+            return None
 
         return CycloneTrackDatabaseModel(file=name)
 
@@ -1314,6 +1316,7 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_observation_points(self) -> Union[list[ObsPointModel], None]:
+        # TODO if there is a tide gauge, use it as an observation point
         if self.config.obs_point is None:
             return None
 
