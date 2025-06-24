@@ -37,7 +37,6 @@ from flood_adapt.database_builder.database_builder import (
     DatabaseBuilder,
     FootprintsOptions,
     GuiConfigModel,
-    Point,
     SpatialJoinModel,
     SviConfigModel,
     TideGaugeConfigModel,
@@ -737,7 +736,8 @@ class TestDataBaseBuilder:
             source=TideGaugeSource.file,
             file=str(tide_gauge_file),
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
         builder = DatabaseBuilder(mock_config)
@@ -770,7 +770,8 @@ class TestDataBaseBuilder:
             source=TideGaugeSource.file,
             file=None,
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
 
@@ -801,7 +802,8 @@ class TestDataBaseBuilder:
             source=TideGaugeSource.file,
             file=str(tide_gauge_file),
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
         builder = DatabaseBuilder(mock_config)
@@ -819,7 +821,8 @@ class TestDataBaseBuilder:
             ref="MSL",
             source=TideGaugeSource.noaa_coops,
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
         mock_config.references = WaterlevelReferenceModel(
