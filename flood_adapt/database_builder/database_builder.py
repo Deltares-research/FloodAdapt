@@ -348,16 +348,7 @@ class ConfigModel(BaseModel):
     floodmap_type: Optional[FloodmapType] = None
 
     # SFINCS
-    references: WaterlevelReferenceModel = WaterlevelReferenceModel(
-        reference="MSL",
-        datums=[
-            DatumModel(
-                name="MSL",
-                height=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters),
-            ),
-        ],
-    )
-
+    references: Optional[WaterlevelReferenceModel] = None
     sfincs_overland: FloodModel
     sfincs_offshore: Optional[FloodModel] = None
     dem: Optional[DemModel] = None
@@ -441,9 +432,6 @@ class DatabaseBuilder:
 
         # Read info that needs to be used to create other models
         self.unit_system = self.create_default_units()
-
-        # Read info that needs to be updated with other model info
-        self.water_level_references = self.config.references
 
     @property
     def static_path(self) -> Path:
@@ -1183,6 +1171,7 @@ class DatabaseBuilder:
     def create_sfincs_config(self) -> SfincsModel:
         # call these functions before others to make sure water level references are updated
         config = self.create_sfincs_model_config()
+        self.water_level_references = self.create_water_level_references()
         tide_gauge = self.create_tide_gauge()
 
         sfincs = SfincsModel(
@@ -1198,6 +1187,35 @@ class DatabaseBuilder:
         )
 
         return sfincs
+
+    @debug_timer
+    def create_water_level_references(self) -> WaterlevelReferenceModel:
+        sfincs_ref = self.config.sfincs_overland.reference
+        if self.config.references is None:
+            logger.warning(
+                f"No water level references provided in the config file. Using reference provided for overland SFINCS model '{sfincs_ref}' as the main reference."
+            )
+            refs = WaterlevelReferenceModel(
+                reference=sfincs_ref,
+                datums=[
+                    DatumModel(
+                        name=sfincs_ref,
+                        height=us.UnitfulLength(
+                            value=0.0, units=self.unit_system.default_length_units
+                        ),
+                    )
+                ],
+            )
+        else:
+            # Check if sfincs_ref is in the references
+            if sfincs_ref not in [ref.name for ref in self.config.references.datums]:
+                raise ValueError(
+                    f"Reference '{sfincs_ref}' not found in the provided references."
+                )
+            else:
+                refs = self.config.references
+
+        return refs
 
     @debug_timer
     def create_cyclone_track_database(self) -> Optional[CycloneTrackDatabaseModel]:
@@ -1370,9 +1388,6 @@ class DatabaseBuilder:
             logger.warning(
                 "Tide gauge information not provided. Historical events will not have an option to use gauged data in FloodAdapt!"
             )
-            logger.warning(
-                "No water level references were found. It is assumed that MSL is equal to the datum used in the SFINCS overland model. You can provide these values with the tide_gauge.ref attribute in the site.toml."
-            )
             return None
 
         if self.config.tide_gauge.source == TideGaugeSource.file:
@@ -1382,9 +1397,9 @@ class DatabaseBuilder:
                 )
             if self.config.tide_gauge.ref is None:
                 logger.warning(
-                    "Tide gauge reference not provided. MSL is assumed as the reference of the water levels in the file."
+                    f"Tide gauge reference not provided. '{self.water_level_references.reference}' is assumed as the reference of the water levels in the file."
                 )
-                self.config.tide_gauge.ref = "MSL"
+                self.config.tide_gauge.ref = self.water_level_references.reference
 
             tide_gauge_file = self._check_exists_and_absolute(
                 self.config.tide_gauge.file
@@ -1419,6 +1434,7 @@ class DatabaseBuilder:
             self.water_level_references.reference = (
                 ref  # update the water level reference
             )
+            logger.warning(f"Main water level reference set to '{ref}'.")
 
             if self.config.tide_gauge.id is None:
                 station_id = self._get_closest_station()
@@ -1444,32 +1460,25 @@ class DatabaseBuilder:
                     units=us.UnitTypesLength.meters,  # the api always asks for SI units right now
                 )
 
-                local_datum = DatumModel(
-                    name=station["datum_name"],
-                    height=us.UnitfulLength(
-                        value=station["datum"], units=station["units"]
-                    ).transform(self.unit_system.default_length_units),
+                # Get datums
+                datums = []
+                datums.append(
+                    DatumModel(
+                        name=station["datum_name"],
+                        height=us.UnitfulLength(
+                            value=station["datum"], units=station["units"]
+                        ).transform(self.unit_system.default_length_units),
+                    )
                 )
-                self.water_level_references.datums.append(local_datum)
 
-                msl = DatumModel(
-                    name="MSL",
-                    height=us.UnitfulLength(
-                        value=station["msl"], units=station["units"]
-                    ).transform(self.unit_system.default_length_units),
+                datums.append(
+                    DatumModel(
+                        name="MSL",
+                        height=us.UnitfulLength(
+                            value=station["msl"], units=station["units"]
+                        ).transform(self.unit_system.default_length_units),
+                    )
                 )
-                #  Check if MSL is already there and if yes replace it
-                existing_msl = next(
-                    (
-                        datum
-                        for datum in self.water_level_references.datums
-                        if datum.name == "MSL"
-                    ),
-                    None,
-                )
-                if existing_msl:
-                    self.water_level_references.datums.remove(existing_msl)
-                self.water_level_references.datums.append(msl)
 
                 for name in ["MLLW", "MHHW"]:
                     height = us.UnitfulLength(
@@ -1480,7 +1489,25 @@ class DatabaseBuilder:
                         name=name,
                         height=height,
                     )
-                    self.water_level_references.datums.append(wl_info)
+                    datums.append(wl_info)
+
+                # Check if datums already exist in the water level references and replace
+                for datum in datums:
+                    existing_datum = next(
+                        (
+                            dat
+                            for dat in self.water_level_references.datums
+                            if dat.name == datum.name
+                        ),
+                        None,
+                    )
+                    if existing_datum:
+                        self.water_level_references.datums.remove(existing_datum)
+                        logger.warning(
+                            f"Datum '{datum.name}' already exists in config reference. Replacing it based on NOAA station data."
+                        )
+                    self.water_level_references.datums.append(datum)
+
             return tide_gauge
         else:
             logger.warning(
@@ -2205,7 +2232,7 @@ class DatabaseBuilder:
         )
 
         logger.info(
-            f"The station metadata will be used to fill in the water_level attribute in the site.toml. The reference level will be {ref}."
+            f"The station metadata will be used to fill in the water_level attribute in the site.toml. The reference level will be '{ref}'."
         )
 
         return meta
