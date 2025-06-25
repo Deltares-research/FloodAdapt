@@ -1222,7 +1222,7 @@ class TestDataBaseBuilder:
                     field_name="SVI",
                     threshold=0.5,
                 ),
-                road_width=5,
+                road_width=us.UnitfulLength(value=5, units=us.UnitTypesLength.meters),
                 return_periods=[1, 2, 5, 10, 25, 50, 100],
             )
             yield config
