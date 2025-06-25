@@ -5,4 +5,5 @@ website:
       href: "4_system_setup/index.qmd"
       contents:
         - "4_system_setup/database.qmd"
-        - "3_api_docs/examples/database_builder/index.qmd"
+        - text: Database Builder (Python)
+          href: 3_api_docs/examples/database_builder/database_builder.html

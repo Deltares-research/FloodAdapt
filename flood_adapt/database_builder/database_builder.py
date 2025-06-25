@@ -108,19 +108,24 @@ def debug_timer(func):
 
 
 def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
-    """
-    Check if the given path is absolute and return the absolute path.
+    """Check if the given path is absolute and return the absolute path.
 
-    Args:
-        path (str): The path to be checked.
+    Parameters
+    ----------
+    str_path : str
+        The path to be checked.
+    config_path : Optional[Path], default None
+        The base path to resolve relative paths.
 
     Returns
     -------
-        str: The absolute path.
+    str
+        The absolute path as a string.
 
     Raises
     ------
-        ValueError: If the path is not absolute and no config_path is provided.
+    ValueError
+        If the path is not absolute and no config_path is provided.
     """
     path = Path(str_path)
     if not path.is_absolute():
@@ -132,14 +137,16 @@ def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
 
 
 class SpatialJoinModel(BaseModel):
-    """
-    Represents a spatial join model.
+    """Represents a spatial join model.
 
     Attributes
     ----------
-    name (Optional[str]): The name of the model (optional).
-    file (str): The file associated with the model.
-    field_name (str): The field name used for the spatial join.
+    name : Optional[str], default None
+        The name of the model.
+    file : str
+        The file associated with the model.
+    field_name : str
+        The field name used for the spatial join.
     """
 
     name: Optional[str] = None
@@ -148,14 +155,14 @@ class SpatialJoinModel(BaseModel):
 
 
 class UnitSystems(str, Enum):
-    """The `UnitSystems` class is an enumeration that represents the accepted values for the `metric_system` field.
-
-    It provides two options: `imperial` and `metric`.
+    """Enumeration for accepted values for the unit_system field.
 
     Attributes
     ----------
-        imperial (str): Represents the imperial unit system.
-        metric (str): Represents the metric unit system.
+    imperial : str
+        Represents the imperial unit system.
+    metric : str
+        Represents the metric unit system.
     """
 
     imperial = "imperial"
@@ -163,24 +170,36 @@ class UnitSystems(str, Enum):
 
 
 class FootprintsOptions(str, Enum):
+    """Enumeration for accepted values for the building_footprints field.
+
+    Attributes
+    ----------
+    OSM : str
+        Use OpenStreetMap for building footprints.
+    """
+
     OSM = "OSM"
 
 
 class Basins(str, Enum):
-    """
-    Enumeration class representing different basins.
-
-    Each basin is represented by a string value.
+    """Enumeration class representing different basins.
 
     Attributes
     ----------
-        NA (str): North Atlantic
-        SA (str): South Atlantic
-        EP (str): Eastern North Pacific (which includes the Central Pacific region)
-        WP (str): Western North Pacific
-        SP (str): South Pacific
-        SI (str): South Indian
-        NI (str): North Indian
+    NA : str
+        North Atlantic
+    SA : str
+        South Atlantic
+    EP : str
+        Eastern North Pacific (which includes the Central Pacific region)
+    WP : str
+        Western North Pacific
+    SP : str
+        South Pacific
+    SI : str
+        South Indian
+    NI : str
+        North Indian
     """
 
     NA = "NA"
@@ -193,15 +212,18 @@ class Basins(str, Enum):
 
 
 class GuiConfigModel(BaseModel):
-    """
-    Represents a GUI model for for FloodAdapt.
+    """Represents a GUI model for FloodAdapt.
 
     Attributes
     ----------
-        max_flood_depth (float): The last visualization bin will be ">value".
-        max_aggr_dmg (float): The last visualization bin will be ">value".
-        max_footprint_dmg (float): The last visualization bin will be ">value".
-        max_benefits (float): The last visualization bin will be ">value".
+    max_flood_depth : float
+        The last visualization bin will be ">value".
+    max_aggr_dmg : float
+        The last visualization bin will be ">value".
+    max_footprint_dmg : float
+        The last visualization bin will be ">value".
+    max_benefits : float
+        The last visualization bin will be ">value".
     """
 
     max_flood_depth: float
@@ -211,32 +233,38 @@ class GuiConfigModel(BaseModel):
 
 
 class SviConfigModel(SpatialJoinModel):
-    """
-    Represents a model for the Social Vulnerability Index (SVI).
+    """Represents a model for the Social Vulnerability Index (SVI).
 
     Attributes
     ----------
-        threshold (float): The threshold value for the SVI model to specify vulnerability.
+    threshold : float
+        The threshold value for the SVI model to specify vulnerability.
     """
 
     threshold: float
 
 
-class Point(BaseModel):
-    lat: float
-    lon: float
-
-
 class TideGaugeConfigModel(BaseModel):
-    """
-    Represents a tide gauge model.
+    """Represents a tide gauge model.
 
     Attributes
     ----------
-        source (str): The source of the tide gauge data.
-        file (Optional[str]): The file associated with the tide gauge data (default: None).
-        max_distance (Optional[float]): The maximum distance (default: None).
-        ref (str): The reference name. Should be defined in the water level references.
+    source : TideGaugeSource
+        The source of the tide gauge data.
+    description : str, default ""
+        Description of the tide gauge.
+    ref : Optional[str], default None
+        The reference name. Should be defined in the water level references.
+    id : Optional[int], default None
+        The station ID.
+    lon : Optional[float], default None
+        Longitude of the tide gauge.
+    lat : Optional[float], default None
+        Latitude of the tide gauge.
+    file : Optional[str], default None
+        The file associated with the tide gauge data.
+    max_distance : Optional[us.UnitfulLength], default None
+        The maximum distance.
     """
 
     source: TideGaugeSource
@@ -249,21 +277,8 @@ class TideGaugeConfigModel(BaseModel):
     max_distance: Optional[us.UnitfulLength] = None
 
 
-class SviModel(SpatialJoinModel):
-    """
-    Represents a model for the Social Vulnerability Index (SVI).
-
-    Attributes
-    ----------
-        threshold (float): The threshold value for the SVI model to specify vulnerability.
-    """
-
-    threshold: float
-
-
 class ConfigModel(BaseModel):
-    """
-    Represents the configuration model for FloodAdapt.
+    """Represents the configuration model for FloodAdapt.
 
     Attributes
     ----------
@@ -285,8 +300,8 @@ class ConfigModel(BaseModel):
         The list of aggregation area models.
     building_footprints : Optional[SpatialJoinModel | FootprintsOptions], default FootprintsOptions.OSM
         The building footprints model or OSM option.
-    fiat_buildings_name : Optional[str], default "buildings"
-        The name of the buildings geometry in the FIAT model.
+    fiat_buildings_name : str | list[str], default "buildings"
+        The name(s) of the buildings geometry in the FIAT model.
     fiat_roads_name : Optional[str], default "roads"
         The name of the roads geometry in the FIAT model.
     bfe : Optional[SpatialJoinModel], default None
@@ -343,7 +358,9 @@ class ConfigModel(BaseModel):
     fiat_roads_name: Optional[str] = "roads"
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SviConfigModel] = None
-    road_width: Optional[float] = 5
+    road_width: us.UnitfulLength = us.UnitfulLength(
+        value=5.0, units=us.UnitTypesLength.meters
+    )
     return_periods: list[int] = Field(default_factory=list)
     floodmap_type: Optional[FloodmapType] = None
 
@@ -364,17 +381,18 @@ class ConfigModel(BaseModel):
     probabilistic_set: Optional[str] = None
 
     @staticmethod
-    def read(toml_path: Path) -> "ConfigModel":
+    def read(toml_path: Union[str, Path]) -> "ConfigModel":
         """
         Read a configuration file and returns the validated attributes.
 
         Args:
-            config (str): The path to the configuration file.
+            toml_path (str | Path): The path to the configuration file.
 
         Returns
         -------
             ConfigModel: The validated attributes from the configuration file.
         """
+        toml_path = Path(toml_path)
         with open(toml_path, mode="rb") as fp:
             toml = tomli.load(fp)
         config = ConfigModel.model_validate(toml)
@@ -820,9 +838,8 @@ class DatabaseBuilder:
         # TODO should this should be performed through hydromt-FIAT?
         if not isinstance(roads.geometry.iloc[0], Polygon):
             roads = roads.to_crs(roads.estimate_utm_crs())
-            roads.geometry = roads.geometry.buffer(
-                self.config.road_width / 2, cap_style=2
-            )
+            road_width = self.config.road_width.convert(us.UnitTypesLength.meters)
+            roads.geometry = roads.geometry.buffer(road_width / 2, cap_style=2)
             roads = roads.to_crs(self.fiat_model.exposure.crs)
             self.fiat_model.exposure.exposure_geoms[self._get_fiat_road_index()] = roads
             logger.info(
@@ -2083,7 +2100,8 @@ class DatabaseBuilder:
 
         Parameters
         ----------
-        None
+        clip_footprints : bool, default True
+            Whether to clip the building footprints to the hazard area.
 
         Returns
         -------
@@ -2249,6 +2267,7 @@ class DatabaseBuilder:
         Find the closest tide gauge station to the SFINCS domain and retrieves its metadata.
 
         Args:
+            station_id (str): The ID of the tide gauge station.
             ref (str, optional): The reference level for water level measurements. Defaults to "MLLW".
 
         Returns
@@ -2348,6 +2367,22 @@ class DatabaseBuilder:
         ).reset_index(drop=True)
 
         return gdf
+
+
+def create_database(config: Union[str, Path, ConfigModel], overwrite=False) -> None:
+    """Create a new database from a configuration file or ConfigModel.
+
+    Parameters
+    ----------
+    config : str, Path, or ConfigModel
+        The path to the configuration file (as a string or Path) or a ConfigModel instance.
+    overwrite : bool, default False
+        Whether to overwrite the existing database if it exists.
+    """
+    if isinstance(config, (str, Path)):
+        config = ConfigModel.read(config)
+
+    DatabaseBuilder(config=config).build(overwrite)
 
 
 def main():
