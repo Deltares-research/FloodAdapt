@@ -821,6 +821,71 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false">
+ <span class="menu-text">Database Builder</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../3_api_docs/api_ref/create_database.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_database</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../3_api_docs/api_ref/ConfigModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ConfigModel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../3_api_docs/api_ref/UnitSystems.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">UnitSystems</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../3_api_docs/api_ref/GuiConfigModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">GuiConfigModel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../3_api_docs/api_ref/SpatialJoinModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpatialJoinModel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../3_api_docs/api_ref/FootprintsOptions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FootprintsOptions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../3_api_docs/api_ref/SviConfigModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SviConfigModel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../3_api_docs/api_ref/Basins.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Basins</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../3_api_docs/api_ref/TideGaugeConfigModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TideGaugeConfigModel</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
       </ul>
   </li>
     </ul>
@@ -847,6 +912,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#benefits" id="toc-benefits" class="nav-link" data-scroll-target="#benefits">Benefits</a></li>
   </ul></li>
   <li><a href="#unit-system" id="toc-unit-system" class="nav-link" data-scroll-target="#unit-system">Unit system</a></li>
+  <li><a href="#database-builder" id="toc-database-builder" class="nav-link" data-scroll-target="#database-builder">Database Builder</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/3_api_docs/api_ref/api_index.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1140,6 +1206,50 @@ ul.task-list li input[type="checkbox"] {
 <tr class="even">
 <td><a href="../../3_api_docs/api_ref/VerticalReference.html#flood_adapt.unit_system.VerticalReference">VerticalReference</a></td>
 <td>Vertical reference for height.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="database-builder" class="level2">
+<h2 class="anchored" data-anchor-id="database-builder">Database Builder</h2>
+<p>Database builder for FloodAdapt. The database builder is used to create the database schema and to populate the database with data.</p>
+<table class="caption-top table">
+<tbody>
+<tr class="odd">
+<td><a href="../../3_api_docs/api_ref/create_database.html#flood_adapt.database_builder.create_database">create_database</a></td>
+<td>Create a new database from a configuration file or ConfigModel.</td>
+</tr>
+<tr class="even">
+<td><a href="../../3_api_docs/api_ref/ConfigModel.html#flood_adapt.database_builder.ConfigModel">ConfigModel</a></td>
+<td>Represents the configuration model for FloodAdapt.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../3_api_docs/api_ref/UnitSystems.html#flood_adapt.database_builder.UnitSystems">UnitSystems</a></td>
+<td>Enumeration for accepted values for the unit_system field.</td>
+</tr>
+<tr class="even">
+<td><a href="../../3_api_docs/api_ref/GuiConfigModel.html#flood_adapt.database_builder.GuiConfigModel">GuiConfigModel</a></td>
+<td>Represents a GUI model for FloodAdapt.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../3_api_docs/api_ref/SpatialJoinModel.html#flood_adapt.database_builder.SpatialJoinModel">SpatialJoinModel</a></td>
+<td>Represents a spatial join model.</td>
+</tr>
+<tr class="even">
+<td><a href="../../3_api_docs/api_ref/FootprintsOptions.html#flood_adapt.database_builder.FootprintsOptions">FootprintsOptions</a></td>
+<td>Enumeration for accepted values for the building_footprints field.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../3_api_docs/api_ref/SviConfigModel.html#flood_adapt.database_builder.SviConfigModel">SviConfigModel</a></td>
+<td>Represents a model for the Social Vulnerability Index (SVI).</td>
+</tr>
+<tr class="even">
+<td><a href="../../3_api_docs/api_ref/Basins.html#flood_adapt.database_builder.Basins">Basins</a></td>
+<td>Enumeration class representing different basins.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../3_api_docs/api_ref/TideGaugeConfigModel.html#flood_adapt.database_builder.TideGaugeConfigModel">TideGaugeConfigModel</a></td>
+<td>Represents a tide gauge model.</td>
 </tr>
 </tbody>
 </table>
