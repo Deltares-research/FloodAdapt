@@ -23,11 +23,12 @@ The automatic event duration can be shortened to cover just the part of the trac
 
 In the "Hurricane track shift" box, users can **shift the hurricane track** by specifying the distance (e.g. in miles or kms) of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track. Note that when shifting a historical hurricane track, the new track will be assigned the attributes of the original hurricane (like wind and pressure fields).
 
-The wind and rain are automatically derived from information about the hurricane track. The rainfall is derived from the track using the IPET method. The user does not need to specify any information here, but if they wish to override the default 'track' rainfall option, all the rainfall time series options available for the [historical event](historical.qmd) are also available in the hurricane event template (constant, CSV upload, meteo, synthetic). In addition, users can specify a 'precipitation multiplier' by which the rainfall will be multiplied at each time step. This can be useful, for example, if a user wants to use the track-derived rainfall but see a 'worse-case' situation.
+The wind and rain are automatically derived from information about the hurricane track. The rainfall is derived from the track using the IPET method. The user does not need to specify any information here, but if they wish to override the default 'track' rainfall option, all the rainfall time series options available for the [historical event](historical.qmd) are also available in the hurricane event template (constant, CSV upload, synthetic). In addition, users can specify a 'precipitation multiplier' by which the rainfall will be multiplied at each time step. This can be useful, for example, if a user wants to use the track-derived rainfall but see a 'worse-case' situation.
 
 The river discharge represents the discharge at the model boundary and will be automatically filled to a default (average) value specified during system set-up. The user can modify this value. If there are multiple rivers at the model boundary, the user will be able to select each river to view or modify the discharge. Similar to the [historical event](historical.qmd), users can also upload a CSV or specify a synthetic discharge time series.
 
-::: {.callout-note}
+<!--::: {.callout-note}
 ## Hurricanes far offshore
 It is not recommended to use the **Historical hurricane** option for a hurricane that passed far offshore of the site. In those cases, it is recommended to use the “Historical" event type and run the offshore model using the 'meteo' option, which makes use of spatially varying wind and pressure fields from reanalysis data.
 :::
+-->
