@@ -1172,7 +1172,7 @@ class DatabaseBuilder:
         # call these functions before others to make sure water level references are updated
         config = self.create_sfincs_model_config()
         self.water_level_references = self.create_water_level_references()
-        tide_gauge = self.create_tide_gauge()
+        self.tide_gauge = self.create_tide_gauge()
 
         sfincs = SfincsModel(
             config=config,
@@ -1181,7 +1181,7 @@ class DatabaseBuilder:
             dem=self.create_dem_model(),
             scs=self.create_scs_model(),
             cyclone_track_database=self.create_cyclone_track_database(),
-            tide_gauge=tide_gauge,
+            tide_gauge=self.tide_gauge,
             river=self.create_rivers(),
             obs_point=self.create_observation_points(),
         )
@@ -1334,12 +1334,44 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_observation_points(self) -> Union[list[ObsPointModel], None]:
-        # TODO if there is a tide gauge, use it as an observation point
         if self.config.obs_point is None:
-            return None
+            obs_points = []
+        else:
+            logger.info("Observation points were provided in the config file.")
+            obs_points = self.config.obs_point
+        if self.tide_gauge is not None:
+            # Check if the tide gauge point is within the SFINCS region
+            region = self.sfincs_overland_model.region
+            point = gpd.GeoSeries(
+                [gpd.points_from_xy([self.tide_gauge.lon], [self.tide_gauge.lat])[0]],
+                crs=4326,
+            )
+            region_4326 = region.to_crs(4326)
+            if not point.within(region_4326.unary_union).item():
+                logger.warning(
+                    "The tide gauge location is outside the SFINCS region and will not be added as an observation point."
+                )
+            else:
+                logger.info(
+                    "A tide gauge has been setup in the database. It will be used as an observation point as well."
+                )
+                obs_points.append(
+                    ObsPointModel(
+                        name=self.tide_gauge.name,
+                        description="Tide gauge observation point",
+                        ID=self.tide_gauge.ID,
+                        lon=self.tide_gauge.lon,
+                        lat=self.tide_gauge.lat,
+                    )
+                )
 
-        logger.info("Observation points were provided in the config file.")
-        return self.config.obs_point
+        if not obs_points:
+            logger.warning(
+                "No observation points were provided in the config file or created from the tide gauge. No observation points will be available in FloodAdapt."
+            )
+            return None
+        else:
+            return obs_points
 
     @debug_timer
     def create_rivers(self) -> list[RiverModel]:
