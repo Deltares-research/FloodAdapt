@@ -358,7 +358,9 @@ class ConfigModel(BaseModel):
     fiat_roads_name: Optional[str] = "roads"
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SviConfigModel] = None
-    road_width: Optional[float] = 5
+    road_width: us.UnitfulLength = us.UnitfulLength(
+        value=5.0, units=us.UnitTypesLength.meters
+    )
     return_periods: list[int] = Field(default_factory=list)
     floodmap_type: Optional[FloodmapType] = None
 
@@ -836,9 +838,8 @@ class DatabaseBuilder:
         # TODO should this should be performed through hydromt-FIAT?
         if not isinstance(roads.geometry.iloc[0], Polygon):
             roads = roads.to_crs(roads.estimate_utm_crs())
-            roads.geometry = roads.geometry.buffer(
-                self.config.road_width / 2, cap_style=2
-            )
+            road_width = self.config.road_width.convert(us.UnitTypesLength.meters)
+            roads.geometry = roads.geometry.buffer(road_width / 2, cap_style=2)
             roads = roads.to_crs(self.fiat_model.exposure.crs)
             self.fiat_model.exposure.exposure_geoms[self._get_fiat_road_index()] = roads
             logger.info(
