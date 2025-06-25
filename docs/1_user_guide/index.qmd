@@ -6,12 +6,12 @@ sidebar: user_guide
 Welcome to the FloodAdapt user guide! This guide will help you specify and run scenarios to assess current and future flood impacts and risk and evaluate the effectiveness and benefits of adaptation options. The FloodAdapt application supports the creation, running, visualization, and comparison of scenarios. For more background on what FloodAdapt is and does, please visit the [Introduction page](../index.qmd)
 
 ::: {.callout-note}
-## What is a scenario in FloodAdapt?
+#### What is a scenario in FloodAdapt?
 A FloodAdapt "scenario" refers to a combination of (1) a weather or hydrological "event" that can lead to flooding, like a hurricane, a Nor'easter, a high tide, rainfall, high river discharge, or combinations of these, (2) a "projection" representing future socio-economic or climate conditions and (3) a "strategy", representing an adaptation strategy with any number of individual measures (including the option to evaluate a current-situation strategy with no measures).
 :::
 
 ::: {.callout-tip}
-## Example user question
+#### Example user question
 **How would a floodwall have held up in a recent hurricane if the track had made a worst-case landfall?**
 
 To answer this question, the user would create a scenario: a recent hurricane shifted to make worst-case landfall (event), under current conditions (projection), with and a floodwall (strategy). Viewing the flooding, impacts and summary information will help them evaluate if the floodwall would have been sufficient to protect against this event.
@@ -43,7 +43,7 @@ Running a scenario calls the SFINCS and Delft-FIAT models to start the simulatio
 -->
 * The [**Output**](output/index.qmd) tab is where a user can view maps showing the flooding and impacts and see infometrics and an infographic for scenarios that have been run.
 
-* The user can compare scenarios spatially (map comparison) in the [**Compare - map**](compare/Compare_map.qmd) tab and can compare scenarios based on their tabulated metrics in the [**Compare - table**](compare/Compare_table.qmd) tab.
+* The user can compare scenarios spatially (map comparison) in the [**Compare - map**](compare/index.qmd) tab and can compare scenarios based on their tabulated metrics in the [**Compare - table**](compare/index.qmd) tab.
 
 * The user can evaluate the risk-reduction benefits of an adaptation strategy, including spatial distribution of benefits, and equity-weighted benefits in the [**Benefits**](benefits.qmd) tab.
 

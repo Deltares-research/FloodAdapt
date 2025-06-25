@@ -18,13 +18,25 @@ interlinks:
   fast: true
   sources:
     geopandas:
-      url: https://geopandas.org/en/stable/
+      url: https://geopandas.org/
+      package: geopandas
     pandas:
       url: https://pandas.pydata.org/docs/
+      package: pandas
     python:
       url: https://docs.python.org/3/
+      package: python
     numpy:
       url: https://numpy.org/doc/stable/
+      package: numpy
+    pydantic:
+      url: https://docs.pydantic.dev/latest/
+      package: pydantic
+  aliases:
+    geopandas: gpd
+    pandas: pd
+    python: py
+    numpy: np
 
 metadata-files:
   - 1_user_guide/_sidebar.yml      # User Guide
@@ -57,17 +69,62 @@ quartodoc:
 
   sections:
     - title: "FloodAdapt"
-      package: flood_adapt
+      package: flood_adapt.flood_adapt
       desc: "Class that contains the main functionality of FloodAdapt."
       contents:
         - FloodAdapt
 
     - title: "Setup and configuration"
-      package: flood_adapt
+      package: flood_adapt.config
       desc: "Configuration settings for FloodAdapt."
       contents:
-        - Settings
-        - Site
+        - config.Settings
+        - site.Site
+
+    - subtitle: "Visualization"
+      package: flood_adapt.config.gui
+      desc: "Configuration settings for the graphical user interface of FloodAdapt."
+      contents:
+        - GuiModel
+        - GuiUnitModel
+        - Layer
+        - PlottingModel
+        - OutputLayers
+        - BenefitsLayer
+        - FloodMapLayer
+        - FootprintsDmgLayer
+        - VisualizationLayer
+        - VisualizationLayers
+        - AggregationDmgLayer
+
+    - subtitle: "Fiat"
+      package: flood_adapt.config.fiat
+      contents:
+        - FiatModel
+        - FiatConfigModel
+        - FloodmapType
+        - NoFootprintsModel
+        - RiskModel
+        - EquityModel
+        - BenefitsModel
+        - AggregationModel
+
+    - subtitle: "Sfincs"
+      package: flood_adapt.config.sfincs
+      contents:
+        - SfincsModel
+        - SfincsConfigModel
+        - SCSModel
+        - Scstype
+        - DemModel
+        - DatumModel
+        - FloodModel
+        - RiverModel
+        - ObsPointModel
+        - SlrScenariosModel
+        - FloodFrequencyModel
+        - WaterlevelReferenceModel
+        - CycloneTrackDatabaseModel
 
     - title: "Object models"
       package: flood_adapt.objects.object_model
@@ -139,32 +196,16 @@ quartodoc:
         - CurrentSituationModel
 
     - title: "Unit system"
-      package: flood_adapt.unit_system
+      package: flood_adapt.objects.forcing
       desc: "Unit system for FloodAdapt. The unit system is used to convert between different units of measurement, and to define the units of the input and output of the models."
       contents:
-        # Unitful classes
-        - ValueUnitPair
-        - UnitfulLength
-        - UnitfulHeight
-        - UnitfulArea
-        - UnitfulVelocity
-        - UnitfulDirection
-        - UnitfulDischarge
-        - UnitfulIntensity
-        - UnitfulVolume
-        - UnitfulTime
-        - UnitfulLengthRefValue
+        - unit_system
 
-        # Unit enums
-        - UnitTypesLength
-        - UnitTypesArea
-        - UnitTypesVolume
-        - UnitTypesVelocity
-        - UnitTypesDirection
-        - UnitTypesTime
-        - UnitTypesDischarge
-        - UnitTypesIntensity
-        - VerticalReference
+    - title: "Exceptions"
+      package: flood_adapt.misc.exceptions
+      desc: "Exceptions used in FloodAdapt."
+      contents:
+        - DatabaseError
 
 website:
   title: "Flood Adapt Documentation"
@@ -210,12 +251,14 @@ website:
 format:
   html:
     theme:
-      light: [cosmo, _static/theme-light.scss]
-      dark: [cosmo, _static/theme-dark.scss]
-    css: _static/styles.css
+      light: [cosmo, _static/light.scss]
+      dark: [cosmo, _static/dark.scss]
     toc: true
     toc-expand: false
     page-layout: article
+    color-mode:
+      default: auto
+      toggle: true
     grid:
       content-mode: standard
     url-format: relative

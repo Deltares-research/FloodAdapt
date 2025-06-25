@@ -9,7 +9,7 @@ In the events tab in FloodAdapt, a probabilistic event set can be recognized by 
 ![**Probabilistic event set in the Events window. The Type is specified as *Probabilistic Event Set* and cannot be modified**](../../_static/images/probEventSet.png){#fig-probEventSet}
 
 ::: {.callout-note}
-## How are probabilistic event sets used in FloodAdapt?
+#### How are probabilistic event sets used in FloodAdapt?
 When a user selects a scenario with a probabilistic event set, FloodAdapt calculates the flooding for each of the events in the event set. Using the flood output for the events and information about the frequencies of the events (also provided as part of the event set), FloodAdapt calculates return period flood maps (such as the *100 year flood map*), return period damages, and expected annual damages (risk) for the scenario. Details of how FloodAdapt makes these calculations is presented in the [Technical Documentation](../../2_technical_docs/RiskScenario.qmd).
 
 For an example how to use a probabilistic event set in a scenario, let's say a user wants to explore the risk to their community with 1 foot of sea level rise and with a floodwall in place. Their scenario components would be: projection = 1 ft. sea level rise, strategy = floodwall, event = probabilistic event set. The calculation of risk allows a user to explore the risk-reduction [benefits](../benefits.qmd) of adaptation options, as well as obtaining more comprehensive insight into how risk is distributed. The page on [scenarios](../scenarios/index.qmd) gives more examples how users can define scenarios to answer different questions.

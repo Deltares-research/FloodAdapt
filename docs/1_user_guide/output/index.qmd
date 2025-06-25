@@ -10,7 +10,7 @@ The Output tab has a map window and below it a panel (see @fig-outputTab). The l
 ![**Output tab in FloodAdapt**](../../_static/images/output_tab.png){width=70% fig-align=left #fig-outputTab}
 
 ::: {.callout-tip}
-## Viewing the infographic
+#### Viewing the infographic
 The infographic is visible in the map window’s collapsible frame. The user can view the infographic by clicking the little white triangle on the border of the frame to the right of the map window (see @fig-outputTab).
 :::
 
@@ -38,12 +38,12 @@ When an event scenario is selected in the scenario panel, there are four map vis
 In addition to the four map layers, there is also the option to select an additional layer to view in the map window. This is found in the “Show Layer” drop-down menu. The specific layers available will depend on how the system was configured at setup, but could contain layers like income, social vulnerability index, or aggregation areas. These layers are often useful to visualize in combination with building level damages or flooding, to better understand who is being impacted in the scenario.
 
 ::: {.callout-note}
-## How accurate are the building-level damages?
+#### How accurate are the building-level damages?
 The building-level damages show what appear to be precise damage amounts; for example, a building could show $67,233 of damage. In reality, there is uncertainty around this estimate. The uncertainty stems from multiple sources including the accuracy of the flood map at the building location, the correctness of the depth-damage curve for the building, and the accuracy of the exposure data (such as building value or finished floor height). At this moment, uncertainty bands are not provided with the damage estimates in FloodAdapt, but it is important to be aware that these values are not as precisely known as they appear.
 :::
 
 ::: {.callout-tip}
-## Keeping things clean
+#### Keeping things clean
 It is possible to have all the map layers visible at the same time, but we recommend turning off the other layers when selecting aggregated damages. It makes for a cleaner map!
 :::
 
@@ -97,7 +97,7 @@ The "Impacts" folder will contain multiple files:
 * Impacts on the roads (GPKG file). Note that these "impacts" are actually inundation depth on the roads.
 
 ::: {.callout-note}
-## Interpreting "Impacts" for a risk scenario
+#### Interpreting "Impacts" for a risk scenario
 For the risk scenarios, the detailed impacts (CSV file) will have both return period damages and risk per asset. The Impacts on the buildings and the aggregated impacts (GPKG files) will similarly contain return period damages and expected annual damages. For the impacts on the roads (GPKG file), the output will contain the inundation depth on the roads for the different return periods.
 :::
 

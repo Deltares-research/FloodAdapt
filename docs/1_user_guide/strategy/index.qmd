@@ -13,12 +13,12 @@ To create a new strategy, click “Add strategy”. A dialogue window opens up (
 
 
 ::: {.callout-note}
-## The "No-measure strategy"
+#### The "No-measure strategy"
 To create a no-measure strategy (also commonly referred to as "current situation" or "business as usual"), click “Add Strategy”, then simply name the strategy and do not select any measures and click “OK”. Note that a no-measure strategy may be built in with your starting database, as this is recommended during system setup.
 :::
 
 ::: {.callout-warning}
-## Multiple building-level measures are not allowed on the same buildings
+#### Multiple building-level measures are not allowed on the same buildings
 When building a strategy, users are not permitted to apply multiple [building-level measures](../measures/buildings.qmd) to the same buildings. This is because it wouldn't make sense to elevate a home and then also buyout or floodproof the same home. If a user does build a strategy that would result in multiple buildling-level measures being applied to the same buildings, the user will get an error like the one shown below.
 
 ![**Error warning when applying multiple building-level measures to the same buildings**](../../_static/images/strategies_errorWindow.png){width=50% fig-align=left #fig-strategiesError}

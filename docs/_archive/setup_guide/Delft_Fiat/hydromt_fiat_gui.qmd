@@ -43,7 +43,7 @@ When you are finished, click "Generate Boundary", and your model area will be cr
 
 
 ::: {.callout-note}
-##### Which model boundary option should I choose?
+#### Which model boundary option should I choose?
 When setting up FloodAdapt in a project area, you will also have to set up a SFINCS model for the flood estimation. You may want to have your damage model active everywhere where there will be flood information. If that is the case, choose the "SFINCS model domain".
 
 Sometimes the flood model extent is actually much larger than your area of interest (this is because water from outside your area of interest may still make its way to your area of interest). In this case, you can choose based on the following considerations:
@@ -72,7 +72,7 @@ To use the quick build option to generate a Delft-FIAT model, simply click the "
 
 
 ::: {.callout-note}
-##### Where does the data for the Quick Build option come from?
+#### Where does the data for the Quick Build option come from?
 The Quick Build option uses open data from several sources.
 
 For the United States, the data sources are:
@@ -177,7 +177,7 @@ To refine the finished floor heights using the Delft-FIAT model-builder:
 5. Click "Add to model".
 
 ::: {.callout-note}
-##### Optional settings for spatially joining exposure points and finished floor height data
+#### Optional settings for spatially joining exposure points and finished floor height data
 In the "Finished Floor Height" tab there is a "Settings" button. This allows you to change default choices related to the spatial join of the exposure data points and the uploaded finished floor height data. Default settings use the *nearest* method for points and the *intersection* method for polygons when doing the spatial join. The default maximum distance for the *nearest* method is 10 meters.
 :::
 
@@ -190,7 +190,7 @@ In the "Finished Floor Height" tab there is a "Settings" button. This allows you
 To update ground elevation data, you must provide a digital elsevation model (DEM) raster file. The Delft-FIAT model builder calculates the mean elevation within the shape of each asset and assigns this value to the associated asset.
 
 ::: {.callout-note}
-##### Important note for those who will use the FloodAdapt database builder
+#### Important note for those who will use the FloodAdapt database builder
 If you will use the **FloodAdapt database builder **to create your FloodAdapt database, it will automatically overwrite the ground elevation data in your Delft-FIAT model to match what is in your SFINCS model, so you do not need to do that manually here!
 :::
 
@@ -222,7 +222,7 @@ To update the maximum potential damages:
   6. Add to model.
 
 ::: {.callout-note}
-##### Optional settings for spatially joining exposure points and maximum potential damages
+#### Optional settings for spatially joining exposure points and maximum potential damages
 In the "Max Potential Damages" tab there is a "Settings" button. This allows you to change default choices related to the spatial join of the exposure data points and the uploaded finished floor height data. Default settings use the *nearest* method for points and the *intersection* method for polygons when doing the spatial join. The default maximum distance for the *nearest* method is 10 meters.
 :::
 
@@ -278,7 +278,7 @@ FloodAdapt allows you to evaluate equity-weighted damages and benefits. To prepa
 When a social vulnerability index layer is added to your Delft-FIAT model, FloodAdapt uses this information to provide insight into how damages and risk are distributed across different socially vulnerable groups within your community, supporting a more equitable approach to flood risk management and climate adaptation planning. This section describes how to add a social vulnerability layer to your Delft-FIAT model.
 
 ::: {.callout-note}
-##### Where do I obtain an SVI layer?
+#### Where do I obtain an SVI layer?
 SVI layers can come from many sources, but a standard open data source in the U.S. is the Center for Disease Control. They have made SVI layers publicly available at the census tract or county scale. SVI layers can be [downloaded from their website](https://www.atsdr.cdc.gov/placeandhealth/svi/data_documentation_download.html). For "File Type", you will need to choose the file type "ESRI Geodatabase (map data)", and we recommend selecting census tract for the "Geography Type".
 :::
 

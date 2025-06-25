@@ -15,7 +15,7 @@ class SyntheticEvent(Event):
 
     Attributes
     ----------
-    time : TimeFrame
+    time : [TimeFrame](`flood_adapt.objects.forcing.time_frame.TimeFrame`)
         The time frame of the event.
     template : Template
         The template of the event. Defaults to Template.Synthetic.
