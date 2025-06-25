@@ -741,7 +741,15 @@ class TestDataBaseBuilder:
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
         builder = DatabaseBuilder(mock_config)
-
+        builder.water_level_references = WaterlevelReferenceModel(
+            reference="MSL",
+            datums=[
+                DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
+                )
+            ],
+        )
         # Act
         tide_gauge = builder.create_tide_gauge()
 
@@ -775,6 +783,15 @@ class TestDataBaseBuilder:
         )
 
         builder = DatabaseBuilder(mock_config)
+        builder.water_level_references = WaterlevelReferenceModel(
+            reference="MSL",
+            datums=[
+                DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
+                )
+            ],
+        )
 
         # Act
         with pytest.raises(ValueError) as excinfo:
@@ -805,6 +822,15 @@ class TestDataBaseBuilder:
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
         builder = DatabaseBuilder(mock_config)
+        builder.water_level_references = WaterlevelReferenceModel(
+            reference="MSL",
+            datums=[
+                DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
+                )
+            ],
+        )
 
         # Act
         tide_gauge = builder.create_tide_gauge()
@@ -822,7 +848,8 @@ class TestDataBaseBuilder:
             location=Point(lat=32.78, lon=-79.9233),
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
-        mock_config.references = WaterlevelReferenceModel(
+        builder = DatabaseBuilder(mock_config)
+        builder.water_level_references = WaterlevelReferenceModel(
             reference="MSL",
             datums=[
                 DatumModel(
@@ -831,8 +858,6 @@ class TestDataBaseBuilder:
                 )
             ],
         )
-        builder = DatabaseBuilder(mock_config)
-
         # Act
         tide_gauge = builder.create_tide_gauge()
         datum_names = [datum.name for datum in builder.water_level_references.datums]
