@@ -166,6 +166,20 @@ quartodoc:
         - UnitTypesIntensity
         - VerticalReference
 
+    - title: "Database Builder"
+      package: flood_adapt.database_builder
+      desc: "Database builder for FloodAdapt. The database builder is used to create the database schema and to populate the database with data."
+      contents:
+        - create_database
+        - ConfigModel
+        - UnitSystems
+        - GuiConfigModel
+        - SpatialJoinModel
+        - FootprintsOptions
+        - SviConfigModel
+        - Basins
+        - TideGaugeConfigModel
+
 website:
   title: "Flood Adapt Documentation"
   repo-url: https://github.com/Deltares-research/FloodAdapt
