@@ -37,7 +37,6 @@ from flood_adapt.database_builder.database_builder import (
     DatabaseBuilder,
     FootprintsOptions,
     GuiConfigModel,
-    Point,
     SpatialJoinModel,
     SviConfigModel,
     TideGaugeConfigModel,
@@ -737,11 +736,20 @@ class TestDataBaseBuilder:
             source=TideGaugeSource.file,
             file=str(tide_gauge_file),
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
         builder = DatabaseBuilder(mock_config)
-
+        builder.water_level_references = WaterlevelReferenceModel(
+            reference="MSL",
+            datums=[
+                DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
+                )
+            ],
+        )
         # Act
         tide_gauge = builder.create_tide_gauge()
 
@@ -770,11 +778,21 @@ class TestDataBaseBuilder:
             source=TideGaugeSource.file,
             file=None,
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
 
         builder = DatabaseBuilder(mock_config)
+        builder.water_level_references = WaterlevelReferenceModel(
+            reference="MSL",
+            datums=[
+                DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
+                )
+            ],
+        )
 
         # Act
         with pytest.raises(ValueError) as excinfo:
@@ -801,10 +819,20 @@ class TestDataBaseBuilder:
             source=TideGaugeSource.file,
             file=str(tide_gauge_file),
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
         builder = DatabaseBuilder(mock_config)
+        builder.water_level_references = WaterlevelReferenceModel(
+            reference="MSL",
+            datums=[
+                DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
+                )
+            ],
+        )
 
         # Act
         tide_gauge = builder.create_tide_gauge()
@@ -819,10 +847,12 @@ class TestDataBaseBuilder:
             ref="MSL",
             source=TideGaugeSource.noaa_coops,
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
-        mock_config.references = WaterlevelReferenceModel(
+        builder = DatabaseBuilder(mock_config)
+        builder.water_level_references = WaterlevelReferenceModel(
             reference="MSL",
             datums=[
                 DatumModel(
@@ -831,8 +861,6 @@ class TestDataBaseBuilder:
                 )
             ],
         )
-        builder = DatabaseBuilder(mock_config)
-
         # Act
         tide_gauge = builder.create_tide_gauge()
         datum_names = [datum.name for datum in builder.water_level_references.datums]
@@ -1194,7 +1222,7 @@ class TestDataBaseBuilder:
                     field_name="SVI",
                     threshold=0.5,
                 ),
-                road_width=5,
+                road_width=us.UnitfulLength(value=5, units=us.UnitTypesLength.meters),
                 return_periods=[1, 2, 5, 10, 25, 50, 100],
             )
             yield config
