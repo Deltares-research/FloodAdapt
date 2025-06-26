@@ -11,11 +11,6 @@ There are three event types users can add:
 * [Hurricane](historic_events/historic_events_hurricane.qmd)
 * [Synthetic](synthetic_events.qmd)
 
-::: {.callout-note}
-## Why don't I see hurricanes as an event type?
-FloodAdapt uses two models: an overland model (required) and an offshore model (optional). The overland model simulates flooding from rainfall, river discharge, wind, and water levels—supporting synthetic and historical events. The offshore model adds the ability to simulate hurricanes by translating hurricane wind and pressure into nearshore water levels. If your system doesn’t include an offshore model, the Hurricane event type won’t appear.
-:::
-
  To create an event, the user goes to the Events tab in FloodAdapt (see @fig-eventTabEmpty). Prior to creating any events, there may be one event already shown in the event list window. This will be a [probabilistic event set](probabilistic_events.qmd) that is prepared as part of system setup, and is used to calculate risk. Underneath the event set window, the event "Type" is indicated. For event sets this will say "Probabilistic Event Set." For events that you create in the Events tab, these will say "Single Event". Next to the event list window there are buttons to add, edit, delete, and copy an event. Note that when event sets are selected, only the "Add event" button will be active.
 
   ![**The event tab in FloodAdapt prior to creating any events**](../../_static/images/events_tab_empty.png){#fig-eventTabEmpty}
@@ -39,12 +34,19 @@ The format for the start and stop time is 'YYYY-MM-DD hh:mm:ss', where YYYY = fo
 ## How are events modeled in FloodAdapt?
 FloodAdapt supports two levels of hydrodynamic models:
 
-(1) An **overland model** that calculates the inundation over land due to nearshore water levels, local wind, rainfall, and river discharge. The overland model can be forced with historical (gauged) or synthetic water levels. Altneratively, an offshore model can calculate the nearshore water levels for specified time periods.
+(1) An **overland model** that calculates the inundation over land due to nearshore water levels, wind, rainfall, and river discharge. <!--The overland model can be forced with historical (gauged) or synthetic water levels. Altneratively, an offshore model can calculate the nearshore water levels for specified time periods.-->
 
 (2) An **offshore model** that calculates nearshore water levels (which are passed to the overland model) based on astronomic tides, wind fields and pressure fields. These nearshore water levels are used to force the overland model.
 
-When a user selects a [Hurricane](historic_events/historic_events_hurricane.qmd), FloodAdapt will pull in wind and pressure information about the track, and use this information to generate wind and pressure fields using the [Holland 2010 method](https://journals.ametsoc.org/view/journals/mwre/138/12/2010mwr3317.1.xml). It also uses the track information to estimate the rainfall field using the [IPET method](https://www.sciencedirect.com/science/article/abs/pii/S0022169419309904). The wind and pressure fields are used by the offshore model to calculate nearshore water levels. These are then used, together with the same wind, pressure and rainfall fields, to run the overland flood model.
+When a user selects a [Hurricane](historic_events/historic_events_hurricane.qmd), FloodAdapt will pull in wind and pressure information about the track, and use this information to generate wind and pressure fields using the [Holland 2010 method](https://journals.ametsoc.org/view/journals/mwre/138/12/2010mwr3317.1.xml). It also uses the track information to estimate the rainfall field using the [IPET method](https://www.sciencedirect.com/science/article/abs/pii/S0022169419309904). The wind and pressure fields are used by the offshore model to calculate nearshore water levels. The nearshore water levels and estimated rainfall are then used as input to the overland flood model.
 
+<!-- THIS IS NOT TRUE UNTIL WE FIX THE METEO IMPORT
 For a [Historical event](historic_events/historic_events_gauged.qmd), the user can choose between observed nearshore water levels or modeled nearshore water levels. When using observed nearshore water levels, only the overland model will be run. If the user selects 'modeled' water levels (for example, in cases where measured water levels are unavailable), the offshore model will first run using the wind and pressure data from the [NOAA Global Forecast System](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) (GFS). The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding.
+-->
 
-When a user selects a [Synthetic event](synthetic_events.qmd), only the overland model will be run, using the water level, rainfall, wind, and river discharge information specified by the user.
+For a [Historical event](historic_events/historic_events_gauged.qmd) and for a [Synthetic event](synthetic_events.qmd), only the overland model will be run, using the water level, rainfall, wind, and river discharge information specified by the user.
+
+::: {.callout-note}
+## Why don't I see "Hurricane" event type?
+In some cases, the Hurricane option may not be available. FloodAdapt uses two underlying flood models - an overland model (required) and an offshore model (optional). The overland model simulates flooding from rainfall, river discharge, wind, and water levels - this supports both the Historical and Synthetic even types. The offshore model adds the ability to simulate hurricanes by translating hurricane wind and pressure into nearshore water levels. If your system doesn’t include an offshore model, the Hurricane event type won’t appear.
+:::
