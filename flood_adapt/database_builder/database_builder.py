@@ -1077,6 +1077,9 @@ class DatabaseBuilder:
                         ),
                     )
                 )
+                logger.info(
+                    f"Aggregation areas: {aggr_name} provided in the config are going to be used."
+                )
 
         # No config provided, no aggr areas in the model -> try to use the region file as a mock aggregation area
         if (
