@@ -1044,6 +1044,7 @@ class DatabaseBuilder:
                     layer=str(self._check_exists_and_absolute(aggr.file)),
                     field_name=aggr.field_name,
                     rename=_FIAT_COLUMNS.aggregation_label.format(name=aggr_name),
+                    filter=True,
                 )
                 aggr_path = Path(self.fiat_model.root).joinpath(
                     "exposure", "aggregation_areas", f"{Path(aggr.file).stem}.gpkg"
