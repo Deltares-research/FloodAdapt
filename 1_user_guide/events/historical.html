@@ -504,7 +504,7 @@ Watch our video tutorial on creating a historical event
 <div id="fig-gaugedWindow" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-gaugedWindow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="../../../_static/images/popup_gaugedEventWindow.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Event template window for a historical event."><img src="../../../_static/images/popup_gaugedEventWindow.jpg" class="img-fluid figure-img"></a>
+<a href="../../_static/images/popup_gaugedEventWindow.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Event template window for a historical event."><img src="../../_static/images/popup_gaugedEventWindow.png" class="img-fluid figure-img"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-gaugedWindow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: <strong>Event template window for a historical event.</strong>
@@ -526,9 +526,10 @@ Figure&nbsp;1: <strong>Event template window for a historical event.</strong>
 <ol type="1">
 <li><p><strong>Gauged</strong> - if a gauge exists at the site and has been connected to the system at setup, the option “gauge” will be selected by default, and water levels for the selected time period will be automatically downloaded and displayed. If the user changes the start or stop time, they will need to click ‘download water levels’ to refresh the download and the display.</p></li>
 <li><p><strong>CSV</strong> - users can import water level time series as a two-column CSV file. The first column should contain the date and time in the format yyyy-mm-dd hh:mm:ss, and the second column the water level relative to the reference level for the site (for example, mean lower low water). There is an “i” button next to the option to import a time series. Clicking this button will display an example of the format required for the CSV, including the water level units and reference.</p></li>
-<li><p><strong>Model</strong> - when no gauged water level time series are available, users can select this option to model the nearshore water levels using an offshore model. When using this option, no plot visualization is available, because the nearshore water levels will only be calculated when a scenario using the event is run. Note that this option is only shown when an offshore model is configured for the site.</p></li>
 <li><p><strong>Synthetic</strong> - when users have a historical record of rainfall or river discharge, but water levels were unknown or unmeasured, users can choose to generate a synthetic water level time series. The simple option is to specify a peak water level (default is average high tide), and the duration of the peak. Advanced options are described in the <a href="../../1_user_guide/events/synthetic_events.html">synthetic event</a> documentation.</p></li>
 </ol>
+<!--3. **Model** - when no gauged water level time series are available, users can select this option to model the nearshore water levels using an offshore model. When using this option, no plot visualization is available, because the nearshore water levels will only be calculated when a scenario using the event is run. Note that this option is only shown when an offshore model is configured for the site.
+-->
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -547,20 +548,22 @@ What do we mean by ‘water levels’
 </section>
 <section id="rainfall" class="level2">
 <h2 class="anchored" data-anchor-id="rainfall">Rainfall</h2>
-<p>The user has five options for specifying a rainfall time series for the event:</p>
+<p>The user has the following options for specifying a rainfall time series for the event:</p>
 <p><strong>None</strong> - Selecting this option means that no rainfall will be included in the calculation.</p>
 <p><strong>Constant</strong> - For a constant rainfall, the user is asked to enter a rainfall intensity. This rainfall will be applied over the entire duration of the event.</p>
 <p><strong>CSV</strong> - The user can upload a two-column CSV file with the rainfall time series. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, and the second column contains the rainfall intensity (depth/time). The units of the rainfall will depend on how the system is configured. In the event specification window, when you choose ‘CSV’ for the rainfall source, you will see an “i” button appear. Clicking this button will display an example of the format required for the csv, including the rainfall intensity units. There is an option to increase the rainfall by a fixed amount (“precipitation multiplier”). All rainfall values in the time series will be multiplied by the value entered in this field.</p>
 <p><strong>Synthetic</strong> - The synthetic option allows users to build what-if rainfall scenarios to explore what would have happened if they had coincided with historical water level events, like a high tide event. The synthetic options ask a user for the cumulative rainfall, the duration of the rainfall, and a time when the peak rainfall occurred. More details about the synethtic options are covered in the <a href="../../1_user_guide/events/synthetic_events.html">synthetic event</a> documentation.</p>
-<p><strong>Meteo</strong> - The ‘meteo’ option downloads spatially and temporally varying rainfall at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA global forecasting system</a> reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.</p>
+<!-- **Meteo** - The 'meteo' option downloads spatially and temporally varying rainfall at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.
+-->
 </section>
 <section id="wind" class="level2">
 <h2 class="anchored" data-anchor-id="wind">Wind</h2>
-<p>The user has four options for entering time series for the wind:</p>
+<p>The user has the following options for entering time series for the wind:</p>
 <p><strong>None</strong> - Selecting none means no wind will be included in the calculation.</p>
 <p><strong>Constant</strong> - For a constant wind speed, the user is asked to enter the wind speed and wind direction.</p>
 <p><strong>CSV</strong> - The user can upload a wind time series; this should be a three-column csv. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, the second column contains the wind speed, and the third column contains the wind direction. The units of the wind speed and direction will depend on how the system is configured. In the event specification window, when you choose ‘CSV’ for the wind source, you will see an “i” button appear. Clicking this button will display an example of the format required for the csv, including the units.</p>
-<p><strong>Meteo</strong> - The ‘meteo’ option downloads spatially and temporally varying wind data at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA global forecasting system</a> reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.</p>
+<!--**Meteo** - The 'meteo' option downloads spatially and temporally varying wind data at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.
+-->
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
