@@ -105,7 +105,7 @@ testpaths = ["tests"]
 
 ### pixi ###
 [tool.pixi.feature.docs.pypi-dependencies]
-flood-adapt = { path = "." }
+flood-adapt = { path = ".", editable = true }
 
 [tool.pixi.feature.build.pypi-dependencies]
 flood-adapt = { path = "." }
@@ -147,10 +147,10 @@ build-db-builder = {cmd = "python distribution/build_database_builder_executable
 
 [tool.pixi.feature.docs.tasks]
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
-clean-example-output = { cmd = "python docs/clean_notebook_output.py" }
-clean-example-database = { cmd = "python docs/clean_database.py ./docs/_data/examples/charleston_test" }
+clean-example-output = { cmd = "python docs/scripts/clean_notebook_output.py" }
+clean-example-database = { cmd = "python docs/scripts/clean_database.py ./docs/_data/examples/charleston_test" }
 clean-docs = {depends-on=["clean-generated-docs", "clean-example-output", "clean-example-database"]}
-fetch-data = { cmd = "python docs/fetch_data.py" }
+fetch-data = { cmd = "python docs/scripts/fetch_data.py" }
 build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
 build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
 render-examples = { cmd = "quarto render ./docs/examples/**/*.ipynb ./docs/examples/**/*.qmd --execute" }

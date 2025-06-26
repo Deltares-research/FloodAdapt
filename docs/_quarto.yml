@@ -2,9 +2,9 @@ project:
   type: website
   output-dir: "_site"
   pre-render:
-    - version.py
-    - api.py
-    - merge_sidebars.py
+    - scripts/version.py
+    - scripts/api.py
+    - scripts/merge_sidebars.py
   render:
     - "*.qmd"
     - "*.ipynb"
@@ -87,6 +87,7 @@ quartodoc:
       contents:
         - GuiModel
         - GuiUnitModel
+        - SyntheticTideModel
         - Layer
         - PlottingModel
         - OutputLayers
@@ -97,11 +98,9 @@ quartodoc:
         - VisualizationLayers
         - AggregationDmgLayer
 
-    - subtitle: "Fiat"
-      package: flood_adapt.config.fiat
+    - subtitle: "Impacts"
+      package: flood_adapt.config.impacts
       contents:
-        - FiatModel
-        - FiatConfigModel
         - FloodmapType
         - NoFootprintsModel
         - RiskModel
@@ -109,11 +108,15 @@ quartodoc:
         - BenefitsModel
         - AggregationModel
 
-    - subtitle: "Sfincs"
-      package: flood_adapt.config.sfincs
+    - subtitle: "Fiat"
+      package: flood_adapt.config.fiat
       contents:
-        - SfincsModel
-        - SfincsConfigModel
+        - FiatModel
+        - FiatConfigModel
+
+    - subtitle: "Hazard"
+      package: flood_adapt.config.hazard
+      contents:
         - SCSModel
         - Scstype
         - DemModel
@@ -125,6 +128,12 @@ quartodoc:
         - FloodFrequencyModel
         - WaterlevelReferenceModel
         - CycloneTrackDatabaseModel
+
+    - subtitle: "Sfincs"
+      package: flood_adapt.config.sfincs
+      contents:
+        - SfincsModel
+        - SfincsConfigModel
 
     - title: "Object models"
       package: flood_adapt.objects.object_model
@@ -213,7 +222,7 @@ website:
   repo-actions: [source, issue]
   issue-url: https://github.com/Deltares-research/FloodAdapt/issues/new/choose
   page-navigation: true
-  favicon: _static/logo.png
+  favicon: _static/images/logo.png
   search:
     location: navbar
     limit: 5
@@ -231,7 +240,7 @@ website:
         </a>
 
   navbar:
-    logo: _static/logo.png
+    logo: _static/images/logo.png
     title: FloodAdapt
     pinned: true
     left:
@@ -251,8 +260,9 @@ website:
 format:
   html:
     theme:
-      light: [cosmo, _static/light.scss]
-      dark: [cosmo, _static/dark.scss]
+      light: [cosmo, _static/styles/light.scss]
+      dark: [cosmo, _static/styles/dark.scss]
+    respect-user-color-scheme: true
     toc: true
     toc-expand: false
     page-layout: article

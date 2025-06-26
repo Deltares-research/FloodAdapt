@@ -53,7 +53,7 @@ def merge_flat_sections(api_sidebar_path, examples_sidebar_path, output_path):
 
 
 if __name__ == "__main__":
-    root = Path(__file__).parent
+    root = Path(__file__).parent.parent
     merge_flat_sections(
         api_sidebar_path=root / "3_api_docs/api_ref/_sidebar.yml",
         examples_sidebar_path=root / "3_api_docs/examples/_sidebar.yml",

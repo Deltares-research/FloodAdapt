@@ -19,5 +19,5 @@ def clean_notebook_output(examples_dir: Path):
                 subprocess.run(['nbstripout', path], check=True)
 
 if __name__ == "__main__":
-    examples_dir = Path(__file__).parent / 'examples'
+    examples_dir = Path(__file__).parent.parent / '3_api_docs' / 'examples'
     clean_notebook_output(examples_dir)

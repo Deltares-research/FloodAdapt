@@ -1,0 +1,172 @@
+/*-- scss:defaults --*/
+// $body-bg:           /* The page background color. */
+// $body-color:        /* The page text color.*/
+// $link-color:        /* The link color. */
+// $input-bg:          /* The background color for HTML inputs. */
+// $popover-bg:        /* The background color for popovers (for example, when a citation preview is shown). */
+
+// $navbar-bg:	        /* The background color of the navbar. Defaults to the theme’s $primary color. */
+// $navbar-fg:	        /* The color of foreground elements (text and navigation) on the navbar. If not specified, a contrasting color is automatically computed. */
+// $navbar-hl:	        /* The highlight color for links in the navbar. If not specified, the $link-color is used or a contrasting color is automatically computed. */
+// $sidebar-bg:	      /* The background color for a sidebar. Defaults to $light except when a navbar is present or when the style is floating. In that case it defaults to the $body-bg color. */
+// $sidebar-fg:	      /* The color of foreground elements (text and navigation) on the sidebar. If not specified, a contrasting color is automatically computed. */
+// $sidebar-hl:	      /* The highlight color for links in the sidebar. If not specified, the $link-color is used. */
+// $footer-bg:	        /* The background color for the footer. Defaults to the $body-bg color. */
+// $footer-fg:	        /* The color of foreground elements (text and navigation) on the footer. If not specified, a contrasting color is automatically computed. */
+
+/*-- scss:rules --*/
+
+:root {
+  --background: #212529;
+  --highlight: #373a3c;
+  --highlight-section: #D3D3D3;
+  --link-color: rgb(62, 200, 255);
+  --text-color: #ffffff;
+
+  --callout-bg: #2a2f35;
+  --callout-border: #3a3f47;
+  --callout-text: #e0e0e0;
+  --callout-header-text: #e0e0e0a1;
+  --callout-header-bg: #2423246f;
+
+  --doc-section-bg: #3a3f47;
+  --code-bg: #2e3238;
+  --code-text: #e0e0e0;
+
+  --nav-footer-bg: #1a1d21;
+  --navbar-bg: var(--nav-footer-bg);
+  --navbar-fg: #ffffff;
+  --sidebar-bg: var(--nav-footer-bg);
+  --sidebar-fg: #ffffff;
+  --footer-bg: var(--nav-footer-bg);
+  --footer-fg: #ffffff;
+}
+
+/* General styling */
+body {
+  background-color: var(--background);
+  color: var(--text-color);
+}
+
+h1, h2 {
+  color: var(--link-color);
+}
+
+/* Callouts */
+.callout {
+  background-color: var(--callout-bg);
+  border: 1px solid var(--callout-border);
+  color: var(--callout-text);
+}
+
+.callout-title {
+  color: var(--callout-header-text);
+}
+
+.callout-header {
+  background-color: var(--callout-header-bg) !important;
+  color: var(--callout-header-text) !important;
+  border-bottom: 1px solid var(--callout-border);
+}
+
+/* Other components */
+.content {
+  margin-left: 100px;
+}
+
+.nav-page-text {
+  margin-left: 80px;
+}
+
+table {
+  table-layout: auto !important;
+  width: 100% !important;
+}
+
+th, td {
+  white-space: nowrap;
+}
+
+/* Code doc sections */
+.sourceCode,
+.sourceCode pre,
+.sourceCode code,
+.code-with-copy {
+  background-color: var(--code-bg) !important;
+  color: var(--code-text) !important;
+}
+
+.doc-section dt code {
+  background: none;
+}
+
+.doc-section dt {
+  background-color: var(--doc-section-bg);
+  display: block;
+}
+
+.doc-section dl dd {
+  margin-left: 3rem;
+}
+
+/* Navigation */
+.navbar-dark .navbar-nav .nav-link,
+.navbar-dark .navbar-brand,
+.navbar .nav-link,
+.navbar.navbar-expand-lg {
+  background-color: var(--navbar-bg) !important;
+  border: none !important;
+  box-shadow: none !important; // optional, for flatter look
+  color: var(--navbar-fg) !important;
+}
+
+.quarto-sidebar,
+.sidebar-navigation,
+.sidebar,
+.sidebar-menu {
+  background-color: var(--sidebar-bg) !important;
+  color: var(--sidebar-fg) !important;
+}
+
+.quarto-sidebar a,
+.sidebar-navigation a,
+.sidebar-item a {
+  color: var(--sidebar-fg) !important;
+}
+
+.quarto-sidebar a:hover,
+.sidebar-navigation a:hover,
+.sidebar-item a:hover {
+  color: lighten(#ffffff, 20%) !important;
+}
+
+footer.footer,
+footer.footer .nav-footer,
+footer.footer .nav-footer-left,
+footer.footer .nav-footer-center,
+footer.footer .nav-footer-right {
+  background-color: var(--footer-bg) !important;
+  color: var(--footer-fg) !important;
+}
+
+footer.footer a,
+footer.footer .toc-action {
+  color: var(--footer-fg) !important;
+}
+
+.navbar-right .fa-github {
+  font-size: 40px;
+}
+
+/* Theme-specific visibility */
+.only-on-dark {
+  display: none;
+}
+
+.only-on-light {
+  display: none;
+}
+
+/*-- scss:mixins --*/
+/*-- scss:functions --*/
+/*-- scss:uses --*/

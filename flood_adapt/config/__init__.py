@@ -1,13 +1,7 @@
 from flood_adapt.config.config import Settings
 from flood_adapt.config.fiat import (
-    AggregationModel,
-    BenefitsModel,
-    EquityModel,
     FiatConfigModel,
     FiatModel,
-    FloodmapType,
-    NoFootprintsModel,
-    RiskModel,
 )
 from flood_adapt.config.gui import (
     AggregationDmgLayer,
@@ -22,7 +16,7 @@ from flood_adapt.config.gui import (
     VisualizationLayer,
     VisualizationLayers,
 )
-from flood_adapt.config.sfincs import (
+from flood_adapt.config.hazard import (
     AsciiStr,
     Cstype,
     CycloneTrackDatabaseModel,
@@ -34,10 +28,20 @@ from flood_adapt.config.sfincs import (
     RiverModel,
     SCSModel,
     Scstype,
-    SfincsConfigModel,
-    SfincsModel,
     SlrScenariosModel,
     WaterlevelReferenceModel,
+)
+from flood_adapt.config.impacts import (
+    AggregationModel,
+    BenefitsModel,
+    EquityModel,
+    FloodmapType,
+    NoFootprintsModel,
+    RiskModel,
+)
+from flood_adapt.config.sfincs import (
+    SfincsConfigModel,
+    SfincsModel,
 )
 from flood_adapt.config.site import Site, SiteBuilder, StandardObjectModel
 

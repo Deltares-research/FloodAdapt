@@ -26,6 +26,8 @@ jobs:
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.7.32
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.8.4

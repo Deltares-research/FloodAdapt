@@ -4510,7 +4510,7 @@ packages:
 - pypi: ./
   name: flood-adapt
   version: 0.3.12
-  sha256: 50ea11cd2908fda072625d9a6da53de050bb22e8fd3663dfbe2802896b9b6941
+  sha256: 0e083b7f6191ebc78d7917f99290ce178c2efa8235a97b013378ede2d01a5197
   requires_dist:
   - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
@@ -4558,6 +4558,7 @@ packages:
   - contextily ; extra == 'docs'
   - flood-adapt[build,dev,docs] ; extra == 'all'
   requires_python: '>=3.8,<3.13'
+  editable: true
 - pypi: https://files.pythonhosted.org/packages/b5/a8/5f764f333204db0390362a4356d03a43626997f26818a0e9396f1b3bd8c9/folium-0.20.0-py2.py3-none-any.whl
   name: folium
   version: 0.20.0
