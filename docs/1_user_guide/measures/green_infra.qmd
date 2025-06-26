@@ -18,12 +18,12 @@ To specify a green infrastructure measure, go to the Measures tab, and in the "C
 When selecting an area to apply green infrastructure, it is useful to turn on the "show grid" option so you can see where the measure will be applied in the flood model.
 
 ::: {.callout-note}
-#### How should I use FloodAdapt in my green infrastructure planning
+## How should I use FloodAdapt in my green infrastructure planning
 FloodAdapt is intended to be used at a high level of green infrastructure planning, identifying where measures are most needed or would be most beneficial, and estimating the storage capacity needed to reach an objective. An objective could be something like "This neighborhood should not be flooded in a heavy rainfall we see on average twice a year". The flood model in FloodAdapt is not fine-scaled enough to evaluate specific measures, like a permeable street or a few green roofs. The idea is that once you know where measures are needed and how much capacity they need to have, you would work with landscape architects to come up with design alternatives, and test those designs with a detailed model. For this approach, we recommend the **[total storage](#total-storage)** option. However, if you already have a green infrastructure plan in mind and you want to test it (approximately) for different rainfall events, you can use the **[greening](#greening)** option, or - in case of water squares specifically - the **[water square](#water-square)** option.
 :::
 
 ::: {.callout-note}
-#### How are green infrastructure measures represented in the modeling?
+## How are green infrastructure measures represented in the modeling?
 All the green infrastructure measure types in FloodAdapt are represented in the modeling in the same way. The total storage volume from the green infrastructure is added to the underlying flood model in the cells where the green infrastructure is placed. When green infrastructure is implemented over multiple flood model cells, the volume is distributed over the cells proportionally according to their share of the green infrastructure area. For example, in the figure below, 80% of the storage volume would go into the cell with 80% of the area, and 20% would go to the cell with 20% of the area. When you run a scenario, the flood model removes water entering the cells where green infrastructure is placed until the storage volume for that cell has been reached. Note that the storage volume in each cell is handled uniformly throughout the cell, so you may have flood reductions in areas within the cell but outside the green infrastructure polygon.
 
 ![](../../_static/images/measures_greenInfra_distributionOfStorageVolume.png){width=40% fig-align=left}
@@ -54,7 +54,7 @@ The specification window is shown in @fig-measures_waterSquare_specs. In this wi
 
 
 ::: {.callout-note}
-#### Where do the suggested infiltration depths come from?
+## Where do the suggested infiltration depths come from?
 The suggested infiltration depths in the green infrastructure lookup-table are based on the default values used in the [Climate Reilient Cities Tool](https://www.deltares.nl/en/software-and-data/products/crc-tool-climate-resilient-cities), which itself based these values on different sources in literature. Users are free to choose their own infiltration depth when they have more information, but the suggestions are intended to help users who may not know this information but already want to start high-level exploring of green infrastructure solutions in their community.
 :::
 

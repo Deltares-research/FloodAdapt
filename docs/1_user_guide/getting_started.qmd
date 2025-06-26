@@ -14,7 +14,7 @@ In order to run FloodAdapt, the following are required:
 * Approximately 150 MB of storage for each user-generated scenario
 
 ::: {.callout-note}
-#### Which windows systems have been tested?
+## Which windows systems have been tested?
 FloodAdapt has been tested on Windows 10 and 11. It is expected to work on older systems, but has not been tested.
 :::
 
@@ -33,7 +33,7 @@ When you open the FloodAdapt application you will be prompted to select a databa
 ![**Database selector when opening FloodAdapt**](../_static/images/installation_databaseSelector.png){width=50% fig-align=left #fig-installation_databaseSelector}
 
 ::: {.callout-note}
-#### Why do I have to select a database?
+## Why do I have to select a database?
 The FloodAdapt application is a calculation "shell" that requires a FloodAdapt database to work. Details on setting up a FloodAdapt database in a new location are provided in the [Setup Guide](../4_system_setup/index.qmd).
 :::
 

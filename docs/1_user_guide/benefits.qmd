@@ -17,7 +17,7 @@ The following sections will describe how to create a benefit analysis, how benef
 * [Benefits output folder](#benefits-output-folder).
 
 ::: {.callout-note}
-#### What is required to run a benefit analysis?
+## What is required to run a benefit analysis?
 To run a benefit analysis, you must have a [probabilistic event set](events/probabilistic_events.qmd) prepared for your site. This event set enables the calculation of risk, which is needed when calculating the risk-reduction benefits of adaptation strategies.
 :::
 ## Creating a new benefit analysis

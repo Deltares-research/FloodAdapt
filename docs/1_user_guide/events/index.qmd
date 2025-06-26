@@ -12,7 +12,7 @@ There are three event types users can add:
 * [Synthetic](synthetic_events.qmd)
 
 ::: {.callout-note}
-#### Why don't I see hurricanes as an event type?
+## Why don't I see hurricanes as an event type?
 FloodAdapt uses two models: an overland model (required) and an offshore model (optional). The overland model simulates flooding from rainfall, river discharge, wind, and water levels—supporting synthetic and historical events. The offshore model adds the ability to simulate hurricanes by translating hurricane wind and pressure into nearshore water levels. If your system doesn’t include an offshore model, the Hurricane event type won’t appear.
 :::
 
@@ -27,12 +27,12 @@ FloodAdapt uses two models: an overland model (required) and an offshore model (
  Each event type will have unique input that is required, but they also share some common input. The user must provide an event name, and - optionally - a description. Additionally, the "Historical" and "Hurricane" events require a start and stop date and time for the event.
 
 ::: {.callout-note}
-#### Event names and descriptions
+## Event names and descriptions
 Event names must be unique, should use only lower-case letters, and cannot have any spaces or special characters (underscores are allowed). Event descriptions are optional and have no syntax restrictions. For example, an "Event Name" could be **king_tide_nov_2021**, and the "Description" could be **King Tide - November 2021**.
 :::
 
 ::: {.callout-note}
-#### Event start and stop times
+## Event start and stop times
 The format for the start and stop time is 'YYYY-MM-DD hh:mm:ss', where YYYY = four-digit year, MM = two digit month, DD = two-digit day, hh = two-digit hour, mm = two-digit minutes, and ss = two-digit seconds. The user can type in a date, or select a date from a drop-down calendar.
 :::
 

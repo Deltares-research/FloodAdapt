@@ -43,7 +43,7 @@ When you are finished, click "Generate Boundary", and your model area will be cr
 
 
 ::: {.callout-note}
-#### Which model boundary option should I choose?
+## Which model boundary option should I choose?
 When setting up FloodAdapt in a project area, you will also have to set up a SFINCS model for the flood estimation. You may want to have your damage model active everywhere where there will be flood information. If that is the case, choose the "SFINCS model domain".
 
 Sometimes the flood model extent is actually much larger than your area of interest (this is because water from outside your area of interest may still make its way to your area of interest). In this case, you can choose based on the following considerations:
@@ -61,7 +61,7 @@ After you selected the working directory the Delft-FIAT model builder generates 
 :::
 -->
 ::: {.callout-tip}
-##### Watch a video tutorial for selecting a model boundary with the "draw polygon" option
+### Watch a video tutorial for selecting a model boundary with the "draw polygon" option
 {{< video https://youtu.be/gaViRtw9p1o?rel=0 >}}
 :::
 
@@ -72,7 +72,7 @@ To use the quick build option to generate a Delft-FIAT model, simply click the "
 
 
 ::: {.callout-note}
-#### Where does the data for the Quick Build option come from?
+## Where does the data for the Quick Build option come from?
 The Quick Build option uses open data from several sources.
 
 For the United States, the data sources are:
@@ -94,7 +94,7 @@ Outside the United States, the data sources are (note: no socio-economic data ar
 -->
 
 ::: {.callout-tip}
-##### Watch a video tutorial for building a Delft-FIAT model with the Quick Build option
+### Watch a video tutorial for building a Delft-FIAT model with the Quick Build option
 {{< video https://youtu.be/PYaBQ0DVo78?rel=0 >}}
 :::
 
@@ -138,7 +138,7 @@ To set up the base exposure dataset:
 
 
 ::: {.callout-warning}
-##### Extra settings for models outside the U.S.
+### Extra settings for models outside the U.S.
 When choosing to start with open street map, the model-builder asks the user to specify a damage unit and a finished floor height.
 
 * Damage unit (currency): Do not change the default currency from Euro to another currency. There is no currency converter tool implemented in the Delft-FIAT model builder yet.
@@ -151,7 +151,7 @@ When choosing to start with open street map, the model-builder asks the user to 
 -->
 
 ::: {.callout-tip}
-##### Watch a video tutorial for setting up a base exposure dataset for a Delft-FIAT model in the U.S.
+### Watch a video tutorial for setting up a base exposure dataset for a Delft-FIAT model in the U.S.
 {{< video https://youtu.be/VdtFwzO1530 >}}
 If this video is not visible for you, try this [link](https://youtu.be/VdtFwzO1530?rel=0)
 :::
@@ -177,12 +177,12 @@ To refine the finished floor heights using the Delft-FIAT model-builder:
 5. Click "Add to model".
 
 ::: {.callout-note}
-#### Optional settings for spatially joining exposure points and finished floor height data
+## Optional settings for spatially joining exposure points and finished floor height data
 In the "Finished Floor Height" tab there is a "Settings" button. This allows you to change default choices related to the spatial join of the exposure data points and the uploaded finished floor height data. Default settings use the *nearest* method for points and the *intersection* method for polygons when doing the spatial join. The default maximum distance for the *nearest* method is 10 meters.
 :::
 
 ::: {.callout-tip}
-##### Watch a video tutorial for updating the finished floor height of buildings in your Delft-FIAT model
+### Watch a video tutorial for updating the finished floor height of buildings in your Delft-FIAT model
 {{< video https://youtu.be/5B6pHrmjrAc?rel=0 >}}
 :::
 
@@ -190,7 +190,7 @@ In the "Finished Floor Height" tab there is a "Settings" button. This allows you
 To update ground elevation data, you must provide a digital elsevation model (DEM) raster file. The Delft-FIAT model builder calculates the mean elevation within the shape of each asset and assigns this value to the associated asset.
 
 ::: {.callout-note}
-#### Important note for those who will use the FloodAdapt database builder
+## Important note for those who will use the FloodAdapt database builder
 If you will use the **FloodAdapt database builder **to create your FloodAdapt database, it will automatically overwrite the ground elevation data in your Delft-FIAT model to match what is in your SFINCS model, so you do not need to do that manually here!
 :::
 
@@ -222,7 +222,7 @@ To update the maximum potential damages:
   6. Add to model.
 
 ::: {.callout-note}
-#### Optional settings for spatially joining exposure points and maximum potential damages
+## Optional settings for spatially joining exposure points and maximum potential damages
 In the "Max Potential Damages" tab there is a "Settings" button. This allows you to change default choices related to the spatial join of the exposure data points and the uploaded finished floor height data. Default settings use the *nearest* method for points and the *intersection* method for polygons when doing the spatial join. The default maximum distance for the *nearest* method is 10 meters.
 :::
 
@@ -261,7 +261,7 @@ How to change the damage curve assignment (U.S. only):
 -->
 
 ::: {.callout-tip}
-##### Watch a video tutorial for changing depth-damage curves for a U.S. Delft-FIAT model
+### Watch a video tutorial for changing depth-damage curves for a U.S. Delft-FIAT model
 {{< video https://youtu.be/ofCbYD4yZks?rel=0 >}}
 :::
 
@@ -278,12 +278,12 @@ FloodAdapt allows you to evaluate equity-weighted damages and benefits. To prepa
 When a social vulnerability index layer is added to your Delft-FIAT model, FloodAdapt uses this information to provide insight into how damages and risk are distributed across different socially vulnerable groups within your community, supporting a more equitable approach to flood risk management and climate adaptation planning. This section describes how to add a social vulnerability layer to your Delft-FIAT model.
 
 ::: {.callout-note}
-#### Where do I obtain an SVI layer?
+## Where do I obtain an SVI layer?
 SVI layers can come from many sources, but a standard open data source in the U.S. is the Center for Disease Control. They have made SVI layers publicly available at the census tract or county scale. SVI layers can be [downloaded from their website](https://www.atsdr.cdc.gov/placeandhealth/svi/data_documentation_download.html). For "File Type", you will need to choose the file type "ESRI Geodatabase (map data)", and we recommend selecting census tract for the "Geography Type".
 :::
 
 ::: {.callout-tip}
-##### Watch a video tutorial for downloading a CDC SVI layer and adding it to your Delft-FIAT model
+### Watch a video tutorial for downloading a CDC SVI layer and adding it to your Delft-FIAT model
 
 Coming soon...
 :::
@@ -316,7 +316,7 @@ Add additional attributes to your model. In this example, a land use layer is ad
 :::
 -->
 ::: {.callout-tip}
-##### Watch a video tutorial for adding additional attributes to your Delft-FIAT model
+### Watch a video tutorial for adding additional attributes to your Delft-FIAT model
 {{< video https://youtu.be/Z_eqiBgwFlA?rel=0 >}}
 :::
 

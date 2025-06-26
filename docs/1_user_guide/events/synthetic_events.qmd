@@ -20,7 +20,7 @@ The advanced options appear when a user clicks the 'Advanced options' checkbox (
 ![**Event template window showing the advanced options for the water level time series.**](../../_static/images/advancedWLoptions.png){#fig-syntheticAdvanced}
 
 ::: {.callout-note}
-#### Datums in the water level plots
+## Datums in the water level plots
 There are several datums shown in the water level plot (see @fig-syntheticWindow or @fig-syntheticAdvanced): mean lower low water (MLLW), mean sea level (MSL), and mean higher high water (MHHW). These datums, as well as the reference level (the 'zero' in the plot), are configurable and chosen at system set-up to be most intuitive for the intended users of the system.
 :::
 

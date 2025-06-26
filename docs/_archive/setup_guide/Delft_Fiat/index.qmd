@@ -5,7 +5,7 @@ title:	Delft-FIAT
 [Delft-FIAT](https://deltares.github.io/Delft-FIAT/stable/) is the open-source flood impact model implemented in FloodAdapt. When setting up FloodAdapt in a new location, it is required to first set up a Delft-FIAT model in the project area. This is considered the 'baseline' Delft-FIAT model, which FloodAdapt users can then modify through the FloodAdapt user interface - for example, by elevating buildings. To facilitate the setup of a Delft-FIAT model, the [Delft-FIAT model-builder](hydromt_fiat_gui.qmd) was created.
 
 ::: {.callout-tip}
-#### The Delft-FIAT model-builder
+## The Delft-FIAT model-builder
 This page gives an overview of the Delft-FIAT model.
 
 Please check out the sub-page on the [**Delft-FIAT model-builder**](hydromt_fiat_gui.qmd) for guidance on the steps to prepare a Delft-FIAT model.
@@ -34,7 +34,7 @@ The **exposure data** describe the assets within a project area. @fig-exposure s
 ![Exposure data used to build a Delft-FIAT model - including both required and optional fields](../../_static/images/DelftFIAT_exposure.png){width=70% fig-align=left #fig-exposure}
 
 ::: {.callout-note}
-#### Why are some data optional?
+## Why are some data optional?
 The optional **socio-economic variables** and **aggregation areas** are used by FloodAdapt to post-process the damages to gain insight into how damages are distributed spatially or by social-economic sectors (such as damages to high social vulnerability residents). They are very useful for gaining insight, but not required; if they are not provided, FloodAdapt users will still be able to use all of the FloodAdapt functionality.
 
 The **secondary occupancy type** can be optional, but will sometimes be required. The primary and secondary occupancy types tell Delft-FIAT which depth-damage curves should be used for which building. When the depth-damage curves are defined by the secondary occupancy type, this will be a required input. This is the case when using HAZUS damage curves. When using other damage curves, such as those from the Joint Research Center, which are identified only on primary object type, the secondary object type will be optional.

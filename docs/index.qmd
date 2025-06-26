@@ -6,7 +6,7 @@ Welcome to the FloodAdapt documentation!
 In this introduction, you will find an [overview of FloodAdapt](#overview), information on its [intended uses](#intended-uses-of-floodadapt), and [reader guidance](#reader-guidance) explaining the information you will find in this documentation.
 
 ::: {.callout-note}
-#### FloodAdapt Introduction Video
+## FloodAdapt Introduction Video
 {{< video https://youtu.be/yj_ROYmbIWA?rel=0 >}}
 :::
 

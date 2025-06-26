@@ -30,14 +30,14 @@ The user has four options for entering the rainfall that the overland model will
 
 
 ::: {.callout-note}
-#### Rainfall magnifier with the Timeseries and Map options
+## Rainfall magnifier with the Timeseries and Map options
 When a user inputs rain data as timeseries or uses the Map option, they have the option to increase the rainfall by a specified percentage (referred to as the precipitation magnifier). This is to answer questions like "what would have happened if the rainfall during that high tide would have been twice as intense?"
 :::
 
 ## Wind
 
 ::: {.callout-note}
-#### What role does wind play in the overland model?
+## What role does wind play in the overland model?
 The largest effect of wind on flooding is the surge it causes in the water levels. This wind effect is already included in the calculated nearshore water levels. The (more limited) role wind plays in the overland model is to skew the water levels from the model boundary to the land. Unless this is of particular interest to a user, the wind can be left at the default (none).
 :::
 The user has four options for entering wind that the overland model will use for the event:

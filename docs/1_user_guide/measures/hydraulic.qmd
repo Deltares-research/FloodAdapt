@@ -34,7 +34,7 @@ If you selected "Draw polyline", you can now begin clicking within the map to dr
 ![**Using the "show grid", "grid snapper" and topography layers to better specify your floodwall or levee**](../../_static/images/measure_floodwall_snapper_topo.png){width=50% fig-align=left #fig-measures_floodwall_snapper_topo}
 
 ::: {.callout-tip}
-#### Turning on the topography layer
+## Turning on the topography layer
 To turn on the topography layer, go to the top menu bar in FloodAdapt, click the "View" menu, and then from the drop-down menu click "Topography". The topography layer will turn on. To turn the layer back off, again go to "View", and again click "Topography" and the layer will disappear.
 :::
 
@@ -87,6 +87,6 @@ If you selected "Draw polyline", you can now click on the map. While FloodAdapt 
 In the specification window, you enter a name for the measure (no spaces or special characters), an optional description, and the pump capacity. When you have finished you click "OK" and the pump will be added and visible from the Measures tab.
 
 ::: {.callout-note}
-#### How are pumps represented in the modeling?
+## How are pumps represented in the modeling?
 A pump in FloodAdapt is represented as a discharge between the intake and outtake points, using the discharge rate specified by the user when creating the measure. The discharge within the intake cell influences surrounding cells, causing water from these cells to drain into the intake cell as it is being discharged. However, this setup does not represent a pump connected to drainage infrastructure, and the effects of the pump are fairly localized to the intake location.
 :::

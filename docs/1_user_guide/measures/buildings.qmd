@@ -31,12 +31,12 @@ In the specification window, the user enters a name for the measure (no spaces o
 ![**Specifying information for an elevate measure**](../../_static/images/measure_building_elevate_specification.png){width=50% fig-align=left #fig-measures_buildingLevel_elevate_spec}
 
 ::: {.callout-note}
-#### Elevate properties relative to...
+## Elevate properties relative to...
 The elevate properties specification window asks the user to specify what the elevation of the property is relative to. The user can select the datum; in this case, the elevation is the elevation of the finished floor of the property above the specific datum. The user can also select to elevate properties relative to "Base Flood Elevation" (BFE). In this case the elevation is actually a height above this reference. In the U.S, BFE is a regulatory flood level that is related to insurance, and is often used in ordinances on how high new development must be built. In areas of the world where this is not used, the base flood elevation option may not be visible.
 :::
 
 ::: {.callout-note}
-#### How is elevating properties represented in the modeling?
+## How is elevating properties represented in the modeling?
 The exposed assets have multiple attributes, one of which is the height of the finished floor above the ground. When a user elevates properties, FloodAdapt adjusts this attribute for the selected properties to represent the user specifications. Whether a user specifies a property elevation as an elevation relative to a datum, or a height above a reference level like base flood elevation, FloodAdapt calculates for each selected property the equivalent height above the ground, and assigns this value to the finished floor height attribute of the elevated property. For example, if a user selects 12 feet above datum, and the ground elevation where a property is located is 10 feet above datum, FloodAdapt calculates that the finished floor height of the property as 2 feet, and assigns this as the finished floor height attribute of the elevated property. Similarly, if a user selects 2 feet above BFE, and the BFE at the location of a property is 9 feet, then the property must be raised to 11 feet relative to datum. If the ground elevation at that location is 8 feet, FloodAdapt would calculate that the finished floor height for the elevated property is 3 feet.
 :::
 
@@ -49,7 +49,7 @@ In the specification window, the user enters a name for the measure (no spaces o
 ![**Specifying information for a buyout measure**](../../_static/images/measure_building_poly_buyout_specification.png){width=50% fig-align=left #fig-measure_building_poly_buyout_specification}
 
 ::: {.callout-note}
-#### How are buyouts represented in the modeling?
+## How are buyouts represented in the modeling?
 When a property has been bought out and removed, it is no longer an exposed asset in the project area. However, the implementation in FloodAdapt does not actually remove the properties from the exposure data; instead, the selected properties are assigned a maximum potential damage value of zero. The damage is calculated as the damage fraction (based on the inundation depth) multiplied by the maximum potential damage. Because the maximum potential damage is set to zero, the bought out properties will result in damages of zero, regardless of the inundation depth. In this way, it represents the situation that the property has been removed.
 :::
 
@@ -65,6 +65,6 @@ In the specification window, the user enters a name for the measure (no spaces o
 ![**Specifying information for a floodproofing measure**](../../_static/images/measure_building_poly_fp_specification.png){width=50% fig-align=left #fig-measures_buildingLevel_fpPoly_spec}
 
 ::: {.callout-note}
-#### How is floodproofing represented in the modeling?
+## How is floodproofing represented in the modeling?
 The impact model uses depth-damage curves that relate inundation depths to fractions of total asset damage. When a user selects a floodproofing height, there will be no damage to the property until the inundation depths exceed that height. This is represented by modifying the depth-damage curve so that the damage fraction is zero below the floodproofing height. Above the floodproofing height, the damage curve is unchanged because once the inundation exceeds the floodproofing height, it is assumed the water will then enter the property and reach the levels it would have reached without the floodproofing barrier.
 :::

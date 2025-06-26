@@ -6,7 +6,7 @@ FloodAdapt gives users the option to select and modify historical events, which 
 Below is a video that demonstrates the creation of a historical event, followed by complete documentation on all the options for creating and modifying historical events.
 
 ::: {.callout-tip}
-#### Watch our video tutorial on creating a historical event
+## Watch our video tutorial on creating a historical event
 {{< video https://youtu.be/Ehqs9Ww8pms?rel=0 >}}
 :::
 
@@ -36,7 +36,7 @@ The water level time series for the historical event can be specified in differe
 4. **Synthetic** - when users have a historical record of rainfall or river discharge, but water levels were unknown or unmeasured, users can choose to generate a synthetic water level time series. The simple option is to specify a peak water level (default is average high tide), and the duration of the peak. Advanced options are described in the [synthetic event](synthetic_events.qmd) documentation.
 
 ::: {.callout-note}
-#### What do we mean by 'water levels'
+## What do we mean by 'water levels'
 In this documentation, we refer to water levels as the combined effect of (1) astronomoical tide and (2) the surge caused by wind.
 :::
 
@@ -68,7 +68,7 @@ The user has four options for entering time series for the wind:
 **Meteo** - The 'meteo' option downloads spatially and temporally varying wind data at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.
 
 ::: {.callout-note}
-#### What role does wind play when using measured or synthetic nearshore water levels?
+## What role does wind play when using measured or synthetic nearshore water levels?
 The largest effect of wind on flooding is the surge it causes in the nearshore water levels. For gauged or synthetic nearshore water levels, this effect is already included. The (more limited) role wind plays in this event type is to skew the water levels from the model boundary (usually near the gauge) to the land. Unless this is of particular interest to a user, the wind can be ignored.
 :::
 
