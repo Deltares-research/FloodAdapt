@@ -1044,6 +1044,7 @@ class DatabaseBuilder:
                     layer=str(self._check_exists_and_absolute(aggr.file)),
                     field_name=aggr.field_name,
                     rename=_FIAT_COLUMNS.aggregation_label.format(name=aggr_name),
+                    filter=True,
                 )
                 aggr_path = Path(self.fiat_model.root).joinpath(
                     "exposure", "aggregation_areas", f"{Path(aggr.file).stem}.gpkg"
@@ -1076,6 +1077,9 @@ class DatabaseBuilder:
                             name=aggr_name
                         ),
                     )
+                )
+                logger.info(
+                    f"Aggregation areas: {aggr_name} provided in the config are going to be used."
                 )
 
         # No config provided, no aggr areas in the model -> try to use the region file as a mock aggregation area
