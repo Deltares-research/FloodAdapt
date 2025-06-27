@@ -888,7 +888,8 @@ class FiatAdapter(IImpactAdapter):
             )
             new_dev_geom = new_dev_geom.to_crs(self.model.exposure.crs)
         # Replace file with the reprojected one
-        new_dev_geom.to_file(area_path, driver="GPKG", mode="w")
+        os.remove(area_path)
+        new_dev_geom.to_file(area_path)
         # Use hydromt function
         self.model.exposure.setup_new_composite_areas(
             percent_growth=population_growth,
