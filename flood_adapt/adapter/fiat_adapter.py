@@ -880,6 +880,15 @@ class FiatAdapter(IImpactAdapter):
             for aggr in self.config.aggregation
         ]
         new_dev_geom_name = Path(self.config.new_development_file_name).stem
+        # Ensure new_devs geom is in the correct CRS
+        new_dev_geom = gpd.read_file(area_path)
+        if new_dev_geom.crs != self.model.exposure.crs:
+            self.logger.warning(
+                f"New development area geometries are in {new_dev_geom.crs}, but the model is in {self.model.exposure.crs}. Reprojecting geometries."
+            )
+            new_dev_geom = new_dev_geom.to_crs(self.model.exposure.crs)
+        # Replace file with the reprojected one
+        new_dev_geom.to_file(area_path, driver="GPKG", mode="w")
         # Use hydromt function
         self.model.exposure.setup_new_composite_areas(
             percent_growth=population_growth,
