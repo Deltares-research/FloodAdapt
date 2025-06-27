@@ -2,6 +2,7 @@ import datetime
 import logging
 import math
 import os
+import re
 import shutil
 import time
 import warnings
@@ -500,6 +501,9 @@ class DatabaseBuilder:
         self.read_template_fiat_model()
         self.read_template_sfincs_overland_model()
         self.read_template_sfincs_offshore_model()
+
+        # Copy standard static files
+        self.add_static_files()
 
     @debug_timer
     def set_standard_objects(self):
@@ -1953,6 +1957,33 @@ class DatabaseBuilder:
             path_0 = templates_path.joinpath(folder)
             path_1 = self.static_path / folder
             shutil.copytree(path_0, path_1)
+
+        # Check table values
+        green_infra_path = (
+            self.static_path / "green_infra_table" / "green_infra_lookup_table.csv"
+        )
+        df = pd.read_csv(green_infra_path)
+        # Convert "Infiltration depth (feet)" to the database unit system and rename column
+        # Find the column that has "Infiltration depth" in its name
+        infiltration_col = next(
+            (col for col in df.columns if "Infiltration depth" in col), None
+        )
+        # Try to infer the units from the column name, e.g., "Infiltration depth (feet)"
+        match = re.search(r"\((.*?)\)", infiltration_col)
+        current_units = match.group(1).strip()
+
+        # Determine target units and column name
+        if self.unit_system.default_length_units != current_units:
+            target_units = self.unit_system.default_length_units
+            new_col = f"Infiltration depth ({target_units.value})"
+            conversion_factor = us.UnitfulLength(
+                value=1.0, units=current_units
+            ).convert(target_units)
+
+            df[new_col] = (df[infiltration_col] * conversion_factor).round(2)
+            df = df.drop(columns=[infiltration_col])
+            # Save the updated table
+            df.to_csv(green_infra_path, index=False)
 
     @debug_timer
     def add_probabilistic_set(self):
