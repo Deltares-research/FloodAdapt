@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from flood_adapt.config.sfincs import FloodmapType
+from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.misc.database_user import DatabaseUser
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.events.event_set import EventSet

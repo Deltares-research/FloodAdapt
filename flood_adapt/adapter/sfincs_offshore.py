@@ -138,7 +138,11 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
                     # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
                     if isinstance(wind_forcing, WindMeteo):
-                        ds = MeteoHandler().read(_offshore_model._event.time)
+                        ds = MeteoHandler(
+                            dir=self.database.static_path / "meteo",
+                            lat=self.database.site.lat,
+                            lon=self.database.site.lon,
+                        ).read(_offshore_model._event.time)
                         _offshore_model._add_pressure_forcing_from_grid(ds=ds)
 
             # write sfincs model in output destination

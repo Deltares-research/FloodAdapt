@@ -6,7 +6,7 @@ from typing import List
 
 from flood_adapt import unit_system as us
 from flood_adapt.config.config import Settings
-from flood_adapt.config.sfincs import RiverModel
+from flood_adapt.config.hazard import RiverModel
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.objects.benefits.benefits import (
     Benefit,

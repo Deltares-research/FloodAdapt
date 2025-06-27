@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.config.sfincs import Scstype
+from flood_adapt.config.hazard import Scstype
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.time_frame import REFERENCE_TIME, TimeFrame
 from flood_adapt.objects.forcing.timeseries import (

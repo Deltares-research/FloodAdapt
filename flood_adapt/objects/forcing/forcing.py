@@ -8,7 +8,7 @@ from typing import Any, ClassVar, List, Type
 import tomli
 from pydantic import BaseModel, field_serializer
 
-from flood_adapt.config.sfincs import RiverModel
+from flood_adapt.config.hazard import RiverModel
 from flood_adapt.misc.log import FloodAdaptLogging
 
 

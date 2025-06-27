@@ -23,6 +23,7 @@ from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.fiat import FiatConfigModel
+from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     ObjectDir,
@@ -39,7 +40,7 @@ from flood_adapt.objects.measures.measures import (
 )
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.workflows.floodmap import FloodMap, FloodmapType
+from flood_adapt.workflows.floodmap import FloodMap
 from flood_adapt.workflows.impacts_integrator import Impacts
 
 # Define naming structure for saved files

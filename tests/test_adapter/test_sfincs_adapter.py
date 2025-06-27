@@ -15,7 +15,7 @@ import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
-from flood_adapt.config.sfincs import (
+from flood_adapt.config.hazard import (
     DatumModel,
     FloodModel,
     ObsPointModel,

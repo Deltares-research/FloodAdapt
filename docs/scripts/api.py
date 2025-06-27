@@ -159,7 +159,7 @@ def create_tree(
         _description_
     """
     # set some meta info
-    p = Path(__file__).parent
+    p = Path(__file__).parent.parent
 
     # Setup the builder and global blueprint
     b = Builder.from_quarto_config(file)
@@ -212,7 +212,7 @@ def create_tree(
 
 
 if __name__ == "__main__":
-    p = Path(__file__).parent
+    p = Path(__file__).parent.parent
     yml = Path(p, "_quarto.yml").as_posix()
 
     create_tree(yml)

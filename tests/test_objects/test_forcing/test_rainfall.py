@@ -3,7 +3,6 @@ from datetime import timedelta
 import pandas as pd
 import pytest
 
-from flood_adapt.config.sfincs import Scstype
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.rainfall import (
     RainfallConstant,
@@ -11,6 +10,7 @@ from flood_adapt.objects.forcing.rainfall import (
 )
 from flood_adapt.objects.forcing.time_frame import TimeFrame
 from flood_adapt.objects.forcing.timeseries import (
+    Scstype,
     ShapeType,
     TimeseriesFactory,
 )

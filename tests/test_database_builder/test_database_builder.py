@@ -14,15 +14,7 @@ from shapely import Polygon
 
 from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt import unit_system as us
-from flood_adapt.config.fiat import (
-    AggregationModel,
-    BenefitsModel,
-    BFEModel,
-    EquityModel,
-    RiskModel,
-    SVIModel,
-)
-from flood_adapt.config.sfincs import (
+from flood_adapt.config.hazard import (
     DatumModel,
     DemModel,
     FloodModel,
@@ -30,6 +22,14 @@ from flood_adapt.config.sfincs import (
     SCSModel,
     SlrScenariosModel,
     WaterlevelReferenceModel,
+)
+from flood_adapt.config.impacts import (
+    AggregationModel,
+    BenefitsModel,
+    BFEModel,
+    EquityModel,
+    RiskModel,
+    SVIModel,
 )
 from flood_adapt.database_builder.database_builder import (
     Basins,

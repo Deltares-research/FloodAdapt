@@ -5,14 +5,8 @@ from typing import Optional
 from flood_adapt import unit_system as us
 from flood_adapt.config.config import Settings
 from flood_adapt.config.fiat import (
-    AggregationModel,
-    BenefitsModel,
-    BFEModel,
-    EquityModel,
     FiatConfigModel,
     FiatModel,
-    RiskModel,
-    SVIModel,
 )
 from flood_adapt.config.gui import (
     AggregationDmgLayer,
@@ -26,21 +20,31 @@ from flood_adapt.config.gui import (
     SyntheticTideModel,
     VisualizationLayers,
 )
-from flood_adapt.config.sfincs import (
+from flood_adapt.config.hazard import (
     Cstype,
     CycloneTrackDatabaseModel,
     DatumModel,
     DemModel,
-    FloodmapType,
     FloodModel,
     ObsPointModel,
     RiverModel,
     SCSModel,
     Scstype,
-    SfincsConfigModel,
-    SfincsModel,
     SlrScenariosModel,
     WaterlevelReferenceModel,
+)
+from flood_adapt.config.impacts import (
+    AggregationModel,
+    BenefitsModel,
+    BFEModel,
+    EquityModel,
+    FloodmapType,
+    RiskModel,
+    SVIModel,
+)
+from flood_adapt.config.sfincs import (
+    SfincsConfigModel,
+    SfincsModel,
 )
 from flood_adapt.config.site import Site, StandardObjectModel
 from flood_adapt.objects.forcing.tide_gauge import (

@@ -59,7 +59,7 @@ def prepare_client(access_key: str, secret_key: str) -> Minio:
     )
 
 if __name__ == "__main__":
-    data_dir = Path(__file__).parent / "_data"
+    data_dir = Path(__file__).parent.parent / "_data"
 
     load_dotenv()
 

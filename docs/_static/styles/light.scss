@@ -1,0 +1,88 @@
+/*-- scss:defaults --*/
+/*-- scss:rules --*/
+
+:root {
+  --background: #ffffff;
+  --highlight: #292e33;
+  --highlight-section: #D3D3D3;
+  --link-color: #080c80;
+  --text-color: #000000;
+
+  --callout-bg: #f0f8ff;
+  --callout-border: #cce5ff;
+  --callout-text: #212529;
+  --callout-header-text: #080c80;
+
+  --doc-section-bg: #f8e4d8;
+  --code-bg: #f5f5f5;
+  --code-text: #212529;
+}
+
+/* General styling */
+body {
+  background-color: var(--background);
+  color: var(--text-color);
+}
+
+h1, h2 {
+  color: var(--link-color);
+}
+
+/* Callouts */
+.callout {
+  background-color: var(--callout-bg);
+  border: 1px solid var(--callout-border);
+  color: var(--callout-text);
+}
+
+.callout-title {
+  color: var(--callout-header-text);
+}
+
+/* Other components */
+.content {
+  margin-left: 100px;
+}
+
+.nav-page-text {
+  margin-left: 80px;
+}
+
+table {
+  table-layout: auto !important;
+  width: 100% !important;
+}
+
+th, td {
+  white-space: nowrap;
+}
+
+.doc-section dt code {
+  background: none;
+}
+
+.doc-section dt {
+  background-color: var(--doc-section-bg);
+  display: block;
+}
+
+.doc-section dl dd {
+  margin-left: 3rem;
+}
+
+.navbar-right .fa-github {
+  font-size: 40px;
+}
+
+/* Theme-specific visibility */
+.only-on-dark {
+  display: none;
+}
+
+.only-on-light {
+  display: block;
+}
+
+/*-- scss:mixins --*/
+/*-- scss:functions --*/
+/*-- scss:uses --*/

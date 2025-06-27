@@ -55,7 +55,11 @@ class TestMeteoHandler:
 
     @pytest.fixture()
     def setup_meteo_test(self, tmp_path):
-        handler = MeteoHandler(dir=tmp_path)
+        handler = MeteoHandler(
+            dir=tmp_path,
+            lat=32.7765,
+            lon=-79.9311,
+        )
         time = TimeFrame(
             start_time=REFERENCE_TIME,
             end_time=REFERENCE_TIME + timedelta(hours=3),

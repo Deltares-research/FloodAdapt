@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from flood_adapt.adapter.sfincs_offshore import OffshoreSfincsHandler
-from flood_adapt.config.sfincs import RiverModel
+from flood_adapt.config.hazard import RiverModel
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.objects.events.historical import (
     HistoricalEvent,
