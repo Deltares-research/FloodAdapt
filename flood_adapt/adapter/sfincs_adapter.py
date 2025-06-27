@@ -675,7 +675,10 @@ class SfincsAdapter(IHazardAdapter):
             )
 
             event = self.database.events.get(scenario.event)
-            if self.settings.obs_point[ii].name == self.settings.tide_gauge.name:
+            if (
+                self.settings.tide_gauge is not None
+                and self.settings.obs_point[ii].name == self.settings.tide_gauge.name
+            ):
                 self._add_tide_gauge_plot(fig, event, units=gui_units)
 
             # write html to results folder
