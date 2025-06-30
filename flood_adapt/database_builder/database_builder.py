@@ -27,14 +27,8 @@ from shapely import MultiLineString, MultiPolygon, Polygon
 
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.config.fiat import (
-    AggregationModel,
-    BenefitsModel,
-    BFEModel,
-    EquityModel,
     FiatConfigModel,
     FiatModel,
-    RiskModel,
-    SVIModel,
 )
 from flood_adapt.config.gui import (
     AggregationDmgLayer,
@@ -48,20 +42,30 @@ from flood_adapt.config.gui import (
     SyntheticTideModel,
     VisualizationLayers,
 )
-from flood_adapt.config.sfincs import (
+from flood_adapt.config.hazard import (
     Cstype,
     CycloneTrackDatabaseModel,
     DatumModel,
     DemModel,
-    FloodmapType,
     FloodModel,
     ObsPointModel,
     RiverModel,
     SCSModel,
-    SfincsConfigModel,
-    SfincsModel,
     SlrScenariosModel,
     WaterlevelReferenceModel,
+)
+from flood_adapt.config.impacts import (
+    AggregationModel,
+    BenefitsModel,
+    BFEModel,
+    EquityModel,
+    FloodmapType,
+    RiskModel,
+    SVIModel,
+)
+from flood_adapt.config.sfincs import (
+    SfincsConfigModel,
+    SfincsModel,
 )
 from flood_adapt.config.site import (
     Site,
@@ -108,19 +112,24 @@ def debug_timer(func):
 
 
 def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
-    """
-    Check if the given path is absolute and return the absolute path.
+    """Check if the given path is absolute and return the absolute path.
 
-    Args:
-        path (str): The path to be checked.
+    Parameters
+    ----------
+    str_path : str
+        The path to be checked.
+    config_path : Optional[Path], default None
+        The base path to resolve relative paths.
 
     Returns
     -------
-        str: The absolute path.
+    str
+        The absolute path as a string.
 
     Raises
     ------
-        ValueError: If the path is not absolute and no config_path is provided.
+    ValueError
+        If the path is not absolute and no config_path is provided.
     """
     path = Path(str_path)
     if not path.is_absolute():
@@ -132,14 +141,16 @@ def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
 
 
 class SpatialJoinModel(BaseModel):
-    """
-    Represents a spatial join model.
+    """Represents a spatial join model.
 
     Attributes
     ----------
-    name (Optional[str]): The name of the model (optional).
-    file (str): The file associated with the model.
-    field_name (str): The field name used for the spatial join.
+    name : Optional[str], default None
+        The name of the model.
+    file : str
+        The file associated with the model.
+    field_name : str
+        The field name used for the spatial join.
     """
 
     name: Optional[str] = None
@@ -148,14 +159,14 @@ class SpatialJoinModel(BaseModel):
 
 
 class UnitSystems(str, Enum):
-    """The `UnitSystems` class is an enumeration that represents the accepted values for the `metric_system` field.
-
-    It provides two options: `imperial` and `metric`.
+    """Enumeration for accepted values for the unit_system field.
 
     Attributes
     ----------
-        imperial (str): Represents the imperial unit system.
-        metric (str): Represents the metric unit system.
+    imperial : str
+        Represents the imperial unit system.
+    metric : str
+        Represents the metric unit system.
     """
 
     imperial = "imperial"
@@ -163,24 +174,36 @@ class UnitSystems(str, Enum):
 
 
 class FootprintsOptions(str, Enum):
+    """Enumeration for accepted values for the building_footprints field.
+
+    Attributes
+    ----------
+    OSM : str
+        Use OpenStreetMap for building footprints.
+    """
+
     OSM = "OSM"
 
 
 class Basins(str, Enum):
-    """
-    Enumeration class representing different basins.
-
-    Each basin is represented by a string value.
+    """Enumeration class representing different basins.
 
     Attributes
     ----------
-        NA (str): North Atlantic
-        SA (str): South Atlantic
-        EP (str): Eastern North Pacific (which includes the Central Pacific region)
-        WP (str): Western North Pacific
-        SP (str): South Pacific
-        SI (str): South Indian
-        NI (str): North Indian
+    NA : str
+        North Atlantic
+    SA : str
+        South Atlantic
+    EP : str
+        Eastern North Pacific (which includes the Central Pacific region)
+    WP : str
+        Western North Pacific
+    SP : str
+        South Pacific
+    SI : str
+        South Indian
+    NI : str
+        North Indian
     """
 
     NA = "NA"
@@ -193,15 +216,18 @@ class Basins(str, Enum):
 
 
 class GuiConfigModel(BaseModel):
-    """
-    Represents a GUI model for for FloodAdapt.
+    """Represents a GUI model for FloodAdapt.
 
     Attributes
     ----------
-        max_flood_depth (float): The last visualization bin will be ">value".
-        max_aggr_dmg (float): The last visualization bin will be ">value".
-        max_footprint_dmg (float): The last visualization bin will be ">value".
-        max_benefits (float): The last visualization bin will be ">value".
+    max_flood_depth : float
+        The last visualization bin will be ">value".
+    max_aggr_dmg : float
+        The last visualization bin will be ">value".
+    max_footprint_dmg : float
+        The last visualization bin will be ">value".
+    max_benefits : float
+        The last visualization bin will be ">value".
     """
 
     max_flood_depth: float
@@ -211,32 +237,38 @@ class GuiConfigModel(BaseModel):
 
 
 class SviConfigModel(SpatialJoinModel):
-    """
-    Represents a model for the Social Vulnerability Index (SVI).
+    """Represents a model for the Social Vulnerability Index (SVI).
 
     Attributes
     ----------
-        threshold (float): The threshold value for the SVI model to specify vulnerability.
+    threshold : float
+        The threshold value for the SVI model to specify vulnerability.
     """
 
     threshold: float
 
 
-class Point(BaseModel):
-    lat: float
-    lon: float
-
-
 class TideGaugeConfigModel(BaseModel):
-    """
-    Represents a tide gauge model.
+    """Represents a tide gauge model.
 
     Attributes
     ----------
-        source (str): The source of the tide gauge data.
-        file (Optional[str]): The file associated with the tide gauge data (default: None).
-        max_distance (Optional[float]): The maximum distance (default: None).
-        ref (str): The reference name. Should be defined in the water level references.
+    source : TideGaugeSource
+        The source of the tide gauge data.
+    description : str, default ""
+        Description of the tide gauge.
+    ref : Optional[str], default None
+        The reference name. Should be defined in the water level references.
+    id : Optional[int], default None
+        The station ID.
+    lon : Optional[float], default None
+        Longitude of the tide gauge.
+    lat : Optional[float], default None
+        Latitude of the tide gauge.
+    file : Optional[str], default None
+        The file associated with the tide gauge data.
+    max_distance : Optional[us.UnitfulLength], default None
+        The maximum distance.
     """
 
     source: TideGaugeSource
@@ -249,21 +281,8 @@ class TideGaugeConfigModel(BaseModel):
     max_distance: Optional[us.UnitfulLength] = None
 
 
-class SviModel(SpatialJoinModel):
-    """
-    Represents a model for the Social Vulnerability Index (SVI).
-
-    Attributes
-    ----------
-        threshold (float): The threshold value for the SVI model to specify vulnerability.
-    """
-
-    threshold: float
-
-
 class ConfigModel(BaseModel):
-    """
-    Represents the configuration model for FloodAdapt.
+    """Represents the configuration model for FloodAdapt.
 
     Attributes
     ----------
@@ -285,8 +304,8 @@ class ConfigModel(BaseModel):
         The list of aggregation area models.
     building_footprints : Optional[SpatialJoinModel | FootprintsOptions], default FootprintsOptions.OSM
         The building footprints model or OSM option.
-    fiat_buildings_name : Optional[str], default "buildings"
-        The name of the buildings geometry in the FIAT model.
+    fiat_buildings_name : str | list[str], default "buildings"
+        The name(s) of the buildings geometry in the FIAT model.
     fiat_roads_name : Optional[str], default "roads"
         The name of the roads geometry in the FIAT model.
     bfe : Optional[SpatialJoinModel], default None
@@ -343,21 +362,14 @@ class ConfigModel(BaseModel):
     fiat_roads_name: Optional[str] = "roads"
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SviConfigModel] = None
-    road_width: Optional[float] = 5
+    road_width: us.UnitfulLength = us.UnitfulLength(
+        value=5.0, units=us.UnitTypesLength.meters
+    )
     return_periods: list[int] = Field(default_factory=list)
     floodmap_type: Optional[FloodmapType] = None
 
     # SFINCS
-    references: WaterlevelReferenceModel = WaterlevelReferenceModel(
-        reference="MSL",
-        datums=[
-            DatumModel(
-                name="MSL",
-                height=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters),
-            ),
-        ],
-    )
-
+    references: Optional[WaterlevelReferenceModel] = None
     sfincs_overland: FloodModel
     sfincs_offshore: Optional[FloodModel] = None
     dem: Optional[DemModel] = None
@@ -373,17 +385,18 @@ class ConfigModel(BaseModel):
     probabilistic_set: Optional[str] = None
 
     @staticmethod
-    def read(toml_path: Path) -> "ConfigModel":
+    def read(toml_path: Union[str, Path]) -> "ConfigModel":
         """
         Read a configuration file and returns the validated attributes.
 
         Args:
-            config (str): The path to the configuration file.
+            toml_path (str | Path): The path to the configuration file.
 
         Returns
         -------
             ConfigModel: The validated attributes from the configuration file.
         """
+        toml_path = Path(toml_path)
         with open(toml_path, mode="rb") as fp:
             toml = tomli.load(fp)
         config = ConfigModel.model_validate(toml)
@@ -428,7 +441,7 @@ class DatabaseBuilder:
     _aggregation_areas: Optional[list] = None
     _probabilistic_set_name: Optional[str] = None
 
-    def __init__(self, config: ConfigModel, overwrite: bool = True):
+    def __init__(self, config: ConfigModel):
         self.config = config
 
         # Set database root
@@ -441,9 +454,6 @@ class DatabaseBuilder:
 
         # Read info that needs to be used to create other models
         self.unit_system = self.create_default_units()
-
-        # Read info that needs to be updated with other model info
-        self.water_level_references = self.config.references
 
     @property
     def static_path(self) -> Path:
@@ -787,13 +797,12 @@ class DatabaseBuilder:
         self.fiat_model.exposure.exposure_db = exposure
 
     def read_damage_unit(self) -> str:
-        if self.fiat_model.exposure.damage_unit is not None:
-            return self.fiat_model.exposure.damage_unit
-        else:
+        if self.fiat_model.exposure.damage_unit is None:
             logger.warning(
                 "Delft-FIAT model was missing damage units so '$' was assumed."
             )
-            return "$"
+            self.fiat_model.exposure.damage_unit = "$"
+        return self.fiat_model.exposure.damage_unit
 
     @debug_timer
     def read_floodmap_type(self) -> FloodmapType:
@@ -833,9 +842,8 @@ class DatabaseBuilder:
         # TODO should this should be performed through hydromt-FIAT?
         if not isinstance(roads.geometry.iloc[0], Polygon):
             roads = roads.to_crs(roads.estimate_utm_crs())
-            roads.geometry = roads.geometry.buffer(
-                self.config.road_width / 2, cap_style=2
-            )
+            road_width = self.config.road_width.convert(us.UnitTypesLength.meters)
+            roads.geometry = roads.geometry.buffer(road_width / 2, cap_style=2)
             roads = roads.to_crs(self.fiat_model.exposure.crs)
             self.fiat_model.exposure.exposure_geoms[self._get_fiat_road_index()] = roads
             logger.info(
@@ -1028,9 +1036,10 @@ class DatabaseBuilder:
                     aggr_name = Path(aggr.file).stem
                 # If aggregation area already in FIAT model raise Error
                 if aggr_name in [aggr.name for aggr in aggregation_areas]:
-                    raise ValueError(
-                        f"Aggregation area '{aggr_name}' already exists in the FIAT model."
+                    logger.warning(
+                        f"Aggregation area '{aggr_name}' already exists in the FIAT model. The input aggregation area will be ignored."
                     )
+                    continue
                 # Do spatial join of FIAT objects and aggregation areas
                 exposure_csv = self.fiat_model.exposure.exposure_db
                 gdf = self._get_fiat_gdf_full()
@@ -1183,7 +1192,8 @@ class DatabaseBuilder:
     def create_sfincs_config(self) -> SfincsModel:
         # call these functions before others to make sure water level references are updated
         config = self.create_sfincs_model_config()
-        tide_gauge = self.create_tide_gauge()
+        self.water_level_references = self.create_water_level_references()
+        self.tide_gauge = self.create_tide_gauge()
 
         sfincs = SfincsModel(
             config=config,
@@ -1192,12 +1202,41 @@ class DatabaseBuilder:
             dem=self.create_dem_model(),
             scs=self.create_scs_model(),
             cyclone_track_database=self.create_cyclone_track_database(),
-            tide_gauge=tide_gauge,
+            tide_gauge=self.tide_gauge,
             river=self.create_rivers(),
             obs_point=self.create_observation_points(),
         )
 
         return sfincs
+
+    @debug_timer
+    def create_water_level_references(self) -> WaterlevelReferenceModel:
+        sfincs_ref = self.config.sfincs_overland.reference
+        if self.config.references is None:
+            logger.warning(
+                f"No water level references provided in the config file. Using reference provided for overland SFINCS model '{sfincs_ref}' as the main reference."
+            )
+            refs = WaterlevelReferenceModel(
+                reference=sfincs_ref,
+                datums=[
+                    DatumModel(
+                        name=sfincs_ref,
+                        height=us.UnitfulLength(
+                            value=0.0, units=self.unit_system.default_length_units
+                        ),
+                    )
+                ],
+            )
+        else:
+            # Check if sfincs_ref is in the references
+            if sfincs_ref not in [ref.name for ref in self.config.references.datums]:
+                raise ValueError(
+                    f"Reference '{sfincs_ref}' not found in the provided references."
+                )
+            else:
+                refs = self.config.references
+
+        return refs
 
     @debug_timer
     def create_cyclone_track_database(self) -> Optional[CycloneTrackDatabaseModel]:
@@ -1219,7 +1258,9 @@ class DatabaseBuilder:
         try:
             urlretrieve(url, fn)
         except Exception:
-            raise RuntimeError(f"Could not retrieve cyclone track database from {url}")
+            logger.warning(f"Could not retrieve cyclone track database from {url}")
+            logger.warning("No cyclones will be available in the database.")
+            return None
 
         return CycloneTrackDatabaseModel(file=name)
 
@@ -1315,10 +1356,43 @@ class DatabaseBuilder:
     @debug_timer
     def create_observation_points(self) -> Union[list[ObsPointModel], None]:
         if self.config.obs_point is None:
-            return None
+            obs_points = []
+        else:
+            logger.info("Observation points were provided in the config file.")
+            obs_points = self.config.obs_point
+        if self.tide_gauge is not None:
+            # Check if the tide gauge point is within the SFINCS region
+            region = self.sfincs_overland_model.region
+            point = gpd.GeoSeries(
+                [gpd.points_from_xy([self.tide_gauge.lon], [self.tide_gauge.lat])[0]],
+                crs=4326,
+            )
+            region_4326 = region.to_crs(4326)
+            if not point.within(region_4326.unary_union).item():
+                logger.warning(
+                    "The tide gauge location is outside the SFINCS region and will not be added as an observation point."
+                )
+            else:
+                logger.info(
+                    "A tide gauge has been setup in the database. It will be used as an observation point as well."
+                )
+                obs_points.append(
+                    ObsPointModel(
+                        name=self.tide_gauge.name,
+                        description="Tide gauge observation point",
+                        ID=self.tide_gauge.ID,
+                        lon=self.tide_gauge.lon,
+                        lat=self.tide_gauge.lat,
+                    )
+                )
 
-        logger.info("Observation points were provided in the config file.")
-        return self.config.obs_point
+        if not obs_points:
+            logger.warning(
+                "No observation points were provided in the config file or created from the tide gauge. No observation points will be available in FloodAdapt."
+            )
+            return None
+        else:
+            return obs_points
 
     @debug_timer
     def create_rivers(self) -> list[RiverModel]:
@@ -1370,9 +1444,6 @@ class DatabaseBuilder:
             logger.warning(
                 "Tide gauge information not provided. Historical events will not have an option to use gauged data in FloodAdapt!"
             )
-            logger.warning(
-                "No water level references were found. It is assumed that MSL is equal to the datum used in the SFINCS overland model. You can provide these values with the tide_gauge.ref attribute in the site.toml."
-            )
             return None
 
         if self.config.tide_gauge.source == TideGaugeSource.file:
@@ -1382,9 +1453,16 @@ class DatabaseBuilder:
                 )
             if self.config.tide_gauge.ref is None:
                 logger.warning(
-                    "Tide gauge reference not provided. MSL is assumed as the reference of the water levels in the file."
+                    f"Tide gauge reference not provided. '{self.water_level_references.reference}' is assumed as the reference of the water levels in the file."
                 )
-                self.config.tide_gauge.ref = "MSL"
+                self.config.tide_gauge.ref = self.water_level_references.reference
+            else:
+                if self.config.tide_gauge.ref not in [
+                    datum.name for datum in self.water_level_references.datums
+                ]:
+                    raise ValueError(
+                        f"Provided tide gauge reference '{self.config.tide_gauge.ref}' not found in the water level references!"
+                    )
 
             tide_gauge_file = self._check_exists_and_absolute(
                 self.config.tide_gauge.file
@@ -1416,10 +1494,6 @@ class DatabaseBuilder:
             else:
                 ref = "MLLW"  # If reference is not provided use MLLW
 
-            self.water_level_references.reference = (
-                ref  # update the water level reference
-            )
-
             if self.config.tide_gauge.id is None:
                 station_id = self._get_closest_station()
                 logger.info(
@@ -1432,6 +1506,80 @@ class DatabaseBuilder:
                 )
             station = self._get_station_metadata(station_id=station_id, ref=ref)
             if station is not None:
+                # First create water level references based on station
+                # Get datums
+                datums = []
+                # Get local datum
+                datums.append(
+                    DatumModel(
+                        name=station["datum_name"],
+                        height=us.UnitfulLength(
+                            value=station["datum"], units=station["units"]
+                        ).transform(self.unit_system.default_length_units),
+                    )
+                )
+                # Get MSL
+                datums.append(
+                    DatumModel(
+                        name="MSL",
+                        height=us.UnitfulLength(
+                            value=station["msl"], units=station["units"]
+                        ).transform(self.unit_system.default_length_units),
+                    )
+                )
+                # Get extras
+                for name in ["MLLW", "MHHW"]:
+                    height = us.UnitfulLength(
+                        value=station[name.lower()], units=station["units"]
+                    ).transform(self.unit_system.default_length_units)
+
+                    wl_info = DatumModel(
+                        name=name,
+                        height=height,
+                    )
+                    datums.append(wl_info)
+
+                station_refs = WaterlevelReferenceModel(reference=ref, datums=datums)
+
+                # Check if we can translate the rest of the datums
+                if self.water_level_references.reference != station_refs.reference:
+                    for dat in self.water_level_references.datums:
+                        if dat.name not in [
+                            datum.name for datum in station_refs.datums
+                        ]:
+                            # If datum is not in the datums, try to convert it
+                            h1 = dat.height
+                            ref1 = self.water_level_references.reference
+                            h2 = h1 + station_refs.get_datum(ref1).height
+                            # Replace the datum in self.water_level_references.datums
+                            dat.height = h2
+                            logger.warning(
+                                f"Datum '{dat.name}' converted to reference '{ref1}' with new height {h2}."
+                            )
+
+                # Check if datums already exist in the water level references and replace
+                for datum in datums:
+                    existing_datum = next(
+                        (
+                            dat
+                            for dat in self.water_level_references.datums
+                            if dat.name == datum.name
+                        ),
+                        None,
+                    )
+                    if existing_datum:
+                        self.water_level_references.datums.remove(existing_datum)
+                        logger.warning(
+                            f"Datum '{datum.name}' already exists in config reference. Replacing it based on NOAA station data."
+                        )
+                    self.water_level_references.datums.append(datum)
+
+                # Update reference datum
+                self.water_level_references.reference = (
+                    ref  # update the water level reference
+                )
+                logger.warning(f"Main water level reference set to '{ref}'.")
+
                 # Add tide_gauge information in site toml
                 tide_gauge = TideGauge(
                     name=station["name"],
@@ -1444,43 +1592,6 @@ class DatabaseBuilder:
                     units=us.UnitTypesLength.meters,  # the api always asks for SI units right now
                 )
 
-                local_datum = DatumModel(
-                    name=station["datum_name"],
-                    height=us.UnitfulLength(
-                        value=station["datum"], units=station["units"]
-                    ).transform(self.unit_system.default_length_units),
-                )
-                self.water_level_references.datums.append(local_datum)
-
-                msl = DatumModel(
-                    name="MSL",
-                    height=us.UnitfulLength(
-                        value=station["msl"], units=station["units"]
-                    ).transform(self.unit_system.default_length_units),
-                )
-                #  Check if MSL is already there and if yes replace it
-                existing_msl = next(
-                    (
-                        datum
-                        for datum in self.water_level_references.datums
-                        if datum.name == "MSL"
-                    ),
-                    None,
-                )
-                if existing_msl:
-                    self.water_level_references.datums.remove(existing_msl)
-                self.water_level_references.datums.append(msl)
-
-                for name in ["MLLW", "MHHW"]:
-                    height = us.UnitfulLength(
-                        value=station[name.lower()], units=station["units"]
-                    ).transform(self.unit_system.default_length_units)
-
-                    wl_info = DatumModel(
-                        name=name,
-                        height=height,
-                    )
-                    self.water_level_references.datums.append(wl_info)
             return tide_gauge
         else:
             logger.warning(
@@ -1993,7 +2104,8 @@ class DatabaseBuilder:
 
         Parameters
         ----------
-        None
+        clip_footprints : bool, default True
+            Whether to clip the building footprints to the hazard area.
 
         Returns
         -------
@@ -2159,6 +2271,7 @@ class DatabaseBuilder:
         Find the closest tide gauge station to the SFINCS domain and retrieves its metadata.
 
         Args:
+            station_id (str): The ID of the tide gauge station.
             ref (str, optional): The reference level for water level measurements. Defaults to "MLLW".
 
         Returns
@@ -2205,7 +2318,7 @@ class DatabaseBuilder:
         )
 
         logger.info(
-            f"The station metadata will be used to fill in the water_level attribute in the site.toml. The reference level will be {ref}."
+            f"The station metadata will be used to fill in the water_level attribute in the site.toml. The reference level will be '{ref}'."
         )
 
         return meta
@@ -2258,6 +2371,22 @@ class DatabaseBuilder:
         ).reset_index(drop=True)
 
         return gdf
+
+
+def create_database(config: Union[str, Path, ConfigModel], overwrite=False) -> None:
+    """Create a new database from a configuration file or ConfigModel.
+
+    Parameters
+    ----------
+    config : str, Path, or ConfigModel
+        The path to the configuration file (as a string or Path) or a ConfigModel instance.
+    overwrite : bool, default False
+        Whether to overwrite the existing database if it exists.
+    """
+    if isinstance(config, (str, Path)):
+        config = ConfigModel.read(config)
+
+    DatabaseBuilder(config=config).build(overwrite)
 
 
 def main():
