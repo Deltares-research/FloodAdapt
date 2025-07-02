@@ -5,7 +5,6 @@ from flood_adapt.objects.events.events import (
     Event,
     Mode,
     Template,
-    TimeFrame,
 )
 from flood_adapt.objects.events.historical import HistoricalEvent
 from flood_adapt.objects.events.hurricane import HurricaneEvent
@@ -16,6 +15,7 @@ from flood_adapt.objects.forcing.forcing import (
     IForcing,
 )
 from flood_adapt.objects.forcing.forcing_factory import ForcingFactory
+from flood_adapt.objects.forcing.time_frame import TimeFrame
 from flood_adapt.objects.measures.measure_factory import MeasureFactory
 from flood_adapt.objects.measures.measures import (
     Buyout,
@@ -57,7 +57,6 @@ __all__ = [
     "SyntheticEvent",
     "HistoricalEvent",
     "HurricaneEvent",
-    "TimeFrame",
     "Mode",
     "Template",
     # EventSet
@@ -65,6 +64,7 @@ __all__ = [
     "SubEventModel",
     # Forcing
     "ForcingFactory",
+    "TimeFrame",
     "IForcing",
     "ForcingType",
     "ForcingSource",

@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from flood_adapt.config.sfincs import RiverModel
+from flood_adapt.config.hazard import RiverModel
 from flood_adapt.objects.events.synthetic import (
     SyntheticEvent,
 )

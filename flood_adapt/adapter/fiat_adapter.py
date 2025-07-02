@@ -23,6 +23,7 @@ from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.fiat import FiatConfigModel
+from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     ObjectDir,
@@ -39,7 +40,7 @@ from flood_adapt.objects.measures.measures import (
 )
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.workflows.floodmap import FloodMap, FloodmapType
+from flood_adapt.workflows.floodmap import FloodMap
 from flood_adapt.workflows.impacts_integrator import Impacts
 
 # Define naming structure for saved files
@@ -880,6 +881,16 @@ class FiatAdapter(IImpactAdapter):
             for aggr in self.config.aggregation
         ]
         new_dev_geom_name = Path(self.config.new_development_file_name).stem
+        # Ensure new_devs geom is in the correct CRS
+        new_dev_geom = gpd.read_file(area_path)
+        if new_dev_geom.crs != self.model.exposure.crs:
+            self.logger.warning(
+                f"New development area geometries are in {new_dev_geom.crs}, but the model is in {self.model.exposure.crs}. Reprojecting geometries."
+            )
+            new_dev_geom = new_dev_geom.to_crs(self.model.exposure.crs)
+        # Replace file with the reprojected one
+        os.remove(area_path)
+        new_dev_geom.to_file(area_path)
         # Use hydromt function
         self.model.exposure.setup_new_composite_areas(
             percent_growth=population_growth,

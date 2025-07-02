@@ -84,7 +84,7 @@
     [Other.Info]
         text="""Inundation depth thresholds:<br>
                 Minor: 0.25 m<br>
-                Major: 2.0 m<br>
-                Destroyed: >2.0 m"""
+                Major: 1.5 m<br>
+                Destroyed: >1.5 m"""
         image="https://openclipart.org/image/800px/302413"
         scale=0.1

@@ -675,7 +675,10 @@ class SfincsAdapter(IHazardAdapter):
             )
 
             event = self.database.events.get(scenario.event)
-            if self.settings.obs_point[ii].name == self.settings.tide_gauge.name:
+            if (
+                self.settings.tide_gauge is not None
+                and self.settings.obs_point[ii].name == self.settings.tide_gauge.name
+            ):
                 self._add_tide_gauge_plot(fig, event, units=gui_units)
 
             # write html to results folder
@@ -931,7 +934,11 @@ class SfincsAdapter(IHazardAdapter):
                 timeseries=tmp_path, magnitude=None, direction=None
             )
         elif isinstance(wind, WindMeteo):
-            ds = MeteoHandler().read(time_frame)
+            ds = MeteoHandler(
+                dir=self.database.static_path / "meteo",
+                lat=self.database.site.lat,
+                lon=self.database.site.lon,
+            ).read(time_frame)
             # data already in metric units so no conversion needed
 
             # HydroMT function: set wind forcing from grid
@@ -1015,7 +1022,11 @@ class SfincsAdapter(IHazardAdapter):
 
             self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(rainfall, RainfallMeteo):
-            ds = MeteoHandler().read(time_frame)
+            ds = MeteoHandler(
+                dir=self.database.static_path / "meteo",
+                lat=self.database.site.lat,
+                lon=self.database.site.lon,
+            ).read(time_frame)
             # MeteoHandler always return metric so no conversion needed
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         elif isinstance(rainfall, RainfallTrack):
