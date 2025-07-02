@@ -11,7 +11,7 @@ import pandas as pd
 import xarray as xr
 from geopandas import GeoDataFrame
 
-from flood_adapt.config.sfincs import SlrScenariosModel
+from flood_adapt.config.hazard import SlrScenariosModel
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent

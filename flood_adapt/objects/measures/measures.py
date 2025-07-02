@@ -185,7 +185,7 @@ class Measure(Object):
 
         Parameters
         ----------
-        filepath : Path | str | os.PathLike
+        file_path : Path | str | os.PathLike
             Path to the file to load the measure from.
 
         Returns

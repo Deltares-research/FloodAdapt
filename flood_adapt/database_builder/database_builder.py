@@ -28,14 +28,8 @@ from shapely import MultiLineString, MultiPolygon, Polygon
 
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.config.fiat import (
-    AggregationModel,
-    BenefitsModel,
-    BFEModel,
-    EquityModel,
     FiatConfigModel,
     FiatModel,
-    RiskModel,
-    SVIModel,
 )
 from flood_adapt.config.gui import (
     AggregationDmgLayer,
@@ -49,20 +43,30 @@ from flood_adapt.config.gui import (
     SyntheticTideModel,
     VisualizationLayers,
 )
-from flood_adapt.config.sfincs import (
+from flood_adapt.config.hazard import (
     Cstype,
     CycloneTrackDatabaseModel,
     DatumModel,
     DemModel,
-    FloodmapType,
     FloodModel,
     ObsPointModel,
     RiverModel,
     SCSModel,
-    SfincsConfigModel,
-    SfincsModel,
     SlrScenariosModel,
     WaterlevelReferenceModel,
+)
+from flood_adapt.config.impacts import (
+    AggregationModel,
+    BenefitsModel,
+    BFEModel,
+    EquityModel,
+    FloodmapType,
+    RiskModel,
+    SVIModel,
+)
+from flood_adapt.config.sfincs import (
+    SfincsConfigModel,
+    SfincsModel,
 )
 from flood_adapt.config.site import (
     Site,
