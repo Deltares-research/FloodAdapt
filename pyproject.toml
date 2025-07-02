@@ -153,6 +153,6 @@ clean-docs = {depends-on=["clean-generated-docs", "clean-example-output", "clean
 fetch-data = { cmd = "python docs/fetch_data.py" }
 build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
 build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
-render-examples = { cmd = "quarto render ./docs/examples/**/*.ipynb ./docs/examples/**/*.qmd --execute" }
+render-examples = { cmd = "quarto render ./docs/3_api_docs/examples/**/*.ipynb ./docs/3_api_docs/examples/**/*.qmd --execute" }
 open-docs = { cmd = "cmd.exe /c start docs/_site/index.html" }
 render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs", "build-interlinks"] }
