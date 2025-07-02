@@ -1006,7 +1006,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>2025-07-02 09:02:19 AM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
+<pre><code>2025-07-02 09:13:22 AM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
 </div>
 </div>
 </section>
@@ -1062,7 +1062,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
 <span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>2025-07-02 09:02:20 AM - FloodAdapt.TideGauge - INFO - Retrieving waterlevels for tide gauge 8665530 for 2020-01-01 00:00:00 - 2020-01-02 00:00:00</code></pre>
+<pre><code>2025-07-02 09:13:22 AM - FloodAdapt.TideGauge - INFO - Retrieving waterlevels for tide gauge 8665530 for 2020-01-01 00:00:00 - 2020-01-02 00:00:00</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
@@ -1099,8 +1099,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="step-5.-define-meteo-forcing">🌧️ Step 5. Define Meteo Forcing</h2>
 <p>Historic events have several options to define wind and rainfall, see also <a href="../../../3_api_docs/examples/events/synthetic_event.html">Synthetic event</a>. Additionally, FloodAdapt provides an easy connection to <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA GFS model re-analysis</a> data for rainfall and wind that is automatically downloaded based on the event’s ‘TimeFrame’.</p>
 <div id="10" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>meteo_dataset <span class="op">=</span> f.MeteoHandler().read(time_frame)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(meteo_dataset) <span class="co"># </span><span class="al">TODO</span><span class="co"> make sure the meteo files are already downloaded in the database to circumvent flaky noaa coops API calls</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>meteo_dataset <span class="op">=</span> f.MeteoHandler(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    lat<span class="op">=</span>fa.database.site.lat,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    lon<span class="op">=</span>fa.database.site.lon,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">dir</span><span class="op">=</span>fa.database.static_path <span class="op">/</span> <span class="st">"meteo"</span>  <span class="co"># Directory to store meteo data</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>).read(time_frame)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(meteo_dataset) <span class="co"># </span><span class="al">TODO</span><span class="co"> make sure the meteo files are already downloaded in the database to circumvent flaky noaa coops API calls</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Requested meteo data already available
 &lt;xarray.Dataset&gt; Size: 485kB
@@ -1326,36 +1330,36 @@ input[type=range].anim-slider {
 </style>
 
 <div class="animation">
-  <img id="_anim_img0f1d3a088b594e729c4b6c2c6a813a0e">
+  <img id="_anim_img8c3e7f697b2944e6a413da22c7bb5b8d">
   <div class="anim-controls">
-    <input id="_anim_slider0f1d3a088b594e729c4b6c2c6a813a0e" type="range" class="anim-slider" name="points" min="0" max="1" step="1" value="0" oninput="anim0f1d3a088b594e729c4b6c2c6a813a0e.set_frame(parseInt(this.value));">
+    <input id="_anim_slider8c3e7f697b2944e6a413da22c7bb5b8d" type="range" class="anim-slider" name="points" min="0" max="1" step="1" value="0" oninput="anim8c3e7f697b2944e6a413da22c7bb5b8d.set_frame(parseInt(this.value));">
     <div class="anim-buttons">
-      <button title="Decrease speed" aria-label="Decrease speed" onclick="anim0f1d3a088b594e729c4b6c2c6a813a0e.slower()">
+      <button title="Decrease speed" aria-label="Decrease speed" onclick="anim8c3e7f697b2944e6a413da22c7bb5b8d.slower()">
           <i class="fa fa-minus"></i></button>
-      <button title="First frame" aria-label="First frame" onclick="anim0f1d3a088b594e729c4b6c2c6a813a0e.first_frame()">
+      <button title="First frame" aria-label="First frame" onclick="anim8c3e7f697b2944e6a413da22c7bb5b8d.first_frame()">
         <i class="fa fa-fast-backward"></i></button>
-      <button title="Previous frame" aria-label="Previous frame" onclick="anim0f1d3a088b594e729c4b6c2c6a813a0e.previous_frame()">
+      <button title="Previous frame" aria-label="Previous frame" onclick="anim8c3e7f697b2944e6a413da22c7bb5b8d.previous_frame()">
           <i class="fa fa-step-backward"></i></button>
-      <button title="Play backwards" aria-label="Play backwards" onclick="anim0f1d3a088b594e729c4b6c2c6a813a0e.reverse_animation()">
+      <button title="Play backwards" aria-label="Play backwards" onclick="anim8c3e7f697b2944e6a413da22c7bb5b8d.reverse_animation()">
           <i class="fa fa-play fa-flip-horizontal"></i></button>
-      <button title="Pause" aria-label="Pause" onclick="anim0f1d3a088b594e729c4b6c2c6a813a0e.pause_animation()">
+      <button title="Pause" aria-label="Pause" onclick="anim8c3e7f697b2944e6a413da22c7bb5b8d.pause_animation()">
           <i class="fa fa-pause"></i></button>
-      <button title="Play" aria-label="Play" onclick="anim0f1d3a088b594e729c4b6c2c6a813a0e.play_animation()">
+      <button title="Play" aria-label="Play" onclick="anim8c3e7f697b2944e6a413da22c7bb5b8d.play_animation()">
           <i class="fa fa-play"></i></button>
-      <button title="Next frame" aria-label="Next frame" onclick="anim0f1d3a088b594e729c4b6c2c6a813a0e.next_frame()">
+      <button title="Next frame" aria-label="Next frame" onclick="anim8c3e7f697b2944e6a413da22c7bb5b8d.next_frame()">
           <i class="fa fa-step-forward"></i></button>
-      <button title="Last frame" aria-label="Last frame" onclick="anim0f1d3a088b594e729c4b6c2c6a813a0e.last_frame()">
+      <button title="Last frame" aria-label="Last frame" onclick="anim8c3e7f697b2944e6a413da22c7bb5b8d.last_frame()">
           <i class="fa fa-fast-forward"></i></button>
-      <button title="Increase speed" aria-label="Increase speed" onclick="anim0f1d3a088b594e729c4b6c2c6a813a0e.faster()">
+      <button title="Increase speed" aria-label="Increase speed" onclick="anim8c3e7f697b2944e6a413da22c7bb5b8d.faster()">
           <i class="fa fa-plus"></i></button>
     </div>
-    <form title="Repetition mode" aria-label="Repetition mode" action="#n" name="_anim_loop_select0f1d3a088b594e729c4b6c2c6a813a0e" class="anim-state">
-      <input type="radio" name="state" value="once" id="_anim_radio1_0f1d3a088b594e729c4b6c2c6a813a0e">
-      <label for="_anim_radio1_0f1d3a088b594e729c4b6c2c6a813a0e">Once</label>
-      <input type="radio" name="state" value="loop" id="_anim_radio2_0f1d3a088b594e729c4b6c2c6a813a0e" checked="">
-      <label for="_anim_radio2_0f1d3a088b594e729c4b6c2c6a813a0e">Loop</label>
-      <input type="radio" name="state" value="reflect" id="_anim_radio3_0f1d3a088b594e729c4b6c2c6a813a0e">
-      <label for="_anim_radio3_0f1d3a088b594e729c4b6c2c6a813a0e">Reflect</label>
+    <form title="Repetition mode" aria-label="Repetition mode" action="#n" name="_anim_loop_select8c3e7f697b2944e6a413da22c7bb5b8d" class="anim-state">
+      <input type="radio" name="state" value="once" id="_anim_radio1_8c3e7f697b2944e6a413da22c7bb5b8d">
+      <label for="_anim_radio1_8c3e7f697b2944e6a413da22c7bb5b8d">Once</label>
+      <input type="radio" name="state" value="loop" id="_anim_radio2_8c3e7f697b2944e6a413da22c7bb5b8d" checked="">
+      <label for="_anim_radio2_8c3e7f697b2944e6a413da22c7bb5b8d">Loop</label>
+      <input type="radio" name="state" value="reflect" id="_anim_radio3_8c3e7f697b2944e6a413da22c7bb5b8d">
+      <label for="_anim_radio3_8c3e7f697b2944e6a413da22c7bb5b8d">Reflect</label>
     </form>
   </div>
 </div>
@@ -1365,9 +1369,9 @@ input[type=range].anim-slider {
   /* Instantiate the Animation class. */
   /* The IDs given should match those used in the template above. */
   (function() {
-    var img_id = "_anim_img0f1d3a088b594e729c4b6c2c6a813a0e";
-    var slider_id = "_anim_slider0f1d3a088b594e729c4b6c2c6a813a0e";
-    var loop_select_id = "_anim_loop_select0f1d3a088b594e729c4b6c2c6a813a0e";
+    var img_id = "_anim_img8c3e7f697b2944e6a413da22c7bb5b8d";
+    var slider_id = "_anim_slider8c3e7f697b2944e6a413da22c7bb5b8d";
+    var loop_select_id = "_anim_loop_select8c3e7f697b2944e6a413da22c7bb5b8d";
     var frames = new Array(9);
     
   frames[0] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAHgCAYAAAB6jN80AAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90\
@@ -5897,7 +5901,7 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
     /* set a timeout to make sure all the above elements are created before
        the object is initialized. */
     setTimeout(function() {
-        anim0f1d3a088b594e729c4b6c2c6a813a0e = new Animation(frames, img_id, slider_id, 200.0,
+        anim8c3e7f697b2944e6a413da22c7bb5b8d = new Animation(frames, img_id, slider_id, 200.0,
                                  loop_select_id);
     }, 0);
   })()
