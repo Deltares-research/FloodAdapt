@@ -8,7 +8,7 @@ website:
       title: Examples
       contents:
         - text: Simple Scenario
-          href: 3_api_docs/examples/scenarios/simple_scenario_scenario.html
+          href: 3_api_docs/examples/scenarios/simple_scenario.html
 
         - text: Projections
           href: 3_api_docs/examples/projections/projections.html
