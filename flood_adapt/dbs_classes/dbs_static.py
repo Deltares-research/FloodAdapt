@@ -85,6 +85,7 @@ class DbsStatic(IDbsStatic):
     def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get the model boundary from the SFINCS model."""
         bnd = self.get_overland_sfincs_model().get_model_boundary()
+        bnd = bnd[["geometry"]]
         return bnd
 
     @cache_method_wrapper
