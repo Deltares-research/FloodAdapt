@@ -1,4 +1,5 @@
 import datetime
+import gc
 import logging
 import math
 import os
@@ -767,6 +768,7 @@ class DatabaseBuilder:
         logger.info(
             "Updating FIAT objects ground elevations from SFINCS ground elevation map."
         )
+        # Get unit conversion factor
         SFINCS_units = us.UnitfulLength(
             value=1.0, units=us.UnitTypesLength.meters
         )  # SFINCS is always in meters
@@ -777,11 +779,32 @@ class DatabaseBuilder:
             logger.info(
                 f"Ground elevation for FIAT objects is in '{FIAT_units}', while SFINCS ground elevation is in 'meters'. Values in the exposure csv will be converted by a factor of {conversion_factor}"
             )
-
+        # Read in DEM and objects
         exposure = self.fiat_model.exposure.exposure_db
         dem = rxr.open_rasterio(dem_file)
-
         gdf = self._get_fiat_gdf_full()
+
+        # Ensure gdf has the same CRS as dem
+        # Determine the CRS to use for sampling
+        if (
+            hasattr(self.sfincs_overland_model, "crs")
+            and self.sfincs_overland_model.crs is not None
+        ):
+            target_crs = self.sfincs_overland_model.crs
+        elif (
+            hasattr(dem, "rio") and hasattr(dem.rio, "crs") and dem.rio.crs is not None
+        ):
+            target_crs = dem.rio.crs
+        else:
+            target_crs = gdf.crs
+            logger.warning(
+                "Could not determine CRS from SFINCS model or DEM raster. Assuming the CRS is the same as the FIAT model."
+            )
+
+        if gdf.crs != target_crs:
+            gdf = gdf.to_crs(target_crs)
+
+        # Sample DEM at the centroid of each geometry
         gdf["centroid"] = gdf.geometry.centroid
         x_points = xr.DataArray(gdf["centroid"].x, dims="points")
         y_points = xr.DataArray(gdf["centroid"].y, dims="points")
@@ -790,6 +813,7 @@ class DatabaseBuilder:
             * conversion_factor
         )
 
+        # Merge updated elevation back into exposure DataFrame
         exposure = exposure.merge(
             gdf[[_FIAT_COLUMNS.object_id, "elev"]],
             on=_FIAT_COLUMNS.object_id,
@@ -1287,13 +1311,14 @@ class DatabaseBuilder:
     def create_dem_model(self) -> DemModel:
         if self.config.dem:
             subgrid_sfincs = Path(self.config.dem.filename)
+            delete_sfincs_folder = False
         else:
             logger.warning(
                 "No subgrid depth geotiff file provided in the config file. Using the one from the SFINCS model."
             )
-            subgrid_sfincs = (
-                Path(self.sfincs_overland_model.root) / "subgrid" / "dep_subgrid.tif"
-            )
+            subgrid_sfincs_folder = Path(self.sfincs_overland_model.root) / "subgrid"
+            subgrid_sfincs = subgrid_sfincs_folder / "dep_subgrid.tif"
+            delete_sfincs_folder = True
 
         dem_file = self._check_exists_and_absolute(subgrid_sfincs)
         fa_subgrid_path = self.static_path / "dem" / dem_file.name
@@ -1324,6 +1349,13 @@ class DatabaseBuilder:
 
         shutil.copy2(dem_file, fa_subgrid_path)
         self._dem_path = fa_subgrid_path
+
+        # Remove the original subgrid folder if it exists
+        if delete_sfincs_folder:
+            gc.collect()
+            if subgrid_sfincs_folder.exists() and subgrid_sfincs_folder.is_dir():
+                shutil.rmtree(subgrid_sfincs_folder)
+
         return DemModel(
             filename=fa_subgrid_path.name, units=us.UnitTypesLength.meters
         )  # always in meters
