@@ -831,7 +831,7 @@ class SfincsAdapter(IHazardAdapter):
         self.process(scenario, event)
         self.postprocess(scenario, event)
 
-        if self.settings.config.save_simulation:
+        if not self.settings.config.save_simulation:
             self._delete_simulation_folder(scenario, sub_event=event)
 
     def _delete_simulation_folder(
