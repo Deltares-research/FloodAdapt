@@ -463,8 +463,9 @@ class FiatAdapter(IImpactAdapter):
         mode = self.database.events.get(scenario.event).mode
 
         # Define scenario output path
-        scenario_output_path = self.database.scenarios.output_path / scenario.name
-        impacts_output_path = scenario_output_path / "Impacts"
+        impacts_output_path = self.database.get_impacts_path(
+            scenario_name=scenario.name
+        )
 
         # Create column mapping to update column names
         name_translation = {}
@@ -527,7 +528,7 @@ class FiatAdapter(IImpactAdapter):
         ]
 
         # Specify the metrics output path
-        metrics_outputs_path = scenario_output_path.joinpath(
+        metrics_outputs_path = impacts_output_path.parent.joinpath(
             f"Infometrics_{scenario.name}.csv"
         )
         self.create_infometrics(metric_config_paths, metrics_outputs_path)
@@ -544,7 +545,7 @@ class FiatAdapter(IImpactAdapter):
             )
             self.create_infographics(
                 name=scenario.name,
-                output_base_path=scenario_output_path,
+                output_base_path=impacts_output_path.parent,
                 config_base_path=config_base_path,
                 metrics_path=metrics_outputs_path,
                 mode=mode,
