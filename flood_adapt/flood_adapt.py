@@ -38,7 +38,7 @@ from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
 from flood_adapt.workflows.benefit_runner import BenefitRunner
-from flood_adapt.workflows.impacts_integrator import Impacts
+from flood_adapt.workflows.hazard_integrator import Hazards
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
 logger = FloodAdaptLogging.getLogger()
@@ -874,18 +874,17 @@ class FloodAdapt:
         """
         # Get the impacts objects from the scenario
         scenario = self.database.scenarios.get(name)
-        hazard = Impacts(scenario).hazard
 
         # Check if the scenario has run
-        if not hazard.has_run:
+        if not Hazards(scenario).has_run:
             raise ValueError(
                 f"Scenario {name} has not been run. Please run the scenario first."
             )
 
-        output_path = self.database.scenarios.output_path.joinpath(hazard.name)
+        output_path = self.database.get_flooding_path(scenario.name)
         gdf = self.database.static.get_obs_points()
         gdf["html"] = [
-            str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
+            str(output_path.joinpath(f"{station}_timeseries.html"))
             for station in gdf.name
         ]
 

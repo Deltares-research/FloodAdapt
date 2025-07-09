@@ -41,7 +41,6 @@ from flood_adapt.objects.measures.measures import (
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.workflows.floodmap import FloodMap
-from flood_adapt.workflows.impacts_integrator import Impacts
 
 # Define naming structure for saved files
 _IMPACT_COLUMNS = FiatColumns(
@@ -188,8 +187,7 @@ class FiatAdapter(IImpactAdapter):
         bool
             True if the FIAT results file exists, False otherwise.
         """
-        impacts_path = Impacts(scenario=scenario).impacts_path
-
+        impacts_path = self.database.get_impacts_path(scenario_name=scenario.name)
         fiat_results_path = impacts_path.joinpath(
             f"Impacts_detailed_{scenario.name}.csv"
         )
@@ -265,7 +263,9 @@ class FiatAdapter(IImpactAdapter):
         )
 
         # Save any changes made to disk as well
-        output_path = Impacts(scenario).impacts_path / "fiat_model"
+        output_path = (
+            self.database.get_impacts_path(scenario_name=scenario.name) / "fiat_model"
+        )
         self.write(path_out=output_path)
 
     def run(self, scenario) -> None:
@@ -279,7 +279,9 @@ class FiatAdapter(IImpactAdapter):
         -------
             None
         """
-        sim_path = Impacts(scenario=scenario).impacts_path / "fiat_model"
+        sim_path = (
+            self.database.get_impacts_path(scenario_name=scenario.name) / "fiat_model"
+        )
 
         self.preprocess(scenario)
         self.execute(sim_path)
@@ -462,9 +464,8 @@ class FiatAdapter(IImpactAdapter):
         mode = self.database.events.get(scenario.event).mode
 
         # Define scenario output path
-        impacts = Impacts(scenario=scenario)
-        scenario_output_path = impacts.results_path
-        impacts_output_path = impacts.impacts_path
+        scenario_output_path = self.database.scenarios.output_path / scenario.name
+        impacts_output_path = scenario_output_path / "Impacts"
 
         # Create column mapping to update column names
         name_translation = {}

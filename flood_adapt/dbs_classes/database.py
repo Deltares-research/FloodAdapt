@@ -30,7 +30,7 @@ from flood_adapt.misc.path_builder import (
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
-from flood_adapt.workflows.impacts_integrator import Impacts
+from flood_adapt.workflows.hazard_integrator import Hazards
 
 logger = FloodAdaptLogging.getLogger("Database")
 
@@ -209,6 +209,36 @@ class Database(IDatabase):
             df = all_scenarios
         finished = df.drop(columns="finished").reset_index(drop=True)
         return finished.to_dict()
+
+    def get_impacts_path(self, scenario_name: str) -> Path:
+        """Return the path to the impacts folder containing the impact runs for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario
+
+        Returns
+        -------
+        Path
+            Path to the impacts folder for the given scenario
+        """
+        return self.scenarios.output_path.joinpath(scenario_name, "Impacts")
+
+    def get_flooding_path(self, scenario_name: str) -> Path:
+        """Return the path to the flooding folder containing the hazard runs for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario
+
+        Returns
+        -------
+        Path
+            Path to the flooding folder for the given scenario
+        """
+        return self.scenarios.output_path.joinpath(scenario_name, "Flooding")
 
     def get_topobathy_path(self) -> str:
         """Return the path of the topobathy tiles in order to create flood maps with water level maps.
@@ -455,10 +485,9 @@ class Database(IDatabase):
             name of the scenario to check if needs to be rerun for hazard
         """
         scenario = self.scenarios.get(scenario_name)
-        impacts = Impacts(scenario=scenario)
 
         # Dont do anything if the hazard model has already been run in itself
-        if impacts.hazard.has_run:
+        if Hazards(scenario=scenario).has_run:
             return
 
         scenarios = [
@@ -478,8 +507,9 @@ class Database(IDatabase):
                     scenario.name, "Flooding"
                 )
 
-                _impacts = Impacts(scenario=scn)
-                if _impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                if Hazards(
+                    scenario=scn
+                ).has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,
