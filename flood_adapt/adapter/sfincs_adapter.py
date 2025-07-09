@@ -283,14 +283,10 @@ class SfincsAdapter(IHazardAdapter):
                 model.add_forcing(forcing)
 
             if model.rainfall is not None:
+                logger.info(
+                    f"Adding event's rainfall multiplier: {model._event.rainfall_multiplier}"
+                )
                 model.rainfall *= model._event.rainfall_multiplier
-                logger.info(
-                    f"Added event's rainfall multiplier: {model._event.rainfall_multiplier}"
-                )
-            else:
-                logger.info(
-                    "Skipped adding event's rainfall multiplier: no rainfall forcing found in the model."
-                )
 
             # Measures
             for measure in model._strategy.get_hazard_measures():
