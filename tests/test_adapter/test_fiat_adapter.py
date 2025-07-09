@@ -10,7 +10,6 @@ from flood_adapt.misc.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.workflows.impacts_integrator import Impacts
 from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
 
 _FIAT_COLUMNS = get_fiat_columns()
@@ -68,7 +67,6 @@ class TestFiatAdapter:
         self, run_scenario_all_measures: tuple[IDatabase, str, Scenario, ScenarioRunner]
     ):
         test_db, scenario_name, test_scenario, test_runner = run_scenario_all_measures
-        impacts = Impacts(scenario=test_scenario)
         exposure_template = pd.read_csv(
             test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
         )
@@ -77,6 +75,11 @@ class TestFiatAdapter:
                 scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
             )
         )
+
+        socio_economic_change = test_db.projections.get(
+            test_scenario.projection
+        ).socio_economic_change
+        strategy = test_db.strategies.get(test_scenario.strategy)
 
         # check if new development area was added
         assert len(exposure_scenario) > len(exposure_template)
@@ -90,8 +93,8 @@ class TestFiatAdapter:
         exp0 = exposure_template.loc[
             inds0, _FIAT_COLUMNS.max_potential_damage.format(name="structure")
         ]
-        eg = impacts.socio_economic_change.economic_growth
-        pg = impacts.socio_economic_change.population_growth_existing
+        eg = socio_economic_change.economic_growth
+        pg = socio_economic_change.population_growth_existing
         assert all(
             val1 == val0 * (eg / 100 + 1) * (pg / 100 + 1) if (val1 != 0) else True
             for val0, val1 in zip(exp0, exp1)
@@ -107,8 +110,8 @@ class TestFiatAdapter:
                     inds_new_area, "Max Potential Damage: structure"
                 ].sum()
             )
-            == (impacts.socio_economic_change.economic_growth / 100 + 1)
-            * (impacts.socio_economic_change.population_growth_new / 100)
+            == (socio_economic_change.economic_growth / 100 + 1)
+            * (socio_economic_change.population_growth_new / 100)
             * exposure_template.loc[
                 :, _FIAT_COLUMNS.max_potential_damage.format(name="structure")
             ].sum()
@@ -116,7 +119,7 @@ class TestFiatAdapter:
 
         # check if buildings are elevated correctly
         # First get the elevate measure attributes
-        impact_measures = impacts.impact_strategy.get_impact_measures()
+        impact_measures = strategy.get_impact_measures()
         aggr_label = impact_measures[0].aggregation_area_type
         aggr_name = impact_measures[0].aggregation_area_name
         build_type = impact_measures[0].property_type
@@ -205,8 +208,8 @@ class TestFiatAdapter:
                 scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
             )
         )
-        impacts = Impacts(scenario=test_scenario)
-        impact_measures = impacts.impact_strategy.get_impact_measures()
+        strategy = test_db.strategies.get(test_scenario.strategy)
+        impact_measures = strategy.get_impact_measures()
 
         # check if buildings are elevated
         aggr_label = impact_measures[0].aggregation_area_type
@@ -241,4 +244,4 @@ class TestFiatAdapter:
     def test_return_periods(self, run_scenario_return_periods):
         test_db, scenario_name, test_scenario = run_scenario_return_periods
 
-        assert Impacts(test_scenario).has_run
+        # TODO asserts

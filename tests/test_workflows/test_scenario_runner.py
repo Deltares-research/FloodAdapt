@@ -5,7 +5,6 @@ import pytest
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.hurricane import HurricaneEvent
-from flood_adapt.workflows.impacts_integrator import Impacts
 from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
 from tests.test_objects.test_events.test_hurricane import setup_hurricane_event
 
@@ -41,8 +40,8 @@ class Test_scenario_run:
         not_run = test_db.scenarios.get(not_run_name)
         run = test_db.scenarios.get(run_name)
 
-        assert not Impacts(not_run).hazard.has_run
-        assert Impacts(run).hazard.has_run
+        assert not ScenarioRunner(database=test_db, scenario=not_run).has_run
+        assert ScenarioRunner(database=test_db, scenario=run).has_run
 
     @pytest.fixture()
     def setup_hurricane_scenario(
@@ -66,10 +65,9 @@ class Test_scenario_run:
     ):
         # Arrange
         test_db, scn, event = setup_hurricane_scenario
-        runner = ScenarioRunner(test_db, scenario=scn)
 
         # Act
-        runner.run()
+        ScenarioRunner(test_db, scenario=scn).run()
 
         # Assert
         assert finished_file_exists(test_db.scenarios.output_path / scn.name)
@@ -90,6 +88,5 @@ class Test_scenario_run:
 )
 def test_run_on_all_scn(test_db, scn_name):
     scn = test_db.scenarios.get(scn_name)
-    runner = ScenarioRunner(test_db, scenario=scn)
-    runner.run()
-    assert Impacts(scn).hazard.has_run
+    runner = ScenarioRunner(test_db, scenario=scn).run()
+    assert runner.has_run_check()

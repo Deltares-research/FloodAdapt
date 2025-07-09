@@ -38,7 +38,6 @@ from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
 from flood_adapt.workflows.benefit_runner import BenefitRunner
-from flood_adapt.workflows.hazard_integrator import Hazards
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
 logger = FloodAdaptLogging.getLogger()
@@ -719,8 +718,7 @@ class FloodAdapt:
 
         for scn in scenario_name:
             scenario = self.get_scenario(scn)
-            runner = ScenarioRunner(self.database, scenario=scenario)
-            runner.run()
+            ScenarioRunner(self.database, scenario=scenario).run()
 
     # Outputs
     def get_completed_scenarios(
@@ -876,7 +874,7 @@ class FloodAdapt:
         scenario = self.database.scenarios.get(name)
 
         # Check if the scenario has run
-        if not Hazards(scenario).has_run:
+        if not ScenarioRunner(self.database, scenario=scenario).hazard_run_check():
             raise ValueError(
                 f"Scenario {name} has not been run. Please run the scenario first."
             )
@@ -1184,8 +1182,7 @@ class FloodAdapt:
         scenarios : pd.DataFrame
             A dataframe with the scenarios needed for this benefit assessment run.
         """
-        runner = BenefitRunner(self.database, benefit=benefit)
-        return runner.scenarios
+        return BenefitRunner(self.database, benefit=benefit).scenarios
 
     def create_benefit_scenarios(self, benefit: Benefit) -> None:
         """Create the benefit scenarios.
@@ -1195,8 +1192,7 @@ class FloodAdapt:
         benefit : Benefit
             The benefit object to create scenarios for.
         """
-        runner = BenefitRunner(self.database, benefit=benefit)
-        runner.create_benefit_scenarios()
+        BenefitRunner(self.database, benefit=benefit).create_benefit_scenarios()
 
     def run_benefit(self, name: Union[str, list[str]]) -> None:
         """Run the benefit assessment.
@@ -1210,8 +1206,7 @@ class FloodAdapt:
             benefit_name = [name]
         for name in benefit_name:
             benefit = self.database.benefits.get(name)
-            runner = BenefitRunner(self.database, benefit=benefit)
-            runner.run_cost_benefit()
+            BenefitRunner(self.database, benefit=benefit).run_cost_benefit()
 
     def get_aggregated_benefits(self, name: str) -> dict[str, gpd.GeoDataFrame]:
         """Get the aggregation benefits for a benefit assessment.

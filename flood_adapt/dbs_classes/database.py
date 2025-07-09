@@ -30,7 +30,7 @@ from flood_adapt.misc.path_builder import (
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
-from flood_adapt.workflows.hazard_integrator import Hazards
+from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
 logger = FloodAdaptLogging.getLogger("Database")
 
@@ -487,7 +487,7 @@ class Database(IDatabase):
         scenario = self.scenarios.get(scenario_name)
 
         # Dont do anything if the hazard model has already been run in itself
-        if Hazards(scenario=scenario).has_run:
+        if ScenarioRunner(self, scenario=scenario).hazard_run_check():
             return
 
         scenarios = [
@@ -507,9 +507,8 @@ class Database(IDatabase):
                     scenario.name, "Flooding"
                 )
 
-                if Hazards(
-                    scenario=scn
-                ).has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                if ScenarioRunner(self, scenario=scn).hazard_run_check():
+                    # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,

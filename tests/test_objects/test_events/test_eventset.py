@@ -193,8 +193,7 @@ class TestEventSet:
         self, setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet]
     ):
         test_db, scn, event_set = setup_eventset_scenario
-        runner = ScenarioRunner(test_db, scenario=scn)
-        runner.run()
+        ScenarioRunner(test_db, scenario=scn).run()
 
         output_path = Path(test_db.scenarios.output_path) / scn.name / "Flooding"
 
