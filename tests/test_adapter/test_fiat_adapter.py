@@ -68,6 +68,7 @@ class TestFiatAdapter:
         self, run_scenario_all_measures: tuple[IDatabase, str, Scenario, ScenarioRunner]
     ):
         test_db, scenario_name, test_scenario, test_runner = run_scenario_all_measures
+        impacts = Impacts(scenario=test_scenario)
         exposure_template = pd.read_csv(
             test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
         )
@@ -89,8 +90,8 @@ class TestFiatAdapter:
         exp0 = exposure_template.loc[
             inds0, _FIAT_COLUMNS.max_potential_damage.format(name="structure")
         ]
-        eg = test_runner.impacts.socio_economic_change.economic_growth
-        pg = test_runner.impacts.socio_economic_change.population_growth_existing
+        eg = impacts.socio_economic_change.economic_growth
+        pg = impacts.socio_economic_change.population_growth_existing
         assert all(
             val1 == val0 * (eg / 100 + 1) * (pg / 100 + 1) if (val1 != 0) else True
             for val0, val1 in zip(exp0, exp1)
@@ -106,8 +107,8 @@ class TestFiatAdapter:
                     inds_new_area, "Max Potential Damage: structure"
                 ].sum()
             )
-            == (test_runner.impacts.socio_economic_change.economic_growth / 100 + 1)
-            * (test_runner.impacts.socio_economic_change.population_growth_new / 100)
+            == (impacts.socio_economic_change.economic_growth / 100 + 1)
+            * (impacts.socio_economic_change.population_growth_new / 100)
             * exposure_template.loc[
                 :, _FIAT_COLUMNS.max_potential_damage.format(name="structure")
             ].sum()
@@ -115,7 +116,7 @@ class TestFiatAdapter:
 
         # check if buildings are elevated correctly
         # First get the elevate measure attributes
-        impact_measures = test_runner.impacts.impact_strategy.get_impact_measures()
+        impact_measures = impacts.impact_strategy.get_impact_measures()
         aggr_label = impact_measures[0].aggregation_area_type
         aggr_name = impact_measures[0].aggregation_area_name
         build_type = impact_measures[0].property_type

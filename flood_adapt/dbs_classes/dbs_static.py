@@ -6,6 +6,8 @@ import pandas as pd
 from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
+from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
+from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.interface.database import IDatabase
@@ -223,6 +225,26 @@ class DbsStatic(IDbsStatic):
             _description_
         """
         return self.get_fiat_model().get_property_types()
+
+    def get_hazard_models(self) -> list[IHazardAdapter]:
+        """Get the hazard models from the database.
+
+        Returns
+        -------
+        list[HazardAdapter]
+            List of hazard models
+        """
+        return [self.get_overland_sfincs_model()]
+
+    def get_impact_models(self) -> list[IImpactAdapter]:
+        """Get the impact models from the database.
+
+        Returns
+        -------
+        list[ImpactAdapter]
+            List of impact models
+        """
+        return [self.get_fiat_model()]
 
     def get_overland_sfincs_model(self) -> SfincsAdapter:
         """Get the template offshore SFINCS model."""

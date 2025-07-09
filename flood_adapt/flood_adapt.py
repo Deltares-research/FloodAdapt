@@ -41,6 +41,8 @@ from flood_adapt.workflows.benefit_runner import BenefitRunner
 from flood_adapt.workflows.impacts_integrator import Impacts
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
+logger = FloodAdaptLogging.getLogger()
+
 
 class FloodAdapt:
     database: Database
@@ -56,7 +58,6 @@ class FloodAdapt:
         self.database = Database(
             database_path=database_path.parent, database_name=database_path.name
         )
-        self.logger = FloodAdaptLogging.getLogger()
 
     # Measures
     def get_measures(self) -> dict[str, Any]:

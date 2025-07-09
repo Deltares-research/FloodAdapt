@@ -30,7 +30,9 @@ from flood_adapt.misc.path_builder import (
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
-from flood_adapt.workflows.scenario_runner import ScenarioRunner
+from flood_adapt.workflows.impacts_integrator import Impacts
+
+logger = FloodAdaptLogging.getLogger("Database")
 
 
 class Database(IDatabase):
@@ -100,8 +102,7 @@ class Database(IDatabase):
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
         re_option = "re-" if self._init_done else ""
-        self.logger = FloodAdaptLogging.getLogger("Database")
-        self.logger.info(
+        logger.info(
             f"{re_option}initializing database to {database_name} at {database_path}".capitalize()
         )
         self.database_path = database_path
@@ -317,7 +318,7 @@ class Database(IDatabase):
                 f"RP_{return_period:04d}_maps.tif",
             )
         if not file_path.is_file():
-            self.logger.warning(
+            logger.warning(
                 f"Flood map for scenario '{scenario_name}' at {file_path} does not exist."
             )
             return None
@@ -454,10 +455,10 @@ class Database(IDatabase):
             name of the scenario to check if needs to be rerun for hazard
         """
         scenario = self.scenarios.get(scenario_name)
-        runner = ScenarioRunner(self, scenario=scenario)
+        impacts = Impacts(scenario=scenario)
 
         # Dont do anything if the hazard model has already been run in itself
-        if runner.impacts.hazard.has_run:
+        if impacts.hazard.has_run:
             return
 
         scenarios = [
@@ -476,16 +477,16 @@ class Database(IDatabase):
                 path_new = self.scenarios.output_path.joinpath(
                     scenario.name, "Flooding"
                 )
-                _runner = ScenarioRunner(self, scenario=scn)
 
-                if _runner.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                _impacts = Impacts(scenario=scn)
+                if _impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,
                         dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("simulations"),
                     )
-                    self.logger.info(
+                    logger.info(
                         f"Hazard simulation is used from the '{scn.name}' scenario"
                     )
 
@@ -509,7 +510,7 @@ class Database(IDatabase):
             (self.scenarios.output_path / dir).resolve()
             for dir in os.listdir(self.scenarios.output_path)
         ]
-        self.logger.info(
+        logger.info(
             f"Cleaning up scenario outputs: {len(output_scenarios)} scenarios found."
         )
 
@@ -570,7 +571,7 @@ class Database(IDatabase):
                         )
                         if sim_path.exists():
                             shutil.rmtree(sim_path, ignore_errors=True)
-                            self.logger.info(f"Deleted simulation folder: {sim_path}")
+                            logger.info(f"Deleted simulation folder: {sim_path}")
                         if sim_path.parent.exists() and not any(
                             sim_path.parent.iterdir()
                         ):
@@ -580,7 +581,7 @@ class Database(IDatabase):
                     sim_path = offshore._get_simulation_path_offshore(scn)
                     if sim_path.exists():
                         shutil.rmtree(sim_path, ignore_errors=True)
-                        self.logger.info(f"Deleted simulation folder: {sim_path}")
+                        logger.info(f"Deleted simulation folder: {sim_path}")
 
                     if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
                         # Remove the parent directory `simulations` if it is empty

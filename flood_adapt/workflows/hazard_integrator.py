@@ -7,18 +7,15 @@ from flood_adapt.misc.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.objects.projections.projections import SocioEconomicChange
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.objects.strategies.strategies import Strategy
-from flood_adapt.workflows.floodmap import FloodMap
 
-logger = FloodAdaptLogging.getLogger("Impacts")
+logger = FloodAdaptLogging.getLogger("Hazards")
 
 
-class Impacts(DatabaseUser):
-    """All information related to the impacts of the scenario.
+class Hazards(DatabaseUser):
+    """All information related to the Hazards of the scenario.
 
-    Includes methods to run the impact models or check if they has already been run.
+    Includes methods to run the hazard models or check if they has already been run.
     """
 
     name: str
@@ -31,24 +28,7 @@ class Impacts(DatabaseUser):
     @property
     def models(self):
         """Return the list of impact models."""
-        models = [self.database.static.get_fiat_model()]  # for now only FIAT adapter
-        return models
-
-    @property
-    def hazard(self) -> FloodMap:
-        return FloodMap(self.name)
-
-    @property
-    def socio_economic_change(self) -> SocioEconomicChange:
-        return self.database.projections.get(
-            self.scenario.projection
-        ).socio_economic_change
-
-    @property
-    def impact_strategy(self) -> Strategy:
-        return self.database.strategies.get(
-            self.scenario.strategy
-        ).get_impact_strategy()
+        return self.database.static.get_hazard_models()
 
     @property
     def results_path(self) -> Path:
@@ -57,17 +37,13 @@ class Impacts(DatabaseUser):
         )
 
     @property
-    def impacts_path(self) -> Path:
-        return self.results_path / "Impacts"
-
-    @property
     def has_run(self) -> bool:
         return self.has_run_check()
 
     def run(self):
         """Run the impact model(s)."""
         if self.has_run:
-            logger.info(f"Impacts for {self.scenario.name} have already been run.")
+            logger.info(f"Hazards for {self.scenario.name} have already been run.")
             return
         for model in self.models:
             model.run(self.scenario)

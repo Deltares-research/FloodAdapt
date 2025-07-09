@@ -8,12 +8,11 @@ from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.strategies.strategies import Strategy
 
+logger = FloodAdaptLogging.getLogger("FloodMap")
+
 
 class FloodMap(DatabaseUser):
-    logger = FloodAdaptLogging.getLogger("FloodMap")
-
     type: FloodmapType
-
     name: str
     path: Path | os.PathLike | list[Path | os.PathLike]
     event_set: EventSet

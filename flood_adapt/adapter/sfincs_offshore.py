@@ -23,9 +23,10 @@ from flood_adapt.objects.forcing.meteo_handler import MeteoHandler
 from flood_adapt.objects.forcing.wind import WindMeteo
 from flood_adapt.objects.scenarios.scenarios import Scenario
 
+logger = FloodAdaptLogging.getLogger("OffshoreSfincsAdapter")
+
 
 class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
-    logger = FloodAdaptLogging.getLogger("OffshoreSfincsAdapter")
     template_path: Path
 
     def __init__(self, scenario: Scenario, event: Event) -> None:
@@ -90,7 +91,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         Args:
             sim_path path to the root of the offshore model
         """
-        self.logger.info(
+        logger.info(
             f"Preparing offshore model to generate waterlevels for `{self.scenario.name}`"
         )
         sim_path = self._get_simulation_path()
@@ -149,13 +150,11 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             _offshore_model.write(path_out=sim_path)
 
     def _execute_sfincs_offshore(self, sim_path: Path):
-        self.logger.info(f"Running offshore model in {sim_path}")
+        logger.info(f"Running offshore model in {sim_path}")
         sim_path = self._get_simulation_path()
         with SfincsAdapter(model_root=sim_path) as _offshore_model:
             if _offshore_model.sfincs_completed(sim_path):
-                self.logger.info(
-                    "Skip running offshore model as it has already been run."
-                )
+                logger.info("Skip running offshore model as it has already been run.")
                 return
             try:
                 _offshore_model.execute(path=sim_path)
