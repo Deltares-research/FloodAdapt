@@ -857,7 +857,7 @@ class FloodAdapt:
         """
         return self.database.get_roads(name)
 
-    def get_obs_point_timeseries(self, name: str) -> gpd.GeoDataFrame:
+    def get_obs_point_timeseries(self, name: str) -> Optional[gpd.GeoDataFrame]:
         """Return the HTML strings of the water level timeseries for the given scenario.
 
         Parameters
@@ -867,26 +867,35 @@ class FloodAdapt:
 
         Returns
         -------
-        html_path : str
-            The HTML strings of the water level timeseries
+        gdf : GeoDataFrame, optional
+            A GeoDataFrame with the observation points and their corresponding HTML paths for the timeseries.
+            Each row contains the station name and the path to the HTML file with the timeseries.
+            None if no observation points are found or if the scenario has not been run yet.
         """
+        obs_points = self.database.static.get_obs_points()
+        if obs_points is None:
+            logger.info(
+                "No observation points found in the sfincs model and site configuration."
+            )
+            return None
+
         # Get the impacts objects from the scenario
         scenario = self.database.scenarios.get(name)
 
         # Check if the scenario has run
         if not ScenarioRunner(self.database, scenario=scenario).hazard_run_check():
-            raise ValueError(
-                f"Scenario {name} has not been run. Please run the scenario first."
+            logger.info(
+                f"Cannot retrieve observation point timeseries as the scenario {name} has not been run yet."
             )
+            return None
 
         output_path = self.database.get_flooding_path(scenario.name)
-        gdf = self.database.static.get_obs_points()
-        gdf["html"] = [
+        obs_points["html"] = [
             str(output_path.joinpath(f"{station}_timeseries.html"))
-            for station in gdf.name
+            for station in obs_points.name
         ]
 
-        return gdf
+        return obs_points
 
     def get_infographic(self, name: str) -> str:
         """Return the HTML string of the infographic for the given scenario.

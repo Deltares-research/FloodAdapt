@@ -576,9 +576,6 @@ class Database(IDatabase):
             (self.scenarios.output_path / dir).resolve()
             for dir in os.listdir(self.scenarios.output_path)
         ]
-        logger.info(
-            f"Cleaning up scenario outputs: {len(output_scenarios)} scenarios found."
-        )
 
         def _call_garbage_collector(func, path, exc_info, retries=5, delay=0.1):
             """Retry deletion up to 5 times if the file is locked."""
@@ -595,15 +592,16 @@ class Database(IDatabase):
 
             print(f"Giving up on deleting {path} after {retries} attempts.")
 
-        for dir in output_scenarios:
+        for _dir in output_scenarios:
             # Delete if: input was deleted or corrupted output due to unfinished run
-            if dir.name not in [
+            if _dir.name not in [
                 path.name for path in input_scenarios
-            ] or not finished_file_exists(dir):
-                shutil.rmtree(dir, onerror=_call_garbage_collector)
-            # If the scenario is finished, delete the simulation folders
-            elif finished_file_exists(dir):
-                self._delete_simulations(dir.name)
+            ] or not finished_file_exists(_dir):
+                logger.info(f"Cleaning up corrupted outputs of scenario: {_dir.name}.")
+                shutil.rmtree(_dir, onerror=_call_garbage_collector)
+            # If the scenario is finished, delete the simulation folders depending on `save_simulation`
+            elif finished_file_exists(_dir):
+                self._delete_simulations(_dir.name)
 
     def _delete_simulations(self, scenario_name: str) -> None:
         """Delete all simulation folders for a given scenario.
@@ -623,7 +621,6 @@ class Database(IDatabase):
             if sub_events:
                 for sub_event in sub_events:
                     overland._delete_simulation_folder(scn, sub_event=sub_event)
-
             else:
                 overland._delete_simulation_folder(scn)
 

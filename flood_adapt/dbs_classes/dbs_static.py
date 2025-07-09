@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Callable, Tuple, Union
+from typing import Any, Callable, Optional, Tuple, Union
 
 import geopandas as gpd
 import pandas as pd
@@ -103,19 +103,20 @@ class DbsStatic(IDbsStatic):
         return grid
 
     @cache_method_wrapper
-    def get_obs_points(self) -> gpd.GeoDataFrame:
+    def get_obs_points(self) -> Optional[gpd.GeoDataFrame]:
         """Get the observation points from the flood hazard model."""
+        if self._database.site.sfincs.obs_point is None:
+            return None
+
         names = []
         descriptions = []
         lat = []
         lon = []
-        if self._database.site.sfincs.obs_point is not None:
-            obs_points = self._database.site.sfincs.obs_point
-            for pt in obs_points:
-                names.append(pt.name)
-                descriptions.append(pt.description)
-                lat.append(pt.lat)
-                lon.append(pt.lon)
+        for pt in self._database.site.sfincs.obs_point:
+            names.append(pt.name)
+            descriptions.append(pt.description)
+            lat.append(pt.lat)
+            lon.append(pt.lon)
 
         # create gpd.GeoDataFrame from obs_points in site file
         df = pd.DataFrame({"name": names, "description": descriptions})

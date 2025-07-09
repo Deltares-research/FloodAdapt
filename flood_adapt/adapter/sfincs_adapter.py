@@ -174,10 +174,18 @@ class SfincsAdapter(IHazardAdapter):
                 self._get_simulation_path(scenario, sub_event=sub_event)
                 for sub_event in event.sub_events
             ]
-            # No need to check postprocessing for risk scenarios
-            return all(self.sfincs_completed(sim_path) for sim_path in sim_paths)
+            if not all(sim_path.exists() for sim_path in sim_paths):
+                # simpaths dont exist, so check if the output files are still there
+                return self.run_completed(scenario)
+            else:
+                return all(self.sfincs_completed(sim_path) for sim_path in sim_paths)
         else:
-            return self.sfincs_completed(self._get_simulation_path(scenario))
+            if not self._get_simulation_path(scenario).exists():
+                # simpath doesnt exist, so check if the output files are still there
+                return self.run_completed(scenario)
+            else:
+                # Check if the simulation folder exists
+                return self.sfincs_completed(self._get_simulation_path(scenario))
 
     def execute(self, path: Path, strict: bool = True) -> bool:
         """
@@ -274,11 +282,14 @@ class SfincsAdapter(IHazardAdapter):
             for forcing in model._event.get_forcings():
                 model.add_forcing(forcing)
 
-            if self.rainfall is not None:
+            if model.rainfall is not None:
                 model.rainfall *= model._event.rainfall_multiplier
+                logger.info(
+                    f"Added event's rainfall multiplier: {model._event.rainfall_multiplier}"
+                )
             else:
-                logger.warning(
-                    "Failed to add event rainfall multiplier, no rainfall forcing found in the model."
+                logger.info(
+                    "Skipped adding event's rainfall multiplier: no rainfall forcing found in the model."
                 )
 
             # Measures
@@ -367,28 +378,20 @@ class SfincsAdapter(IHazardAdapter):
         phys_projection = projection.physical_projection
 
         if phys_projection.sea_level_rise:
-            logger.info(
-                f"Adding projected sea level rise `{phys_projection.sea_level_rise}`"
-            )
             if self.waterlevels is not None:
+                logger.info(
+                    f"Adding projected sea level rise `{phys_projection.sea_level_rise}`"
+                )
                 self.waterlevels += phys_projection.sea_level_rise.convert(
                     us.UnitTypesLength.meters
                 )
-            else:
-                logger.warning(
-                    "Failed to add sea level rise, no water level forcing found in the model."
-                )
 
         if phys_projection.rainfall_multiplier:
-            logger.info(
-                f"Adding projected rainfall multiplier `{phys_projection.rainfall_multiplier}`"
-            )
             if self.rainfall is not None:
-                self.rainfall *= phys_projection.rainfall_multiplier
-            else:
-                logger.warning(
-                    "Failed to add projected rainfall multiplier, no rainfall forcing found in the model."
+                logger.info(
+                    f"Adding projected rainfall multiplier `{phys_projection.rainfall_multiplier}`"
                 )
+                self.rainfall *= phys_projection.rainfall_multiplier
 
     ### GETTERS ###
     def get_model_time(self) -> TimeFrame:
