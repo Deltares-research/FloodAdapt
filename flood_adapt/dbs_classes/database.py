@@ -217,7 +217,7 @@ class Database(IDatabase):
         str
             path to topobathy tiles
         """
-        path = self.input_path.parent.joinpath("static", "dem", "tiles", "topobathy")
+        path = self.static_path / "dem" / "dep_subgrid.tif"
         return str(path)
 
     def get_index_path(self) -> str:
@@ -228,7 +228,7 @@ class Database(IDatabase):
         str
             path to index tiles
         """
-        path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
+        path = self.static_path / "dem" / "index.tif"
         return str(path)
 
     def get_depth_conversion(self) -> float:
@@ -266,23 +266,30 @@ class Database(IDatabase):
         np.array
             2D map of maximum water levels
         """
-        # If single event read with hydromt-sfincs
+        output_path = self.scenarios.output_path.joinpath(scenario_name, "Flooding")
+        # Check which file to use (if quadtree or regular)
         if not return_period:
-            map_path = self.scenarios.output_path.joinpath(
-                scenario_name,
-                "Flooding",
-                "max_water_level_map.nc",
-            )
-            with xr.open_dataarray(map_path) as map:
-                zsmax = map.to_numpy()
+            qt_path = output_path.joinpath("max_water_level_map_qt.nc")
+            if qt_path.is_file():
+                map_path = qt_path
+            else:
+                map_path = output_path.joinpath("max_water_level_map.tif")
         else:
-            file_path = self.scenarios.output_path.joinpath(
-                scenario_name,
-                "Flooding",
-                f"RP_{return_period:04d}_maps.nc",
+            qt_path = output_path.joinpath(
+                f"RP_{return_period:04d}_max_water_level_map_qt.nc"
             )
-            with xr.open_dataset(file_path) as ds:
-                zsmax = ds["risk_map"][:, :].to_numpy().T
+            if qt_path.is_file():
+                map_path = qt_path
+            else:
+                map_path = output_path.joinpath(
+                    f"RP_{return_period:04d}_max_water_level_map.tif"
+                )
+        # Open file
+        with xr.open_dataarray(map_path) as map:
+            zsmax = map.to_numpy()
+        # Make sure output is 1D array
+        if zsmax.ndim >= 2:
+            zsmax = zsmax.flatten("F")
         return zsmax
 
     def get_flood_map_geotiff(

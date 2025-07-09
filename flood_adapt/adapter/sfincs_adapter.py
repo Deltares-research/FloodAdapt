@@ -15,6 +15,7 @@ import plotly.express as px
 import pyproj
 import shapely
 import xarray as xr
+import xugrid as xu
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
@@ -398,18 +399,23 @@ class SfincsAdapter(IHazardAdapter):
 
     def get_mask(self):
         """Get mask with inactive cells from model."""
-        mask = self._model.grid["msk"]
+        mask = self._model.mask
+        if self._model.grid_type == "regular":
+            mask = xu.UgridDataArray.from_structured2d(da=mask)
         return mask
 
     def get_bedlevel(self):
         """Get bed level from model."""
         self._model.read_results()
         zb = self._model.results["zb"]
+        if self._model.grid_type == "regular":
+            zb = xu.UgridDataArray.from_structured2d(da=zb)
         return zb
 
     def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get bounding box from model."""
-        return self._model.region
+        boundary = self._model.region[["geometry"]]
+        return boundary
 
     def get_model_grid(self) -> QuadtreeGrid:
         """Get grid from model.
@@ -594,6 +600,23 @@ class SfincsAdapter(IHazardAdapter):
         with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
             zsmax.to_netcdf(results_path / "max_water_level_map.nc")
+            if hasattr(zsmax, "ugrid"):
+                # First write netcdf with quadtree water levels
+                zsmax.to_netcdf(results_path / "max_water_level_map_qt.nc")
+                # Rasterize to regular grid with specified resolution
+                res = 100  # TODO find a way to get finest resolution from model
+                zsmax = zsmax.ugrid.rasterize(resolution=res)
+                # Add CRS to the rasterized xarray
+                zsmax = zsmax.rio.write_crs(model._model.config["epsg"])
+            # Save as a Cloud Optimized GeoTIFF (COG)
+            zsmax.rio.to_raster(
+                results_path / "max_water_level_map.tif",
+                driver="COG",
+                compress="deflate",
+                dtype="float32",
+                nodata=np.nan,
+                OVERVIEW_RESAMPLING="nearest",
+            )
 
     def plot_wl_obs(
         self,
@@ -775,6 +798,9 @@ class SfincsAdapter(IHazardAdapter):
             # read zsmax data from overland sfincs model
             with SfincsAdapter(model_root=simulation_path) as sim:
                 zsmax = sim._get_zsmax().load()
+                # If grid is regular we turn it to xugrid to do the calcs
+                if self._model.grid_type == "regular":
+                    zsmax = xu.UgridDataArray.from_structured2d(da=zsmax)
                 zs_maps.append(zsmax)
 
         # Create RP flood maps
@@ -789,12 +815,42 @@ class SfincsAdapter(IHazardAdapter):
 
         for ii, rp in enumerate(floodmap_rp):
             zs_rp_single = rp_flood_maps[ii]
-            zs_rp_single = zs_rp_single.rio.write_crs(
-                zsmax.raster.crs
-            )  # , inplace=True)
-            zs_rp_single = zs_rp_single.to_dataset(name="risk_map").transpose()
-            fn_rp = result_path / f"RP_{rp:04d}_maps.nc"
-            zs_rp_single.to_netcdf(fn_rp)
+            # if model is quadtree, write the quadtree netcdf with water levels since it is needed for visualizations
+            if self._model.grid_type == "quadtree":
+                zs_rp_single.to_netcdf(
+                    result_path / f"RP_{rp:04d}_max_water_level_map_qt.nc"
+                )
+            # Then Rasterize to regular grid with specified resolution
+            if self._model.grid_type == "regular":
+                # Get the mask and coordinates
+                mask = self._model.mask
+                x_coords = mask.x
+                y_coords = mask.y
+                # Reshape zs_rp_single to 2D array based on mask shape
+                zs_2d = zs_rp_single.to_numpy().reshape(mask.shape)
+                # Create a DataArray with coordinates
+                zs_rp_single = xr.DataArray(
+                    zs_2d,
+                    dims=("y", "x"),
+                    coords={"y": y_coords, "x": x_coords},
+                    name="zsmax",
+                    attrs={"units": "m"},
+                )
+            else:
+                res = 100  # TODO find a way to get finest resolution from model
+                zs_rp_single = zs_rp_single.ugrid.rasterize(resolution=res)
+
+            # Write COG geotiff with water levels
+            zs_rp_single = zs_rp_single.rio.write_crs(self._model.crs)
+            fn_rp = result_path / f"RP_{rp:04d}_max_water_level_map.tif"
+            zs_rp_single.transpose("y", "x").rio.to_raster(
+                fn_rp,
+                driver="COG",
+                compress="deflate",
+                dtype="float32",
+                nodata=np.nan,
+                OVERVIEW_RESAMPLING="nearest",
+            )
 
             # write geotiff
             # dem file for high resolution flood depth map
@@ -803,8 +859,7 @@ class SfincsAdapter(IHazardAdapter):
             # writing the geotiff to the scenario results folder
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
                 dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
-                zsmax = zs_rp_single.to_array().squeeze().transpose()
-                floodmap_fn = fn_rp.with_suffix(".tif")
+                floodmap_fn = result_path / f"RP_{rp:04d}_FloodMap.tif"
 
                 # convert dem from dem units to floodmap units
                 dem_conversion = us.UnitfulLength(
@@ -1539,9 +1594,9 @@ class SfincsAdapter(IHazardAdapter):
         if isinstance(event, EventSet):
             map_fn = []
             for rp in self.database.site.fiat.risk.return_periods:
-                map_fn.append(results_path / f"RP_{rp:04d}_maps.nc")
+                map_fn.append(results_path / f"RP_{rp:04d}_max_water_level_map.tif")
         elif isinstance(event, Event):
-            map_fn = [results_path / "max_water_level_map.nc"]
+            map_fn = [results_path / "max_water_level_map.tif"]
         else:
             raise ValueError(f"Unsupported mode: {event.mode}")
 
@@ -1818,12 +1873,12 @@ class SfincsAdapter(IHazardAdapter):
 
     @staticmethod
     def calc_rp_maps(
-        floodmaps: list[xr.DataArray],
+        floodmaps: list[xu.UgridDataArray],
         frequencies: list[float],
-        zb: xr.DataArray,
-        mask: xr.DataArray,
+        zb: xu.UgridDataArray,
+        mask: xu.UgridDataArray,
         return_periods: list[float],
-    ) -> list[xr.DataArray]:
+    ) -> list[xu.UgridDataArray]:
         """
         Calculate return period (RP) flood maps from a set of flood simulation results.
 
@@ -1871,22 +1926,12 @@ class SfincsAdapter(IHazardAdapter):
                 f"Floodmap shape: {first_shape}, zb shape: {zb.shape}, mask shape: {mask.shape}."
             )
 
-        # stack dimensions if floodmaps are 2D
-        if len(floodmaps[0].shape) > 1:
-            stacking = True
-            for i, floodmap in enumerate(floodmaps):
-                floodmaps[i] = floodmap.stack(z=("x", "y"))
-            zb = zb.stack(z=("x", "y"))
-            mask = mask.stack(z=("x", "y"))
-        else:
-            stacking = False
-
         # 1a: make a table of all water levels and associated frequencies
-        zs = xr.concat(floodmaps, pd.Index(frequencies, name="frequency"))
+        zs = xu.concat(floodmaps, pd.Index(frequencies, name="frequency"))
         # Get the indices of columns with all NaN values
         nan_cells = np.where(np.all(np.isnan(zs), axis=0))[0]
         # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
-        zs = xr.where(np.isnan(zs), np.tile(zb, (zs.shape[0], 1)), zs)
+        zs = zs.where(~np.isnan(zs), np.tile(zb, (zs.shape[0], 1)))
         # Get table of frequencies
         freq = np.tile(frequencies, (zs.shape[1], 1)).transpose()
 
@@ -1943,16 +1988,13 @@ class SfincsAdapter(IHazardAdapter):
 
         rp_maps = []
         for ii, rp in enumerate(return_periods):
-            da = xr.DataArray(
-                data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
+            data_ii = xr.DataArray(data=h[ii, :])
+            zs_rp_single = xu.UgridDataArray.from_data(
+                data=data_ii, grid=zb.grid, facet="face"
             )
-            if stacking:
-                # Ensure unstacking creates (y, x) dimensions in the correct order
-                da = da.unstack()
-                # Reorder dimensions if needed
-                if set(da.dims) == {"y", "x"} and da.dims != ("y", "x"):
-                    da = da.transpose("y", "x")
+            zs_rp_single.name = "zsmax"
+            zs_rp_single.attrs["units"] = "m"
             # #create single nc
-            rp_maps.append(da)
+            rp_maps.append(zs_rp_single)
 
         return rp_maps
