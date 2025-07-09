@@ -40,8 +40,8 @@ class Test_scenario_run:
         not_run = test_db.scenarios.get(not_run_name)
         run = test_db.scenarios.get(run_name)
 
-        assert not ScenarioRunner(database=test_db, scenario=not_run).has_run
-        assert ScenarioRunner(database=test_db, scenario=run).has_run
+        assert not ScenarioRunner(database=test_db, scenario=not_run).has_run_check()
+        assert ScenarioRunner(database=test_db, scenario=run).has_run_check()
 
     @pytest.fixture()
     def setup_hurricane_scenario(
@@ -88,5 +88,6 @@ class Test_scenario_run:
 )
 def test_run_on_all_scn(test_db, scn_name):
     scn = test_db.scenarios.get(scn_name)
-    runner = ScenarioRunner(test_db, scenario=scn).run()
+    runner = ScenarioRunner(test_db, scenario=scn)
+    runner.run()
     assert runner.has_run_check()
