@@ -222,8 +222,8 @@ class Database(IDatabase):
 
         Returns
         -------
-        xr.DataArray
-            Flood map as an xarray DataArray
+        FloodMap
+            Flood map object containing the paths to the flood map files and their type.
         """
         _type = self.site.fiat.config.floodmap_type
         event = self.scenarios.get(scenario_name).event
