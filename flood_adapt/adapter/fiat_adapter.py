@@ -40,7 +40,6 @@ from flood_adapt.objects.measures.measures import (
 )
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.workflows.floodmap import FloodMap
 
 # Define naming structure for saved files
 _IMPACT_COLUMNS = FiatColumns(
@@ -251,12 +250,12 @@ class FiatAdapter(IImpactAdapter):
             self.add_measure(measure)
 
         # Hazard
-        floodmap = FloodMap(scenario.name)
+        floodmap = self.database.get_floodmap(scenario.name)
         var = "risk_maps" if floodmap.mode == Mode.risk else "zsmax"
         is_risk = floodmap.mode == Mode.risk
         self.set_hazard(
-            map_fn=floodmap.path,
-            map_type=floodmap.type,
+            map_fn=floodmap.paths,
+            map_type=floodmap.map_type,
             var=var,
             is_risk=is_risk,
             units=us.UnitTypesLength.meters,

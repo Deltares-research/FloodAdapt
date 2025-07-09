@@ -12,6 +12,7 @@ import xarray as xr
 from geopandas import GeoDataFrame
 
 from flood_adapt.config.hazard import SlrScenariosModel
+from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -30,6 +31,7 @@ from flood_adapt.misc.path_builder import (
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.output.floodmap import FloodMap
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
 logger = FloodAdaptLogging.getLogger("Database")
@@ -209,6 +211,41 @@ class Database(IDatabase):
             df = all_scenarios
         finished = df.drop(columns="finished").reset_index(drop=True)
         return finished.to_dict()
+
+    def get_floodmap(self, scenario_name: str) -> FloodMap:
+        """Return the flood map for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario
+
+        Returns
+        -------
+        xr.DataArray
+            Flood map as an xarray DataArray
+        """
+        _type = self.site.fiat.config.floodmap_type
+        event = self.scenarios.get(scenario_name).event
+        mode = self.events.get(event).mode
+        base_dir = self.scenarios.output_path / scenario_name / "Flooding"
+
+        if mode == Mode.single_event:
+            if _type == FloodmapType.water_level:
+                paths = [base_dir / "max_water_level_map.nc"]
+            elif _type == FloodmapType.water_depth:
+                paths = [base_dir / f"FloodMap_{self.name}.tif"]
+        elif mode == Mode.risk:
+            if _type == FloodmapType.water_level:
+                paths = list(base_dir.glob("RP_*_maps.nc"))
+            elif _type == FloodmapType.water_depth:
+                paths = list(base_dir.glob("RP_*_maps.tif"))
+        else:
+            raise DatabaseError(
+                f"Flood map type '{_type}' is not valid. Must be one of 'water_level' or 'water_depth'."
+            )
+
+        return FloodMap(name=scenario_name, map_type=_type, mode=mode, paths=paths)
 
     def get_impacts_path(self, scenario_name: str) -> Path:
         """Return the path to the impacts folder containing the impact runs for a given scenario.

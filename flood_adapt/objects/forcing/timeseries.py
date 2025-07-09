@@ -527,15 +527,6 @@ class TimeseriesFactory:
                     fill_value=fill_value,
                 )
             case ShapeType.scs:
-                if scs_file_name is None or scs_type is None:
-                    from flood_adapt.dbs_classes.database import Database
-
-                    scs_config = Database().site.sfincs.scs
-                    if scs_config is None:
-                        raise ValueError("SCS configuration not found in database.")
-                    scs_file_name = scs_file_name or scs_config.file
-                    scs_type = scs_type or scs_config.type
-
                 return ScsTimeseries(
                     duration=duration,
                     peak_time=peak_time,

@@ -13,6 +13,7 @@ class ScenarioRunner:
     def __init__(self, database: IDatabase, scenario: Scenario) -> None:
         """Create a Scenario object."""
         self._database = database
+        self._scenario = scenario
         self.site_info = self._database.site
         self.results_path = self._database.scenarios.output_path / self._scenario.name
 
