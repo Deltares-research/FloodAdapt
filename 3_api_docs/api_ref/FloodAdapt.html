@@ -2298,9 +2298,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="returns-31" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-31">Returns</h4>
 <dl>
-<dt><code><span class="parameter-name"><strong>html_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>gdf</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<code>GeoDataFrame</code>, <code>optional</code>)</span></code></dt>
 <dd>
-<p>The HTML strings of the water level timeseries</p>
+<p>A GeoDataFrame with the observation points and their corresponding HTML paths for the timeseries. Each row contains the station name and the path to the HTML file with the timeseries. None if no observation points are found or if the scenario has not been run yet.</p>
 </dd>
 </dl>
 </section>
