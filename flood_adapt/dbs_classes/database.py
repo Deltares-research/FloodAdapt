@@ -12,6 +12,7 @@ import xarray as xr
 from geopandas import GeoDataFrame
 
 from flood_adapt.config.hazard import SlrScenariosModel
+from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -30,7 +31,10 @@ from flood_adapt.misc.path_builder import (
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.output.floodmap import FloodMap
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
+
+logger = FloodAdaptLogging.getLogger("Database")
 
 
 class Database(IDatabase):
@@ -100,8 +104,7 @@ class Database(IDatabase):
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
         re_option = "re-" if self._init_done else ""
-        self.logger = FloodAdaptLogging.getLogger("Database")
-        self.logger.info(
+        logger.info(
             f"{re_option}initializing database to {database_name} at {database_path}".capitalize()
         )
         self.database_path = database_path
@@ -208,6 +211,71 @@ class Database(IDatabase):
             df = all_scenarios
         finished = df.drop(columns="finished").reset_index(drop=True)
         return finished.to_dict()
+
+    def get_floodmap(self, scenario_name: str) -> FloodMap:
+        """Return the flood map for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario
+
+        Returns
+        -------
+        FloodMap
+            Flood map object containing the paths to the flood map files and their type.
+        """
+        _type = self.site.fiat.config.floodmap_type
+        event = self.scenarios.get(scenario_name).event
+        mode = self.events.get(event).mode
+        base_dir = self.scenarios.output_path / scenario_name / "Flooding"
+
+        if mode == Mode.single_event:
+            if _type == FloodmapType.water_level:
+                paths = [base_dir / "max_water_level_map.nc"]
+            elif _type == FloodmapType.water_depth:
+                paths = [base_dir / f"FloodMap_{self.name}.tif"]
+        elif mode == Mode.risk:
+            if _type == FloodmapType.water_level:
+                paths = list(base_dir.glob("RP_*_maps.nc"))
+            elif _type == FloodmapType.water_depth:
+                paths = list(base_dir.glob("RP_*_maps.tif"))
+        else:
+            raise DatabaseError(
+                f"Flood map type '{_type}' is not valid. Must be one of 'water_level' or 'water_depth'."
+            )
+
+        return FloodMap(name=scenario_name, map_type=_type, mode=mode, paths=paths)
+
+    def get_impacts_path(self, scenario_name: str) -> Path:
+        """Return the path to the impacts folder containing the impact runs for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario
+
+        Returns
+        -------
+        Path
+            Path to the impacts folder for the given scenario
+        """
+        return self.scenarios.output_path.joinpath(scenario_name, "Impacts")
+
+    def get_flooding_path(self, scenario_name: str) -> Path:
+        """Return the path to the flooding folder containing the hazard runs for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario
+
+        Returns
+        -------
+        Path
+            Path to the flooding folder for the given scenario
+        """
+        return self.scenarios.output_path.joinpath(scenario_name, "Flooding")
 
     def get_topobathy_path(self) -> str:
         """Return the path of the topobathy tiles in order to create flood maps with water level maps.
@@ -317,7 +385,7 @@ class Database(IDatabase):
                 f"RP_{return_period:04d}_maps.tif",
             )
         if not file_path.is_file():
-            self.logger.warning(
+            logger.warning(
                 f"Flood map for scenario '{scenario_name}' at {file_path} does not exist."
             )
             return None
@@ -454,10 +522,9 @@ class Database(IDatabase):
             name of the scenario to check if needs to be rerun for hazard
         """
         scenario = self.scenarios.get(scenario_name)
-        runner = ScenarioRunner(self, scenario=scenario)
 
         # Dont do anything if the hazard model has already been run in itself
-        if runner.impacts.hazard.has_run:
+        if ScenarioRunner(self, scenario=scenario).hazard_run_check():
             return
 
         scenarios = [
@@ -476,16 +543,16 @@ class Database(IDatabase):
                 path_new = self.scenarios.output_path.joinpath(
                     scenario.name, "Flooding"
                 )
-                _runner = ScenarioRunner(self, scenario=scn)
 
-                if _runner.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                if ScenarioRunner(self, scenario=scn).hazard_run_check():
+                    # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,
                         dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("simulations"),
                     )
-                    self.logger.info(
+                    logger.info(
                         f"Hazard simulation is used from the '{scn.name}' scenario"
                     )
 
@@ -509,9 +576,6 @@ class Database(IDatabase):
             (self.scenarios.output_path / dir).resolve()
             for dir in os.listdir(self.scenarios.output_path)
         ]
-        self.logger.info(
-            f"Cleaning up scenario outputs: {len(output_scenarios)} scenarios found."
-        )
 
         def _call_garbage_collector(func, path, exc_info, retries=5, delay=0.1):
             """Retry deletion up to 5 times if the file is locked."""
@@ -528,15 +592,16 @@ class Database(IDatabase):
 
             print(f"Giving up on deleting {path} after {retries} attempts.")
 
-        for dir in output_scenarios:
+        for _dir in output_scenarios:
             # Delete if: input was deleted or corrupted output due to unfinished run
-            if dir.name not in [
+            if _dir.name not in [
                 path.name for path in input_scenarios
-            ] or not finished_file_exists(dir):
-                shutil.rmtree(dir, onerror=_call_garbage_collector)
-            # If the scenario is finished, delete the simulation folders
-            elif finished_file_exists(dir):
-                self._delete_simulations(dir.name)
+            ] or not finished_file_exists(_dir):
+                logger.info(f"Cleaning up corrupted outputs of scenario: {_dir.name}.")
+                shutil.rmtree(_dir, onerror=_call_garbage_collector)
+            # If the scenario is finished, delete the simulation folders depending on `save_simulation`
+            elif finished_file_exists(_dir):
+                self._delete_simulations(_dir.name)
 
     def _delete_simulations(self, scenario_name: str) -> None:
         """Delete all simulation folders for a given scenario.
@@ -556,7 +621,6 @@ class Database(IDatabase):
             if sub_events:
                 for sub_event in sub_events:
                     overland._delete_simulation_folder(scn, sub_event=sub_event)
-
             else:
                 overland._delete_simulation_folder(scn)
 
@@ -570,7 +634,7 @@ class Database(IDatabase):
                         )
                         if sim_path.exists():
                             shutil.rmtree(sim_path, ignore_errors=True)
-                            self.logger.info(f"Deleted simulation folder: {sim_path}")
+                            logger.info(f"Deleted simulation folder: {sim_path}")
                         if sim_path.parent.exists() and not any(
                             sim_path.parent.iterdir()
                         ):
@@ -580,7 +644,7 @@ class Database(IDatabase):
                     sim_path = offshore._get_simulation_path_offshore(scn)
                     if sim_path.exists():
                         shutil.rmtree(sim_path, ignore_errors=True)
-                        self.logger.info(f"Deleted simulation folder: {sim_path}")
+                        logger.info(f"Deleted simulation folder: {sim_path}")
 
                     if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
                         # Remove the parent directory `simulations` if it is empty

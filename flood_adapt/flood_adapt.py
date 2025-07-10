@@ -38,8 +38,9 @@ from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
 from flood_adapt.workflows.benefit_runner import BenefitRunner
-from flood_adapt.workflows.impacts_integrator import Impacts
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
+
+logger = FloodAdaptLogging.getLogger()
 
 
 class FloodAdapt:
@@ -56,7 +57,6 @@ class FloodAdapt:
         self.database = Database(
             database_path=database_path.parent, database_name=database_path.name
         )
-        self.logger = FloodAdaptLogging.getLogger()
 
     # Measures
     def get_measures(self) -> dict[str, Any]:
@@ -718,8 +718,7 @@ class FloodAdapt:
 
         for scn in scenario_name:
             scenario = self.get_scenario(scn)
-            runner = ScenarioRunner(self.database, scenario=scenario)
-            runner.run()
+            ScenarioRunner(self.database, scenario=scenario).run()
 
     # Outputs
     def get_completed_scenarios(
@@ -858,7 +857,7 @@ class FloodAdapt:
         """
         return self.database.get_roads(name)
 
-    def get_obs_point_timeseries(self, name: str) -> gpd.GeoDataFrame:
+    def get_obs_point_timeseries(self, name: str) -> Optional[gpd.GeoDataFrame]:
         """Return the HTML strings of the water level timeseries for the given scenario.
 
         Parameters
@@ -868,27 +867,35 @@ class FloodAdapt:
 
         Returns
         -------
-        html_path : str
-            The HTML strings of the water level timeseries
+        gdf : GeoDataFrame, optional
+            A GeoDataFrame with the observation points and their corresponding HTML paths for the timeseries.
+            Each row contains the station name and the path to the HTML file with the timeseries.
+            None if no observation points are found or if the scenario has not been run yet.
         """
+        obs_points = self.database.static.get_obs_points()
+        if obs_points is None:
+            logger.info(
+                "No observation points found in the sfincs model and site configuration."
+            )
+            return None
+
         # Get the impacts objects from the scenario
         scenario = self.database.scenarios.get(name)
-        hazard = Impacts(scenario).hazard
 
         # Check if the scenario has run
-        if not hazard.has_run:
-            raise ValueError(
-                f"Scenario {name} has not been run. Please run the scenario first."
+        if not ScenarioRunner(self.database, scenario=scenario).hazard_run_check():
+            logger.info(
+                f"Cannot retrieve observation point timeseries as the scenario {name} has not been run yet."
             )
+            return None
 
-        output_path = self.database.scenarios.output_path.joinpath(hazard.name)
-        gdf = self.database.static.get_obs_points()
-        gdf["html"] = [
-            str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
-            for station in gdf.name
+        output_path = self.database.get_flooding_path(scenario.name)
+        obs_points["html"] = [
+            str(output_path.joinpath(f"{station}_timeseries.html"))
+            for station in obs_points.name
         ]
 
-        return gdf
+        return obs_points
 
     def get_infographic(self, name: str) -> str:
         """Return the HTML string of the infographic for the given scenario.
@@ -1184,8 +1191,7 @@ class FloodAdapt:
         scenarios : pd.DataFrame
             A dataframe with the scenarios needed for this benefit assessment run.
         """
-        runner = BenefitRunner(self.database, benefit=benefit)
-        return runner.scenarios
+        return BenefitRunner(self.database, benefit=benefit).scenarios
 
     def create_benefit_scenarios(self, benefit: Benefit) -> None:
         """Create the benefit scenarios.
@@ -1195,8 +1201,7 @@ class FloodAdapt:
         benefit : Benefit
             The benefit object to create scenarios for.
         """
-        runner = BenefitRunner(self.database, benefit=benefit)
-        runner.create_benefit_scenarios()
+        BenefitRunner(self.database, benefit=benefit).create_benefit_scenarios()
 
     def run_benefit(self, name: Union[str, list[str]]) -> None:
         """Run the benefit assessment.
@@ -1210,8 +1215,7 @@ class FloodAdapt:
             benefit_name = [name]
         for name in benefit_name:
             benefit = self.database.benefits.get(name)
-            runner = BenefitRunner(self.database, benefit=benefit)
-            runner.run_cost_benefit()
+            BenefitRunner(self.database, benefit=benefit).run_cost_benefit()
 
     def get_aggregated_benefits(self, name: str) -> dict[str, gpd.GeoDataFrame]:
         """Get the aggregation benefits for a benefit assessment.

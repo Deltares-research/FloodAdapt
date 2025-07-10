@@ -2,8 +2,8 @@ from abc import abstractmethod
 
 from flood_adapt.adapter.interface.model_adapter import IAdapter
 from flood_adapt.objects.measures.measures import Measure
+from flood_adapt.objects.output.floodmap import FloodMap
 from flood_adapt.objects.projections.projections import Projection
-from flood_adapt.workflows.floodmap import FloodMap
 
 
 class IImpactAdapter(IAdapter):

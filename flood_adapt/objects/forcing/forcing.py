@@ -1,15 +1,13 @@
-import logging
 import os
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, List, Type
+from typing import Any, List, Type
 
 import tomli
 from pydantic import BaseModel, field_serializer
 
 from flood_adapt.config.hazard import RiverModel
-from flood_adapt.misc.log import FloodAdaptLogging
 
 
 ### ENUMS ###
@@ -55,7 +53,6 @@ class IForcing(BaseModel, ABC):
 
     type: ForcingType
     source: ForcingSource
-    logger: ClassVar[logging.Logger] = FloodAdaptLogging.getLogger("Forcing")
 
     @classmethod
     def load_file(cls, path: Path):

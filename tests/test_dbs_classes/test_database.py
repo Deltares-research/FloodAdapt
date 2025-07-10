@@ -139,7 +139,6 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase():
     assert dbs.static_path is not None
     assert dbs.output_path is not None
     assert dbs._site is not None
-    assert dbs.logger is not None
     assert dbs._static is not None
     assert dbs._events is not None
     assert dbs._scenarios is not None
