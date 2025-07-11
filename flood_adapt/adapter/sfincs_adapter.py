@@ -170,24 +170,40 @@ class SfincsAdapter(IHazardAdapter):
     @debug_timer
     def has_run(self, scenario: Scenario) -> bool:
         """Check if the model has been run."""
-        event = self.database.events.get(scenario.event)
-        if event.mode == Mode.risk:
-            sim_paths = [
-                self._get_simulation_path(scenario, sub_event=sub_event)
-                for sub_event in event.sub_events
-            ]
-            if not all(sim_path.exists() for sim_path in sim_paths):
-                # simpaths dont exist, so check if the output files are still there
-                return self.run_completed(scenario)
-            else:
-                return all(self.sfincs_completed(sim_path) for sim_path in sim_paths)
-        else:
-            if not self._get_simulation_path(scenario).exists():
-                # simpath doesnt exist, so check if the output files are still there
-                return self.run_completed(scenario)
-            else:
-                # Check if the simulation folder exists
-                return self.sfincs_completed(self._get_simulation_path(scenario))
+        return self.run_completed(scenario)
+
+        # event = self.database.events.get(scenario.event)
+        # if event.mode == Mode.risk:
+        #     sim_paths = [
+        #         self._get_simulation_path(scenario, sub_event=sub_event)
+        #         for sub_event in event.sub_events
+        #     ]
+        #     # No need to check postprocessing for risk scenarios
+        #     return all(self.sfincs_completed(sim_path) for sim_path in sim_paths)
+        # else:
+
+    # @debug_timer
+    # def has_run(self, scenario: Scenario) -> bool:
+    #     """Check if the model has been run."""
+    #     event = self.database.events.get(scenario.event)
+
+    #     if event.mode == Mode.risk:
+    #         sim_paths = [
+    #             self._get_simulation_path(scenario, sub_event=sub_event)
+    #             for sub_event in event.sub_events
+    #         ]
+    #         if not all(sim_path.exists() for sim_path in sim_paths):
+    #             # simpaths dont exist, so check if the output files are still there
+    #             return self.run_completed(scenario)
+    #         else:
+    #             return all(self.sfincs_completed(sim_path) for sim_path in sim_paths)
+    #     else:
+    #         if not self._get_simulation_path(scenario).exists():
+    #             # simpath doesnt exist, so check if the output files are still there
+    #             return self.run_completed(scenario)
+    #         else:
+    #             # Check if the simulation folder exists
+    #             return self.sfincs_completed(self._get_simulation_path(scenario))
 
     def execute(self, path: Path, strict: bool = True) -> bool:
         """
