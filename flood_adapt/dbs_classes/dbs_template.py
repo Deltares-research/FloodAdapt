@@ -10,6 +10,7 @@ from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.misc.exceptions import DatabaseError
 from flood_adapt.objects.object_model import Object
+from flood_adapt.tmp import debug_timer
 
 T_OBJECTMODEL = TypeVar("T_OBJECTMODEL", bound=Object)
 
@@ -29,6 +30,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         self.output_path = database.output_path / self.dir_name
         self.standard_objects = standard_objects
 
+    @debug_timer
     def get(self, name: str) -> T_OBJECTMODEL:
         """Return an object of the type of the database with the given name.
 
