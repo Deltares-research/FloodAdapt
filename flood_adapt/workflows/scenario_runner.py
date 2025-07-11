@@ -17,15 +17,28 @@ class ScenarioRunner:
         self.site_info = self._database.site
         self.results_path = self._database.scenarios.output_path / self._scenario.name
 
+        self._event = None
+        self._projection = None
+        self._strategy = None
+
+        self._hazard_models = None
+        self._impact_models = None
+
     @property
     def impact_models(self):
         """Return the list of impact models."""
-        return self._database.static.get_impact_models()
+        if self._impact_models is not None:
+            return self._impact_models
+        self._impact_models = self._database.static.get_impact_models()
+        return self._impact_models
 
     @property
     def hazard_models(self):
         """Return the list of hazard models."""
-        return self._database.static.get_hazard_models()
+        if self._hazard_models is not None:
+            return self._hazard_models
+        self._hazard_models = self._database.static.get_hazard_models()
+        return self._hazard_models
 
     def _load_objects(self, scenario: Scenario) -> None:
         """Load objects from the database."""
