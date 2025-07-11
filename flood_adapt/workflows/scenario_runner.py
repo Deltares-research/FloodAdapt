@@ -3,7 +3,6 @@ from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import finished_file_exists, write_finished_file
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.tmp import debug_timer
 
 logger = FloodAdaptLogging.getLogger("ScenarioRunner")
 
@@ -80,7 +79,6 @@ class ScenarioRunner:
         for model in self.hazard_models:
             model.run(self._scenario)
 
-    @debug_timer
     def hazard_run_check(self) -> bool:
         """Check if the impact has been run.
 

@@ -4,8 +4,6 @@ from functools import wraps
 
 from flood_adapt.misc.log import FloodAdaptLogging
 
-FloodAdaptLogging(level=logging.DEBUG)
-
 
 def debug_timer(func):
     @wraps(func)

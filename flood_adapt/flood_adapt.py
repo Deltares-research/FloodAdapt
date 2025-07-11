@@ -9,7 +9,6 @@ from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-from flood_adapt.database_builder.database_builder import debug_timer
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.benefits.benefits import Benefit
@@ -858,7 +857,6 @@ class FloodAdapt:
         """
         return self.database.get_roads(name)
 
-    @debug_timer
     def get_obs_point_timeseries(self, name: str) -> Optional[gpd.GeoDataFrame]:
         """Return the HTML strings of the water level timeseries for the given scenario.
 

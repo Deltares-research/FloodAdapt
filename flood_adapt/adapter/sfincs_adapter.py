@@ -87,7 +87,6 @@ from flood_adapt.objects.projections.projections import (
     Projection,
 )
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.tmp import debug_timer
 
 logger = FloodAdaptLogging.getLogger("SfincsAdapter")
 
@@ -167,43 +166,9 @@ class SfincsAdapter(IHazardAdapter):
         self.close_files()
         return False
 
-    @debug_timer
     def has_run(self, scenario: Scenario) -> bool:
         """Check if the model has been run."""
         return self.run_completed(scenario)
-
-        # event = self.database.events.get(scenario.event)
-        # if event.mode == Mode.risk:
-        #     sim_paths = [
-        #         self._get_simulation_path(scenario, sub_event=sub_event)
-        #         for sub_event in event.sub_events
-        #     ]
-        #     # No need to check postprocessing for risk scenarios
-        #     return all(self.sfincs_completed(sim_path) for sim_path in sim_paths)
-        # else:
-
-    # @debug_timer
-    # def has_run(self, scenario: Scenario) -> bool:
-    #     """Check if the model has been run."""
-    #     event = self.database.events.get(scenario.event)
-
-    #     if event.mode == Mode.risk:
-    #         sim_paths = [
-    #             self._get_simulation_path(scenario, sub_event=sub_event)
-    #             for sub_event in event.sub_events
-    #         ]
-    #         if not all(sim_path.exists() for sim_path in sim_paths):
-    #             # simpaths dont exist, so check if the output files are still there
-    #             return self.run_completed(scenario)
-    #         else:
-    #             return all(self.sfincs_completed(sim_path) for sim_path in sim_paths)
-    #     else:
-    #         if not self._get_simulation_path(scenario).exists():
-    #             # simpath doesnt exist, so check if the output files are still there
-    #             return self.run_completed(scenario)
-    #         else:
-    #             # Check if the simulation folder exists
-    #             return self.sfincs_completed(self._get_simulation_path(scenario))
 
     def execute(self, path: Path, strict: bool = True) -> bool:
         """
@@ -523,7 +488,6 @@ class SfincsAdapter(IHazardAdapter):
             raise ValueError("Unsupported wind forcing in the model.")
 
     ### OUTPUT ###
-    @debug_timer
     def run_completed(self, scenario: Scenario) -> bool:
         """Check if the entire model run has been completed successfully by checking if all flood maps exist that are created in postprocess().
 
@@ -537,7 +501,6 @@ class SfincsAdapter(IHazardAdapter):
         all_exist = all(floodmap.exists() for floodmap in paths)
         return any_floodmap and all_exist
 
-    @debug_timer
     def sfincs_completed(self, sim_path: Path) -> bool:
         """Check if the sfincs executable has been run successfully by checking if the output files exist in the simulation folder.
 
@@ -1498,7 +1461,6 @@ class SfincsAdapter(IHazardAdapter):
         """Return the path to store the results."""
         return self.database.scenarios.output_path / scenario.name / "Flooding"
 
-    @debug_timer
     def _get_simulation_path(
         self, scenario: Scenario, sub_event: Optional[Event] = None
     ) -> Path:
@@ -1548,7 +1510,6 @@ class SfincsAdapter(IHazardAdapter):
         else:
             raise ValueError(f"Unsupported mode: {event.mode}")
 
-    @debug_timer
     def _get_flood_map_paths(self, scenario: Scenario) -> list[Path]:
         """Return the paths to the flood maps that running this scenario should produce."""
         results_path = self._get_result_path(scenario)

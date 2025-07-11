@@ -5,10 +5,8 @@ import math
 import os
 import re
 import shutil
-import time
 import warnings
 from enum import Enum
-from functools import wraps
 from pathlib import Path
 from typing import Optional, Union
 from urllib.request import urlretrieve
@@ -74,6 +72,7 @@ from flood_adapt.config.site import (
     StandardObjectModel,
 )
 from flood_adapt.dbs_classes.database import Database
+from flood_adapt.misc.debug_timer import debug_timer
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import modified_environ
 from flood_adapt.objects.events.event_set import EventSet
@@ -90,27 +89,6 @@ from flood_adapt.objects.projections.projections import (
 from flood_adapt.objects.strategies.strategies import Strategy
 
 logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
-
-
-def debug_timer(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        logger = FloodAdaptLogging.getLogger("DatabaseBuilder")  # No forced log level
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f"Started '{func.__name__}'")
-            start_time = time.perf_counter()
-
-            result = func(*args, **kwargs)
-
-            end_time = time.perf_counter()
-            elapsed = end_time - start_time
-            logger.debug(f"Finished '{func.__name__}' in {elapsed:.4f} seconds")
-        else:
-            result = func(*args, **kwargs)
-
-        return result
-
-    return wrapper
 
 
 def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
