@@ -329,8 +329,13 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>Welcome to the FloodAdapt documentation!</p>
-<p>In this introduction, you will find an <a href="#overview">overview of FloodAdapt</a>, information on its <a href="#intended-uses-of-floodadapt">intended uses</a>, and <a href="#reader-guidance">reader guidance</a> explaining the information you will find in this documentation.</p>
+<p><strong>Welcome to the FloodAdapt documentation!</strong> This introduction will help you get oriented with FloodAdapt and learn how to use this guide effectively. It includes:</p>
+<ul>
+<li>An introduction video</li>
+<li>An <a href="#overview">overview of FloodAdapt</a></li>
+<li>Information about FloodAdapt’s <a href="#intended-uses-of-floodadapt">intended uses</a></li>
+<li><a href="#reader-guidance">Reader guidance</a> to help you navigate the rest of the documentation.</li>
+</ul>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -341,49 +346,49 @@ FloodAdapt Introduction Video
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/yj_ROYmbIWA?rel=0" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/PLCkvLvq-bQ?rel=0" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
 </div>
 </div>
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>FloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.</p>
-<!--:::{.callout-note}
-### Introduction video
-Coming soon...
-Stay tuned for a FloodAdapt introduction video
-:::
--->
-<!--
--->
-<p>FloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”</p>
-<p>Users specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.</p>
-<p>The backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model <a href="https://github.com/Deltares/SFINCS" class="external" data-link-external-newwindow="true">SFINCS</a> that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool <a href="https://github.com/Deltares/Delft-FIAT" class="external" data-link-external-newwindow="true">Delft-FIAT</a>. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.</p>
-<p>When a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.</p>
+<p>FloodAdapt is an interactive decision-support tool which aims to accelerate and improve flood adaptation planning. It connects users to powerful modeling tools through an intuitive graphical interface, enabling the creation, simulation, and comparison of flooding and impact scenarios without requiring modeling expertise. Built with community-level planning needs in mind, FloodAdapt supports meaningful stakeholder engagement and helps translate scientific advances into actionable insights.</p>
+<div id="fig-userQs" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-userQs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="_static/images/user_questions.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Examples of the kinds of questions users can answer with FloodAdapt"><img src="_static/images/user_questions.jpg" class="img-fluid figure-img" style="width:60.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-userQs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Examples of the kinds of questions users can answer with FloodAdapt
+</figcaption>
+</figure>
+</div>
+<p>FloodAdapt allows users to specify and simulate what-if scenarios that combine weather events (historical or synthetic), climate or socio-economic future projections, and adaptation strategies. These scenarios can include hurricanes, coastal storms, high tides, rainfall events, and heavy river discharges, along with future projections such as sea level rise, increased storm frequency, and urban growth. Users can explore a wide range of adaptation options - from levees, pumps, and sea walls to green infrastructure, building elevations, buyouts, and floodproofing - and evaluate their effectiveness in reducing flood impacts.</p>
+<p>FloodAdapt is essentially a smart shell that prepares, runs, and post-processes simulations using two open-source tools: the process-based compound flood modeling software <a href="https://github.com/Deltares/SFINCS" class="external" data-link-external-newwindow="true">SFINCS</a> and the flood impact assessment tool <a href="https://github.com/Deltares/Delft-FIAT" class="external" data-link-external-newwindow="true">Delft-FIAT</a>. SFINCS simulates flooding from rainfall, tide, storm surge, and river discharge, while Delft-FIAT estimates damages to buildings, roads, and other assets, and aggregates them spatially or by other specified attributes (such as social vulnerability or income level). FloodAdapt does not come pre-loaded with baseline SFINCS and Delft-FIAT models; these need to be set up for a new location as part of system setup. The accuracy of FloodAdapt outputs will depend on the quality of the baseline SFINCS and Delft-FIAT models for a given location.</p>
+<p>When a user specifies a what-if scenario, FloodAdapt automatically makes changes to the baseline SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeler would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring a modeling background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.</p>
 <div id="fig-logo" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-logo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="_static/images/floodadapt.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Schematic showing the design concepts behind the FloodAdapt software"><img src="_static/images/floodadapt.png" class="img-fluid figure-img"></a>
+<a href="_static/images/floodadapt.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: Schematic showing the design concepts behind the FloodAdapt software"><img src="_static/images/floodadapt.png" class="img-fluid figure-img"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-logo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Schematic showing the design concepts behind the FloodAdapt software
+Figure&nbsp;2: Schematic showing the design concepts behind the FloodAdapt software
 </figcaption>
 </figure>
 </div>
 </section>
 <section id="intended-uses-of-floodadapt" class="level2">
 <h2 class="anchored" data-anchor-id="intended-uses-of-floodadapt">Intended Uses of FloodAdapt</h2>
-<p>FloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to aid in prioritizing investments, and to assess the effectiveness and longevity of different adaptation options.</p>
-<p>FloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.</p>
+<p>FloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to aid in prioritizing investments, and to assess the effectiveness, benefits, and longevity of different adaptation options.</p>
 <p>FloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt.</p>
 </section>
 <section id="reader-guidance" class="level2">
 <h2 class="anchored" data-anchor-id="reader-guidance">Reader Guidance</h2>
-<p>FloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Setting up FloodAdapt in a new location requires additional capabilities.</p>
+<p>The FloodAdapt documentation is separated into four sections:</p>
 <ul>
-<li><p><strong><a href="./1_user_guide/index.html">User Guide</a></strong> The user guide provides information on how to get started with FloodAdapt, and describes how to use all the FloodAdapt functionalities.</p></li>
-<li><p><strong><a href="./2_technical_docs/index.html">Technical background</a></strong> - The technical docs provide detailed information on the calculation methods within FloodAdapt.</p></li>
-<li><p><strong><a href="./3_api_docs/index.html">API documentation</a></strong> - The API of FloodAdapt and example notebooks outlining usage.</p></li>
-<li><p><strong><a href="./4_system_setup/index.html">Setup Guide</a></strong> - The setup guides users in setting up FloodAdapt in their area of interest.</p></li>
+<li><p><strong><a href="./1_user_guide/index.html">User Guide</a></strong> The user guide provides information on how to get started with FloodAdapt, and describes how to use all the FloodAdapt functionalities. This guide is intended for FloodAdapt users.</p></li>
+<li><p><strong><a href="./2_technical_docs/index.html">Technical background</a></strong> - The technical docs provide detailed information on the calculation methods within FloodAdapt. This is intended for technically-minded users who want to better understand what is happening under the hood.</p></li>
+<li><p><strong><a href="./3_api_docs/index.html">API documentation</a></strong> - The API documentation is intended for users who would like to directly use the backend of FloodAdapt, bypassing the graphical user interface. This documentation explains the API functions and provides example notebooks demonstrating API usage.</p></li>
+<li><p><strong><a href="./4_system_setup/index.html">Setup Guide</a></strong> - The setup guide is intended for more technical users who will be setting up FloodAdapt in a new location.</p></li>
 </ul>
 
 
