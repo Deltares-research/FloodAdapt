@@ -227,7 +227,6 @@ class DbsStatic(IDbsStatic):
         """
         return self.get_fiat_model().get_property_types()
 
-    @cache_method_wrapper
     def get_hazard_models(self) -> list[IHazardAdapter]:
         """Get the hazard models from the database.
 
@@ -238,7 +237,6 @@ class DbsStatic(IDbsStatic):
         """
         return [self.get_overland_sfincs_model()]
 
-    @cache_method_wrapper
     def get_impact_models(self) -> list[IImpactAdapter]:
         """Get the impact models from the database.
 
@@ -249,7 +247,6 @@ class DbsStatic(IDbsStatic):
         """
         return [self.get_fiat_model()]
 
-    @cache_method_wrapper
     def get_overland_sfincs_model(self) -> SfincsAdapter:
         """Get the template offshore SFINCS model."""
         overland_path = (
@@ -260,7 +257,6 @@ class DbsStatic(IDbsStatic):
         with SfincsAdapter(model_root=overland_path) as overland_model:
             return overland_model
 
-    @cache_method_wrapper
     def get_offshore_sfincs_model(self) -> SfincsAdapter:
         """Get the template overland Sfincs model."""
         if self._database.site.sfincs.config.offshore_model is None:
@@ -274,7 +270,6 @@ class DbsStatic(IDbsStatic):
         with SfincsAdapter(model_root=offshore_path) as offshore_model:
             return offshore_model
 
-    @cache_method_wrapper
     def get_fiat_model(self) -> FiatAdapter:
         """Get the path to the FIAT model."""
         if self._database.site.fiat is None:
