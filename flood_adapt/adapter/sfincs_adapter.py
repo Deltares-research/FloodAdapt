@@ -1778,7 +1778,7 @@ class SfincsAdapter(IHazardAdapter):
             units=us.UnitTypesLength(units),
         )
 
-        if df_gauge is None:
+        if df_gauge is None or df_gauge.empty:
             logger.warning(
                 "No water level data available for the tide gauge. Could not add it to the plot."
             )
