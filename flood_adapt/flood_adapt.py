@@ -883,7 +883,7 @@ class FloodAdapt:
         scenario = self.database.scenarios.get(name)
 
         # Check if the scenario has run
-        if not ScenarioRunner(self.database, scenario=scenario).hazard_run_check():
+        if not ScenarioRunner(self.database, scenario=scenario).has_run_check():
             logger.info(
                 f"Cannot retrieve observation point timeseries as the scenario {name} has not been run yet."
             )
