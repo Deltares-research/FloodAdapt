@@ -458,7 +458,8 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#system-requirements" id="toc-system-requirements" class="nav-link active" data-scroll-target="#system-requirements">System requirements</a></li>
   <li><a href="#installation-steps" id="toc-installation-steps" class="nav-link" data-scroll-target="#installation-steps">Installation steps</a></li>
   <li><a href="#opening-floodadapt" id="toc-opening-floodadapt" class="nav-link" data-scroll-target="#opening-floodadapt">Opening FloodAdapt</a></li>
-  <li><a href="#floodadapt-database" id="toc-floodadapt-database" class="nav-link" data-scroll-target="#floodadapt-database">FloodAdapt database</a></li>
+  <li><a href="#downloading-a-demonstration-database" id="toc-downloading-a-demonstration-database" class="nav-link" data-scroll-target="#downloading-a-demonstration-database">Downloading a demonstration database</a></li>
+  <li><a href="#floodadapt-database-structure" id="toc-floodadapt-database-structure" class="nav-link" data-scroll-target="#floodadapt-database-structure">FloodAdapt database structure</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/Deltares-research/FloodAdapt/blob/main/1_user_guide/getting_started.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/Deltares-research/FloodAdapt/issues/new/choose" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -485,15 +486,21 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>This section covers <a href="#system-requirements">system requirements</a> for running FloodAdapt, initial <a href="#installation-steps">installation steps</a>, <a href="#opening-floodadapt">opening FloodAdapt</a>, and the <a href="#floodadapt-database">FloodAdapt database folder structure</a>.</p>
+<p>This page will help you get started with FloodAdapt. It covers the following topics:</p>
+<ul>
+<li><a href="#system-requirements">System requirements</a> for running FloodAdapt</li>
+<li><a href="#installation-steps">Installation steps</a></li>
+<li><a href="#opening-floodadapt">First time opening the FloodAdapt application</a></li>
+<li><a href="#downloading-a-demonstration-database">Downloading a demonstration database</a></li>
+<li><a href="#floodadapt-database-structure">The FloodAdapt database folder structure</a></li>
+</ul>
 <section id="system-requirements" class="level2">
 <h2 class="anchored" data-anchor-id="system-requirements">System requirements</h2>
 <p>In order to run FloodAdapt, the following are required:</p>
 <ul>
-<li>Your computer must be running a Windows operating system.</li>
-<li>The first time the FloodAdapt application is opened must be by a user with administrative rights</li>
-<li>The computer must have access to the internet</li>
-<li>At least 2 GB of storage for the FloodAdapt system files and the underlying database</li>
+<li>A Windows operating system</li>
+<li>Access to the internet (for loading maps).</li>
+<li>At least 1 GB of storage for the FloodAdapt system files and the underlying database</li>
 <li>Approximately 150 MB of storage for each user-generated scenario</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -514,8 +521,8 @@ Which windows systems have been tested?
 <h2 class="anchored" data-anchor-id="installation-steps">Installation steps</h2>
 <p>To download and install FloodAdapt on your computer:</p>
 <ul>
-<li>Download the FloodAdapt installer from the <a href="https://www.deltares-usa.us/floodadapt-application">Deltares USA website</a>.</li>
-<li>Double-click the “FloodAdaptInstaller” file and the setup wizard will open (see <a href="#fig-setupWizard" class="quarto-xref">Figure&nbsp;1</a>). Follow the steps of the installation wizard.</li>
+<li>Download the FloodAdapt installer from the <a href="https://download.deltares.nl/floodadapt">Deltares website</a>.</li>
+<li>Double-click the “FloodAdaptInstaller-v1.0.0.exe” file and the setup wizard will open (see <a href="#fig-setupWizard" class="quarto-xref">Figure&nbsp;1</a>). Follow the steps of the installation wizard.</li>
 </ul>
 <div id="fig-setupWizard" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
@@ -530,7 +537,7 @@ Figure&nbsp;1: <strong>FloodAdapt installation setup wizard</strong>
 </section>
 <section id="opening-floodadapt" class="level2">
 <h2 class="anchored" data-anchor-id="opening-floodadapt">Opening FloodAdapt</h2>
-<p>When you open the FloodAdapt application you will be prompted to select a database root folder. This is the location where you store one or more FloodAdapt databases. Once you select a root folder, the databases within the root folder will appear. Select the database you want to work with and click “Start” to open the FloodAdapt application. Each time you open FloodAdapt you have the opportunity to change the database root and/or select a different database.</p>
+<p>When you open the FloodAdapt application you will be prompted to select a database root folder. This is the location where you store one or more FloodAdapt databases (don’t select your database here - you want to select the folder your database is contained within). Once you select this root folder, the databases within the root folder will appear. Select the database you want to work with and click “Start” to open the FloodAdapt application. Each time you open FloodAdapt you have the opportunity to change the database root and/or select a different database. It will remember the root folder you selected in the previous session.</p>
 <div id="fig-installation_databaseSelector" class="quarto-float quarto-figure quarto-figure-left anchored" data-fig-align="left">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-installation_databaseSelector-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -551,15 +558,21 @@ Why do I have to select a database?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The FloodAdapt application is a calculation “shell” that requires a FloodAdapt database to work. Details on setting up a FloodAdapt database in a new location are provided in the <a href="../4_system_setup/index.html">Setup Guide</a>.</p>
+<p>The FloodAdapt application is a calculation “shell” that requires a FloodAdapt database to work. Details on setting up a FloodAdapt database in a new location are provided in the <a href="../4_system_setup/index.html">Setup Guide</a>. If you are interested in obtaining support or training from the Deltares team, you can reach us as <a href="mailto:floodadapt@deltares.nl" class="email">floodadapt@deltares.nl</a>.</p>
 </div>
 </div>
+</section>
+<section id="downloading-a-demonstration-database" class="level2">
+<h2 class="anchored" data-anchor-id="downloading-a-demonstration-database">Downloading a demonstration database</h2>
+<p>To try out FloodAdapt, you can download a demonstration database for the city of Charleston, South Carolina on the Deltares website. This database contains some simplifications and is for educational purposes only. It will allow you to test out all of the FloodAdapt functionality.</p>
+<p><a href="https://download.deltares.nl/en/floodadapt_database">Download the demonstration database here</a></p>
+<p>For help setting up a database for your location, check out the <a href="../4_system_setup/index.html">Setup Guide</a> or contact the FloodAdapt team for support or training packages at <a href="mailto:floodadapt@deltares.nl" class="email">floodadapt@deltares.nl</a>.</p>
 <!--The first time the FloodAdapt executable is opened, it will ask for permission for the app to make changes to the computer. The user must select yes, so that the FloodAdapt graphical user interface (GUI) can communicate with the map layers which are stored online. This can only be done by someone who has administrator rights over the computer. After this, FloodAdapt can be opened without administrator rights and will still function properly.
 -->
 </section>
-<section id="floodadapt-database" class="level2">
-<h2 class="anchored" data-anchor-id="floodadapt-database">FloodAdapt database</h2>
-<p>The FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. <a href="#fig-installation_database_structure" class="quarto-xref">Figure&nbsp;3</a> shows the overall folder structure. The “Database Root Folder” is folder where you can store one ore more FloodAdapt site databases. Within each site database, there are three folders: Input, Output, and Static. The input and output folders are populated when you use the FloodAdapt application. The input folder contains information about scenario components: events, projections, measures, strategies and scenarios. The output folder contains the flooding and impact output from simulated scenarios, and is described in more detail in the <a href="../1_user_guide/output/index.html">Output</a> section. The Static folder contains information that is prepared when setting up FloodAdapt for a particular site location (see the <a href="../4_system_setup/index.html">Setup Guide</a>).</p>
+<section id="floodadapt-database-structure" class="level2">
+<h2 class="anchored" data-anchor-id="floodadapt-database-structure">FloodAdapt database structure</h2>
+<p>The FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. <a href="#fig-installation_database_structure" class="quarto-xref">Figure&nbsp;3</a> shows the overall folder structure. The “Database Root Folder” is folder where you can store one ore more FloodAdapt site databases. Within each site database, there are three folders: Input, Output, and Static. The input and output folders are populated when you use the FloodAdapt application. The input folder contains information about scenario components: events, projections, measures, strategies and scenarios. The output folder contains the flooding and impact output from simulated scenarios, and is described in more detail in the <a href="../1_user_guide/output/index.html">Output</a> section. The Static folder contains information that is prepared when setting up FloodAdapt for a particular site location.</p>
 <div id="fig-installation_database_structure" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-installation_database_structure-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
