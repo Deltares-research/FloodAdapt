@@ -535,7 +535,6 @@ class TimeseriesFactory:
                         raise ValueError("SCS configuration not found in database.")
                     scs_file_name = scs_file_name or scs_config.file
                     scs_type = scs_type or scs_config.type
-
                 return ScsTimeseries(
                     duration=duration,
                     peak_time=peak_time,

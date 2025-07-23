@@ -89,6 +89,8 @@ from flood_adapt.objects.projections.projections import (
 )
 from flood_adapt.objects.scenarios.scenarios import Scenario
 
+logger = FloodAdaptLogging.getLogger("SfincsAdapter")
+
 
 class SfincsAdapter(IHazardAdapter):
     """Adapter for the SFINCS model.
@@ -101,7 +103,6 @@ class SfincsAdapter(IHazardAdapter):
         The settings for the SFINCS model.
     """
 
-    logger = FloodAdaptLogging.getLogger("SfincsAdapter")
     _site: Site
     _model: HydromtSfincsModel
 
@@ -120,9 +121,10 @@ class SfincsAdapter(IHazardAdapter):
         """
         self.settings = self.database.site.sfincs
         self.units = self.database.site.gui.units
-        self.sfincs_logger = self._setup_sfincs_logger(model_root)
         self._model = HydromtSfincsModel(
-            root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
+            root=str(model_root.resolve()),
+            mode="r",
+            logger=self._setup_sfincs_logger(model_root),
         )
         self._model.read()
 
@@ -151,12 +153,12 @@ class SfincsAdapter(IHazardAdapter):
 
     def close_files(self):
         """Close all open files and clean up file handles."""
-        for logger in [self.logger, self.sfincs_logger]:
-            if hasattr(logger, "handlers"):
-                for handler in logger.handlers:
+        for _logger in [logger, self.sfincs_logger]:
+            if hasattr(_logger, "handlers"):
+                for handler in _logger.handlers:
                     if isinstance(handler, logging.FileHandler):
                         handler.close()
-                        logger.removeHandler(handler)
+                        _logger.removeHandler(handler)
 
     def __enter__(self) -> "SfincsAdapter":
         return self
@@ -167,16 +169,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def has_run(self, scenario: Scenario) -> bool:
         """Check if the model has been run."""
-        event = self.database.events.get(scenario.event)
-        if event.mode == Mode.risk:
-            sim_paths = [
-                self._get_simulation_path(scenario, sub_event=sub_event)
-                for sub_event in event.sub_events
-            ]
-            # No need to check postprocessing for risk scenarios
-            return all(self.sfincs_completed(sim_path) for sim_path in sim_paths)
-        else:
-            return self.sfincs_completed(self._get_simulation_path(scenario))
+        return self.run_completed(scenario)
 
     def execute(self, path: Path, strict: bool = True) -> bool:
         """
@@ -199,7 +192,7 @@ class SfincsAdapter(IHazardAdapter):
 
         """
         with cd(path):
-            self.logger.info(f"Running SFINCS in {path}")
+            logger.info(f"Running SFINCS in {path}")
             process = subprocess.run(
                 str(Settings().sfincs_bin_path),
                 stdout=subprocess.PIPE,
@@ -207,7 +200,7 @@ class SfincsAdapter(IHazardAdapter):
                 text=True,
             )
             self.sfincs_logger.info(process.stdout)
-            self.logger.debug(process.stdout)
+            logger.debug(process.stdout)
 
         self._cleanup_simulation_folder(path)
 
@@ -225,7 +218,7 @@ class SfincsAdapter(IHazardAdapter):
             if strict:
                 raise RuntimeError(f"SFINCS model failed to run in {path}.")
             else:
-                self.logger.error(f"SFINCS model failed to run in {path}.")
+                logger.error(f"SFINCS model failed to run in {path}.")
 
         return process.returncode == 0
 
@@ -262,7 +255,7 @@ class SfincsAdapter(IHazardAdapter):
         with SfincsAdapter(model_root=template_path) as model:
             model._load_scenario_objects(scenario, event)
             is_risk = "Probabilistic " if model._event_set is not None else ""
-            self.logger.info(
+            logger.info(
                 f"Preprocessing Scenario `{model._scenario.name}`: {is_risk}Event `{model._event.name}`, Strategy `{model._strategy.name}`, Projection `{model._projection.name}`"
             )
             # Write template model to output path and set it as the model root so focings can write to it
@@ -273,12 +266,11 @@ class SfincsAdapter(IHazardAdapter):
             for forcing in model._event.get_forcings():
                 model.add_forcing(forcing)
 
-            if self.rainfall is not None:
-                model.rainfall *= model._event.rainfall_multiplier
-            else:
-                model.logger.warning(
-                    "Failed to add event rainfall multiplier, no rainfall forcing found in the model."
+            if model.rainfall is not None:
+                logger.info(
+                    f"Adding event's rainfall multiplier: {model._event.rainfall_multiplier}"
                 )
+                model.rainfall *= model._event.rainfall_multiplier
 
             # Measures
             for measure in model._strategy.get_hazard_measures():
@@ -298,14 +290,14 @@ class SfincsAdapter(IHazardAdapter):
             raise ValueError(f"Unsupported event mode: {event.mode}.")
 
         sim_path = self._get_simulation_path(scenario=scenario, sub_event=event)
-        self.logger.info(f"Running SFINCS for single event Scenario `{scenario.name}`")
+        logger.info(f"Running SFINCS for single event Scenario `{scenario.name}`")
         self.execute(sim_path)
 
     def postprocess(self, scenario: Scenario, event: Event):
         if event.mode != Mode.single_event:
             raise ValueError(f"Unsupported event mode: {event.mode}.")
 
-        self.logger.info(f"Postprocessing SFINCS for Scenario `{scenario.name}`")
+        logger.info(f"Postprocessing SFINCS for Scenario `{scenario.name}`")
         if not self.sfincs_completed(
             self._get_simulation_path(scenario, sub_event=event)
         ):
@@ -317,7 +309,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def set_timing(self, time: TimeFrame):
         """Set model reference times."""
-        self.logger.info(f"Setting timing for the SFINCS model: `{time}`")
+        logger.info(f"Setting timing for the SFINCS model: `{time}`")
         self._model.set_config("tref", time.start_time)
         self._model.set_config("tstart", time.start_time)
         self._model.set_config("tstop", time.end_time)
@@ -327,7 +319,7 @@ class SfincsAdapter(IHazardAdapter):
         if forcing is None:
             return
 
-        self.logger.info(
+        logger.info(
             f"Adding {forcing.type.capitalize()}: {forcing.source.capitalize()}"
         )
         if isinstance(forcing, IRainfall):
@@ -339,13 +331,13 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(forcing, IWaterlevel):
             self._add_forcing_waterlevels(forcing)
         else:
-            self.logger.warning(
+            logger.warning(
                 f"Skipping unsupported forcing type {forcing.__class__.__name__}"
             )
 
     def add_measure(self, measure: Measure):
         """Get measure data and add it."""
-        self.logger.info(
+        logger.info(
             f"Adding {measure.__class__.__name__.capitalize()} `{measure.name}`"
         )
 
@@ -356,38 +348,30 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(measure, Pump):
             self._add_measure_pump(measure)
         else:
-            self.logger.warning(
+            logger.warning(
                 f"Skipping unsupported measure type {measure.__class__.__name__}"
             )
 
     def add_projection(self, projection: Projection):
         """Get forcing data currently in the sfincs model and add the projection it."""
-        self.logger.info(f"Adding Projection `{projection.name}`")
+        logger.info(f"Adding Projection `{projection.name}`")
         phys_projection = projection.physical_projection
 
         if phys_projection.sea_level_rise:
-            self.logger.info(
-                f"Adding projected sea level rise `{phys_projection.sea_level_rise}`"
-            )
             if self.waterlevels is not None:
+                logger.info(
+                    f"Adding projected sea level rise `{phys_projection.sea_level_rise}`"
+                )
                 self.waterlevels += phys_projection.sea_level_rise.convert(
                     us.UnitTypesLength.meters
                 )
-            else:
-                self.logger.warning(
-                    "Failed to add sea level rise, no water level forcing found in the model."
-                )
 
         if phys_projection.rainfall_multiplier:
-            self.logger.info(
-                f"Adding projected rainfall multiplier `{phys_projection.rainfall_multiplier}`"
-            )
             if self.rainfall is not None:
-                self.rainfall *= phys_projection.rainfall_multiplier
-            else:
-                self.logger.warning(
-                    "Failed to add projected rainfall multiplier, no rainfall forcing found in the model."
+                logger.info(
+                    f"Adding projected rainfall multiplier `{phys_projection.rainfall_multiplier}`"
                 )
+                self.rainfall *= phys_projection.rainfall_multiplier
 
     ### GETTERS ###
     def get_model_time(self) -> TimeFrame:
@@ -518,10 +502,9 @@ class SfincsAdapter(IHazardAdapter):
         bool : True if all flood maps exist, False otherwise.
 
         """
-        any_floodmap = len(self._get_flood_map_paths(scenario)) > 0
-        all_exist = all(
-            floodmap.exists() for floodmap in self._get_flood_map_paths(scenario)
-        )
+        paths = self._get_flood_map_paths(scenario)
+        any_floodmap = len(paths) > 0
+        all_exist = all(floodmap.exists() for floodmap in paths)
         return any_floodmap and all_exist
 
     def sfincs_completed(self, sim_path: Path) -> bool:
@@ -560,7 +543,7 @@ class SfincsAdapter(IHazardAdapter):
         sim_path : Path, optional
             Path to the simulation folder, by default None.
         """
-        self.logger.info("Writing flood maps to geotiff")
+        logger.info("Writing flood maps to geotiff")
         results_path = self._get_result_path(scenario)
         sim_path = sim_path or self._get_simulation_path(scenario)
         demfile = self.database.static_path / "dem" / self.settings.dem.filename
@@ -593,7 +576,7 @@ class SfincsAdapter(IHazardAdapter):
         self, scenario: Scenario, sim_path: Optional[Path] = None
     ):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
-        self.logger.info("Writing water level map to netcdf")
+        logger.info("Writing water level map to netcdf")
         results_path = self._get_result_path(scenario)
         sim_path = sim_path or self._get_simulation_path(scenario)
 
@@ -627,10 +610,10 @@ class SfincsAdapter(IHazardAdapter):
         Only for single event scenarios, or for a specific simulation path containing the written and processed sfincs model.
         """
         if not self.settings.obs_point:
-            self.logger.warning("No observation points provided in config.")
+            logger.warning("No observation points provided in config.")
             return
 
-        self.logger.info("Plotting water levels at observation points")
+        logger.info("Plotting water levels at observation points")
         sim_path = self._get_simulation_path(scenario)
 
         # read SFINCS model
@@ -713,7 +696,7 @@ class SfincsAdapter(IHazardAdapter):
         """Add observation points provided in the site toml to SFINCS model."""
         if self.settings.obs_point is None:
             return
-        self.logger.info("Adding observation points to the overland flood model")
+        logger.info("Adding observation points to the overland flood model")
 
         obs_points = self.settings.obs_point
         names = []
@@ -741,7 +724,7 @@ class SfincsAdapter(IHazardAdapter):
         wl_df: pd.DataFrame
             time series of water level.
         """
-        self.logger.info("Reading water levels from offshore model")
+        logger.info("Reading water levels from offshore model")
         ds_his = utils.read_sfincs_his_results(
             Path(self._model.root) / "sfincs_his.nc",
             crs=self._model.crs.to_epsg(),
@@ -804,7 +787,7 @@ class SfincsAdapter(IHazardAdapter):
                 zs_maps.append(zsmax)
 
         # Create RP flood maps
-        self.logger.info("Calculating flood risk maps, this may take some time")
+        logger.info("Calculating flood risk maps, this may take some time")
         rp_flood_maps = self.calc_rp_maps(
             floodmaps=zs_maps,
             frequencies=frequencies,
@@ -896,7 +879,7 @@ class SfincsAdapter(IHazardAdapter):
         sim_path = self._get_simulation_path(scenario, sub_event=sub_event)
         if sim_path.exists():
             shutil.rmtree(sim_path, ignore_errors=True)
-            self.logger.info(f"Deleted simulation folder: {sim_path}")
+            logger.info(f"Deleted simulation folder: {sim_path}")
 
         if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
             # Remove the parent directory `simulations` if it is empty
@@ -915,7 +898,7 @@ class SfincsAdapter(IHazardAdapter):
 
             # Preprocess
             self.preprocess(scenario, event=sub_event)
-            self.logger.info(
+            logger.info(
                 f"Running SFINCS for Eventset Scenario `{scenario.name}`, Event `{sub_event.name}` ({i + 1}/{total})"
             )
             self.execute(sim_path)
@@ -1027,9 +1010,7 @@ class SfincsAdapter(IHazardAdapter):
                 direction=None,
             )
         else:
-            self.logger.warning(
-                f"Unsupported wind forcing type: {wind.__class__.__name__}"
-            )
+            logger.warning(f"Unsupported wind forcing type: {wind.__class__.__name__}")
             return
 
     def _add_forcing_rain(self, rainfall: IRainfall):
@@ -1096,7 +1077,7 @@ class SfincsAdapter(IHazardAdapter):
             ds *= conversion
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         else:
-            self.logger.warning(
+            logger.warning(
                 f"Unsupported rainfall forcing type: {rainfall.__class__.__name__}"
             )
             return
@@ -1114,7 +1095,7 @@ class SfincsAdapter(IHazardAdapter):
         if isinstance(forcing, (DischargeConstant, DischargeCSV, DischargeSynthetic)):
             self._set_single_river_forcing(discharge=forcing)
         else:
-            self.logger.warning(
+            logger.warning(
                 f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
             )
 
@@ -1188,7 +1169,7 @@ class SfincsAdapter(IHazardAdapter):
             self._set_waterlevel_forcing(df_ts)
             self._turn_off_bnd_press_correction()
         else:
-            self.logger.warning(
+            logger.warning(
                 f"Unsupported waterlevel forcing type: {forcing.__class__.__name__}"
             )
 
@@ -1226,7 +1207,7 @@ class SfincsAdapter(IHazardAdapter):
             )
 
         sim_path = self.get_model_root()
-        self.logger.info(f"Adding spiderweb forcing to Sfincs model: {sim_path.name}")
+        logger.info(f"Adding spiderweb forcing to Sfincs model: {sim_path.name}")
 
         # prevent SameFileError
         output_spw_path = sim_path / forcing.path.name
@@ -1277,9 +1258,9 @@ class SfincsAdapter(IHazardAdapter):
                 for height in gdf_floodwall["z"]
             ]
             gdf_floodwall["z"] = heights
-            self.logger.info("Using floodwall height from shape file.")
+            logger.info("Using floodwall height from shape file.")
         except Exception:
-            self.logger.warning(
+            logger.warning(
                 f"Could not use height data from file due to missing `z` column or missing values therein. Using uniform height of {floodwall.elevation} instead."
             )
             gdf_floodwall["z"] = floodwall.elevation.convert(
@@ -1373,12 +1354,12 @@ class SfincsAdapter(IHazardAdapter):
         if not isinstance(
             discharge, (DischargeConstant, DischargeSynthetic, DischargeCSV)
         ):
-            self.logger.warning(
+            logger.warning(
                 f"Unsupported discharge forcing type: {discharge.__class__.__name__}"
             )
             return
 
-        self.logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
+        logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
 
         time_frame = self.get_model_time()
         model_rivers = self._read_river_locations()
@@ -1429,9 +1410,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def _turn_off_bnd_press_correction(self):
         """Turn off the boundary pressure correction in the sfincs model."""
-        self.logger.info(
-            "Turning off boundary pressure correction in the offshore model"
-        )
+        logger.info("Turning off boundary pressure correction in the offshore model")
         self._model.set_config("pavbnd", -9999)
 
     def _set_waterlevel_forcing(self, df_ts: pd.DataFrame):
@@ -1481,7 +1460,7 @@ class SfincsAdapter(IHazardAdapter):
             - Required coordinates: ['time', 'y', 'x']
             - spatial_ref: CRS
         """
-        self.logger.info("Adding pressure forcing to the offshore model")
+        logger.info("Adding pressure forcing to the offshore model")
         self._model.setup_pressure_forcing_from_grid(press=ds)
 
     def _add_bzs_from_bca(self, event: Event, physical_projection: PhysicalProjection):
@@ -1490,7 +1469,7 @@ class SfincsAdapter(IHazardAdapter):
         if self.settings.config.offshore_model is None:
             raise ValueError("No offshore model found in sfincs config.")
 
-        self.logger.info("Adding water level forcing to the offshore model")
+        logger.info("Adding water level forcing to the offshore model")
         sb = SfincsBoundary()
         sb.read_flow_boundary_points(self.get_model_root() / "sfincs.bnd")
         sb.read_astro_boundary_conditions(self.get_model_root() / "sfincs.bca")
@@ -1711,10 +1690,10 @@ class SfincsAdapter(IHazardAdapter):
 
         # Rainfall
         start = "Including" if include_rainfall else "Excluding"
-        self.logger.info(f"{start} rainfall in the spiderweb file")
+        logger.info(f"{start} rainfall in the spiderweb file")
         tc.include_rainfall = include_rainfall
 
-        self.logger.info(
+        logger.info(
             f"Creating spiderweb file for hurricane event `{name}`. This may take a while."
         )
 
@@ -1733,7 +1712,7 @@ class SfincsAdapter(IHazardAdapter):
         ):
             return tc
 
-        self.logger.info(f"Translating the track of the tropical cyclone `{tc.name}`")
+        logger.info(f"Translating the track of the tropical cyclone `{tc.name}`")
         # First convert geodataframe to the local coordinate system
         crs = pyproj.CRS.from_string(self.settings.config.csname)
         tc.track = tc.track.to_crs(crs)
@@ -1811,6 +1790,7 @@ class SfincsAdapter(IHazardAdapter):
         )
         sfincs_logger.setLevel(logging.DEBUG)
         sfincs_logger.addHandler(file_handler)
+        self.sfincs_logger = sfincs_logger
         return sfincs_logger
 
     def _cleanup_simulation_folder(
@@ -1853,8 +1833,8 @@ class SfincsAdapter(IHazardAdapter):
             units=us.UnitTypesLength(units),
         )
 
-        if df_gauge is None:
-            self.logger.warning(
+        if df_gauge is None or df_gauge.empty:
+            logger.warning(
                 "No water level data available for the tide gauge. Could not add it to the plot."
             )
             return
