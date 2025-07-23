@@ -232,14 +232,14 @@ class Database(IDatabase):
 
         if mode == Mode.single_event:
             if _type == FloodmapType.water_level:
-                paths = [base_dir / "max_water_level_map.nc"]
+                paths = [base_dir / "max_water_level_map.tif"]
             elif _type == FloodmapType.water_depth:
-                paths = [base_dir / f"FloodMap_{self.name}.tif"]
+                paths = [base_dir / f"FloodMap_{scenario_name}.tif"]
         elif mode == Mode.risk:
             if _type == FloodmapType.water_level:
-                paths = list(base_dir.glob("RP_*_maps.nc"))
+                paths = list(base_dir.glob("RP_*_max_water_level_map.tif"))
             elif _type == FloodmapType.water_depth:
-                paths = list(base_dir.glob("RP_*_maps.tif"))
+                paths = list(base_dir.glob("RP_*_FloodMap.tif"))
         else:
             raise DatabaseError(
                 f"Flood map type '{_type}' is not valid. Must be one of 'water_level' or 'water_depth'."
