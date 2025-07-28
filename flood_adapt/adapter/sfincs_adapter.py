@@ -303,9 +303,9 @@ class SfincsAdapter(IHazardAdapter):
         ):
             raise RuntimeError("SFINCS was not run successfully!")
 
+        self.write_water_level_map(scenario)
         self.write_floodmap_geotiff(scenario)
         self.plot_wl_obs(scenario)
-        self.write_water_level_map(scenario)
 
     def set_timing(self, time: TimeFrame):
         """Set model reference times."""
@@ -410,6 +410,15 @@ class SfincsAdapter(IHazardAdapter):
             QuadtreeGrid with the model grid
         """
         return self._model.quadtree
+
+    def get_finest_res(self) -> float:
+        """Get the finest resolution of the model grid."""
+        if self._model.grid_type == "quadtree":
+            res0 = self._model.quadtree.dx
+            res = res0 / 2**self._model.quadtree.nr_refinement_levels
+        else:
+            res = self._model.res[0]
+        return res
 
     # Forcing properties
     @property
@@ -582,13 +591,11 @@ class SfincsAdapter(IHazardAdapter):
 
         with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
-            zsmax.to_netcdf(results_path / "max_water_level_map.nc")
             if hasattr(zsmax, "ugrid"):
                 # First write netcdf with quadtree water levels
                 zsmax.to_netcdf(results_path / "max_water_level_map_qt.nc")
                 # Rasterize to regular grid with specified resolution
-                res = 100  # TODO find a way to get finest resolution from model
-                zsmax = zsmax.ugrid.rasterize(resolution=res)
+                zsmax = zsmax.ugrid.rasterize(resolution=self.get_finest_res())
                 # Add CRS to the rasterized xarray
                 zsmax = zsmax.rio.write_crs(model._model.config["epsg"])
             # Save as a Cloud Optimized GeoTIFF (COG)
@@ -820,8 +827,9 @@ class SfincsAdapter(IHazardAdapter):
                     attrs={"units": "m"},
                 )
             else:
-                res = 100  # TODO find a way to get finest resolution from model
-                zs_rp_single = zs_rp_single.ugrid.rasterize(resolution=res)
+                zs_rp_single = zs_rp_single.ugrid.rasterize(
+                    resolution=self.get_finest_res()
+                )
 
             # Write COG geotiff with water levels
             zs_rp_single = zs_rp_single.rio.write_crs(self._model.crs)
