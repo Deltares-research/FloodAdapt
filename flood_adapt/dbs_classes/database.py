@@ -285,7 +285,7 @@ class Database(IDatabase):
         str
             path to topobathy tiles
         """
-        path = self.static_path / "dem" / "dep_subgrid.tif"
+        path = self.static_path / "dem" / self.site.sfincs.dem.filename
         return str(path)
 
     def get_index_path(self) -> str:
@@ -296,7 +296,7 @@ class Database(IDatabase):
         str
             path to index tiles
         """
-        path = self.static_path / "dem" / "index.tif"
+        path = self.static_path / "dem" / self.site.sfincs.dem.index_filename
         return str(path)
 
     def get_depth_conversion(self) -> float:
