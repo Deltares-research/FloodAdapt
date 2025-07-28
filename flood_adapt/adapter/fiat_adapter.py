@@ -258,7 +258,7 @@ class FiatAdapter(IImpactAdapter):
             map_type=floodmap.map_type,
             var=var,
             is_risk=is_risk,
-            units=us.UnitTypesLength.meters,
+            units=self.database.site.sfincs.config.floodmap_units,
         )
 
         # Save any changes made to disk as well

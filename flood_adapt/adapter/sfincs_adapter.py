@@ -589,8 +589,12 @@ class SfincsAdapter(IHazardAdapter):
         results_path = self._get_result_path(scenario)
         sim_path = sim_path or self._get_simulation_path(scenario)
 
+        floodmap_conversion = us.UnitfulLength(
+            value=1.0, units=us.UnitTypesLength.meters
+        ).convert(self.settings.config.floodmap_units)
+
         with SfincsAdapter(model_root=sim_path) as model:
-            zsmax = model._get_zsmax()
+            zsmax = model._get_zsmax() * floodmap_conversion
             if hasattr(zsmax, "ugrid"):
                 # First write netcdf with quadtree water levels
                 zsmax.to_netcdf(results_path / "max_water_level_map_qt.nc")
