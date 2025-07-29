@@ -598,8 +598,8 @@ class SfincsAdapter(IHazardAdapter):
             if hasattr(zsmax, "ugrid"):
                 # First write netcdf with quadtree water levels
                 zsmax.to_netcdf(results_path / "max_water_level_map_qt.nc")
-                # Rasterize to regular grid with specified resolution
-                zsmax = zsmax.ugrid.rasterize(resolution=self.get_finest_res())
+                # Rasterize to regular grid with the finest resolution
+                zsmax = self._rasterize_quadtree(zsmax)
                 # Add CRS to the rasterized xarray
                 zsmax = zsmax.rio.write_crs(model._model.config["epsg"])
             # Save as a Cloud Optimized GeoTIFF (COG)
@@ -807,8 +807,12 @@ class SfincsAdapter(IHazardAdapter):
             return_periods=floodmap_rp,
         )
 
+        floodmap_conversion = us.UnitfulLength(
+            value=1.0, units=us.UnitTypesLength.meters
+        ).convert(self.settings.config.floodmap_units)
+
         for ii, rp in enumerate(floodmap_rp):
-            zs_rp_single = rp_flood_maps[ii]
+            zs_rp_single = rp_flood_maps[ii] * floodmap_conversion
             # if model is quadtree, write the quadtree netcdf with water levels since it is needed for visualizations
             if self._model.grid_type == "quadtree":
                 zs_rp_single.to_netcdf(
@@ -831,9 +835,7 @@ class SfincsAdapter(IHazardAdapter):
                     attrs={"units": "m"},
                 )
             else:
-                zs_rp_single = zs_rp_single.ugrid.rasterize(
-                    resolution=self.get_finest_res()
-                )
+                zs_rp_single = self._rasterize_quadtree(zs_rp_single)
 
             # Write COG geotiff with water levels
             zs_rp_single = zs_rp_single.rio.write_crs(self._model.crs)
@@ -1630,6 +1632,21 @@ class SfincsAdapter(IHazardAdapter):
             crs=self._model.crs,
         )
         return df, gdf
+
+    def _rasterize_quadtree(self, zsmax: xu.UgridDataArray) -> xr.DataArray:
+        """Rasterize the zsmax UgridDataArray to a regular grid."""
+        xmin, ymin, xmax, ymax = zsmax.ugrid.bounds["mesh2d"]
+        d = self.get_finest_res()
+        x = np.arange(xmin + 0.5 * d, xmax, d)
+        y = np.arange(ymax - 0.5 * d, ymin, -d)
+        # Create a template DataArray with the desired x and y coordinates
+        template = xr.DataArray(
+            np.zeros((len(y), len(x))),
+            coords={"y": y, "x": x},
+            dims=("y", "x"),
+        )
+        zsmax = zsmax.ugrid.rasterize_like(template)
+        return zsmax
 
     def _create_spw_file_from_track(
         self,
