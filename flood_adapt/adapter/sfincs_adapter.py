@@ -863,13 +863,8 @@ class SfincsAdapter(IHazardAdapter):
                     value=1.0, units=self.settings.dem.units
                 ).convert(self.settings.config.floodmap_units)
 
-                # convert zsmax from meters to floodmap units
-                floodmap_conversion = us.UnitfulLength(
-                    value=1.0, units=us.UnitTypesLength.meters
-                ).convert(self.settings.config.floodmap_units)
-
                 utils.downscale_floodmap(
-                    zsmax=floodmap_conversion * zsmax,
+                    zsmax=zs_rp_single,
                     dep=dem_conversion * dem,
                     hmin=0.01,
                     floodmap_fn=str(floodmap_fn),
