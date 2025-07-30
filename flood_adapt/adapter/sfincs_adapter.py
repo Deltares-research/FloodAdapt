@@ -602,6 +602,7 @@ class SfincsAdapter(IHazardAdapter):
                 dtype="float32",
                 nodata=np.nan,
                 OVERVIEW_RESAMPLING="nearest",
+                tags={"units": self.settings.config.floodmap_units.value},
             )
 
     def plot_wl_obs(
@@ -844,6 +845,7 @@ class SfincsAdapter(IHazardAdapter):
                 dtype="float32",
                 nodata=np.nan,
                 OVERVIEW_RESAMPLING="nearest",
+                tags={"units": self.settings.config.floodmap_units.value},
             )
 
             # dem file for high resolution flood depth map
