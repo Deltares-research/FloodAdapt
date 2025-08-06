@@ -116,6 +116,7 @@ class DemModel(BaseModel):
 
     filename: str
     units: us.UnitTypesLength
+    index_filename: str = "index.tif"
 
 
 class DatumModel(BaseModel):
