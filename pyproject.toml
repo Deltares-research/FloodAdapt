@@ -32,7 +32,7 @@ dependencies = [
     "cht-tide           ==0.1.1",
     "dask               ==2024.11.2",   # not a dependency, but a we need to use this version
     "numba_celltree     ==0.2.2",       # not a dependency, but a we need to use this version
-    "fiat-toolbox       ==0.1.17",
+    "fiat-toolbox       ==0.1.20",
     "fiona              >=1.0,<2.0",
     "geojson            >=3.0,<4.0",
     "geopandas          >=1.0,<2.0",
@@ -68,6 +68,7 @@ build = [
 docs = [
     "jupyter            >=1.0,<2.0",
     "jupyter-cache      >=1.0,<2.0",
+    "nbstripout         >=0.8.0,<0.9",
     "matplotlib         >=3.0,<4.0",
     "quartodoc          >=0.9.0,<1.0",
     "sphinx             >=8.0,<9.0",
@@ -77,6 +78,7 @@ docs = [
     "python-dotenv      >=1.0,<2.0",
     "folium             >=0.19.0,<1.0",
     "mapclassify        >=2.8.0,<3.0",
+    "contextily"
 ]
 all = ["flood-adapt[build,dev,docs]"]
 
@@ -102,6 +104,9 @@ addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-
 testpaths = ["tests"]
 
 ### pixi ###
+[tool.pixi.feature.docs.pypi-dependencies]
+flood-adapt = { path = "." }
+
 [tool.pixi.feature.build.pypi-dependencies]
 flood-adapt = { path = "." }
 
@@ -142,10 +147,12 @@ build-db-builder = {cmd = "python distribution/build_database_builder_executable
 
 [tool.pixi.feature.docs.tasks]
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
-clean-docs = {depends-on=["clean-generated-docs"]}
+clean-example-output = { cmd = "python docs/clean_notebook_output.py" }
+clean-example-database = { cmd = "python docs/clean_database.py ./docs/_data/examples/charleston_test" }
+clean-docs = {depends-on=["clean-generated-docs", "clean-example-output", "clean-example-database"]}
 fetch-data = { cmd = "python docs/fetch_data.py" }
 build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
 build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
-render-examples = { cmd = "quarto render ./docs/examples/**/*.ipynb ./docs/examples/**/*.qmd --execute" }
+render-examples = { cmd = "quarto render ./docs/3_api_docs/examples/**/*.ipynb ./docs/3_api_docs/examples/**/*.qmd --execute" }
 open-docs = { cmd = "cmd.exe /c start docs/_site/index.html" }
 render-docs = { cmd = "quarto render ./docs --execute", depends-on=["build-docs", "build-interlinks"] }

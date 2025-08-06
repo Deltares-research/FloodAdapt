@@ -1,0 +1,35 @@
+website:
+  sidebar:
+    - id: user_guide
+      border: true
+      style: "docked"
+      background: light
+      search: true
+      title: "User Guide"
+      href: 1_user_guide/index.qmd # This contains text before sections start
+      contents:
+        - "1_user_guide/getting_started.qmd"
+        - "1_user_guide/site_tab.qmd"
+        - section: "Events"
+          file: "1_user_guide/events/index.qmd"
+          contents:
+            - "1_user_guide/events/historical.qmd"
+            - "1_user_guide/events/hurricane.qmd"
+            - "1_user_guide/events/synthetic_events.qmd"
+            - "1_user_guide/events/probabilistic_events.qmd"
+        - section: "Projections"
+          file: "1_user_guide/projections/index.qmd"
+          contents:
+            - "1_user_guide/projections/climate.qmd"
+            - "1_user_guide/projections/socioEconomic.qmd"
+        - section: "Measures"
+          file: "1_user_guide/measures/index.qmd"
+          contents:
+            - "1_user_guide/measures/hydraulic.qmd"
+            - "1_user_guide/measures/green_infra.qmd"
+            - "1_user_guide/measures/buildings.qmd"
+        - "1_user_guide/strategy/index.qmd"
+        - "1_user_guide/scenarios/index.qmd"
+        - "1_user_guide/output/index.qmd"
+        - "1_user_guide/compare/index.qmd"
+        - "1_user_guide/benefits.qmd"

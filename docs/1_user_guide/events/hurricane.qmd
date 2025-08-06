@@ -1,0 +1,34 @@
+---
+title: Hurricanes
+---
+
+<!--::: {.callout-tip}
+## Watch a video about entering a historical hurricane
+Don't feel like reading? No problem! Check out our video about how to add a hurricane in FloodAdapt, and also how to shift the hurricane to see how different the flooding and impacts would have been had the hurricane made landfall somewhere else.
+{{< video https://www.youtube.com/watch?v=ojzx3JHeGws?rel=0 >}}
+:::
+-->
+The "Hurricane" option allows users to select and shift a historical hurricane from a hurricane track database. When the user selects the "Hurricane” option from the Events tab, they will see a hurricane selection window appear (see @fig-hurricaneSelector), which is populated with historical hurricanes from the National Hurricane Center (NHC) HURDAT2 database. This database is updated by the NHC annually and will require an annual maintenance update to keep the hurricane database in FloodAdapt up to date.  The user can see all hurricanes within a specified distance of the site, or between specified years.
+
+![**Hurricane selector window. You can search by name, and can filter the selection by distance to the site or time window**](../../_static/images/popup_hurricaneSelector.png){#fig-hurricaneSelector}
+
+![**Event template window for a historical hurricane.**](../../_static/images/Hurricane_eventWindow.jpg){#fig-hurricaneTemplate}
+
+Once a hurricane is selected, the hurricane event template window opens (see @fig-hurricaneTemplate). The event name and the timing will be automatically filled in. The user can edit these if desired.
+
+::: {.callout-tip}
+## Recommended for speed: edit the default duration
+The automatic event duration can be shortened to cover just the part of the track relevant at the site. Users can hover their mouse over the track icons in the map window to see date and time stamps. Choose dates from 1-2 days before to 1 day after landfall.
+:::
+
+In the "Hurricane track shift" box, users can **shift the hurricane track** by specifying the distance (e.g. in miles or kms) of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track. Note that when shifting a historical hurricane track, the new track will be assigned the attributes of the original hurricane (like wind and pressure fields).
+
+The wind and rain are automatically derived from information about the hurricane track. The rainfall is derived from the track using the IPET method. The user does not need to specify any information here, but if they wish to override the default 'track' rainfall option, all the rainfall time series options available for the [historical event](historical.qmd) are also available in the hurricane event template (constant, CSV upload, synthetic). In addition, users can specify a 'precipitation multiplier' by which the rainfall will be multiplied at each time step. This can be useful, for example, if a user wants to use the track-derived rainfall but see a 'worse-case' situation.
+
+The river discharge represents the discharge at the model boundary and will be automatically filled to a default (average) value specified during system set-up. The user can modify this value. If there are multiple rivers at the model boundary, the user will be able to select each river to view or modify the discharge. Similar to the [historical event](historical.qmd), users can also upload a CSV or specify a synthetic discharge time series.
+
+<!--::: {.callout-note}
+## Hurricanes far offshore
+It is not recommended to use the **Historical hurricane** option for a hurricane that passed far offshore of the site. In those cases, it is recommended to use the “Historical" event type and run the offshore model using the 'meteo' option, which makes use of spatially varying wind and pressure fields from reanalysis data.
+:::
+-->

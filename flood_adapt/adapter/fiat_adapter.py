@@ -23,6 +23,7 @@ from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.fiat import FiatConfigModel
+from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     ObjectDir,
@@ -39,8 +40,6 @@ from flood_adapt.objects.measures.measures import (
 )
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.workflows.floodmap import FloodMap, FloodmapType
-from flood_adapt.workflows.impacts_integrator import Impacts
 
 # Define naming structure for saved files
 _IMPACT_COLUMNS = FiatColumns(
@@ -70,6 +69,8 @@ _IMPACT_COLUMNS = FiatColumns(
 _FIAT_COLUMNS: FiatColumns = get_fiat_columns(
     fiat_version="0.2.1"
 )  # columns of FIAT # TODO add version from config
+
+logger = FloodAdaptLogging.getLogger("FiatAdapter")
 
 
 class FiatAdapter(IImpactAdapter):
@@ -101,7 +102,6 @@ class FiatAdapter(IImpactAdapter):
     ) -> None:
         # TODO should exe_path and delete_crashed_runs be part of the config?
         # Load FIAT template
-        self.logger = FloodAdaptLogging.getLogger("FiatAdapter")
         self.config = config
         self.config_base_path = config_base_path
         self.exe_path = exe_path
@@ -153,11 +153,16 @@ class FiatAdapter(IImpactAdapter):
 
     def close_files(self):
         """Close all open files and clean up file handles."""
-        if hasattr(self.logger, "handlers"):
-            for handler in self.logger.handlers:
-                if isinstance(handler, logging.FileHandler):
-                    handler.close()
-                    self.logger.removeHandler(handler)
+        loggers = [logger]
+        if self._model is not None:
+            loggers.append(self._model.logger)
+
+        for _logger in loggers:
+            if hasattr(_logger, "handlers"):
+                for handler in _logger.handlers:
+                    if isinstance(handler, logging.FileHandler):
+                        handler.close()
+                        _logger.removeHandler(handler)
 
     def __enter__(self) -> "FiatAdapter":
         return self
@@ -181,8 +186,7 @@ class FiatAdapter(IImpactAdapter):
         bool
             True if the FIAT results file exists, False otherwise.
         """
-        impacts_path = Impacts(scenario=scenario).impacts_path
-
+        impacts_path = self.database.get_impacts_path(scenario_name=scenario.name)
         fiat_results_path = impacts_path.joinpath(
             f"Impacts_detailed_{scenario.name}.csv"
         )
@@ -198,11 +202,10 @@ class FiatAdapter(IImpactAdapter):
         ------
             OSError: If the directory cannot be deleted.
         """
-        self.logger.info("Deleting Delft-FIAT simulation folder")
-        try:
+        self.close_files()
+        if self.model_root.exists():
+            logger.info(f"Deleting {self.model_root}")
             shutil.rmtree(self.model_root)
-        except OSError as e_info:
-            self.logger.warning(f"{e_info}\nCould not delete {self.model_root}.")
 
     def fiat_completed(self) -> bool:
         """Check if fiat has run as expected.
@@ -221,7 +224,7 @@ class FiatAdapter(IImpactAdapter):
             with open(log_file, "r", encoding="cp1252") as f:
                 return "Geom calculation are done!" in f.read()
         except Exception as e:
-            self.logger.error(f"Error while checking if FIAT has run: {e}")
+            logger.error(f"Error while checking if FIAT has run: {e}")
             return False
 
     def preprocess(self, scenario: Scenario) -> None:
@@ -236,7 +239,7 @@ class FiatAdapter(IImpactAdapter):
         -------
             None
         """
-        self.logger.info("Pre-processing Delft-FIAT model")
+        logger.info("Pre-processing Delft-FIAT model")
         # Projection
         projection = self.database.projections.get(scenario.projection)
         self.add_projection(projection)
@@ -247,19 +250,21 @@ class FiatAdapter(IImpactAdapter):
             self.add_measure(measure)
 
         # Hazard
-        floodmap = FloodMap(scenario.name)
+        floodmap = self.database.get_floodmap(scenario.name)
         var = "risk_maps" if floodmap.mode == Mode.risk else "zsmax"
         is_risk = floodmap.mode == Mode.risk
         self.set_hazard(
-            map_fn=floodmap.path,
-            map_type=floodmap.type,
+            map_fn=floodmap.paths,
+            map_type=floodmap.map_type,
             var=var,
             is_risk=is_risk,
             units=us.UnitTypesLength.meters,
         )
 
         # Save any changes made to disk as well
-        output_path = Impacts(scenario).impacts_path / "fiat_model"
+        output_path = (
+            self.database.get_impacts_path(scenario_name=scenario.name) / "fiat_model"
+        )
         self.write(path_out=output_path)
 
     def run(self, scenario) -> None:
@@ -273,7 +278,9 @@ class FiatAdapter(IImpactAdapter):
         -------
             None
         """
-        sim_path = Impacts(scenario=scenario).impacts_path / "fiat_model"
+        sim_path = (
+            self.database.get_impacts_path(scenario_name=scenario.name) / "fiat_model"
+        )
 
         self.preprocess(scenario)
         self.execute(sim_path)
@@ -328,14 +335,14 @@ class FiatAdapter(IImpactAdapter):
             with FloodAdaptLogging.to_file(file_path=fiat_log):
                 FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
 
-                self.logger.info(f"Running FIAT in {path}")
+                logger.info(f"Running FIAT in {path}")
                 process = subprocess.run(
                     args=[Path(exe_path).resolve().as_posix(), "run", "settings.toml"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
                 )
-                self.logger.debug(process.stdout)
+                logger.debug(process.stdout)
 
         if process.returncode != 0:
             if delete_crashed_runs:
@@ -351,7 +358,7 @@ class FiatAdapter(IImpactAdapter):
             if strict:
                 raise RuntimeError(f"FIAT model failed to run in {path}.")
             else:
-                self.logger.error(f"FIAT model failed to run in {path}.")
+                logger.error(f"FIAT model failed to run in {path}.")
 
         if process.returncode == 0:
             self.read_outputs()
@@ -449,16 +456,16 @@ class FiatAdapter(IImpactAdapter):
         if not self.fiat_completed():
             raise RuntimeError("Delft-FIAT did not run successfully!")
 
-        self.logger.info("Post-processing Delft-FIAT results")
+        logger.info("Post-processing Delft-FIAT results")
 
         if not self.outputs:
             self.read_outputs()
         mode = self.database.events.get(scenario.event).mode
 
         # Define scenario output path
-        impacts = Impacts(scenario=scenario)
-        scenario_output_path = impacts.results_path
-        impacts_output_path = impacts.impacts_path
+        impacts_output_path = self.database.get_impacts_path(
+            scenario_name=scenario.name
+        )
 
         # Create column mapping to update column names
         name_translation = {}
@@ -521,7 +528,7 @@ class FiatAdapter(IImpactAdapter):
         ]
 
         # Specify the metrics output path
-        metrics_outputs_path = scenario_output_path.joinpath(
+        metrics_outputs_path = impacts_output_path.parent.joinpath(
             f"Infometrics_{scenario.name}.csv"
         )
         self.create_infometrics(metric_config_paths, metrics_outputs_path)
@@ -538,7 +545,7 @@ class FiatAdapter(IImpactAdapter):
             )
             self.create_infographics(
                 name=scenario.name,
-                output_base_path=scenario_output_path,
+                output_base_path=impacts_output_path.parent,
                 config_base_path=config_base_path,
                 metrics_path=metrics_outputs_path,
                 mode=mode,
@@ -576,7 +583,7 @@ class FiatAdapter(IImpactAdapter):
                 )
             )
 
-        self.logger.info("Delft-FIAT post-processing complete!")
+        logger.info("Delft-FIAT post-processing complete!")
 
         # If site config is set to not keep FIAT simulation, delete folder
         if not self.config.save_simulation:
@@ -600,7 +607,7 @@ class FiatAdapter(IImpactAdapter):
 
             If the measure type is unsupported, a warning is logged.
         """
-        self.logger.info(f"Applying impact measure '{measure.name}'")
+        logger.info(f"Applying impact measure '{measure.name}'")
         if isinstance(measure, Elevate):
             self.elevate_properties(measure)
         elif isinstance(measure, FloodProof):
@@ -608,7 +615,7 @@ class FiatAdapter(IImpactAdapter):
         elif isinstance(measure, Buyout):
             self.buyout_properties(measure)
         else:
-            self.logger.warning(
+            logger.warning(
                 f"Skipping unsupported measure type {measure.__class__.__name__}"
             )
 
@@ -628,7 +635,7 @@ class FiatAdapter(IImpactAdapter):
         economic growth.
         - Population growth is applied to existing objects if specified.
         """
-        self.logger.info(
+        logger.info(
             f"Applying socioeconomic changes from projection '{projection.name}'"
         )
         socio_economic_change = projection.socio_economic_change
@@ -704,7 +711,7 @@ class FiatAdapter(IImpactAdapter):
         units : str, optional
             The units of the hazard map. Defaults to us.UnitTypesLength.meters.
         """
-        self.logger.info(f"Setting hazard to the {map_type} map {map_fn}")
+        logger.info(f"Setting hazard to the {map_type} map {map_fn}")
         # Add the floodmap data to a data catalog with the unit conversion
         wl_current_units = us.UnitfulLength(value=1.0, units=units)
         conversion_factor = wl_current_units.convert(self.model.exposure.unit)
@@ -740,7 +747,7 @@ class FiatAdapter(IImpactAdapter):
         ids : Optional[list], default=None
             A list of object IDs to which the economic growth should be applied. If None, the growth is applied to all buildings.
         """
-        self.logger.info(f"Applying economic growth of {economic_growth} %.")
+        logger.info(f"Applying economic growth of {economic_growth} %.")
         # Get columns that include max damage
         damage_cols = [
             c
@@ -787,7 +794,7 @@ class FiatAdapter(IImpactAdapter):
         ids : Optional[list[str]]
             A list of object IDs to filter the updates. If None, the updates are applied to all buildings.
         """
-        self.logger.info(f"Applying population growth of {population_growth} %.")
+        logger.info(f"Applying population growth of {population_growth} %.")
         # Get columns that include max damage
         damage_cols = [
             c
@@ -847,7 +854,7 @@ class FiatAdapter(IImpactAdapter):
             If `elevation_type` is 'floodmap' and base flood elevation (bfe) map is not provided.
             If `elevation_type` is not 'floodmap' or 'datum'.
         """
-        self.logger.info(
+        logger.info(
             f"Applying population growth of {population_growth} %, by creating a new development area using the geometries from {area_path} and a ground floor height of {ground_floor_height} {self.model.exposure.unit} above '{elevation_type}'."
         )
         # Get reference type to align with hydromt
@@ -876,6 +883,16 @@ class FiatAdapter(IImpactAdapter):
             for aggr in self.config.aggregation
         ]
         new_dev_geom_name = Path(self.config.new_development_file_name).stem
+        # Ensure new_devs geom is in the correct CRS
+        new_dev_geom = gpd.read_file(area_path)
+        if new_dev_geom.crs != self.model.exposure.crs:
+            logger.warning(
+                f"New development area geometries are in {new_dev_geom.crs}, but the model is in {self.model.exposure.crs}. Reprojecting geometries."
+            )
+            new_dev_geom = new_dev_geom.to_crs(self.model.exposure.crs)
+        # Replace file with the reprojected one
+        os.remove(area_path)
+        new_dev_geom.to_file(area_path)
         # Use hydromt function
         self.model.exposure.setup_new_composite_areas(
             percent_growth=population_growth,
@@ -932,7 +949,7 @@ class FiatAdapter(IImpactAdapter):
             If the elevation type is not 'floodmap' or 'datum'.
         """
         area = self._get_area_name(elevate)
-        self.logger.info(
+        logger.info(
             f"Elevating '{elevate.property_type}' type properties in '{area}' by {elevate.elevation} relative to '{elevate.elevation.type}'."
         )
         # If ids are given use that as an additional filter
@@ -980,9 +997,7 @@ class FiatAdapter(IImpactAdapter):
 
         """
         area = self._get_area_name(buyout)
-        self.logger.info(
-            f"Buying-out '{buyout.property_type}' type properties in '{area}'."
-        )
+        logger.info(f"Buying-out '{buyout.property_type}' type properties in '{area}'.")
         # Get columns that include max damage
         damage_cols = [
             c
@@ -1021,7 +1036,7 @@ class FiatAdapter(IImpactAdapter):
             The FloodProof measure containing the details of the properties to be floodproofed.
         """
         area = self._get_area_name(floodproof)
-        self.logger.info(
+        logger.info(
             f"Flood-proofing '{floodproof.property_type}' type properties in '{area}' by {floodproof.elevation}."
         )
         # If ids are given use that as an additional filter
@@ -1182,7 +1197,7 @@ class FiatAdapter(IImpactAdapter):
         pd.DataFrame
             The updated results table with exceedance probabilities appended.
         """
-        self.logger.info("Calculating exceedance probabilities")
+        logger.info("Calculating exceedance probabilities")
         fiat_results_df = ExceedanceProbabilityCalculator(column).append_probability(
             self.outputs["table"], threshold, period
         )
@@ -1208,7 +1223,7 @@ class FiatAdapter(IImpactAdapter):
             If a mandatory metric configuration file does not exist.
         """
         # Get the metrics configuration
-        self.logger.info("Calculating infometrics")
+        logger.info("Calculating infometrics")
 
         # Write the metrics to file
         # Check if type of metric configuration is available
@@ -1259,13 +1274,13 @@ class FiatAdapter(IImpactAdapter):
         mode : Mode, optional
             The mode of the infographic, by default Mode.single_event.
         """
-        self.logger.info("Creating infographics")
+        logger.info("Creating infographics")
 
         # Check if infographics config file exists
         if mode == Mode.risk:
             config_path = config_base_path.joinpath("config_risk_charts.toml")
             if not config_path.exists():
-                self.logger.warning(
+                logger.warning(
                     "Risk infographic cannot be created, since 'config_risk_charts.toml' is not available"
                 )
                 return
@@ -1305,12 +1320,12 @@ class FiatAdapter(IImpactAdapter):
         # TODO check what happens if aggr_label not in config
 
         if self.config.aggregation[ind].equity is None:
-            self.logger.warning(
+            logger.warning(
                 f"Cannot calculate equity weighted risk for aggregation label: {aggr_label}, because equity inputs are not available."
             )
             return
 
-        self.logger.info(
+        logger.info(
             f"Calculating equity weighted risk for aggregation label: {aggr_label} "
         )
         metrics = pd.read_csv(metrics_path)
@@ -1373,7 +1388,7 @@ class FiatAdapter(IImpactAdapter):
         output_path : os.PathLike
             The path where the output spatial file will be saved.
         """
-        self.logger.info(f"Saving impacts for aggregation areas type: '{aggr_label}'")
+        logger.info(f"Saving impacts for aggregation areas type: '{aggr_label}'")
 
         metrics = pd.read_csv(metrics_path)
 
@@ -1409,7 +1424,7 @@ class FiatAdapter(IImpactAdapter):
         ValueError
             If no building footprints are provided in the configuration.
         """
-        self.logger.info("Calculating impacts at a building footprint scale")
+        logger.info("Calculating impacts at a building footprint scale")
 
         # Read the existing building points
         buildings = self.model.exposure.select_objects(
@@ -1480,7 +1495,7 @@ class FiatAdapter(IImpactAdapter):
         output_path : os.PathLike
             The path where the output spatial file will be saved.
         """
-        self.logger.info("Calculating road impacts")
+        logger.info("Calculating road impacts")
         # Read roads spatial file
         roads = gpd.read_file(
             self.outputs["path"].joinpath(self.config.roads_file_name)
@@ -1539,3 +1554,25 @@ class FiatAdapter(IImpactAdapter):
                         if line.startswith("#"):
                             line = "#" + " " * hash_spacing + line.lstrip("#")
                         file.write(line)
+
+    def _delete_simulation_folder(self, scn: Scenario):
+        """
+        Delete the Delft-FIAT simulation folder for a given scenario.
+
+        Parameters
+        ----------
+        scn : Scenario
+            The scenario for which the simulation folder should be deleted.
+
+        Raises
+        ------
+        OSError
+            If the directory cannot be deleted.
+        """
+        simulation_path = (
+            self.database.scenarios.output_path / scn.name / "Impacts" / "fiat_model"
+        )
+        if simulation_path.exists():
+            self.close_files()
+            shutil.rmtree(simulation_path)
+            logger.info(f"Deleted Delft-FIAT simulation folder: {simulation_path}")

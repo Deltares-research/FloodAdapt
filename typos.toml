@@ -1,10 +1,10 @@
 
 [files]
 extend-exclude = [
-    "*.js",
-    "*.css",
-    "*.svg",
-    "*.json",
+    "**/*.js",
+    "**/*.css",
+    "**/*.svg",
+    "**/*.json",
 ]
 ignore-hidden = true
 

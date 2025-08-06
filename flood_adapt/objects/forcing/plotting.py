@@ -5,7 +5,6 @@ from typing import List, Optional
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -119,6 +118,14 @@ def plot_discharge(
         river_names.append(river.name)
         river_descriptions.append(river.description or river.name)
 
+    if event.template == Template.Synthetic:
+        data.index = (
+            data.index - data.index[0]
+        ).total_seconds() / 3600  # Convert to hours
+        x_title = "Hours from start"
+    else:
+        x_title = "Time"
+
     # Plot actual thing
     fig = go.Figure()
     for ii, col in enumerate(data.columns):
@@ -140,7 +147,7 @@ def plot_discharge(
         title_font={"size": 10, "color": "black", "family": "Arial"},
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis_title={"text": "Time"},
+        xaxis_title={"text": x_title},
         yaxis_title={"text": f"River discharge [{units.value}]"},
         xaxis={"range": [event.time.start_time, event.time.end_time]},
     )
@@ -307,6 +314,14 @@ def plot_rainfall(
     # Add multiplier
     data *= event.rainfall_multiplier
 
+    if event.template == Template.Synthetic:
+        data.index = (
+            data.index - data.index[0]
+        ).total_seconds() / 3600  # Convert to hours
+        x_title = "Hours from start"
+    else:
+        x_title = "Time"
+
     # Plot actual thing
     fig = px.line(data_frame=data)
 
@@ -320,7 +335,7 @@ def plot_rainfall(
         legend=None,
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis_title={"text": "Time"},
+        xaxis_title={"text": x_title},
         yaxis_title={
             "text": f"Rainfall intensity [{site.gui.units.default_intensity_units.value}]"
         },
@@ -370,37 +385,16 @@ def plot_wind(
         )
         return "", None
 
+    if event.template == Template.Synthetic:
+        data.index = (
+            data.index - data.index[0]
+        ).total_seconds() / 3600  # Convert to hours
+        x_title = "Hours from start"
+    else:
+        x_title = "Time"
+
     # Plot actual thing
-    # Create figure with secondary y-axis
-
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-
-    # Add traces
-    fig.add_trace(
-        go.Scatter(
-            x=data.index,
-            y=data.iloc[:, 0],
-            name="Wind speed",
-            mode="lines",
-        ),
-        secondary_y=False,
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=data.index, y=data.iloc[:, 1], name="Wind direction", mode="markers"
-        ),
-        secondary_y=True,
-    )
-
-    # Set y-axes titles
-    fig.update_yaxes(
-        title_text=f"Wind speed [{site.gui.units.default_velocity_units.value}]",
-        secondary_y=False,
-    )
-    fig.update_yaxes(
-        title_text=f"Wind direction {site.gui.units.default_direction_units.value}",
-        secondary_y=True,
-    )
+    fig = px.line(x=data.index, y=data.iloc[:, 0])
 
     fig.update_layout(
         autosize=False,
@@ -410,11 +404,14 @@ def plot_wind(
         font={"size": 10, "color": "black", "family": "Arial"},
         title_font={"size": 10, "color": "black", "family": "Arial"},
         legend=None,
-        yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-        xaxis={"range": [event.time.start_time, event.time.end_time]},
-        xaxis_title={"text": "Time"},
         showlegend=False,
+        xaxis={"range": [event.time.start_time, event.time.end_time]},
+        xaxis_title={"text": x_title},
+        xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+        yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+        yaxis_title={
+            "text": f"Wind speed [{site.gui.units.default_velocity_units.value}]"
+        },
     )
 
     # Only save to the the event folder if that has been created already.

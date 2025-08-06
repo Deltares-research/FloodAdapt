@@ -18,7 +18,6 @@ from flood_adapt.misc.path_builder import (
 )
 from flood_adapt.objects.benefits.benefits import Benefit
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.workflows.scenario_runner import ScenarioRunner
 
 
 class BenefitRunner:
@@ -143,9 +142,10 @@ class BenefitRunner:
                 scn_avl for scn_avl in scenarios_avail if scenario_obj == scn_avl
             ]
             if len(created) > 0:
-                runner = ScenarioRunner(self.database, scenario=created[0])
                 scenarios_calc[scenario]["scenario created"] = created[0].name
-                scenarios_calc[scenario]["scenario run"] = runner.impacts.has_run
+                scenarios_calc[scenario]["scenario run"] = (
+                    self.database.scenarios.has_run_check(created[0].name)
+                )
             else:
                 scenarios_calc[scenario]["scenario created"] = "No"
                 scenarios_calc[scenario]["scenario run"] = False

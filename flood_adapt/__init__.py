@@ -1,7 +1,7 @@
 # has to be here at the start to avoid circular imports
-__version__ = "0.3.9"
+__version__ = "1.0.4"
 
-from flood_adapt import adapter, dbs_classes, objects
+from flood_adapt import adapter, database_builder, dbs_classes, objects
 from flood_adapt.config.config import Settings
 from flood_adapt.config.site import Site
 from flood_adapt.flood_adapt import FloodAdapt
@@ -18,6 +18,7 @@ __all__ = [
     "objects",
     "dbs_classes",
     "adapter",
+    "database_builder",
     "FloodAdaptError",
     "DatabaseError",
     "ComponentError",

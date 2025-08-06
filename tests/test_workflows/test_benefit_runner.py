@@ -241,6 +241,10 @@ class TestBenefitScenariosRun:
             dummy_metrics.to_csv(
                 output_path.joinpath(f"Infometrics_{row['scenario created']}.csv")
             )
+
+            # Save an empty txt file called "finished.txt" in the same path
+            output_path.joinpath("finished.txt").touch()
+
             # Create dummy metrics for aggregation areas
             for aggr_type in aggrs.keys():
                 aggr = aggrs[aggr_type]

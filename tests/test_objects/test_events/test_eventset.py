@@ -4,7 +4,7 @@ from tempfile import gettempdir
 
 import pytest
 
-from flood_adapt.config.sfincs import RiverModel
+from flood_adapt.config.hazard import RiverModel
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.objects.events.event_set import (
     EventSet,
@@ -115,7 +115,7 @@ def test_sub_event() -> SyntheticEvent:
 def test_eventset(
     test_sub_event: SyntheticEvent,
     setup_nearshore_event: HistoricalEvent,
-    setup_offshore_meteo_event: HistoricalEvent,
+    # setup_offshore_meteo_event: HistoricalEvent, # uncomment when hydromt-sfincs 1.3.0 is released
 ) -> EventSet:
     sub_event_models: list[SubEventModel] = []
     sub_events = []
@@ -123,10 +123,14 @@ def test_eventset(
     hurricane = _create_hurricane_event("sub_hurricane")
     synthetic = test_sub_event
     historical_nearshore = setup_nearshore_event
-    historical_offshore = setup_offshore_meteo_event
+    # historical_offshore = setup_offshore_meteo_event # uncomment when hydromt-sfincs 1.3.0 is released
 
     for i, event in enumerate(
-        [hurricane, synthetic, historical_nearshore, historical_offshore]
+        [
+            hurricane,
+            synthetic,
+            historical_nearshore,
+        ]  # , historical_offshore] # uncomment when hydromt-sfincs 1.3.0 is released
     ):
         event.name = f"{event.name}_{i + 1:04d}"
         sub_event_models.append(SubEventModel(name=event.name, frequency=i + 1))
@@ -189,8 +193,7 @@ class TestEventSet:
         self, setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet]
     ):
         test_db, scn, event_set = setup_eventset_scenario
-        runner = ScenarioRunner(test_db, scenario=scn)
-        runner.run()
+        ScenarioRunner(test_db, scenario=scn).run()
 
         output_path = Path(test_db.scenarios.output_path) / scn.name / "Flooding"
 

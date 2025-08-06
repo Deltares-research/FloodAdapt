@@ -96,7 +96,7 @@ jobs:
 
   setup_and_build:
     needs: [details, check_pypi]
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - name: Setup pixi
@@ -104,11 +104,10 @@ jobs:
         with:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-          frozen: true
 
       - name: Build source and wheel distribution
         run: |
-          pixi run -e build --frozen python -s -m build
+          pixi run -e build python -s -m build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

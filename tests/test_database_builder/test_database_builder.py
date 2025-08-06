@@ -1,3 +1,4 @@
+import logging
 import shutil
 import tempfile
 from datetime import datetime
@@ -11,17 +12,9 @@ import shapely
 import tomli
 from shapely import Polygon
 
-from flood_adapt import Settings
+from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt import unit_system as us
-from flood_adapt.config.fiat import (
-    AggregationModel,
-    BenefitsModel,
-    BFEModel,
-    EquityModel,
-    RiskModel,
-    SVIModel,
-)
-from flood_adapt.config.sfincs import (
+from flood_adapt.config.hazard import (
     DatumModel,
     DemModel,
     FloodModel,
@@ -30,13 +23,20 @@ from flood_adapt.config.sfincs import (
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
+from flood_adapt.config.impacts import (
+    AggregationModel,
+    BenefitsModel,
+    BFEModel,
+    EquityModel,
+    RiskModel,
+    SVIModel,
+)
 from flood_adapt.database_builder.database_builder import (
     Basins,
     ConfigModel,
     DatabaseBuilder,
     FootprintsOptions,
     GuiConfigModel,
-    Point,
     SpatialJoinModel,
     SviConfigModel,
     TideGaugeConfigModel,
@@ -198,7 +198,7 @@ class TestDataBaseBuilder:
 
         builder.fiat_model.exposure.exposure_geoms = mock_exposure_geoms
         builder.fiat_model.exposure.exposure_db.columns = ["not BF_FID"]
-
+        builder.fiat_model.exposure.geom_names = ["buildings"]
         # Act
         footprints = builder.create_footprints()
 
@@ -736,11 +736,20 @@ class TestDataBaseBuilder:
             source=TideGaugeSource.file,
             file=str(tide_gauge_file),
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
         builder = DatabaseBuilder(mock_config)
-
+        builder.water_level_references = WaterlevelReferenceModel(
+            reference="MSL",
+            datums=[
+                DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
+                )
+            ],
+        )
         # Act
         tide_gauge = builder.create_tide_gauge()
 
@@ -769,11 +778,21 @@ class TestDataBaseBuilder:
             source=TideGaugeSource.file,
             file=None,
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
 
         builder = DatabaseBuilder(mock_config)
+        builder.water_level_references = WaterlevelReferenceModel(
+            reference="MSL",
+            datums=[
+                DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
+                )
+            ],
+        )
 
         # Act
         with pytest.raises(ValueError) as excinfo:
@@ -800,10 +819,20 @@ class TestDataBaseBuilder:
             source=TideGaugeSource.file,
             file=str(tide_gauge_file),
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
         builder = DatabaseBuilder(mock_config)
+        builder.water_level_references = WaterlevelReferenceModel(
+            reference="MSL",
+            datums=[
+                DatumModel(
+                    name="MSL",
+                    height=us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
+                )
+            ],
+        )
 
         # Act
         tide_gauge = builder.create_tide_gauge()
@@ -818,10 +847,12 @@ class TestDataBaseBuilder:
             ref="MSL",
             source=TideGaugeSource.noaa_coops,
             description="Charleston Cooper River Entrance",
-            location=Point(lat=32.78, lon=-79.9233),
+            lat=32.78,
+            lon=-79.9233,
             max_distance=us.UnitfulLength(value=100, units=us.UnitTypesLength.miles),
         )
-        mock_config.references = WaterlevelReferenceModel(
+        builder = DatabaseBuilder(mock_config)
+        builder.water_level_references = WaterlevelReferenceModel(
             reference="MSL",
             datums=[
                 DatumModel(
@@ -830,8 +861,6 @@ class TestDataBaseBuilder:
                 )
             ],
         )
-        builder = DatabaseBuilder(mock_config)
-
         # Act
         tide_gauge = builder.create_tide_gauge()
         datum_names = [datum.name for datum in builder.water_level_references.datums]
@@ -1055,6 +1084,40 @@ class TestDataBaseBuilder:
         db = Database(str(full_config.database_path), full_config.name)
         assert db is not None
 
+    @pytest.mark.parametrize(
+        "loglevel, expected",
+        [(logging.DEBUG, True), (logging.INFO, False), (logging.WARNING, False)],
+    )
+    def test_debug_timer(
+        self, full_config: ConfigModel, caplog, loglevel: int, expected: bool
+    ):
+        # Arrange
+        FloodAdaptLogging(level=loglevel)
+        caplog.set_level(loglevel, logger="FloodAdapt")
+
+        # Act
+        DatabaseBuilder(full_config)  # __init__ will call create_default_units
+
+        # Assert
+        start_logged = any(
+            "Started 'create_default_units'" in msg for msg in caplog.messages
+        )
+        end_logged = any(
+            "Finished 'create_default_units' in" in msg and "seconds" in msg
+            for msg in caplog.messages
+        )
+
+        if expected:
+            assert start_logged, "Expected 'Started' message not captured"
+            assert end_logged, "Expected 'Finished' message not captured"
+        else:
+            assert (
+                not start_logged
+            ), "Unexpected 'Started' message found at this log level"
+            assert (
+                not end_logged
+            ), "Unexpected 'Finished' message found at this log level"
+
     @pytest.fixture(scope="function")
     def full_config(self):
         db_path = Settings().database_path
@@ -1159,7 +1222,7 @@ class TestDataBaseBuilder:
                     field_name="SVI",
                     threshold=0.5,
                 ),
-                road_width=5,
+                road_width=us.UnitfulLength(value=5, units=us.UnitTypesLength.meters),
                 return_periods=[1, 2, 5, 10, 25, 50, 100],
             )
             yield config

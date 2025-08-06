@@ -4,6 +4,7 @@ project:
   pre-render:
     - version.py
     - api.py
+    - merge_sidebars.py
   render:
     - "*.qmd"
     - "*.ipynb"
@@ -26,18 +27,19 @@ interlinks:
       url: https://numpy.org/doc/stable/
 
 metadata-files:
-  - user_documentation.yml # user guide + sidebar
-  - examples/_sidebar.yml # examples + sidebar
-  - api_ref/_sidebar.yml  # api reference + sidebar
-  - _version.yml          # version information
+  - 1_user_guide/_sidebar.yml      # User Guide
+  - 2_technical_docs/_sidebar.yml  # Technical Docs
+  - 3_api_docs/_sidebar.yml        # API Docs: merged sidebar. generated from api.py and merge_sidebars.py
+  - 4_system_setup/_sidebar.yml    # System Setup
+  - _version.yml                   # Version metadata
 number-sections: false
 
 quartodoc:
   title: "Flood Adapt v{{< meta version >}}"
   style: pkgdown
   package: flood_adapt
-  dir: api_ref
-  out_index: api_index.qmd # generates index at: api_ref/api_index.qmd
+  dir: 3_api_docs/api_ref
+  out_index: api_index.qmd # generates index at: 3_api_docs/api_ref/api_index.qmd
   render_interlinks: true
   options: # default options for all sections
     include_attributes: true
@@ -164,6 +166,20 @@ quartodoc:
         - UnitTypesIntensity
         - VerticalReference
 
+    - title: "Database Builder"
+      package: flood_adapt.database_builder
+      desc: "Database builder for FloodAdapt. The database builder is used to create the database schema and to populate the database with data."
+      contents:
+        - create_database
+        - ConfigModel
+        - UnitSystems
+        - GuiConfigModel
+        - SpatialJoinModel
+        - FootprintsOptions
+        - SviConfigModel
+        - Basins
+        - TideGaugeConfigModel
+
 website:
   title: "Flood Adapt Documentation"
   repo-url: https://github.com/Deltares-research/FloodAdapt
@@ -192,23 +208,18 @@ website:
     title: FloodAdapt
     pinned: true
     left:
-      - text: Introduction
-        href: 1_introduction/index.qmd
       - text: User Guide
-        href: 4_user_guide/index.qmd
-      - text: Setup Guide
-        href: 3_setup_guide/index.qmd
-      - text: Technical Documentation
-        href: 5_technical_docs/index.qmd
-      - text: API Reference
-        href: api_ref/api_index.qmd
-      - text: Examples
-        href: examples/index.qmd
+        href: 1_user_guide/index.qmd
+      - text: Technical Background
+        href: 2_technical_docs/index.qmd
+      - text: API Documentation
+        href: 3_api_docs/index.qmd
+      - text: System Setup
+        href: 4_system_setup/index.qmd
 
     right:
       - icon: github
         url: https://github.com/Deltares-research/FloodAdapt
-
 
 format:
   html:
@@ -221,6 +232,10 @@ format:
     page-layout: article
     grid:
       content-mode: standard
+    url-format: relative
+    filters:
+      - lightbox
+    lightbox: auto
 
 execute:
   freeze: auto

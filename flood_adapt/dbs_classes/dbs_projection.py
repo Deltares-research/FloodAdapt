@@ -6,6 +6,7 @@ class DbsProjection(DbsTemplate[Projection]):
     dir_name = "projections"
     display_name = "Projection"
     _object_class = Projection
+    _higher_lvl_object = "Scenario"
 
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a projection is used in a scenario.

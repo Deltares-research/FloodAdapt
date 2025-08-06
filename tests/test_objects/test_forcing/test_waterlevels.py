@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from flood_adapt.config.sfincs import RiverModel
+from flood_adapt.config.hazard import RiverModel
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.objects.events.historical import (
     HistoricalEvent,
@@ -189,37 +189,35 @@ class TestWaterlevelModel:
     @pytest.fixture()
     def setup_offshore_scenario(self, test_db: IDatabase):
         event = HistoricalEvent(
-            HistoricalEvent(
-                name="test_historical_offshore_meteo",
-                time=TimeFrame(),
-                forcings={
-                    ForcingType.WATERLEVEL: [
-                        WaterlevelModel(),
-                    ],
-                    ForcingType.WIND: [
-                        WindMeteo(),
-                    ],
-                    ForcingType.RAINFALL: [
-                        RainfallMeteo(),
-                    ],
-                    ForcingType.DISCHARGE: [
-                        DischargeConstant(
-                            river=RiverModel(
-                                name="cooper",
-                                description="Cooper River",
-                                x_coordinate=595546.3,
-                                y_coordinate=3675590.6,
-                                mean_discharge=us.UnitfulDischarge(
-                                    value=5000, units=us.UnitTypesDischarge.cfs
-                                ),
-                            ),
-                            discharge=us.UnitfulDischarge(
+            name="test_historical_offshore_meteo",
+            time=TimeFrame(),
+            forcings={
+                ForcingType.WATERLEVEL: [
+                    WaterlevelModel(),
+                ],
+                ForcingType.WIND: [
+                    WindMeteo(),
+                ],
+                ForcingType.RAINFALL: [
+                    RainfallMeteo(),
+                ],
+                ForcingType.DISCHARGE: [
+                    DischargeConstant(
+                        river=RiverModel(
+                            name="cooper",
+                            description="Cooper River",
+                            x_coordinate=595546.3,
+                            y_coordinate=3675590.6,
+                            mean_discharge=us.UnitfulDischarge(
                                 value=5000, units=us.UnitTypesDischarge.cfs
                             ),
                         ),
-                    ],
-                },
-            )
+                        discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
+                        ),
+                    ),
+                ],
+            },
         )
 
         test_db.events.save(event)
