@@ -25,6 +25,7 @@ class Layer(BaseModel):
 
     bins: list[float]
     colors: list[str]
+    decimals: Optional[int] = 0
 
     @model_validator(mode="after")
     def check_bins_and_colors(self) -> "Layer":
@@ -42,18 +43,24 @@ class FloodMapLayer(Layer):
     roads_min_zoom_level: int = 14
 
 
-class AggregationDmgLayer(Layer):
-    damage_decimals: Optional[int] = 0
-
-
 class FootprintsDmgLayer(Layer):
     type: DamageType = DamageType.absolute
-    damage_decimals: Optional[int] = 0
-    buildings_min_zoom_level: int = 13
 
 
 class BenefitsLayer(Layer):
     threshold: Optional[float] = None
+
+
+class MetricLayer(Layer):
+    type: str
+    field_name: str = "name"
+    keys: list[str] = Field(default_factory=list)
+
+
+class AggregationDmgLayer(MetricLayer):
+    type: str = "damage"
+    field_name: str = "name"
+    keys: list[str] = ["TotalDamageEvent", "ExpectedAnnualDamages", "TotalDamageRP"]
 
 
 class OutputLayers(BaseModel):
@@ -75,7 +82,7 @@ class OutputLayers(BaseModel):
     floodmap: FloodMapLayer
     aggregation_dmg: AggregationDmgLayer
     footprints_dmg: FootprintsDmgLayer
-
+    aggregated_metrics: list[MetricLayer] = Field(default_factory=list)
     benefits: Optional[BenefitsLayer] = None
 
 
@@ -157,6 +164,7 @@ class VisualizationLayers(BaseModel):
         The layers to visualize.
     """
 
+    buildings_min_zoom_level: int = 13
     layers: list[VisualizationLayer] = Field(default_factory=list)
 
     def add_layer(
