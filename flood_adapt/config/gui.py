@@ -42,14 +42,22 @@ class FloodMapLayer(Layer):
     roads_min_zoom_level: int = 14
 
 
-class AggregationDmgLayer(Layer):
-    damage_decimals: Optional[int] = 0
-
-
 class FootprintsDmgLayer(Layer):
     type: DamageType = DamageType.absolute
     damage_decimals: Optional[int] = 0
     buildings_min_zoom_level: int = 13
+
+
+class MetricsDmgLayer(Layer):
+    damage_decimals: Optional[int] = 0
+
+
+class MetricsPeopLayer(Layer):
+    damage_decimals: Optional[int] = 0
+
+
+class MetricsHousLayer(Layer):
+    damage_decimals: Optional[int] = 0
 
 
 class BenefitsLayer(Layer):
@@ -63,18 +71,24 @@ class OutputLayers(BaseModel):
     ----------
     floodmap : FloodMapLayer
         The configuration of the floodmap layer.
-    aggregation_dmg : AggregationDmgLayer
-        The configuration of the aggregation damage layer.
     footprints_dmg : FootprintsDmgLayer
         The configuration of the footprints damage layer.
+    metrics_houses: MetricsHousLayer
+        The configuration of the metrics house damage layer.
+    metrics_people: MetricsPeopLayer
+        The configuration of the metrics people damage layer.
+    metrics_damages: MetricsDmgLayer
+        The configuration of the metrics damage layer.
 
     benefits : BenefitsLayer
         The configuration of the benefits layer.
     """
 
     floodmap: FloodMapLayer
-    aggregation_dmg: AggregationDmgLayer
     footprints_dmg: FootprintsDmgLayer
+    metrics_houses: MetricsHousLayer
+    metrics_people: MetricsPeopLayer
+    metrics_damages: MetricsDmgLayer
 
     benefits: Optional[BenefitsLayer] = None
 

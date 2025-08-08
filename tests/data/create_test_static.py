@@ -9,12 +9,14 @@ from flood_adapt.config.fiat import (
     FiatModel,
 )
 from flood_adapt.config.gui import (
-    AggregationDmgLayer,
     BenefitsLayer,
     FloodMapLayer,
     FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
+    MetricsDmgLayer,
+    MetricsHousLayer,
+    MetricsPeopLayer,
     OutputLayers,
     PlottingModel,
     SyntheticTideModel,
@@ -151,7 +153,15 @@ def create_gui_config(database_path: Path) -> GuiModel:
             zbmax=3.28,
             depth_min=0.328,
         ),
-        aggregation_dmg=AggregationDmgLayer(
+        metrics_houses=MetricsHousLayer(
+            bins=[0.00001, 10, 50, 100, 200],
+            colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        ),
+        metrics_people=MetricsPeopLayer(
+            bins=[0.00001, 100, 2500, 5000, 10000],
+            colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
+        ),
+        metrics_damages=MetricsDmgLayer(
             bins=[0.00001, 1000000, 2500000, 5000000, 10000000],
             colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
         ),

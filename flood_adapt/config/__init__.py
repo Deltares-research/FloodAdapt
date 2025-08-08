@@ -4,13 +4,15 @@ from flood_adapt.config.fiat import (
     FiatModel,
 )
 from flood_adapt.config.gui import (
-    AggregationDmgLayer,
     BenefitsLayer,
     FloodMapLayer,
     FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
     Layer,
+    MetricsDmgLayer,
+    MetricsHousLayer,
+    MetricsPeopLayer,
     OutputLayers,
     PlottingModel,
     VisualizationLayer,
@@ -57,7 +59,9 @@ __all__ = [
     "FootprintsDmgLayer",
     "VisualizationLayer",
     "VisualizationLayers",
-    "AggregationDmgLayer",
+    "MetricsDmgLayer",
+    "MetricsHousLayer",
+    "MetricsPeopLayer",
     # FIAT
     "FiatModel",
     "FiatConfigModel",

@@ -970,6 +970,7 @@ class FloodAdapt:
             include_long_names=True,
             include_description=True,
             include_metrics_table_selection=True,
+            include_metrics_map_selection=True,
         )
 
     # Static
