@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import Any, List, Optional, Union
 
@@ -971,6 +972,54 @@ class FloodAdapt:
             include_description=True,
             include_metrics_table_selection=True,
         )
+
+    def get_aggr_metric_layers(
+        self, name: str, type: str = "single_event", rp: Optional[int] = None
+    ) -> list[dict]:
+        # Read in the infometrics for the scenario
+        metrics_df = self.get_infometrics(name)
+        metrics = metrics_df.to_dict(orient="index")
+        metrics = [{**v, "name": k} for k, v in metrics.items()]
+
+        # Get scenario mode
+
+        layer_types = [
+            self.database.site.gui.output_layers.aggregation_dmg
+        ] + self.database.site.gui.output_layers.aggregated_metrics
+
+        # Iterate through metrics and assign layer properties if matched
+        filtered_metrics = []
+        for metric in metrics:
+            metric_name = metric.get("name", "")
+
+            # If type is "risk" and rp is None, skip metrics with RP# or #Y in their name
+            if type == "risk" and rp is None:
+                if re.search(r"RP\d+", metric_name) or re.search(r"\d+Y", metric_name):
+                    continue
+                # If rp is specified, filter metrics by rp in the name
+                rp_strs = [f"RP{rp}", f"{rp}Y"]
+                if not any(rp_str in metric_name for rp_str in rp_strs):
+                    continue  # Skip this metric if it doesn't match the rp
+
+            for layer in layer_types:
+                field_name = layer.field_name
+                layer_keys = layer.keys  # Assuming this is a list of keys
+
+                if field_name in metric:
+                    metric_value = metric[field_name]
+                    # Check if any layer key matches the metric's field value
+                    if any(key in metric_value for key in layer_keys):
+                        filtered_metrics.append(
+                            {
+                                "metric": metric,
+                                "bins": getattr(layer, "bins", None),
+                                "colors": getattr(layer, "colors", None),
+                                "decimals": getattr(layer, "decimals", None),
+                            }
+                        )
+                        break  # Stop after first matching layer
+
+        return filtered_metrics
 
     # Static
     def load_static_data(self):
