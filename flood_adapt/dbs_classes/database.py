@@ -590,12 +590,7 @@ class Database(IDatabase):
                 path.name for path in input_scenarios
             ] or not finished_file_exists(_dir):
                 logger.info(f"Cleaning up corrupted outputs of scenario: {_dir.name}.")
-                try:
-                    shutil.rmtree(_dir)
-                except Exception:
-                    logger.warning(
-                        f"Failed to delete {_dir}. Please restart the application to prevent any unexpected issues."
-                    )
+                shutil.rmtree(_dir, ignore_errors=True)
             # If the scenario is finished, delete the simulation folders depending on `save_simulation`
             elif finished_file_exists(_dir):
                 self._delete_simulations(_dir.name, overland, fiat, offshore)
@@ -634,22 +629,22 @@ class Database(IDatabase):
                             scn, sub_event=sub_event
                         )
                         if sim_path.exists():
-                            shutil.rmtree(sim_path)
+                            shutil.rmtree(sim_path, ignore_errors=True)
                             logger.info(f"Deleted simulation folder: {sim_path}")
                         if sim_path.parent.exists() and not any(
                             sim_path.parent.iterdir()
                         ):
                             # Remove the parent directory `simulations` if it is empty
-                            shutil.rmtree(sim_path.parent)
+                            shutil.rmtree(sim_path.parent, ignore_errors=True)
                 else:
                     sim_path = offshore._get_simulation_path_offshore(scn)
                     if sim_path.exists():
-                        shutil.rmtree(sim_path)
+                        shutil.rmtree(sim_path, ignore_errors=True)
                         logger.info(f"Deleted simulation folder: {sim_path}")
 
                     if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
                         # Remove the parent directory `simulations` if it is empty
-                        shutil.rmtree(sim_path.parent)
+                        shutil.rmtree(sim_path.parent, ignore_errors=True)
 
         if not self.site.fiat.config.save_simulation:
             # Delete FIAT
