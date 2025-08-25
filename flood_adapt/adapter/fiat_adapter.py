@@ -205,7 +205,7 @@ class FiatAdapter(IImpactAdapter):
         self.close_files()
         if self.model_root.exists():
             logger.info(f"Deleting {self.model_root}")
-            shutil.rmtree(self.model_root)
+            shutil.rmtree(self.model_root, ignore_errors=True)
 
     def fiat_completed(self) -> bool:
         """Check if fiat has run as expected.
@@ -353,7 +353,7 @@ class FiatAdapter(IImpactAdapter):
                             os.remove(os.path.join(subdir, file))
 
                     if not os.listdir(subdir):
-                        shutil.rmtree(subdir)
+                        shutil.rmtree(subdir, ignore_errors=True)
 
             if strict:
                 raise RuntimeError(f"FIAT model failed to run in {path}.")
@@ -1574,5 +1574,5 @@ class FiatAdapter(IImpactAdapter):
         )
         if simulation_path.exists():
             self.close_files()
-            shutil.rmtree(simulation_path)
+            shutil.rmtree(simulation_path, ignore_errors=True)
             logger.info(f"Deleted Delft-FIAT simulation folder: {simulation_path}")
