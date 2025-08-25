@@ -167,17 +167,20 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         # Once all checks are passed, delete the object
         toml_path = self.input_path / name / f"{name}.toml"
-        if toml_only:
-            # Only delete the toml file
-            toml_path.unlink(missing_ok=True)
-            # If the folder is empty, delete the folder
-            if not list(toml_path.parent.iterdir()):
+        try:
+            if toml_only:
+                # Only delete the toml file
+                toml_path.unlink(missing_ok=True)
+                # If the folder is empty, delete the folder
+                if not list(toml_path.parent.iterdir()):
+                    shutil.rmtree(toml_path.parent)
+            else:
+                # Delete the entire folder
                 shutil.rmtree(toml_path.parent)
-        else:
-            # Delete the entire folder
-            shutil.rmtree(toml_path.parent)
-            if (self.output_path / name).exists():
-                shutil.rmtree(self.output_path / name)
+                if (self.output_path / name).exists():
+                    shutil.rmtree(self.output_path / name)
+        except OSError as e:
+            raise DatabaseError(f"Failed to delete `{name}` due to: {e}") from e
 
     def _check_standard_objects(self, name: str) -> bool:
         """Check if an object is a standard object.
