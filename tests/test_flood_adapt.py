@@ -132,8 +132,8 @@ class TestEvents:
         # TODO assert event attrs
 
     def test_delete_event_doesnt_exist(self, test_fa: FloodAdapt):
-        # apparently this doesnt raise an error?
-        test_fa.delete_event("doesnt_exist")
+        with pytest.raises(DatabaseError):
+            test_fa.delete_event("doesnt_exist")
 
 
 class TestProjections:
