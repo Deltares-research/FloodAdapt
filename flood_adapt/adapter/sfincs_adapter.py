@@ -212,7 +212,7 @@ class SfincsAdapter(IHazardAdapter):
                             os.remove(os.path.join(subdir, file))
 
                     if not os.listdir(subdir):
-                        os.rmdir(subdir)
+                        shutil.rmtree(subdir)
 
             if strict:
                 raise RuntimeError(f"SFINCS model failed to run in {path}.")
@@ -823,12 +823,12 @@ class SfincsAdapter(IHazardAdapter):
         """Delete the simulation folder for a given scenario and optional sub-event."""
         sim_path = self._get_simulation_path(scenario, sub_event=sub_event)
         if sim_path.exists():
-            shutil.rmtree(sim_path, ignore_errors=True)
+            shutil.rmtree(sim_path)
             logger.info(f"Deleted simulation folder: {sim_path}")
 
         if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
             # Remove the parent directory `simulations` if it is empty
-            sim_path.parent.rmdir()
+            shutil.rmtree(sim_path.parent)
 
     def _run_risk_scenario(self, scenario: Scenario):
         """Run the whole workflow for a risk scenario.
@@ -856,7 +856,6 @@ class SfincsAdapter(IHazardAdapter):
             for i, sub_event in enumerate(event_set._events):
                 shutil.rmtree(
                     self._get_simulation_path(scenario, sub_event=sub_event),
-                    ignore_errors=True,
                 )
 
     def _ensure_no_existing_forcings(self):

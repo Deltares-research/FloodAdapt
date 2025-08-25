@@ -172,12 +172,12 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             toml_path.unlink(missing_ok=True)
             # If the folder is empty, delete the folder
             if not list(toml_path.parent.iterdir()):
-                toml_path.parent.rmdir()
+                shutil.rmtree(toml_path.parent)
         else:
             # Delete the entire folder
-            shutil.rmtree(toml_path.parent, ignore_errors=True)
+            shutil.rmtree(toml_path.parent)
             if (self.output_path / name).exists():
-                shutil.rmtree(self.output_path / name, ignore_errors=True)
+                shutil.rmtree(self.output_path / name)
 
     def _check_standard_objects(self, name: str) -> bool:
         """Check if an object is a standard object.

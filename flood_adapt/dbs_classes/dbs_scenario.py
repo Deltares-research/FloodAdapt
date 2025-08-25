@@ -57,7 +57,7 @@ class DbsScenario(DbsTemplate[Scenario]):
 
         # Then delete the results
         if (self.output_path / name).exists():
-            shutil.rmtree(self.output_path / name, ignore_errors=False)
+            shutil.rmtree(self.output_path / name)
 
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a scenario is used in a benefit.

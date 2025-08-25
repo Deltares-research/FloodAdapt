@@ -353,7 +353,7 @@ class FiatAdapter(IImpactAdapter):
                             os.remove(os.path.join(subdir, file))
 
                     if not os.listdir(subdir):
-                        os.rmdir(subdir)
+                        shutil.rmtree(subdir)
 
             if strict:
                 raise RuntimeError(f"FIAT model failed to run in {path}.")

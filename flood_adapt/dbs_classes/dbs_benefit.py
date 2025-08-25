@@ -59,7 +59,7 @@ class DbsBenefit(DbsTemplate[Benefit]):
         # Delete output if edited
         output_path = self.output_path / name
         if output_path.exists():
-            shutil.rmtree(output_path, ignore_errors=True)
+            shutil.rmtree(output_path)
 
     def get_runner(self, name: str) -> BenefitRunner:
         return BenefitRunner(self._database, self.get(name))
