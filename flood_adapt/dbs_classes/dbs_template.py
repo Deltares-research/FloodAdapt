@@ -8,7 +8,13 @@ import tomli_w
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
-from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import (
+    AlreadyExistsError,
+    DatabaseError,
+    DoesNotExistError,
+    IsStandardObjectError,
+    IsUsedInError,
+)
 from flood_adapt.objects.object_model import Object
 
 T_OBJECTMODEL = TypeVar("T_OBJECTMODEL", bound=Object)
@@ -47,7 +53,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         # Check if the object exists
         if not Path(full_path).is_file():
-            raise DatabaseError(f"{self.display_name}: '{name}' does not exist.")
+            raise DoesNotExistError(name, self.display_name)
 
         # Load and return the object
         return self._object_class.load_file(full_path)
@@ -155,14 +161,12 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         """
         # Check if the object is a standard object. If it is, raise an error
         if self._check_standard_objects(name):
-            raise DatabaseError(
-                f"'{name}' cannot be deleted/modified since it is a standard {self.display_name}."
-            )
+            raise IsStandardObjectError(name, self.display_name)
 
         # Check if object is used in a higher level object. If it is, raise an error
         if used_in := self.check_higher_level_usage(name):
-            raise DatabaseError(
-                f"{self.display_name}: '{name}' cannot be deleted/modified since it is already used in the {self._higher_lvl_object.capitalize()}(s): {', '.join(used_in)}"
+            raise IsUsedInError(
+                name, self.display_name, self._higher_lvl_object, used_in
             )
 
         # Once all checks are passed, delete the object
@@ -278,6 +282,4 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         if overwrite and object_exists:
             self.delete(object_model.name, toml_only=True)
         elif not overwrite and object_exists:
-            raise DatabaseError(
-                f"'{object_model.name}' name is already used by another {self.display_name.lower()}. Choose a different name"
-            )
+            raise AlreadyExistsError(object_model.name, self.display_name)

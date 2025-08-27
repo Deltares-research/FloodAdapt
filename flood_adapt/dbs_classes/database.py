@@ -23,7 +23,7 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     TopLevelDir,
@@ -190,7 +190,7 @@ class Database(IDatabase):
             SLR scenarios configuration model with the file path set to the static path.
         """
         if self.site.sfincs.slr_scenarios is None:
-            raise DatabaseError("No SLR scenarios defined in the site configuration.")
+            raise ConfigError("No SLR scenarios defined in the site configuration.")
         slr = self.site.sfincs.slr_scenarios
         slr.file = str(self.static_path / slr.file)
         return slr
