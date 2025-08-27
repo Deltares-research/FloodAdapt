@@ -169,8 +169,12 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
                 name, self.display_name, self._higher_lvl_object, used_in
             )
 
-        # Once all checks are passed, delete the object
+        # Check if the object exists
         toml_path = self.input_path / name / f"{name}.toml"
+        if not toml_path.exists():
+            raise DoesNotExistError(name, self.display_name)
+
+        # Once all checks are passed, delete the object
         try:
             if toml_only:
                 # Only delete the toml file
