@@ -204,15 +204,13 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         toml_path.unlink(missing_ok=True)
 
         # Delete the entire folder
-        if not toml_only:
+        if not list(toml_path.parent.iterdir()):
+            shutil.rmtree(toml_path.parent)
+        elif not toml_only:
             try:
                 shutil.rmtree(toml_path.parent)
             except OSError as e:
                 raise DatabaseError(f"Failed to delete `{name}` due to: {e}") from e
-
-        # If the folder is empty, delete the folder
-        if not list(toml_path.parent.iterdir()):
-            shutil.rmtree(toml_path.parent)
 
         # Delete output
         if (self.output_path / name).exists():

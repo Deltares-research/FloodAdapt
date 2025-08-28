@@ -172,17 +172,14 @@ class TestProjections:
         # Change name to something new
         test_dict["name"] = "test_proj_1"
         projection = test_fa.create_projection(test_dict)
+
         # If the name is not used before the measure is save in the database
         test_fa.save_projection(projection)
-        test_fa.database.projections.summarize_objects()
-
-        # Try to delete a measure which is already used in a scenario
-        # with pytest.raises(ValueError):
-        #    api_projections.delete_measure("", database)
+        saved = test_fa.get_projection(projection.name)
+        assert saved == projection
 
         # If user presses delete projection the measure is deleted
-        test_fa.delete_projection("test_proj_1")
-        test_fa.database.projections.summarize_objects()
+        test_fa.delete_projection(projection.name)
 
 
 class TestMeasures:
