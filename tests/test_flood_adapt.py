@@ -6,7 +6,12 @@ import pandas as pd
 import pytest
 
 from flood_adapt.flood_adapt import FloodAdapt
-from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import (
+    AlreadyExistsError,
+    DatabaseError,
+    DoesNotExistError,
+    IsUsedInError,
+)
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.hurricane import HurricaneEvent
 from flood_adapt.objects.measures.measures import Measure
@@ -118,22 +123,26 @@ class TestEvents:
         if test_dict["name"] not in test_fa.get_events()["name"]:
             test_fa.save_event(event)
 
-        with pytest.raises(DatabaseError):
+        with pytest.raises(AlreadyExistsError):
             test_fa.save_event(event)
-        # TODO assert error msg
 
     def test_save_event_valid(self, test_fa: FloodAdapt, test_dict):
         # Change name to something new
-        test_dict["name"] = "testNew"
+        name = "testNew"
+        test_dict["name"] = name
         event = test_fa.create_event(test_dict)
         if test_dict["name"] in test_fa.get_events()["name"]:
             test_fa.delete_event(test_dict["name"])
+
         test_fa.save_event(event)
-        # TODO assert event attrs
+
+        _event = test_fa.get_event(name)
+        assert _event is not None
+        assert _event.name == name
 
     def test_delete_event_doesnt_exist(self, test_fa: FloodAdapt):
-        # apparently this doesnt raise an error?
-        test_fa.delete_event("doesnt_exist")
+        with pytest.raises(DoesNotExistError):
+            test_fa.delete_event("doesnt_exist")
 
 
 class TestProjections:
@@ -157,24 +166,20 @@ class TestProjections:
         test_dict["physical_projection"]["sea_level_rise"]["value"] = 2
         projection = test_fa.create_projection(test_dict)
 
-        with pytest.raises(DatabaseError):
-            # Assert error if name already exists
+        with pytest.raises(AlreadyExistsError):
             test_fa.save_projection(projection)
 
         # Change name to something new
         test_dict["name"] = "test_proj_1"
         projection = test_fa.create_projection(test_dict)
+
         # If the name is not used before the measure is save in the database
         test_fa.save_projection(projection)
-        test_fa.database.projections.summarize_objects()
-
-        # Try to delete a measure which is already used in a scenario
-        # with pytest.raises(ValueError):
-        #    api_projections.delete_measure("", database)
+        saved = test_fa.get_projection(projection.name)
+        assert saved == projection
 
         # If user presses delete projection the measure is deleted
-        test_fa.delete_projection("test_proj_1")
-        test_fa.database.projections.summarize_objects()
+        test_fa.delete_projection(projection.name)
 
 
 class TestMeasures:
@@ -257,11 +262,11 @@ class TestStrategies:
         strategy = test_fa.create_strategy(strat_with_existing_name)
 
         # Save it in the database -> name exists error
-        with pytest.raises(DatabaseError):
+        with pytest.raises(AlreadyExistsError):
             test_fa.save_strategy(strategy)
 
         # Delete a strategy which is already used in a scenario
-        with pytest.raises(DatabaseError):
+        with pytest.raises(IsUsedInError):
             test_fa.delete_strategy("strategy_comb")
 
         # Change to unused name
@@ -271,7 +276,7 @@ class TestStrategies:
         assert test_fa.get_strategy(strategy.name) == strategy
 
         test_fa.delete_strategy(strategy.name)
-        with pytest.raises(DatabaseError):
+        with pytest.raises(DoesNotExistError):
             test_fa.get_strategy(strategy.name)
 
 
@@ -521,7 +526,7 @@ class TestBenefits:
         benefit = test_fa.create_benefit(benefit_dict)
 
         # When user tries to create benefits calculation, it will return an error since name already exists
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyExistsError):
             test_fa.save_benefit(benefit)
 
         # Change name to something new

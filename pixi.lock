@@ -4509,8 +4509,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./
   name: flood-adapt
-  version: 1.0.0rc1
-  sha256: 46b67de38394a218c93aac689bad6e4a311745ffa32e8ab86fb276251f642110
+  version: 1.0.4
+  sha256: 4601993ba8219daffd8dacd4baa2eca5b6e9300cc63772b6f7501d0ae56fb0d1
   requires_dist:
   - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
@@ -4527,7 +4527,7 @@ packages:
   - numpy>=1.0,<2.0
   - numpy-financial>=1.0,<2.0
   - pandas>=2.0,<3.0
-  - plotly>=6.0,<7.0
+  - plotly>=6.0,<6.3
   - pydantic>=2.0,<3.0
   - pydantic-settings>=2.0,<3.0
   - pyogrio<1.0
