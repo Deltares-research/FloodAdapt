@@ -1,4 +1,3 @@
-import shutil
 from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
@@ -35,29 +34,6 @@ class DbsScenario(DbsTemplate[Scenario]):
         scenarios["finished"] = [self.has_run_check(scn) for scn in scenarios["name"]]
 
         return scenarios
-
-    def delete(self, name: str, toml_only: bool = False):
-        """Delete an already existing scenario in the database.
-
-        Parameters
-        ----------
-        name : str
-            name of the scenario to be deleted
-        toml_only : bool, optional
-            whether to only delete the toml file or the entire folder. If the folder is empty after deleting the toml,
-            it will always be deleted. By default False
-
-        Raises
-        ------
-        DatabaseError
-            Raise error if scenario to be deleted is already in use.
-        """
-        # First delete the scenario
-        super().delete(name, toml_only)
-
-        # Then delete the results
-        if (self.output_path / name).exists():
-            shutil.rmtree(self.output_path / name)
 
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a scenario is used in a benefit.

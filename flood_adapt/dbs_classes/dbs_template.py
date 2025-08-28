@@ -47,6 +47,11 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         -------
         Object
             object of the type of the specified object model
+
+        Raises
+        ------
+        DoesNotExistError
+            Raise error if the object does not exist.
         """
         # Make the full path to the object
         full_path = self.input_path / name / f"{name}.toml"
@@ -80,6 +85,15 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             name of the new measure
         new_description : str
             description of the new measure
+
+        Raises
+        ------
+        AlreadyExistsError
+            Raise error if an object with the new name already exists.
+        IsStandardObjectError
+            Raise error if an object with the new name is a standard object.
+        DatabaseError
+            Raise error if the saving of the object fails.
         """
         copy_object = self.get(old_name)
         copy_object.name = new_name
@@ -129,8 +143,14 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Raises
         ------
+        AlreadyExistsError
+            Raise error if object to be saved already exists.
+        IsStandardObjectError
+            Raise error if object to be overwritten is a standard object.
+        IsUsedInError
+            Raise error if object to be overwritten is already in use.
         DatabaseError
-            Raise error if name is already in use.
+            Raise error if the overwriting of the object fails.
         """
         self._validate_to_save(object_model, overwrite=overwrite)
 
@@ -144,7 +164,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         )
 
     def delete(self, name: str, toml_only: bool = False):
-        """Delete an already existing object in the database.
+        """Delete an already existing object as well as its outputs from the database.
 
         Parameters
         ----------
@@ -156,8 +176,14 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Raises
         ------
-        DatabaseError
+        IsStandardObjectError
+            Raise error if object to be deleted is a standard object.
+        IsUsedInError
             Raise error if object to be deleted is already in use.
+        DoesNotExistError
+            Raise error if object to be deleted does not exist.
+        DatabaseError
+            Raise error if the deletion of the object fails.
         """
         # Check if the object is a standard object. If it is, raise an error
         if self._check_standard_objects(name):
@@ -175,20 +201,27 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             raise DoesNotExistError(name, self.display_name)
 
         # Once all checks are passed, delete the object
-        try:
-            if toml_only:
-                # Only delete the toml file
-                toml_path.unlink(missing_ok=True)
-                # If the folder is empty, delete the folder
-                if not list(toml_path.parent.iterdir()):
-                    shutil.rmtree(toml_path.parent)
-            else:
-                # Delete the entire folder
+        toml_path.unlink(missing_ok=True)
+
+        # Delete the entire folder
+        if not toml_only:
+            try:
                 shutil.rmtree(toml_path.parent)
-                if (self.output_path / name).exists():
-                    shutil.rmtree(self.output_path / name)
-        except OSError as e:
-            raise DatabaseError(f"Failed to delete `{name}` due to: {e}") from e
+            except OSError as e:
+                raise DatabaseError(f"Failed to delete `{name}` due to: {e}") from e
+
+        # If the folder is empty, delete the folder
+        if not list(toml_path.parent.iterdir()):
+            shutil.rmtree(toml_path.parent)
+
+        # Delete output
+        if (self.output_path / name).exists():
+            try:
+                shutil.rmtree(self.output_path / name)
+            except OSError as e:
+                raise DatabaseError(
+                    f"Failed to delete output of `{name}` due to: {e}"
+                ) from e
 
     def _check_standard_objects(self, name: str) -> bool:
         """Check if an object is a standard object.
