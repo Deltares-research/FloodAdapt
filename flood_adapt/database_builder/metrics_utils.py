@@ -10,12 +10,105 @@ from pydantic import BaseModel, Field, field_validator
 
 
 def pascal_case(s):
+    """
+    Convert a string to PascalCase.
+
+    Parameters
+    ----------
+    s : str
+        Input string to convert.
+
+    Returns
+    -------
+    str
+        String converted to PascalCase.
+    """
     return "".join(word.capitalize() for word in s.split())
+
+
+class FieldMapping(BaseModel):
+    """
+    Represents a mapping of a database field to a list of allowed values.
+
+    Parameters
+    ----------
+    field_name : str
+        The name of the database field/column
+    values : List[str]
+        List of values that should match this field
+
+    Methods
+    -------
+    to_sql_filter()
+        Generate SQL filter string for this field mapping.
+    """
+
+    field_name: str
+    values: List[str]
+
+    def to_sql_filter(self) -> str:
+        """
+        Generate SQL filter string for this field mapping.
+
+        Returns
+        -------
+        str
+            SQL WHERE clause condition string for this field mapping.
+        """
+        quoted_values = ", ".join([f"'{v}'" for v in self.values])
+        return f"`{self.field_name}` IN ({quoted_values})"
+
+
+class TypeMapping(BaseModel):
+    """
+    Container for multiple field mappings that define object type filtering.
+
+    Parameters
+    ----------
+    mappings : List[FieldMapping]
+        List of field mappings that together define the type criteria
+
+    Methods
+    -------
+    add_mapping(field_name, values)
+        Add a new field mapping.
+    to_sql_filter()
+        Generate combined SQL filter string from all mappings.
+    """
+
+    mappings: List[FieldMapping] = Field(default_factory=list)
+
+    def add_mapping(self, field_name: str, values: List[str]) -> None:
+        """
+        Add a new field mapping.
+
+        Parameters
+        ----------
+        field_name : str
+            Name of the database field.
+        values : List[str]
+            List of allowed values for this field.
+        """
+        self.mappings.append(FieldMapping(field_name=field_name, values=values))
+
+    def to_sql_filter(self) -> str:
+        """
+        Generate combined SQL filter string from all mappings.
+
+        Returns
+        -------
+        str
+            Combined SQL WHERE clause condition string.
+        """
+        if not self.mappings:
+            return ""
+        filter_parts = [mapping.to_sql_filter() for mapping in self.mappings]
+        return " AND ".join(filter_parts)
 
 
 class MetricModel(BaseModel):
     """
-    InfometricModel represents a metric configuration for infometric analysis.
+    Represents a metric configuration for infometric analysis.
 
     Parameters
     ----------
@@ -48,7 +141,21 @@ class MetricModel(BaseModel):
     @field_validator("long_name", "description", mode="after")
     @classmethod
     def set_defaults(cls, value, info):
-        """Set default values for long_name and description fields."""
+        """
+        Set default values for long_name and description fields.
+
+        Parameters
+        ----------
+        value : Any
+            The current field value.
+        info : Any
+            Field validation info containing all field values.
+
+        Returns
+        -------
+        str
+            The field value or the default value from 'name' field.
+        """
         # info.data contains all field values
         if value is None:
             # Use 'name' field as default
@@ -57,6 +164,30 @@ class MetricModel(BaseModel):
 
 
 class ImpactCategoriesModel(BaseModel):
+    """
+    Model for defining impact categories with associated colors, field, unit, and bins.
+
+    Parameters
+    ----------
+    categories : list[str], default=["Minor", "Major", "Severe"]
+        List of impact category names.
+    colors : Optional[list[str]], default=["#ffa500", "#ff0000", "#000000"]
+        List of colors corresponding to each category.
+    field : str
+        The database field name used for categorization.
+    unit : str
+        The unit of measurement for the field.
+    bins : list[float]
+        List of threshold values for binning the field values.
+
+    Methods
+    -------
+    validate_colors_length(colors, info)
+        Validate that colors list length matches categories list length.
+    validate_bins_length(bins, info)
+        Validate that bins list length is one less than categories list length.
+    """
+
     categories: list[str] = Field(default_factory=lambda: ["Minor", "Major", "Severe"])
     colors: Optional[list[str]] = Field(
         default_factory=lambda: ["#ffa500", "#ff0000", "#000000"]
@@ -68,6 +199,26 @@ class ImpactCategoriesModel(BaseModel):
     @field_validator("colors", mode="before")
     @classmethod
     def validate_colors_length(cls, colors, info):
+        """
+        Validate that colors list length matches categories list length.
+
+        Parameters
+        ----------
+        colors : list[str]
+            List of color values.
+        info : Any
+            Field validation info containing all field values.
+
+        Returns
+        -------
+        list[str]
+            The validated colors list.
+
+        Raises
+        ------
+        ValueError
+            If colors length doesn't match categories length.
+        """
         categories = info.data.get("categories")
         if categories and colors and len(colors) != len(categories):
             raise ValueError("Length of 'colors' must match length of 'categories'.")
@@ -76,6 +227,26 @@ class ImpactCategoriesModel(BaseModel):
     @field_validator("bins", mode="before")
     @classmethod
     def validate_bins_length(cls, bins, info):
+        """
+        Validate that bins list length is one less than categories list length.
+
+        Parameters
+        ----------
+        bins : list[float]
+            List of bin threshold values.
+        info : Any
+            Field validation info containing all field values.
+
+        Returns
+        -------
+        list[float]
+            The validated bins list.
+
+        Raises
+        ------
+        ValueError
+            If bins length is not one less than categories length.
+        """
         categories = info.data.get("categories")
         if categories and len(bins) != len(categories) - 1:
             raise ValueError(
@@ -85,16 +256,58 @@ class ImpactCategoriesModel(BaseModel):
 
 
 class BuildingsInfographicModel(BaseModel):
+    """
+    Model for building infographic configuration.
+
+    Parameters
+    ----------
+    types : list[str]
+        List of building types.
+    icons : list[str]
+        List of icon names corresponding to each building type.
+    type_mapping : dict[str, TypeMapping]
+        Mapping of building types to their database filtering criteria.
+    impact_categories : ImpactCategoriesModel
+        Impact categories configuration.
+
+    Methods
+    -------
+    validate_icons_length(icons, info)
+        Validate that icons list length matches types list length.
+    get_template(type)
+        Get a pre-configured template for OSM or NSI building types.
+    """
+
     # Define building types
     types: list[str]
     icons: list[str]
-    type_mapping: dict[str, dict[str, list[str]]]
+    type_mapping: dict[str, TypeMapping]
     # Define impact categories
     impact_categories: ImpactCategoriesModel
 
     @field_validator("icons", mode="before")
     @classmethod
     def validate_icons_length(cls, icons, info):
+        """
+        Validate that icons list length matches types list length.
+
+        Parameters
+        ----------
+        icons : list[str]
+            List of icon names.
+        info : Any
+            Field validation info containing all field values.
+
+        Returns
+        -------
+        list[str]
+            The validated icons list.
+
+        Raises
+        ------
+        ValueError
+            If icons length doesn't match types length.
+        """
         types = info.data.get("types")
         if types and len(icons) != len(types):
             raise ValueError("Length of 'icons' must equal to the length of 'types'.")
@@ -102,14 +315,45 @@ class BuildingsInfographicModel(BaseModel):
 
     @staticmethod
     def get_template(type: Literal["OSM", "NSI"]):
+        """
+        Get a pre-configured template for building infographics.
+
+        Parameters
+        ----------
+        type : Literal["OSM", "NSI"]
+            The database type to create a template for.
+
+        Returns
+        -------
+        BuildingsInfographicModel
+            Pre-configured building infographic model.
+        """
         if type == "OSM":
             config = BuildingsInfographicModel(
                 types=["Residential", "Commercial", "Industrial"],
                 icons=["house", "cart", "factory"],
                 type_mapping={
-                    "Residential": {"Primary Object Type": ["residential"]},
-                    "Commercial": {"Primary Object Type": ["commercial"]},
-                    "Industrial": {"Primary Object Type": ["industrial"]},
+                    "Residential": TypeMapping(
+                        mappings=[
+                            FieldMapping(
+                                field_name="Primary Object Type", values=["residential"]
+                            )
+                        ]
+                    ),
+                    "Commercial": TypeMapping(
+                        mappings=[
+                            FieldMapping(
+                                field_name="Primary Object Type", values=["commercial"]
+                            )
+                        ]
+                    ),
+                    "Industrial": TypeMapping(
+                        mappings=[
+                            FieldMapping(
+                                field_name="Primary Object Type", values=["industrial"]
+                            )
+                        ]
+                    ),
                 },
                 impact_categories=ImpactCategoriesModel(
                     unit="meters", bins=[0.25, 1.5]
@@ -126,23 +370,52 @@ class BuildingsInfographicModel(BaseModel):
                 ],
                 icons=["house", "cart", "hospital", "school", "firetruck"],
                 type_mapping={
-                    "Residential": {"Primary Object Type": ["RES"]},
-                    "Commercial": {
-                        "Secondary Object Type": [
-                            "COM1",
-                            "COM2",
-                            "COM3",
-                            "COM4",
-                            "COM5",
-                            "COM8",
-                            "COM9",
+                    "Residential": TypeMapping(
+                        mappings=[
+                            FieldMapping(
+                                field_name="Primary Object Type", values=["RES"]
+                            )
                         ]
-                    },
-                    "Health facilities": {
-                        "Secondary Object Type": ["RES6", "COM6", "COM7"]
-                    },
-                    "Schools": {"Secondary Object Type": ["EDU1", "EDU2"]},
-                    "Emergency facilities": {"Secondary Object Type": ["GOV2"]},
+                    ),
+                    "Commercial": TypeMapping(
+                        mappings=[
+                            FieldMapping(
+                                field_name="Secondary Object Type",
+                                values=[
+                                    "COM1",
+                                    "COM2",
+                                    "COM3",
+                                    "COM4",
+                                    "COM5",
+                                    "COM8",
+                                    "COM9",
+                                ],
+                            )
+                        ]
+                    ),
+                    "Health facilities": TypeMapping(
+                        mappings=[
+                            FieldMapping(
+                                field_name="Secondary Object Type",
+                                values=["RES6", "COM6", "COM7"],
+                            )
+                        ]
+                    ),
+                    "Schools": TypeMapping(
+                        mappings=[
+                            FieldMapping(
+                                field_name="Secondary Object Type",
+                                values=["EDU1", "EDU2"],
+                            )
+                        ]
+                    ),
+                    "Emergency facilities": TypeMapping(
+                        mappings=[
+                            FieldMapping(
+                                field_name="Secondary Object Type", values=["GOV2"]
+                            )
+                        ]
+                    ),
                 },
                 impact_categories=ImpactCategoriesModel(unit="feet", bins=[1, 6]),
             )
@@ -150,23 +423,139 @@ class BuildingsInfographicModel(BaseModel):
 
 
 class SviModel(BaseModel):
+    """
+    Model for Social Vulnerability Index (SVI) configuration.
+
+    Parameters
+    ----------
+    classes : list[str], default=["Low", "High"]
+        List of vulnerability class names.
+    colors : list[str], default=["#D5DEE1", "#88A2AA"]
+        List of colors corresponding to each vulnerability class.
+    thresholds : list[float], default=[0.7]
+        List of threshold values for vulnerability classification.
+
+    Methods
+    -------
+    validate_colors_length(colors, info)
+        Validate that colors list length matches classes list length.
+    validate_thresholds_length(thresholds, info)
+        Validate that thresholds list length is one less than classes list length.
+    """
+
     classes: list[str] = Field(default_factory=lambda: ["Low", "High"])
     colors: list[str] = Field(default_factory=lambda: ["#D5DEE1", "#88A2AA"])
     thresholds: list[float] = Field(default_factory=lambda: [0.7])
 
+    @field_validator("colors", mode="before")
+    @classmethod
+    def validate_colors_length(cls, colors, info):
+        """
+        Validate that colors list length matches classes list length.
+
+        Parameters
+        ----------
+        colors : list[str]
+            List of color values.
+        info : Any
+            Field validation info containing all field values.
+
+        Returns
+        -------
+        list[str]
+            The validated colors list.
+
+        Raises
+        ------
+        ValueError
+            If colors length doesn't match classes length.
+        """
+        classes = info.data.get("classes")
+        if classes and colors and len(colors) != len(classes):
+            raise ValueError("Length of 'colors' must match length of 'classes'.")
+        return colors
+
+    @field_validator("thresholds", mode="before")
+    @classmethod
+    def validate_thresholds_length(cls, thresholds, info):
+        """
+        Validate that thresholds list length is one less than classes list length.
+
+        Parameters
+        ----------
+        thresholds : list[float]
+            List of threshold values.
+        info : Any
+            Field validation info containing all field values.
+
+        Returns
+        -------
+        list[float]
+            The validated thresholds list.
+
+        Raises
+        ------
+        ValueError
+            If thresholds length is not one less than classes length.
+        """
+        classes = info.data.get("classes")
+        if classes and len(thresholds) != len(classes) - 1:
+            raise ValueError(
+                "Length of 'thresholds' must be one less than length of 'classes'."
+            )
+        return thresholds
+
 
 class SviInfographicModel(BaseModel):
-    svi_threshold: float
-    colors: list[str] = Field(default_factory=lambda: ["#D5DEE1", "#88A2AA"])
-    mapping: dict[str, list[str]]
+    """
+    Model for SVI (Social Vulnerability Index) infographic configuration.
+
+    Parameters
+    ----------
+    svi : SviModel
+        SVI classification configuration.
+    mapping : TypeMapping
+        Database field mapping for filtering relevant objects.
+    impact_categories : ImpactCategoriesModel
+        Impact categories configuration.
+
+    Methods
+    -------
+    get_template(svi_threshold, type)
+        Get a pre-configured template for SVI infographics.
+    """
+
+    svi: SviModel
+    mapping: TypeMapping
     impact_categories: ImpactCategoriesModel
 
     @staticmethod
     def get_template(svi_threshold: float, type: Literal["OSM", "NSI"]):
+        """
+        Get a pre-configured template for SVI infographics.
+
+        Parameters
+        ----------
+        svi_threshold : float
+            The SVI threshold value for vulnerability classification.
+        type : Literal["OSM", "NSI"]
+            The database type to create a template for.
+
+        Returns
+        -------
+        SviInfographicModel
+            Pre-configured SVI infographic model.
+        """
         if type == "OSM":
             config = SviInfographicModel(
-                svi_threshold=svi_threshold,
-                mapping={"Primary Object Type": ["residential"]},
+                svi=SviModel(thresholds=[svi_threshold]),
+                mapping=TypeMapping(
+                    mappings=[
+                        FieldMapping(
+                            field_name="Primary Object Type", values=["residential"]
+                        )
+                    ]
+                ),
                 impact_categories=ImpactCategoriesModel(
                     categories=["Flooded", "Displaced"],
                     colors=None,
@@ -176,8 +565,12 @@ class SviInfographicModel(BaseModel):
             )
         elif type == "NSI":
             config = SviInfographicModel(
-                svi_threshold=svi_threshold,
-                mapping={"Primary Object Type": ["RES"]},
+                svi=SviModel(thresholds=[svi_threshold]),
+                mapping=TypeMapping(
+                    mappings=[
+                        FieldMapping(field_name="Primary Object Type", values=["RES"])
+                    ]
+                ),
                 impact_categories=ImpactCategoriesModel(
                     categories=["Flooded", "Displaced"],
                     colors=None,
@@ -189,6 +582,36 @@ class SviInfographicModel(BaseModel):
 
 
 class RoadsInfographicModel(BaseModel):
+    """
+    Model for roads infographic configuration.
+
+    Parameters
+    ----------
+    categories : list[str], default=["Slight", "Minor", "Major", "Severe"]
+        List of road impact category names.
+    colors : list[str], default=["#e0f7fa", "#80deea", "#26c6da", "#006064"]
+        List of colors corresponding to each category.
+    icons : list[str], default=["walking_person", "car", "truck", "ambulance"]
+        List of icon names for each category.
+    users : list[str], default=["Pedestrians", "Cars", "Trucks", "Rescue vehicles"]
+        List of road user types for each category.
+    thresholds : list[float]
+        List of threshold values for categorizing road impacts.
+    field : str, default="Inundation Depth"
+        The database field name used for categorization.
+    unit : str
+        The unit of measurement for the field.
+    road_length_field : str, default="Segment Length"
+        The database field name containing road segment lengths.
+
+    Methods
+    -------
+    validate_lengths(v, info)
+        Validate that all list attributes have the same length.
+    get_template(unit_system)
+        Get a pre-configured template for metric or imperial units.
+    """
+
     categories: list[str] = Field(
         default_factory=lambda: ["Slight", "Minor", "Major", "Severe"]
     )
@@ -209,6 +632,26 @@ class RoadsInfographicModel(BaseModel):
     @field_validator("categories", mode="after")
     @classmethod
     def validate_lengths(cls, v, info):
+        """
+        Validate that all list attributes have the same length.
+
+        Parameters
+        ----------
+        v : list[str]
+            The categories list.
+        info : Any
+            Field validation info containing all field values.
+
+        Returns
+        -------
+        list[str]
+            The validated categories list.
+
+        Raises
+        ------
+        ValueError
+            If list attributes don't have the same length.
+        """
         # Check that categories, colors, icons, users, thresholds have the same length
         attrs = ["categories", "colors", "icons", "users", "thresholds"]
         lengths = [len(info.data.get(attr, [])) for attr in attrs]
@@ -220,6 +663,19 @@ class RoadsInfographicModel(BaseModel):
 
     @staticmethod
     def get_template(unit_system: Literal["metric", "imperial"]):
+        """
+        Get a pre-configured template for roads infographics.
+
+        Parameters
+        ----------
+        unit_system : Literal["metric", "imperial"]
+            The unit system to use for thresholds and measurements.
+
+        Returns
+        -------
+        RoadsInfographicModel
+            Pre-configured roads infographic model.
+        """
         if unit_system == "metric":
             config = RoadsInfographicModel(
                 thresholds=[0.1, 0.2, 0.4, 0.8],
@@ -234,12 +690,40 @@ class RoadsInfographicModel(BaseModel):
 
 
 class EventInfographicModel(BaseModel):
+    """
+    Model for event-based infographic configuration.
+
+    Parameters
+    ----------
+    buildings : Optional[BuildingsInfographicModel], default=None
+        Buildings infographic configuration.
+    svi : Optional[SviInfographicModel], default=None
+        SVI infographic configuration.
+    roads : Optional[RoadsInfographicModel], default=None
+        Roads infographic configuration.
+    """
+
     buildings: Optional[BuildingsInfographicModel] = None
     svi: Optional[SviInfographicModel] = None
     roads: Optional[RoadsInfographicModel] = None
 
 
 class FloodExceedanceModel(BaseModel):
+    """
+    Model for flood exceedance probability configuration.
+
+    Parameters
+    ----------
+    column : str, default="Inundation Depth"
+        The database column name for flood depth measurements.
+    threshold : float, default=0.1
+        The flood depth threshold value.
+    unit : str, default="meters"
+        The unit of measurement for the threshold.
+    period : int, default=30
+        The time period in years for exceedance analysis.
+    """
+
     column: str = "Inundation Depth"
     threshold: float = 0.1
     unit: str = "meters"
@@ -247,6 +731,22 @@ class FloodExceedanceModel(BaseModel):
 
 
 class RiskInfographicModel(BaseModel):
+    """
+    Model for risk-based infographic configuration.
+
+    Parameters
+    ----------
+    svi : SviInfographicModel
+        SVI infographic configuration.
+    flood_exceedances : FloodExceedanceModel
+        Flood exceedance configuration.
+
+    Methods
+    -------
+    get_template(type, svi_threshold)
+        Get a pre-configured template for risk infographics.
+    """
+
     svi: SviInfographicModel
     flood_exceedances: FloodExceedanceModel
 
@@ -254,6 +754,21 @@ class RiskInfographicModel(BaseModel):
     def get_template(
         type: Literal["OSM", "NSI"], svi_threshold: Optional[float] = None
     ):
+        """
+        Get a pre-configured template for risk infographics.
+
+        Parameters
+        ----------
+        type : Literal["OSM", "NSI"]
+            The database type to create a template for.
+        svi_threshold : Optional[float], default=None
+            The SVI threshold value for vulnerability classification.
+
+        Returns
+        -------
+        RiskInfographicModel
+            Pre-configured risk infographic model.
+        """
         if type == "OSM":
             config = RiskInfographicModel(
                 svi=SviInfographicModel.get_template(svi_threshold, type="OSM")
@@ -272,7 +787,7 @@ class RiskInfographicModel(BaseModel):
 
 
 def get_filter(
-    type_mapping: dict[str, list[str]],
+    type_mapping: TypeMapping,
     cat_field: str,
     cat_idx: int,
     bins: list[float],
@@ -281,38 +796,117 @@ def get_filter(
     """
     Construct a SQL filter string based on provided type mapping and category criteria.
 
-    Args:
-        type_mapping (dict): Mapping of type_field to list of types to filter on.
-        cat_field (str): Name of the field representing the category in the database.
-        cat_idx (int): Index indicating which category bin to use for filtering.
-        bins (list): List of bin thresholds for the category field.
-        base_filt (str, optional): Additional base filter string to prepend. Defaults to "".
+    Parameters
+    ----------
+    type_mapping : TypeMapping
+        TypeMapping object containing field mappings to filter on.
+    cat_field : str
+        Name of the field representing the category in the database.
+    cat_idx : int
+        Index indicating which category bin to use for filtering.
+    bins : list[float]
+        List of bin thresholds for the category field.
+    base_filt : str, default=""
+        Additional base filter string to prepend.
 
     Returns
     -------
-        str: A SQL filter string combining type and category conditions.
+    str
+        A SQL filter string combining type and category conditions.
     """
     base = base_filt + " AND " if base_filt else ""
-    # Build type filters for each type_field in type_mapping
-    type_filters = []
-    for type_field, type_list in type_mapping.items():
-        type_filters.append(
-            f"`{type_field}` IN (" + ", ".join([f"'{t}'" for t in type_list]) + ")"
-        )
-    base += " AND ".join(type_filters)
+
+    # Build type filters using TypeMapping
+    type_filter = type_mapping.to_sql_filter()
+    if type_filter:
+        base += type_filter
+
+    # Add category filter
     if cat_idx == 0:
-        return f"{base} AND `{cat_field}` <= {bins[0]}"
+        cat_filter = f"`{cat_field}` <= {bins[0]}"
     elif cat_idx == len(bins):
-        return f"{base} AND `{cat_field}` > {bins[-1]}"
+        cat_filter = f"`{cat_field}` > {bins[-1]}"
     else:
-        return f"{base} AND `{cat_field}` <= {bins[cat_idx]} AND `{cat_field}` > {bins[cat_idx-1]}"
+        cat_filter = (
+            f"`{cat_field}` <= {bins[cat_idx]} AND `{cat_field}` > {bins[cat_idx-1]}"
+        )
+
+    if base and cat_filter:
+        return f"{base} AND {cat_filter}"
+    elif cat_filter:
+        return cat_filter
+    else:
+        return base
 
 
 class Metrics:
+    """
+    Main class for managing flood impact metrics configuration and generation.
+
+    Parameters
+    ----------
+    dmg_unit : str
+        The unit of measurement for damage values.
+    return_periods : list[float]
+        List of return periods in years for risk analysis.
+
+    Attributes
+    ----------
+    dmg_unit : str
+        The unit of measurement for damage values.
+    return_periods : list[float]
+        List of return periods in years.
+    mandatory_metrics_event : list[MetricModel]
+        List of mandatory metrics for event analysis.
+    mandatory_metrics_risk : list[MetricModel]
+        List of mandatory metrics for risk analysis.
+    additional_metrics_event : list[MetricModel]
+        List of additional metrics for event analysis.
+    additional_metrics_risk : list[MetricModel]
+        List of additional metrics for risk analysis.
+    infographics_metrics_event : list[MetricModel]
+        List of infographic metrics for event analysis.
+    infographics_metrics_risk : list[MetricModel]
+        List of infographic metrics for risk analysis.
+    additional_risk_configs : dict
+        Additional risk configuration parameters.
+    infographics_config : dict
+        Infographics configuration parameters.
+
+    Methods
+    -------
+    write_metrics(metrics, path, aggr_levels)
+        Write metrics configuration to a TOML file.
+    write(metrics_path, aggregation_levels, infographics_path)
+        Write all metrics configurations to files.
+    create_mandatory_metrics_event()
+        Create mandatory metrics for event analysis.
+    create_mandatory_metrics_risk()
+        Create mandatory metrics for risk analysis.
+    add_event_metric(metric)
+        Add an additional event metric.
+    add_risk_metric(metric)
+        Add an additional risk metric.
+    create_infographics_metrics_event(config, base_filt)
+        Create infographic metrics for event analysis.
+    create_infographics_metrics_risk(config, base_filt)
+        Create infographic metrics for risk analysis.
+    """
+
     dmg_unit: str
     return_periods: list[float]
 
     def __init__(self, dmg_unit: str, return_periods: list[float]):
+        """
+        Initialize the Metrics class.
+
+        Parameters
+        ----------
+        dmg_unit : str
+            The unit of measurement for damage values.
+        return_periods : list[float]
+            List of return periods in years for risk analysis.
+        """
         self.dmg_unit = dmg_unit
         self.return_periods = return_periods
         self.create_mandatory_metrics_event()
@@ -326,6 +920,18 @@ class Metrics:
 
     @staticmethod
     def write_metrics(metrics, path, aggr_levels=[]):
+        """
+        Write metrics configuration to a TOML file.
+
+        Parameters
+        ----------
+        metrics : list[MetricModel]
+            List of metric models to write.
+        path : Union[str, Path]
+            Path to the output TOML file.
+        aggr_levels : list[str], default=[]
+            List of aggregation levels.
+        """
         attrs = {}
         attrs["aggregateBy"] = aggr_levels
         attrs["queries"] = [metric.model_dump() for metric in metrics]
@@ -341,7 +947,7 @@ class Metrics:
         infographics_path: Optional[Union[str, Path, PathLike]] = None,
     ) -> None:
         """
-        Write all metrics (mandatory, additional, and infographics) to TOML files in the specified directory.
+        Write all metrics (mandatory, additional, and infographics) to TOML files.
 
         Parameters
         ----------
@@ -349,6 +955,14 @@ class Metrics:
             The directory path where the metrics configuration files will be saved.
         aggregation_levels : List[str]
             A list of aggregation levels to include in the metrics configuration files.
+        infographics_path : Optional[Union[str, Path, PathLike]], default=None
+            The directory path where infographics configuration files will be saved.
+            Required if infographics configurations are present.
+
+        Raises
+        ------
+        ValueError
+            If infographics_path is None but infographics configurations exist.
         """
         path_im = Path(metrics_path)
         path_im.mkdir(parents=True, exist_ok=True)
@@ -427,6 +1041,14 @@ class Metrics:
                     tomli_w.dump(self.infographics_config["risk"], f)
 
     def create_mandatory_metrics_event(self) -> list[MetricModel]:
+        """
+        Create mandatory metrics for event analysis.
+
+        Returns
+        -------
+        list[MetricModel]
+            List of mandatory event metrics.
+        """
         self.mandatory_metrics_event = []
         self.mandatory_metrics_event.append(
             MetricModel(
@@ -441,6 +1063,14 @@ class Metrics:
         return self.mandatory_metrics_event
 
     def create_mandatory_metrics_risk(self) -> list[MetricModel]:
+        """
+        Create mandatory metrics for risk analysis.
+
+        Returns
+        -------
+        list[MetricModel]
+            List of mandatory risk metrics.
+        """
         self.mandatory_metrics_risk = []
         self.mandatory_metrics_risk.append(
             MetricModel(
@@ -467,11 +1097,37 @@ class Metrics:
         return self.mandatory_metrics_risk
 
     def add_event_metric(self, metric: MetricModel) -> None:
+        """
+        Add an additional event metric.
+
+        Parameters
+        ----------
+        metric : MetricModel
+            The metric to add to the additional event metrics list.
+
+        Raises
+        ------
+        ValueError
+            If a metric with the same name already exists.
+        """
         if any(m.name == metric.name for m in self.additional_metrics_event):
             raise ValueError(f"Event metric with name '{metric.name}' already exists.")
         self.additional_metrics_event.append(metric)
 
     def add_risk_metric(self, metric: MetricModel) -> None:
+        """
+        Add an additional risk metric.
+
+        Parameters
+        ----------
+        metric : MetricModel
+            The metric to add to the additional risk metrics list.
+
+        Raises
+        ------
+        ValueError
+            If a metric with the same name already exists.
+        """
         if any(m.name == metric.name for m in self.additional_metrics_risk):
             raise ValueError(f"Risk metric with name '{metric.name}' already exists.")
         self.additional_metrics_risk.append(metric)
@@ -479,6 +1135,21 @@ class Metrics:
     def create_infographics_metrics_event(
         self, config: EventInfographicModel, base_filt="`Total Damage` > 0"
     ) -> list[MetricModel]:
+        """
+        Create infographic metrics for event analysis.
+
+        Parameters
+        ----------
+        config : EventInfographicModel
+            Configuration for event infographics.
+        base_filt : str, default="`Total Damage` > 0"
+            Base SQL filter to apply to all metrics.
+
+        Returns
+        -------
+        list[MetricModel]
+            List of infographic event metrics.
+        """
         # Generate queries for all building types and categories
         if config.buildings:
             self._setup_buildings(config.buildings, base_filt)
@@ -491,21 +1162,28 @@ class Metrics:
     def create_infographics_metrics_risk(
         self, config: RiskInfographicModel, base_filt="`Total Damage` > 0"
     ) -> list[MetricModel]:
+        """
+        Create infographic metrics for risk analysis.
+
+        Parameters
+        ----------
+        config : RiskInfographicModel
+            Configuration for risk infographics.
+        base_filt : str, default="`Total Damage` > 0"
+            Base SQL filter to apply to all metrics.
+
+        Returns
+        -------
+        list[MetricModel]
+            List of infographic risk metrics.
+        """
         infographics_metrics_risk = []
 
-        # Get mapping from config.svi if available, else default to {"Primary Object Type": ["RES"]}
-        if config.svi and hasattr(config.svi, "mapping"):
-            mapping = config.svi.mapping
-        else:
-            mapping = {"Primary Object Type": ["RES"]}
+        # Get mapping from config.svi
+        mapping = config.svi.mapping
 
-        # Build type filter string
-        type_filters = []
-        for type_field, type_list in mapping.items():
-            type_filters.append(
-                f"`{type_field}` IN (" + ", ".join([f"'{t}'" for t in type_list]) + ")"
-            )
-        type_cond = " AND ".join(type_filters)
+        # Build type filter string using TypeMapping
+        type_cond = mapping.to_sql_filter()
 
         # FloodedHomes (Exceedance Probability > 50)
         fe = config.flood_exceedances
@@ -520,51 +1198,69 @@ class Metrics:
             )
         )
 
-        # ImpactedHomes for each RP (2, 5, 10, 25, 50, 100)
-        rps = [2, 5, 10, 25, 50, 100]
-        svi_threshold = 0.7
+        # ImpactedHomes for each RP - use class return periods and config SVI thresholds
+        rps = self.return_periods
+        svi_thresholds = config.svi.svi.thresholds
+        svi_classes = config.svi.svi.classes
+
         for rp in rps:
             # ImpactedHomes{RP} (all homes)
             infographics_metrics_risk.append(
                 MetricModel(
-                    name=f"ImpactedHomes{rp}Y",
-                    description=f"Homes impacted (Inundation Depth > 0.25) in the {rp}-year event",
+                    name=f"ImpactedHomes{int(rp)}Y",
+                    description=f"Number of homes impacted ({fe.column} > {fe.threshold} {fe.unit}) in the {int(rp)}-year event",
                     select="COUNT(*)",
-                    filter=f"`Inundation Depth ({rp}Y)` >= 0.25 AND {type_cond}",
-                    long_name=f"Flooded homes RP{rp}",
+                    filter=f"`{fe.column} ({int(rp)}Y)` >= {fe.threshold} AND {type_cond}",
+                    long_name=f"Flooded homes - RP{int(rp)} (#)",
                     show_in_metrics_table=True,
                 )
             )
-            # ImpactedHomes{RP}HighSVI
-            infographics_metrics_risk.append(
-                MetricModel(
-                    name=f"ImpactedHomes{rp}YHighSVI",
-                    description=f"Highly vulnerable homes impacted (Inundation Depth > 0.25) in the {rp}-year event",
-                    select="COUNT(*)",
-                    filter=f"`Inundation Depth ({rp}Y)` >= 0.25 AND {type_cond} AND `SVI` >= {svi_threshold}",
-                    long_name=f"Highly vulnerable flooded homes RP{rp}",
-                    show_in_metrics_table=True,
+
+            # Create metrics for each SVI class
+            for j, svi_class in enumerate(svi_classes):
+                # Build SVI condition based on thresholds
+                if j == 0:
+                    # First class: SVI < first_threshold
+                    svi_cond = f"`SVI` < {svi_thresholds[0]}"
+                elif j == len(svi_classes) - 1:
+                    # Last class: SVI >= last_threshold
+                    svi_cond = f"`SVI` >= {svi_thresholds[-1]}"
+                else:
+                    # Middle classes: previous_threshold <= SVI < current_threshold
+                    svi_cond = f"`SVI` >= {svi_thresholds[j-1]} AND `SVI` < {svi_thresholds[j]}"
+
+                # Clean class name for metric naming (remove spaces, special chars)
+                clean_class_name = svi_class.replace(" ", "").replace("-", "")
+
+                infographics_metrics_risk.append(
+                    MetricModel(
+                        name=f"ImpactedHomes{int(rp)}Y{clean_class_name}SVI",
+                        description=f"{svi_class} vulnerable homes impacted ({fe.column} > {fe.threshold} {fe.unit}) in the {int(rp)}-year event",
+                        select="COUNT(*)",
+                        filter=f"`{fe.column} ({int(rp)}Y)` >= {fe.threshold} AND {type_cond} AND {svi_cond}",
+                        long_name=f"Flooded homes with {svi_class} vulnerability - RP{int(rp)} (#)",
+                        show_in_metrics_table=True,
+                    )
                 )
-            )
-            # ImpactedHomes{RP}LowSVI
-            infographics_metrics_risk.append(
-                MetricModel(
-                    name=f"ImpactedHomes{rp}YLowSVI",
-                    description=f"Less-vulnerable homes impacted (Inundation Depth > 0.25) in the {rp}-year event",
-                    select="COUNT(*)",
-                    filter=f"`Inundation Depth ({rp}Y)` >= 0.25 AND {type_cond} AND `SVI` < {svi_threshold}",
-                    long_name=f"Less vulnerable flooded homes RP{rp}",
-                    show_in_metrics_table=True,
-                )
-            )
+
         self.infographics_metrics_risk = infographics_metrics_risk
         return self.infographics_metrics_risk
 
     def _setup_buildings(self, config: BuildingsInfographicModel, base_filt) -> None:
+        """
+        Configure building metrics and configuration for infographics.
+
+        Parameters
+        ----------
+        config : BuildingsInfographicModel
+            Building infographic configuration.
+        base_filt : str
+            Base SQL filter to apply.
+        """
         # Generate queries for all building types and categories
         building_queries = []
         for btype in config.types:
-            type_mapping = config.type_mapping.get(btype, {})
+            type_mapping = config.type_mapping.get(btype, TypeMapping())
             for i, cat in enumerate(config.impact_categories.categories):
                 query_name = f"{pascal_case(btype)}{pascal_case(cat)}Count"
                 desc = (
@@ -593,44 +1289,60 @@ class Metrics:
         )
 
     def _setup_svi(self, config: SviInfographicModel, base_filt) -> None:
+        """
+        Configure SVI metrics and configuration for infographics.
+
+        Parameters
+        ----------
+        config : SviInfographicModel
+            SVI infographic configuration.
+        base_filt : str
+            Base SQL filter to apply.
+        """
         # Generate queries for all SVI categories and vulnerability levels
         svi_queries = []
         cat_field = config.impact_categories.field
         bins = config.impact_categories.bins
-        svi_threshold = config.svi_threshold
+        svi_thresholds = config.svi.thresholds
+        svi_classes = config.svi.classes
         mapping = config.mapping
 
         for i, cat in enumerate(config.impact_categories.categories):
-            for vuln in ["LowVulnerability", "HighVulnerability"]:
-                if vuln == "LowVulnerability":
-                    svi_cond = f"`SVI` < {svi_threshold}"
-                    vuln_label = "Low Vulnerability"
+            for j, svi_class in enumerate(svi_classes):
+                # Build SVI condition based on thresholds
+                if j == 0:
+                    # First class: SVI < first_threshold
+                    svi_cond = f"`SVI` < {svi_thresholds[0]}"
+                elif j == len(svi_classes) - 1:
+                    # Last class: SVI >= last_threshold
+                    svi_cond = f"`SVI` >= {svi_thresholds[-1]}"
                 else:
-                    svi_cond = f"`SVI` >= {svi_threshold}"
-                    vuln_label = "High Vulnerability"
+                    # Middle classes: previous_threshold <= SVI < current_threshold
+                    svi_cond = f"`SVI` >= {svi_thresholds[j-1]} AND `SVI` < {svi_thresholds[j]}"
 
+                # Build impact category condition based on bins
                 if i == 0:
+                    # First category: field <= first_bin
                     cat_cond = f"`{cat_field}` <= {bins[0]}"
+                elif i == len(config.impact_categories.categories) - 1:
+                    # Last category: field > last_bin
+                    cat_cond = f"`{cat_field}` > {bins[-1]}"
                 else:
-                    cat_cond = f"`{cat_field}` > {bins[0]}"
-
-                # Build type filter
-                type_filters = []
-                for type_field, type_list in mapping.items():
-                    type_filters.append(
-                        f"`{type_field}` IN ("
-                        + ", ".join([f"'{t}'" for t in type_list])
-                        + ")"
+                    # Middle categories: previous_bin < field <= current_bin
+                    cat_cond = (
+                        f"`{cat_field}` > {bins[i-1]} AND `{cat_field}` <= {bins[i]}"
                     )
-                type_cond = " AND ".join(type_filters)
+
+                # Build type filter using TypeMapping
+                type_cond = mapping.to_sql_filter()
 
                 filter_str = (
                     f"{type_cond} AND {cat_cond} AND {svi_cond} AND {base_filt}"
                 )
 
-                name = f"{cat}{vuln}"
-                desc = f"Number of {cat.lower()} homes with {vuln_label.lower()}"
-                long_name = f"{cat} Homes - {vuln_label} (#)"
+                name = f"{cat}{svi_class.replace(' ', '')}"
+                desc = f"Number of {cat.lower()} homes with {svi_class.lower()} vulnerability"
+                long_name = f"{cat} Homes - {svi_class} (#)"
 
                 svi_queries.append(
                     MetricModel(
@@ -646,6 +1358,14 @@ class Metrics:
         self.infographics_config["svi"] = self._make_infographics_config_svi(config)
 
     def _setup_roads(self, config: RoadsInfographicModel) -> None:
+        """
+        Configure roads metrics and configuration for infographics.
+
+        Parameters
+        ----------
+        config : RoadsInfographicModel
+            Roads infographic configuration.
+        """
         # Generate queries for all road categories
         road_queries = []
         cat_field = config.field
@@ -685,6 +1405,19 @@ class Metrics:
     def _make_infographics_config_buildings(
         buildings_config: BuildingsInfographicModel,
     ) -> Dict[str, Any]:
+        """
+        Create infographics configuration dictionary for buildings.
+
+        Parameters
+        ----------
+        buildings_config : BuildingsInfographicModel
+            Building infographic configuration.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Configuration dictionary for building infographics.
+        """
         image_path = "{image_path}"
         # Default plot configuration, matching your existing template:
         # Dynamically generate the Info text based on the number of categories and bins
@@ -753,42 +1486,90 @@ class Metrics:
     def _make_infographics_config_svi(
         svi_config: SviInfographicModel,
     ) -> Dict[str, Any]:
+        """
+        Create infographics configuration dictionary for SVI.
+
+        Parameters
+        ----------
+        svi_config : SviInfographicModel
+            SVI infographic configuration.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Configuration dictionary for SVI infographics.
+        """
         image_path = "{image_path}"
-        categories = ["LowVulnerability", "HighVulnerability"]
+        svi_classes = svi_config.svi.classes
         charts = {}
         slices = {}
         categories_cfg = {}
+
         # Chart names correspond to impact categories
         for cat in svi_config.impact_categories.categories:
             charts[cat] = {"Name": cat, "Image": f"{image_path}/house.png"}
-        # Categories block for vulnerability
-        for idx, vuln in enumerate(categories):
-            categories_cfg[vuln] = {"Name": vuln, "Color": svi_config.colors[idx]}
+
+        # Categories block for vulnerability classes
+        for idx, svi_class in enumerate(svi_classes):
+            categories_cfg[svi_class.replace(" ", "")] = {
+                "Name": svi_class,
+                "Color": svi_config.svi.colors[idx],
+            }
+
         # Slices block
         for cat in svi_config.impact_categories.categories:
-            for vuln in categories:
-                slice_key = f"{cat}_{vuln}_People"
-                name = f"{cat} {vuln.replace('Vulnerability', ' vulnerability').lower()} homes"
-                query = f"{cat}{vuln}"
+            for svi_class in svi_classes:
+                slice_key = f"{cat}_{svi_class.replace(' ', '')}_People"
+                name = f"{cat} {svi_class.lower()} vulnerability homes"
+                query = f"{cat}{svi_class.replace(' ', '')}"
                 chart = cat
-                category = vuln
+                category = svi_class.replace(" ", "")
                 slices[slice_key] = {
                     "Name": name,
                     "Query": query,
                     "Chart": chart,
                     "Category": category,
                 }
-        # Info text
+
+        # Info text - dynamically build threshold information
         bins = svi_config.impact_categories.bins
         unit = svi_config.impact_categories.unit
+        thresholds = svi_config.svi.thresholds
+
         info_lines = [
             "Thresholds:<br>",
-            f"    {svi_config.impact_categories.categories[0]}: <= {bins[0]} {unit}<br>",
-            f"    {svi_config.impact_categories.categories[1]}: > {bins[0]} {unit}<br>",
-            "'Since some homes do not have an SVI,<br>",
-            "total number of homes might be different <br>",
-            "between this and the above graph.'",
         ]
+
+        # Add impact category threshold information
+        for i, cat in enumerate(svi_config.impact_categories.categories):
+            if i == 0:
+                info_lines.append(f"    {cat}: <= {bins[0]} {unit}<br>")
+            elif i == len(svi_config.impact_categories.categories) - 1:
+                info_lines.append(f"    {cat}: > {bins[-1]} {unit}<br>")
+            else:
+                info_lines.append(f"    {cat}: {bins[i-1]} - {bins[i]} {unit}<br>")
+
+        info_lines.append("<br>SVI Classes:<br>")
+
+        # Add SVI threshold information
+        for i, svi_class in enumerate(svi_classes):
+            if i == 0:
+                info_lines.append(f"    {svi_class}: < {thresholds[0]}<br>")
+            elif i == len(svi_classes) - 1:
+                info_lines.append(f"    {svi_class}: >= {thresholds[-1]}<br>")
+            else:
+                info_lines.append(
+                    f"    {svi_class}: {thresholds[i-1]} - {thresholds[i]}<br>"
+                )
+
+        info_lines.extend(
+            [
+                "'Since some homes do not have an SVI,<br>",
+                "total number of homes might be different <br>",
+                "between this and the above graph.'",
+            ]
+        )
+
         other_config = {
             "Plot": {
                 "image_scale": 0.15,
@@ -817,6 +1598,19 @@ class Metrics:
     def _make_infographics_config_roads(
         roads_config: RoadsInfographicModel,
     ) -> Dict[str, Any]:
+        """
+        Create infographics configuration dictionary for roads.
+
+        Parameters
+        ----------
+        roads_config : RoadsInfographicModel
+            Roads infographic configuration.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Configuration dictionary for roads infographics.
+        """
         image_path = "{image_path}"
         # Chart block
         charts = {"Flooded Roads": {"Name": "Flooded Roads"}}
