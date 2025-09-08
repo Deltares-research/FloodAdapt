@@ -67,7 +67,7 @@ class TestDataBaseBuilder:
                 name=str(self.templates_path / "offshore"),
                 reference="MSL",
             )
-            config.unit_system = UnitSystems.metric
+            config.unit_system = UnitSystems.imperial
 
             yield config
 
@@ -878,6 +878,7 @@ class TestDataBaseBuilder:
     ):
         # Arrange
         mock_config.infographics = False
+        mock_config.return_periods = [1, 2, 5, 10, 25, 50, 100]
         builder = DatabaseBuilder(mock_config)
         builder.setup()
         builder.create_aggregation_areas = mock_aggregation_areas
@@ -915,7 +916,7 @@ class TestDataBaseBuilder:
                 "TotalDamageEvent" in query["name"] for query in attrs["queries"]
             )
 
-    def test_create_infometrics_with_infographics(
+    def test_create_infometrics_with_default_infographics(
         self, mock_config: ConfigModel, mock_aggregation_areas
     ):
         # Arrange
@@ -925,6 +926,10 @@ class TestDataBaseBuilder:
             threshold=0.8,
         )
         mock_config.infographics = True
+        mock_config.return_periods = [1, 2, 5, 10, 25, 50, 100]
+        mock_config.event_infographics = None
+        mock_config.event_additional_infometrics = None
+        mock_config.risk_additional_infometrics = None
         builder = DatabaseBuilder(mock_config)
         builder.setup()
         builder.create_aggregation_areas = mock_aggregation_areas

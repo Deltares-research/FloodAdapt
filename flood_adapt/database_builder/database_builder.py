@@ -8,7 +8,7 @@ import shutil
 import warnings
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 from urllib.request import urlretrieve
 
 import cht_observations.observation_stations as obs
@@ -17,7 +17,6 @@ import numpy as np
 import pandas as pd
 import rioxarray as rxr
 import tomli
-import tomli_w
 import xarray as xr
 from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
@@ -87,6 +86,16 @@ from flood_adapt.objects.projections.projections import (
     SocioEconomicChange,
 )
 from flood_adapt.objects.strategies.strategies import Strategy
+
+from .metrics_utils import (
+    BuildingsInfographicModel,
+    EventInfographicModel,
+    MetricModel,
+    Metrics,
+    RiskInfographicModel,
+    RoadsInfographicModel,
+    SviInfographicModel,
+)
 
 logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 
@@ -330,7 +339,11 @@ class ConfigModel(BaseModel):
     database_path: Optional[str] = None
     unit_system: UnitSystems
     gui: GuiConfigModel
-    infographics: Optional[bool] = True
+    infographics: bool = True
+    event_infographics: Optional[EventInfographicModel] = None
+    risk_infographics: Optional[RiskInfographicModel] = None
+    event_additional_infometrics: Optional[list[MetricModel]] = None
+    risk_additional_infometrics: Optional[list[MetricModel]] = None
 
     # FIAT
     fiat: str
@@ -631,20 +644,13 @@ class DatabaseBuilder:
         return fiat
 
     @debug_timer
-    def create_risk_model(self) -> Optional[RiskModel]:
+    def create_risk_model(self) -> RiskModel:
         # Check if return periods are provided
         if not self.config.return_periods:
-            if self._probabilistic_set_name:
-                risk = RiskModel()
-                logger.warning(
-                    f"No return periods provided, but a probabilistic set is available. Using default return periods {risk.return_periods}."
-                )
-                return risk
-            else:
-                logger.warning(
-                    "No return periods provided and no probabilistic set available. Risk calculations will not be performed."
-                )
-                return None
+            risk = RiskModel()
+            logger.warning(
+                f"No return periods provided for performing risk calculations. Using default return periods {risk.return_periods}."
+            )
         else:
             risk = RiskModel(return_periods=self.config.return_periods)
         return risk
@@ -1839,123 +1845,83 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_infometrics(self):
-        """
-        Copy the infometrics and infographics templates to the appropriate location and modifies the metrics_config.toml files.
-
-        This method copies the templates from the 'infometrics' and 'infographics' folders to the 'static/templates' folder in the root directory.
-        It then modifies the 'metrics_config.toml' and 'metrics_config_risk.toml' files by updating the 'aggregateBy' attribute with the names
-        of the aggregations defined in the 'fiat' section of the 'site_attrs' attribute.
-        """
-        # TODO there should be generalized infometric queries with NSI or OSM, and with SVI or without. Then Based on the user input these should be chosen automatically
-        templates_path = Path(__file__).parent.resolve().joinpath("templates")
-
-        # Create template folder
+        # Define template folder
         path_im = self.root.joinpath("static", "templates", "infometrics")
-        path_im.mkdir()
+        path_ig = self.root.joinpath("static", "templates", "infographics")
+        templates_path = (
+            Path(__file__).parent.resolve().joinpath("templates", "infographics")
+        )
+        shutil.copytree(templates_path, path_ig)
 
-        # Copy mandatory metric configs
-        path_im_temp = templates_path.joinpath("infometrics")
-        for file in path_im_temp.glob("*.toml"):
-            shutil.copy2(file, path_im)
+        # Create infometrics object and define mandatory metrics
+        metrics = Metrics(
+            dmg_unit=self.read_damage_unit(),
+            return_periods=self.create_risk_model().return_periods,
+        )
 
-        self._create_optional_infometrics(templates_path, path_im)
-
-        files = list(path_im.glob("*metrics_config*.toml"))
-        # Update aggregation areas in metrics config
-        for file in files:
-            file = path_im.joinpath(file)
-            with open(file, "rb") as f:
-                attrs = tomli.load(f)
-
-            # add aggration levels
-            if self._aggregation_areas is None:
-                self._aggregation_areas = self.create_aggregation_areas()
-            attrs["aggregateBy"] = [aggr.name for aggr in self._aggregation_areas]
-
-            # take out road metrics if needed
-            if not self._has_roads:
-                attrs["queries"] = [
-                    query
-                    for query in attrs["queries"]
-                    if "road" not in query["name"].lower()
-                ]
-
-            # Replace Damage Unit
-            # TODO do this in a better manner
-            for i, query in enumerate(attrs["queries"]):
-                if "$" in query["long_name"]:
-                    query["long_name"] = query["long_name"].replace(
-                        "$", self.read_damage_unit()
+        # Check if infographics are going to be created
+        if self.config.infographics:
+            # Check if strandard infographics are going to be created based on exposure template
+            if not self.config.event_infographics:
+                # Start with building impacts
+                exposure_type = (
+                    self._get_exposure_type()
+                )  # get exposure type from FIAT model
+                if exposure_type is None:
+                    logger.warning(
+                        "No exposure type could be identified from the FIAT model. Standard event building infographics cannot be created."
                     )
-
-            # replace the SVI threshold if needed
-            if self.config.svi:
-                for i, query in enumerate(attrs["queries"]):
-                    query["filter"] = query["filter"].replace(
-                        "SVI_threshold", str(self.config.svi.threshold)
+                    buildings = None
+                    svi = None
+                else:
+                    buildings = BuildingsInfographicModel.get_template(
+                        type=exposure_type
                     )
-
-            with open(file, "wb") as f:
-                tomli_w.dump(attrs, f)
-
-    @debug_timer
-    def _create_optional_infometrics(self, templates_path: Path, path_im: Path):
-        # If infographics are going to be created in FA, get template metric configurations
-        if not self.config.infographics:
-            return
-
-        # Check what type of infographics should be used
-        if self.config.unit_system == UnitSystems.imperial:
-            metrics_folder_name = "US_NSI"
-            logger.info("Default NSI infometrics and infographics will be created.")
-        elif self.config.unit_system == UnitSystems.metric:
-            metrics_folder_name = "OSM"
-            logger.info("Default OSM infometrics and infographics will be created.")
-        else:
-            raise ValueError(
-                f"Unit system {self.config.unit_system} is not recognized. Please choose 'imperial' or 'metric'."
+                    # Then check home social vulnerability index
+                    if self.config.svi is not None:
+                        svi = SviInfographicModel.get_template(
+                            svi_threshold=self.config.svi.threshold, type=exposure_type
+                        )
+                    else:
+                        svi = None
+                        logger.warning(
+                            "No SVI information available. Standard event SVI infographics cannot be created."
+                        )
+                # Last check road impacts
+                if self._has_roads:
+                    roads = RoadsInfographicModel.get_template(
+                        unit_system=self.config.unit_system.value
+                    )
+                else:
+                    roads = None
+                    logger.warning(
+                        "No roads available in the exposure. Standard event road infographics cannot be created."
+                    )
+                self.config.event_infographics = EventInfographicModel(
+                    buildings=buildings, svi=svi, roads=roads
+                )
+            metrics.create_infographics_metrics_event(
+                config=self.config.event_infographics
             )
 
-        if self.config.svi is not None:
-            svi_folder_name = "with_SVI"
-        else:
-            svi_folder_name = "without_SVI"
+        if self.config.event_additional_infometrics:
+            for metric in self.config.event_additional_infometrics:
+                metrics.add_event_metric(metric)
 
-        # Copy metrics config for infographics
-        path_0 = templates_path.joinpath(
-            "infometrics", metrics_folder_name, svi_folder_name
+        if self.config.risk_additional_infometrics:
+            for metric in self.config.risk_additional_infometrics:
+                metrics.add_risk_metric(metric)
+
+        # Get aggregation levels
+        if self._aggregation_areas is None:
+            self._aggregation_areas = self.create_aggregation_areas()
+        aggr_levels = [aggr.name for aggr in self._aggregation_areas]
+        # Write config files
+        metrics.write(
+            metrics_path=path_im,
+            aggregation_levels=aggr_levels,
+            infographics_path=path_ig,
         )
-        for file in path_0.glob("*.toml"):
-            shutil.copy2(file, path_im)
-
-        # Copy additional risk config
-        file = templates_path.joinpath(
-            "infometrics",
-            metrics_folder_name,
-            "metrics_additional_risk_configs.toml",
-        )
-        shutil.copy2(file, path_im)
-
-        # Copy infographics config
-        path_ig_temp = templates_path.joinpath("infographics", metrics_folder_name)
-        path_ig = self.root.joinpath("static", "templates", "infographics")
-        path_ig.mkdir()
-        files_ig = ["styles.css", "config_charts.toml"]
-
-        if self.config.svi is not None:
-            files_ig.append("config_risk_charts.toml")
-            files_ig.append("config_people.toml")
-
-        if self._has_roads:
-            files_ig.append("config_roads.toml")
-
-        for file in files_ig:
-            shutil.copy2(path_ig_temp.joinpath(file), path_ig.joinpath(file))
-
-        # Copy images
-        path_0 = templates_path.joinpath("infographics", "images")
-        path_1 = self.root.joinpath("static", "templates", "infographics", "images")
-        shutil.copytree(path_0, path_1)
 
     @debug_timer
     def add_static_files(self):
@@ -2398,6 +2364,22 @@ class DatabaseBuilder:
             )
             geoms = geoms[keep].reset_index(drop=True)
             self.fiat_model.exposure.exposure_geoms[i] = geoms
+
+    def _get_exposure_type(self) -> Literal["OSM", "NSI", None]:
+        # Define the allowed types for OSM
+        OSM_types = ["residential", "commercial", "industrial", "road"]
+        NSI_types = ["RES", "COM", "IND", "PUB", "road"]
+        unique_types = set(
+            self.fiat_model.exposure.exposure_db[
+                _FIAT_COLUMNS.primary_object_type
+            ].unique()
+        )
+        if unique_types.issubset(set(OSM_types)):
+            return "OSM"
+        elif unique_types.issubset(set(NSI_types)):
+            return "NSI"
+        else:
+            return None
 
     def _get_fiat_gdf_full(self) -> gpd.GeoDataFrame:
         """
