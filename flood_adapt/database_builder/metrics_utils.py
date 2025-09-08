@@ -149,6 +149,12 @@ class BuildingsInfographicModel(BaseModel):
         return config
 
 
+class SviModel(BaseModel):
+    classes: list[str] = Field(default_factory=lambda: ["Low", "High"])
+    colors: list[str] = Field(default_factory=lambda: ["#D5DEE1", "#88A2AA"])
+    thresholds: list[float] = Field(default_factory=lambda: [0.7])
+
+
 class SviInfographicModel(BaseModel):
     svi_threshold: float
     colors: list[str] = Field(default_factory=lambda: ["#D5DEE1", "#88A2AA"])
@@ -233,8 +239,36 @@ class EventInfographicModel(BaseModel):
     roads: Optional[RoadsInfographicModel] = None
 
 
+class FloodExceedanceModel(BaseModel):
+    column: str = "Inundation Depth"
+    threshold: float = 0.1
+    unit: str = "meters"
+    period: int = 30
+
+
 class RiskInfographicModel(BaseModel):
-    pass
+    svi: SviInfographicModel
+    flood_exceedances: FloodExceedanceModel
+
+    @staticmethod
+    def get_template(
+        type: Literal["OSM", "NSI"], svi_threshold: Optional[float] = None
+    ):
+        if type == "OSM":
+            config = RiskInfographicModel(
+                svi=SviInfographicModel.get_template(svi_threshold, type="OSM")
+                if svi_threshold
+                else None,
+                flood_exceedances=FloodExceedanceModel(),
+            )
+        elif type == "NSI":
+            config = RiskInfographicModel(
+                svi=SviInfographicModel.get_template(svi_threshold, type="NSI")
+                if svi_threshold
+                else None,
+                flood_exceedances=FloodExceedanceModel(unit="feet", threshold=0.2),
+            )
+        return config
 
 
 def get_filter(
@@ -287,6 +321,7 @@ class Metrics:
         self.additional_metrics_risk: list[MetricModel] = []
         self.infographics_metrics_event: list[MetricModel] = []
         self.infographics_metrics_risk: list[MetricModel] = []
+        self.additional_risk_configs = {}
         self.infographics_config = {}
 
     @staticmethod
@@ -452,6 +487,78 @@ class Metrics:
         if config.roads:
             self._setup_roads(config.roads)
         return self.infographics_metrics_event
+
+    def create_infographics_metrics_risk(
+        self, config: RiskInfographicModel, base_filt="`Total Damage` > 0"
+    ) -> list[MetricModel]:
+        infographics_metrics_risk = []
+
+        # Get mapping from config.svi if available, else default to {"Primary Object Type": ["RES"]}
+        if config.svi and hasattr(config.svi, "mapping"):
+            mapping = config.svi.mapping
+        else:
+            mapping = {"Primary Object Type": ["RES"]}
+
+        # Build type filter string
+        type_filters = []
+        for type_field, type_list in mapping.items():
+            type_filters.append(
+                f"`{type_field}` IN (" + ", ".join([f"'{t}'" for t in type_list]) + ")"
+            )
+        type_cond = " AND ".join(type_filters)
+
+        # FloodedHomes (Exceedance Probability > 50)
+        fe = config.flood_exceedances
+        infographics_metrics_risk.append(
+            MetricModel(
+                name="LikelyFloodedHomes",
+                description=f"Homes likely to flood ({fe.column} > {fe.threshold} {fe.unit}) in {fe.period} year period",
+                select="COUNT(*)",
+                filter=f"`Exceedance Probability` > 50 AND {type_cond}",
+                long_name=f"Homes likely to flood in {fe.period}-year period (#)",
+                show_in_metrics_table=True,
+            )
+        )
+
+        # ImpactedHomes for each RP (2, 5, 10, 25, 50, 100)
+        rps = [2, 5, 10, 25, 50, 100]
+        svi_threshold = 0.7
+        for rp in rps:
+            # ImpactedHomes{RP} (all homes)
+            infographics_metrics_risk.append(
+                MetricModel(
+                    name=f"ImpactedHomes{rp}Y",
+                    description=f"Homes impacted (Inundation Depth > 0.25) in the {rp}-year event",
+                    select="COUNT(*)",
+                    filter=f"`Inundation Depth ({rp}Y)` >= 0.25 AND {type_cond}",
+                    long_name=f"Flooded homes RP{rp}",
+                    show_in_metrics_table=True,
+                )
+            )
+            # ImpactedHomes{RP}HighSVI
+            infographics_metrics_risk.append(
+                MetricModel(
+                    name=f"ImpactedHomes{rp}YHighSVI",
+                    description=f"Highly vulnerable homes impacted (Inundation Depth > 0.25) in the {rp}-year event",
+                    select="COUNT(*)",
+                    filter=f"`Inundation Depth ({rp}Y)` >= 0.25 AND {type_cond} AND `SVI` >= {svi_threshold}",
+                    long_name=f"Highly vulnerable flooded homes RP{rp}",
+                    show_in_metrics_table=True,
+                )
+            )
+            # ImpactedHomes{RP}LowSVI
+            infographics_metrics_risk.append(
+                MetricModel(
+                    name=f"ImpactedHomes{rp}YLowSVI",
+                    description=f"Less-vulnerable homes impacted (Inundation Depth > 0.25) in the {rp}-year event",
+                    select="COUNT(*)",
+                    filter=f"`Inundation Depth ({rp}Y)` >= 0.25 AND {type_cond} AND `SVI` < {svi_threshold}",
+                    long_name=f"Less vulnerable flooded homes RP{rp}",
+                    show_in_metrics_table=True,
+                )
+            )
+        self.infographics_metrics_risk = infographics_metrics_risk
+        return self.infographics_metrics_risk
 
     def _setup_buildings(self, config: BuildingsInfographicModel, base_filt) -> None:
         # Generate queries for all building types and categories

@@ -1861,12 +1861,12 @@ class DatabaseBuilder:
 
         # Check if infographics are going to be created
         if self.config.infographics:
+            exposure_type = (
+                self._get_exposure_type()
+            )  # get exposure type from FIAT model
             # Check if strandard infographics are going to be created based on exposure template
             if not self.config.event_infographics:
                 # Start with building impacts
-                exposure_type = (
-                    self._get_exposure_type()
-                )  # get exposure type from FIAT model
                 if exposure_type is None:
                     logger.warning(
                         "No exposure type could be identified from the FIAT model. Standard event building infographics cannot be created."
@@ -1902,6 +1902,22 @@ class DatabaseBuilder:
                 )
             metrics.create_infographics_metrics_event(
                 config=self.config.event_infographics
+            )
+
+            if not self.config.risk_infographics:
+                if exposure_type is None:
+                    logger.warning(
+                        "No exposure type could be identified from the FIAT model. Standard risk building infographics cannot be created."
+                    )
+                else:
+                    self.config.risk_infographics = RiskInfographicModel.get_template(
+                        svi_threshold=self.config.svi.threshold
+                        if self.config.svi
+                        else None,
+                        type=exposure_type,
+                    )
+            metrics.create_infographics_metrics_risk(
+                config=self.config.risk_infographics
             )
 
         if self.config.event_additional_infometrics:
