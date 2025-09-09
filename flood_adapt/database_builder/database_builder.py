@@ -358,7 +358,7 @@ class ConfigModel(BaseModel):
     road_width: us.UnitfulLength = us.UnitfulLength(
         value=5.0, units=us.UnitTypesLength.meters
     )
-    return_periods: list[int] = Field(default_factory=list)
+    return_periods: Optional[list[int]] = None
     floodmap_type: Optional[FloodmapType] = None
 
     # SFINCS
@@ -1845,7 +1845,6 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_infometrics(self):
-        # Define template folder
         path_im = self.root.joinpath("static", "templates", "infometrics")
         path_ig = self.root.joinpath("static", "templates", "infographics")
         templates_path = (
@@ -1853,86 +1852,84 @@ class DatabaseBuilder:
         )
         shutil.copytree(templates_path, path_ig)
 
-        # Create infometrics object and define mandatory metrics
-        metrics = Metrics(
+        metrics = self._create_mandatory_metrics()
+
+        if self.config.infographics:
+            self._create_event_infographics(metrics)
+            self._create_risk_infographics(metrics)
+
+        self._add_additional_event_metrics(metrics)
+        self._add_additional_risk_metrics(metrics)
+
+        self._write_infometrics(metrics, path_im, path_ig)
+
+    def _create_mandatory_metrics(self):
+        return Metrics(
             dmg_unit=self.read_damage_unit(),
             return_periods=self.create_risk_model().return_periods,
         )
 
-        # Check if infographics are going to be created
-        if self.config.infographics:
-            exposure_type = (
-                self._get_exposure_type()
-            )  # get exposure type from FIAT model
-            # Check if strandard infographics are going to be created based on exposure template
-            if not self.config.event_infographics:
-                # Start with building impacts
-                if exposure_type is None:
-                    logger.warning(
-                        "No exposure type could be identified from the FIAT model. Standard event building infographics cannot be created."
+    def _create_event_infographics(self, metrics):
+        exposure_type = self._get_exposure_type()
+        if not self.config.event_infographics:
+            buildings, svi, roads = None, None, None
+            if exposure_type is None:
+                logger.warning(
+                    "No exposure type could be identified from the FIAT model. Standard event building infographics cannot be created."
+                )
+            else:
+                buildings = BuildingsInfographicModel.get_template(type=exposure_type)
+                if self.config.svi is not None:
+                    svi = HomesInfographicModel.get_template(
+                        svi_threshold=self.config.svi.threshold, type=exposure_type
                     )
-                    buildings = None
-                    svi = None
                 else:
-                    buildings = BuildingsInfographicModel.get_template(
-                        type=exposure_type
+                    logger.warning(
+                        "No SVI information available. Standard event SVI infographics cannot be created."
                     )
-                    # Then check home social vulnerability index
-                    if self.config.svi is not None:
-                        svi = HomesInfographicModel.get_template(
-                            svi_threshold=self.config.svi.threshold, type=exposure_type
-                        )
-                    else:
-                        svi = None
-                        logger.warning(
-                            "No SVI information available. Standard event SVI infographics cannot be created."
-                        )
-                # Last check road impacts
                 if self._has_roads:
                     roads = RoadsInfographicModel.get_template(
                         unit_system=self.config.unit_system.value
                     )
                 else:
-                    roads = None
                     logger.warning(
                         "No roads available in the exposure. Standard event road infographics cannot be created."
                     )
-                self.config.event_infographics = EventInfographicModel(
-                    buildings=buildings, svi=svi, roads=roads
+            self.config.event_infographics = EventInfographicModel(
+                buildings=buildings, svi=svi, roads=roads
+            )
+        metrics.create_infographics_metrics_event(config=self.config.event_infographics)
+
+    def _create_risk_infographics(self, metrics):
+        exposure_type = self._get_exposure_type()
+        if not self.config.risk_infographics:
+            if exposure_type is None:
+                logger.warning(
+                    "No exposure type could be identified from the FIAT model. Standard risk building infographics cannot be created."
                 )
-            metrics.create_infographics_metrics_event(
-                config=self.config.event_infographics
-            )
+            else:
+                self.config.risk_infographics = RiskInfographicModel.get_template(
+                    svi_threshold=self.config.svi.threshold
+                    if self.config.svi
+                    else None,
+                    type=exposure_type,
+                )
+        metrics.create_infographics_metrics_risk(config=self.config.risk_infographics)
 
-            if not self.config.risk_infographics:
-                if exposure_type is None:
-                    logger.warning(
-                        "No exposure type could be identified from the FIAT model. Standard risk building infographics cannot be created."
-                    )
-                else:
-                    self.config.risk_infographics = RiskInfographicModel.get_template(
-                        svi_threshold=self.config.svi.threshold
-                        if self.config.svi
-                        else None,
-                        type=exposure_type,
-                    )
-            metrics.create_infographics_metrics_risk(
-                config=self.config.risk_infographics
-            )
-
+    def _add_additional_event_metrics(self, metrics):
         if self.config.event_additional_infometrics:
             for metric in self.config.event_additional_infometrics:
                 metrics.add_event_metric(metric)
 
+    def _add_additional_risk_metrics(self, metrics):
         if self.config.risk_additional_infometrics:
             for metric in self.config.risk_additional_infometrics:
                 metrics.add_risk_metric(metric)
 
-        # Get aggregation levels
+    def _write_infometrics(self, metrics, path_im, path_ig):
         if self._aggregation_areas is None:
             self._aggregation_areas = self.create_aggregation_areas()
         aggr_levels = [aggr.name for aggr in self._aggregation_areas]
-        # Write config files
         metrics.write(
             metrics_path=path_im,
             aggregation_levels=aggr_levels,

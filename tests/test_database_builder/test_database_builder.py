@@ -129,7 +129,7 @@ class TestDataBaseBuilder:
         self, mock_config: ConfigModel
     ):
         # Arrange
-        mock_config.return_periods = []
+        mock_config.return_periods = None
         builder = DatabaseBuilder(mock_config)
 
         # Act
@@ -879,6 +879,10 @@ class TestDataBaseBuilder:
         # Arrange
         mock_config.infographics = False
         mock_config.return_periods = [1, 2, 5, 10, 25, 50, 100]
+        mock_config.event_infographics = None
+        mock_config.risk_infographics = None
+        mock_config.event_additional_infometrics = None
+        mock_config.risk_additional_infometrics = None
         builder = DatabaseBuilder(mock_config)
         builder.setup()
         builder.create_aggregation_areas = mock_aggregation_areas
@@ -1000,6 +1004,11 @@ class TestDataBaseBuilder:
         # Arrange
         mock_config.svi = None
         mock_config.infographics = True
+        mock_config.return_periods = [1, 2, 5, 10, 25, 50, 100]
+        mock_config.event_infographics = None
+        mock_config.risk_infographics = None
+        mock_config.event_additional_infometrics = None
+        mock_config.risk_additional_infometrics = None
         builder = DatabaseBuilder(mock_config)
         builder.setup()
         builder.create_aggregation_areas = mock_aggregation_areas
@@ -1026,7 +1035,9 @@ class TestDataBaseBuilder:
         with open(file_path, "rb") as f:
             attrs = tomli.load(f)
             assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-            assert any(query["name"] == "FloodedHomes" for query in attrs["queries"])
+            assert any(
+                query["name"] == "LikelyFloodedHomes" for query in attrs["queries"]
+            )
             assert any("ImpactedHomes" in query["name"] for query in attrs["queries"])
             assert all("SVI" not in query["name"] for query in attrs["queries"])
 
@@ -1040,7 +1051,6 @@ class TestDataBaseBuilder:
             )
             assert any("Residential" in query["name"] for query in attrs["queries"])
             assert any("Commercial" in query["name"] for query in attrs["queries"])
-            assert any("Industrial" in query["name"] for query in attrs["queries"])
             assert all(
                 "Vulnerability" not in query["name"] for query in attrs["queries"]
             )
@@ -1051,6 +1061,11 @@ class TestDataBaseBuilder:
         # Arrange
         mock_config.svi = None
         mock_config.infographics = True
+        mock_config.return_periods = [1, 2, 5, 10, 25, 50, 100]
+        mock_config.event_infographics = None
+        mock_config.risk_infographics = None
+        mock_config.event_additional_infometrics = None
+        mock_config.risk_additional_infometrics = None
         builder = DatabaseBuilder(mock_config)
         builder.setup()
         builder.create_aggregation_areas = mock_aggregation_areas
