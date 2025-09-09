@@ -1450,29 +1450,35 @@ class Metrics:
             "Slices": {},
             "Other": other_config,
         }
-        # Categories block
+
+        # Categories block - keys have no special characters, Names are original
         if buildings_config.impact_categories.colors is not None:
             for k, cat in enumerate(buildings_config.impact_categories.categories):
-                cfg["Categories"][cat] = {
-                    "Name": cat,
+                clean_cat_key = pascal_case(cat.replace(" ", "").replace("-", ""))
+                cfg["Categories"][clean_cat_key] = {
+                    "Name": cat,  # Original name
                     "Color": buildings_config.impact_categories.colors[k],
                 }
 
+        # Charts block - keys have no special characters, Names are original
         for i, btype in enumerate(buildings_config.types):
-            # Charts block
-            cfg["Charts"][btype] = {
-                "Name": btype,
+            clean_btype_key = pascal_case(btype.replace(" ", "").replace("-", ""))
+            cfg["Charts"][clean_btype_key] = {
+                "Name": btype,  # Original name
                 "Image": f"{image_path}/{buildings_config.icons[i]}.png",
             }
 
-            # Slices blocks
+        # Slices block - reference Chart and Category Names (not keys)
+        for i, btype in enumerate(buildings_config.types):
             for cat in buildings_config.impact_categories.categories:
-                slice_key = f"{cat}_{btype}"
+                clean_cat_key = pascal_case(cat.replace(" ", "").replace("-", ""))
+                clean_btype_key = pascal_case(btype.replace(" ", "").replace("-", ""))
+                slice_key = f"{clean_cat_key}{clean_btype_key}"
                 cfg["Slices"][slice_key] = {
                     "Name": f"{cat} {btype}",
-                    "Query": f"{btype}{cat}Count",
-                    "Chart": btype,
-                    "Category": cat,
+                    "Query": f"{pascal_case(btype)}{pascal_case(cat)}Count",
+                    "Chart": btype,  # Reference Chart Name, not key
+                    "Category": cat,  # Reference Category Name, not key
                 }
 
         return cfg
@@ -1500,34 +1506,46 @@ class Metrics:
         slices = {}
         categories_cfg = {}
 
-        # Chart names correspond to impact categories
+        # Charts block - keys have no special characters, Names are original
         for cat in svi_config.impact_categories.categories:
-            charts[cat] = {"Name": cat, "Image": f"{image_path}/house.png"}
+            clean_cat_key = pascal_case(cat.replace(" ", "").replace("-", ""))
+            charts[clean_cat_key] = {
+                "Name": cat,  # Original name
+                "Image": f"{image_path}/house.png",
+            }
 
-        # Categories block for vulnerability classes
+        # Categories block - keys have no special characters, Names are original
         for idx, svi_class in enumerate(svi_classes):
             color = (
                 svi_config.svi.colors[idx] if svi_config.svi is not None else "#cccccc"
             )
-            cat_name = svi_class.replace(" ", "") + "Vulnerability"
-            categories_cfg[cat_name] = {
-                "Name": cat_name,
+            clean_svi_key = (
+                pascal_case(svi_class.replace(" ", "").replace("-", ""))
+                + "Vulnerability"
+            )
+            categories_cfg[clean_svi_key] = {
+                "Name": f"{svi_class} Vulnerability",  # Original name with "Vulnerability"
                 "Color": color,
             }
 
-        # Slices block
+        # Slices block - reference Chart and Category Names (not keys)
         for cat in svi_config.impact_categories.categories:
             for svi_class in svi_classes:
-                slice_key = f"{cat}_{svi_class.replace(' ', '')}_People"
+                clean_cat_key = pascal_case(cat.replace(" ", "").replace("-", ""))
+                clean_svi_key = (
+                    pascal_case(svi_class.replace(" ", "").replace("-", ""))
+                    + "Vulnerability"
+                )
+                slice_key = f"{clean_cat_key}{clean_svi_key}"
                 name = f"{cat} {svi_class.lower()} vulnerability homes"
-                query = f"{cat}{svi_class.replace(' ', '')}"
-                chart = cat
-                category = svi_class.replace(" ", "")
+                query = (
+                    f"{cat}{svi_class.replace(' ', '').replace('-', '')}Vulnerability"
+                )
                 slices[slice_key] = {
                     "Name": name,
                     "Query": query,
-                    "Chart": chart,
-                    "Category": category,
+                    "Chart": cat,  # Reference Chart Name, not key
+                    "Category": f"{svi_class} Vulnerability",  # Reference Category Name, not key
                 }
 
         # Info text - dynamically build threshold information
@@ -1611,28 +1629,40 @@ class Metrics:
             Configuration dictionary for roads infographics.
         """
         image_path = "{image_path}"
-        # Chart block
-        charts = {"Flooded Roads": {"Name": "Flooded Roads"}}
-        # Categories block
+
+        # Charts block - key has no special characters, Name is original
+        chart_key = "FloodedRoads"
+        chart_name = "Flooded Roads"
+        charts = {chart_key: {"Name": chart_name}}
+
+        # Categories block - keys have no special characters, Names are original
         categories_cfg = {}
         for idx, cat in enumerate(roads_config.categories):
+            clean_cat_key = (
+                pascal_case(cat.replace(" ", "").replace("-", "")) + "Flooding"
+            )
             cat_name = f"{cat} Flooding"
-            categories_cfg[cat_name] = {
-                "Name": cat_name,
+            categories_cfg[clean_cat_key] = {
+                "Name": cat_name,  # Original name with "Flooding"
                 "Color": roads_config.colors[idx],
                 "Image": f"{image_path}/{roads_config.icons[idx]}.png",
             }
-        # Slices block
+
+        # Slices block - reference Chart and Category Names (not keys)
         slices = {}
         for idx, cat in enumerate(roads_config.categories):
+            clean_cat_key = (
+                pascal_case(cat.replace(" ", "").replace("-", "")) + "Flooding"
+            )
             cat_name = f"{cat} Flooding"
             query_name = f"{pascal_case(cat)}FloodedRoadsLength"
-            slices[cat_name] = {
+            slices[clean_cat_key] = {
                 "Name": cat_name,
                 "Query": query_name,
-                "Chart": "Flooded Roads",
-                "Category": cat_name,
+                "Chart": chart_name,  # Reference Chart Name, not key
+                "Category": cat_name,  # Reference Category Name, not key
             }
+
         # Info text
         thresholds = roads_config.thresholds
         # Consistent unit naming
@@ -1686,40 +1716,46 @@ class Metrics:
         homes = risk_config.homes
         svi = homes.svi if homes.svi is not None else None
 
-        # Charts block: one chart per RP
+        # Charts block - keys have no special characters, Names are original
         charts = {}
         for rp in rps:
-            charts[f"{int(rp)}Y"] = {
-                "Name": f"{int(rp)}Y",
+            chart_key = f"RP{int(rp)}Y"
+            chart_name = f"{int(rp)}Y"
+            charts[chart_key] = {
+                "Name": chart_name,  # Original name
                 "Image": f"{image_path}/house.png",
             }
 
-        # Categories block: SVI classes
+        # Categories block - keys have no special characters, Names are original
         categories = {}
         if svi:
             for idx, svi_class in enumerate(svi.classes):
-                cat_name = svi_class.replace(" ", "") + "Vulnerability"
-                categories[cat_name] = {
-                    "Name": cat_name,
+                cat_key = (
+                    pascal_case(svi_class.replace(" ", "").replace("-", ""))
+                    + "Vulnerability"
+                )
+                cat_name = f"{svi_class} Vulnerability"
+                categories[cat_key] = {
+                    "Name": cat_name,  # Original name with "Vulnerability"
                     "Color": svi.colors[idx] if svi.colors else "#cccccc",
                 }
 
-        # Slices block: for each RP and SVI class
+        # Slices block - reference Chart and Category Names (not keys)
         slices = {}
         if svi:
             for rp in rps:
+                chart_name = f"{int(rp)}Y"
                 for idx, svi_class in enumerate(svi.classes):
-                    cat_name = svi_class.replace(" ", "") + "Vulnerability"
-                    slice_key = f"{cat_name}_{int(rp)}Y"
+                    clean_svi = svi_class.replace(" ", "").replace("-", "")
+                    cat_name = f"{svi_class} Vulnerability"
+                    slice_key = f"{pascal_case(svi_class.replace(' ', '').replace('-', ''))}VulnerabilityRP{int(rp)}Y"
                     name = f"{int(rp)}Y {svi_class} Vulnerability"
-                    query = f"ImpactedHomes{int(rp)}Y{svi_class.replace(' ', '')}SVI"
-                    chart = f"{int(rp)}Y"
-                    category = cat_name
+                    query = f"ImpactedHomes{int(rp)}Y{clean_svi}SVI"
                     slices[slice_key] = {
                         "Name": name,
                         "Query": query,
-                        "Chart": chart,
-                        "Category": category,
+                        "Chart": chart_name,  # Reference Chart Name, not key
+                        "Category": cat_name,  # Reference Category Name, not key
                     }
 
         # Other block: static info, but use config where possible
