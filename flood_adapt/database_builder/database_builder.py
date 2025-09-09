@@ -90,11 +90,11 @@ from flood_adapt.objects.strategies.strategies import Strategy
 from .metrics_utils import (
     BuildingsInfographicModel,
     EventInfographicModel,
+    HomesInfographicModel,
     MetricModel,
     Metrics,
     RiskInfographicModel,
     RoadsInfographicModel,
-    SviInfographicModel,
 )
 
 logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
@@ -1879,7 +1879,7 @@ class DatabaseBuilder:
                     )
                     # Then check home social vulnerability index
                     if self.config.svi is not None:
-                        svi = SviInfographicModel.get_template(
+                        svi = HomesInfographicModel.get_template(
                             svi_threshold=self.config.svi.threshold, type=exposure_type
                         )
                     else:

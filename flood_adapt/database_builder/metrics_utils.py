@@ -9,6 +9,23 @@ from pydantic import BaseModel, Field, field_validator
 # TODO specify uniform impact thresholds for buildings and roads
 
 
+def combine_filters(*filters):
+    """
+    Combine multiple SQL filter strings with AND operators.
+
+    Parameters
+    ----------
+    *filters : str
+        Variable number of filter strings to combine.
+
+    Returns
+    -------
+    str
+        Combined filter string with AND operators, excluding empty filters.
+    """
+    return " AND ".join(f for f in filters if f)
+
+
 def pascal_case(s):
     """
     Convert a string to PascalCase.
@@ -506,9 +523,9 @@ class SviModel(BaseModel):
         return thresholds
 
 
-class SviInfographicModel(BaseModel):
+class HomesInfographicModel(BaseModel):
     """
-    Model for SVI (Social Vulnerability Index) infographic configuration.
+    Model for Homes and SVI (Social Vulnerability Index) infographic configuration.
 
     Parameters
     ----------
@@ -525,30 +542,37 @@ class SviInfographicModel(BaseModel):
         Get a pre-configured template for SVI infographics.
     """
 
-    svi: SviModel
+    svi: Optional[SviModel] = None
     mapping: TypeMapping
     impact_categories: ImpactCategoriesModel
 
     @staticmethod
-    def get_template(svi_threshold: float, type: Literal["OSM", "NSI"]):
+    def get_template(
+        type: Literal["OSM", "NSI"] = "OSM", svi_threshold: Optional[float] = None
+    ):
         """
         Get a pre-configured template for SVI infographics.
 
         Parameters
         ----------
-        svi_threshold : float
-            The SVI threshold value for vulnerability classification.
-        type : Literal["OSM", "NSI"]
+        svi_threshold : Optional[float], default=None
+            The SVI threshold value for vulnerability classification. If not provided, SVI will be None.
+        type : Literal["OSM", "NSI"], default="OSM"
             The database type to create a template for.
 
         Returns
         -------
-        SviInfographicModel
-            Pre-configured SVI infographic model.
+        HomesInfographicModel
+            Pre-configured Homes infographic model.
         """
+        if svi_threshold is not None:
+            svi_model = SviModel(thresholds=[svi_threshold])
+        else:
+            svi_model = None
+
         if type == "OSM":
-            config = SviInfographicModel(
-                svi=SviModel(thresholds=[svi_threshold]),
+            config = HomesInfographicModel(
+                svi=svi_model,
                 mapping=TypeMapping(
                     mappings=[
                         FieldMapping(
@@ -564,8 +588,8 @@ class SviInfographicModel(BaseModel):
                 ),
             )
         elif type == "NSI":
-            config = SviInfographicModel(
-                svi=SviModel(thresholds=[svi_threshold]),
+            config = HomesInfographicModel(
+                svi=svi_model,
                 mapping=TypeMapping(
                     mappings=[
                         FieldMapping(field_name="Primary Object Type", values=["RES"])
@@ -704,7 +728,7 @@ class EventInfographicModel(BaseModel):
     """
 
     buildings: Optional[BuildingsInfographicModel] = None
-    svi: Optional[SviInfographicModel] = None
+    svi: Optional[HomesInfographicModel] = None
     roads: Optional[RoadsInfographicModel] = None
 
 
@@ -736,8 +760,8 @@ class RiskInfographicModel(BaseModel):
 
     Parameters
     ----------
-    svi : SviInfographicModel
-        SVI infographic configuration.
+    homes : HomesInfographicModel
+        Homes infographic configuration.
     flood_exceedances : FloodExceedanceModel
         Flood exceedance configuration.
 
@@ -747,8 +771,8 @@ class RiskInfographicModel(BaseModel):
         Get a pre-configured template for risk infographics.
     """
 
-    svi: SviInfographicModel
-    flood_exceedances: FloodExceedanceModel
+    homes: HomesInfographicModel
+    flood_exceedance: FloodExceedanceModel
 
     @staticmethod
     def get_template(
@@ -771,17 +795,17 @@ class RiskInfographicModel(BaseModel):
         """
         if type == "OSM":
             config = RiskInfographicModel(
-                svi=SviInfographicModel.get_template(svi_threshold, type="OSM")
-                if svi_threshold
-                else None,
-                flood_exceedances=FloodExceedanceModel(),
+                homes=HomesInfographicModel.get_template(
+                    type="OSM", svi_threshold=svi_threshold
+                ),
+                flood_exceedance=FloodExceedanceModel(),
             )
         elif type == "NSI":
             config = RiskInfographicModel(
-                svi=SviInfographicModel.get_template(svi_threshold, type="NSI")
-                if svi_threshold
-                else None,
-                flood_exceedances=FloodExceedanceModel(unit="feet", threshold=0.2),
+                homes=HomesInfographicModel.get_template(
+                    type="NSI", svi_threshold=svi_threshold
+                ),
+                flood_exceedance=FloodExceedanceModel(unit="feet", threshold=0.2),
             )
         return config
 
@@ -814,12 +838,8 @@ def get_filter(
     str
         A SQL filter string combining type and category conditions.
     """
-    base = base_filt + " AND " if base_filt else ""
-
     # Build type filters using TypeMapping
     type_filter = type_mapping.to_sql_filter()
-    if type_filter:
-        base += type_filter
 
     # Add category filter
     if cat_idx == 0:
@@ -831,12 +851,7 @@ def get_filter(
             f"`{cat_field}` <= {bins[cat_idx]} AND `{cat_field}` > {bins[cat_idx-1]}"
         )
 
-    if base and cat_filter:
-        return f"{base} AND {cat_filter}"
-    elif cat_filter:
-        return cat_filter
-    else:
-        return base
+    return combine_filters(base_filt, type_filter, cat_filter)
 
 
 class Metrics:
@@ -1014,10 +1029,15 @@ class Metrics:
             and self.infographics_metrics_risk
         ):
             self.write_metrics(
-                self.infographics_metrics_event,
+                self.infographics_metrics_risk,
                 path_im / "infographic_metrics_config_risk.toml",
                 aggregation_levels,
             )
+
+        # Save additional risk configurations if available
+        if hasattr(self, "additional_risk_configs") and self.additional_risk_configs:
+            with open(path_im / "metrics_additional_risk_configs.toml", "wb") as f:
+                tomli_w.dump(self.additional_risk_configs, f)
 
         # Save infographics configuration if available
         if self.infographics_config:
@@ -1160,7 +1180,7 @@ class Metrics:
         return self.infographics_metrics_event
 
     def create_infographics_metrics_risk(
-        self, config: RiskInfographicModel, base_filt="`Total Damage` > 0"
+        self, config: RiskInfographicModel, base_filt="`Risk (EAD)` > 0"
     ) -> list[MetricModel]:
         """
         Create infographic metrics for risk analysis.
@@ -1169,7 +1189,7 @@ class Metrics:
         ----------
         config : RiskInfographicModel
             Configuration for risk infographics.
-        base_filt : str, default="`Total Damage` > 0"
+        base_filt : str, default="`Risk (EAD)` > 0"
             Base SQL filter to apply to all metrics.
 
         Returns
@@ -1180,19 +1200,22 @@ class Metrics:
         infographics_metrics_risk = []
 
         # Get mapping from config.svi
-        mapping = config.svi.mapping
+        mapping = config.homes.mapping
 
         # Build type filter string using TypeMapping
         type_cond = mapping.to_sql_filter()
 
         # FloodedHomes (Exceedance Probability > 50)
-        fe = config.flood_exceedances
+        fe = config.flood_exceedance
+        filter_str = combine_filters(
+            "`Exceedance Probability` > 50", type_cond, base_filt
+        )
         infographics_metrics_risk.append(
             MetricModel(
                 name="LikelyFloodedHomes",
                 description=f"Homes likely to flood ({fe.column} > {fe.threshold} {fe.unit}) in {fe.period} year period",
                 select="COUNT(*)",
-                filter=f"`Exceedance Probability` > 50 AND {type_cond}",
+                filter=filter_str,
                 long_name=f"Homes likely to flood in {fe.period}-year period (#)",
                 show_in_metrics_table=True,
             )
@@ -1200,17 +1223,24 @@ class Metrics:
 
         # ImpactedHomes for each RP - use class return periods and config SVI thresholds
         rps = self.return_periods
-        svi_thresholds = config.svi.svi.thresholds
-        svi_classes = config.svi.svi.classes
+        if config.homes.svi is not None:
+            svi_thresholds = config.homes.svi.thresholds
+            svi_classes = config.homes.svi.classes
+        else:
+            svi_thresholds = []
+            svi_classes = []
 
         for rp in rps:
             # ImpactedHomes{RP} (all homes)
+            filter_str = combine_filters(
+                f"`{fe.column} ({int(rp)}Y)` >= {fe.threshold}", type_cond, base_filt
+            )
             infographics_metrics_risk.append(
                 MetricModel(
                     name=f"ImpactedHomes{int(rp)}Y",
                     description=f"Number of homes impacted ({fe.column} > {fe.threshold} {fe.unit}) in the {int(rp)}-year event",
                     select="COUNT(*)",
-                    filter=f"`{fe.column} ({int(rp)}Y)` >= {fe.threshold} AND {type_cond}",
+                    filter=filter_str,
                     long_name=f"Flooded homes - RP{int(rp)} (#)",
                     show_in_metrics_table=True,
                 )
@@ -1232,18 +1262,33 @@ class Metrics:
                 # Clean class name for metric naming (remove spaces, special chars)
                 clean_class_name = svi_class.replace(" ", "").replace("-", "")
 
+                filter_str = combine_filters(
+                    f"`{fe.column} ({int(rp)}Y)` >= {fe.threshold}",
+                    type_cond,
+                    svi_cond,
+                    base_filt,
+                )
+
                 infographics_metrics_risk.append(
                     MetricModel(
                         name=f"ImpactedHomes{int(rp)}Y{clean_class_name}SVI",
                         description=f"{svi_class} vulnerable homes impacted ({fe.column} > {fe.threshold} {fe.unit}) in the {int(rp)}-year event",
                         select="COUNT(*)",
-                        filter=f"`{fe.column} ({int(rp)}Y)` >= {fe.threshold} AND {type_cond} AND {svi_cond}",
+                        filter=filter_str,
                         long_name=f"Flooded homes with {svi_class} vulnerability - RP{int(rp)} (#)",
                         show_in_metrics_table=True,
                     )
                 )
 
         self.infographics_metrics_risk = infographics_metrics_risk
+        self.additional_risk_configs = {
+            "flood_exceedance": {
+                "column": fe.column,
+                "threshold": fe.threshold,
+                "period": fe.period,
+            }
+        }
+        self._make_infographics_config_risk(config)
         return self.infographics_metrics_risk
 
     def _setup_buildings(self, config: BuildingsInfographicModel, base_filt) -> None:
@@ -1288,7 +1333,7 @@ class Metrics:
             self._make_infographics_config_buildings(config)
         )
 
-    def _setup_svi(self, config: SviInfographicModel, base_filt) -> None:
+    def _setup_svi(self, config: HomesInfographicModel, base_filt) -> None:
         """
         Configure SVI metrics and configuration for infographics.
 
@@ -1303,8 +1348,12 @@ class Metrics:
         svi_queries = []
         cat_field = config.impact_categories.field
         bins = config.impact_categories.bins
-        svi_thresholds = config.svi.thresholds
-        svi_classes = config.svi.classes
+        if config.svi is not None:
+            svi_thresholds = config.svi.thresholds
+            svi_classes = config.svi.classes
+        else:
+            svi_thresholds = []
+            svi_classes = []
         mapping = config.mapping
 
         for i, cat in enumerate(config.impact_categories.categories):
@@ -1336,11 +1385,9 @@ class Metrics:
                 # Build type filter using TypeMapping
                 type_cond = mapping.to_sql_filter()
 
-                filter_str = (
-                    f"{type_cond} AND {cat_cond} AND {svi_cond} AND {base_filt}"
-                )
+                filter_str = combine_filters(type_cond, cat_cond, svi_cond, base_filt)
 
-                name = f"{cat}{svi_class.replace(' ', '')}"
+                name = f"{cat}{svi_class.replace(' ', '')}Vulnerability"
                 desc = f"Number of {cat.lower()} homes with {svi_class.lower()} vulnerability"
                 long_name = f"{cat} Homes - {svi_class} (#)"
 
@@ -1457,11 +1504,12 @@ class Metrics:
             "Other": other_config,
         }
         # Categories block
-        for k, cat in enumerate(buildings_config.impact_categories.categories):
-            cfg["Categories"][cat] = {
-                "Name": cat,
-                "Color": buildings_config.impact_categories.colors[k],
-            }
+        if buildings_config.impact_categories.colors is not None:
+            for k, cat in enumerate(buildings_config.impact_categories.categories):
+                cfg["Categories"][cat] = {
+                    "Name": cat,
+                    "Color": buildings_config.impact_categories.colors[k],
+                }
 
         for i, btype in enumerate(buildings_config.types):
             # Charts block
@@ -1484,7 +1532,7 @@ class Metrics:
 
     @staticmethod
     def _make_infographics_config_svi(
-        svi_config: SviInfographicModel,
+        svi_config: HomesInfographicModel,
     ) -> Dict[str, Any]:
         """
         Create infographics configuration dictionary for SVI.
@@ -1500,7 +1548,7 @@ class Metrics:
             Configuration dictionary for SVI infographics.
         """
         image_path = "{image_path}"
-        svi_classes = svi_config.svi.classes
+        svi_classes = svi_config.svi.classes if svi_config.svi is not None else []
         charts = {}
         slices = {}
         categories_cfg = {}
@@ -1511,9 +1559,13 @@ class Metrics:
 
         # Categories block for vulnerability classes
         for idx, svi_class in enumerate(svi_classes):
-            categories_cfg[svi_class.replace(" ", "")] = {
-                "Name": svi_class,
-                "Color": svi_config.svi.colors[idx],
+            color = (
+                svi_config.svi.colors[idx] if svi_config.svi is not None else "#cccccc"
+            )
+            cat_name = svi_class.replace(" ", "") + "Vulnerability"
+            categories_cfg[cat_name] = {
+                "Name": cat_name,
+                "Color": color,
             }
 
         # Slices block
@@ -1534,7 +1586,7 @@ class Metrics:
         # Info text - dynamically build threshold information
         bins = svi_config.impact_categories.bins
         unit = svi_config.impact_categories.unit
-        thresholds = svi_config.svi.thresholds
+        thresholds = svi_config.svi.thresholds if svi_config.svi is not None else []
 
         info_lines = [
             "Thresholds:<br>",
@@ -1666,4 +1718,105 @@ class Metrics:
             "Slices": slices,
             "Other": other_config,
         }
+        return cfg
+
+    def _make_infographics_config_risk(self, risk_config: RiskInfographicModel) -> dict:
+        """
+        Create infographics configuration dictionary for risk infographics.
+
+        Parameters
+        ----------
+        risk_config : RiskInfographicModel
+            Risk infographic configuration.
+
+        Returns
+        -------
+        dict
+            Configuration dictionary for risk infographics.
+        """
+        image_path = "{image_path}"
+        rps = self.return_periods
+        homes = risk_config.homes
+        svi = homes.svi if homes.svi is not None else None
+
+        # Charts block: one chart per RP
+        charts = {}
+        for rp in rps:
+            charts[f"{int(rp)}Y"] = {
+                "Name": f"{int(rp)}Y",
+                "Image": f"{image_path}/house.png",
+            }
+
+        # Categories block: SVI classes
+        categories = {}
+        if svi:
+            for idx, svi_class in enumerate(svi.classes):
+                cat_name = svi_class.replace(" ", "") + "Vulnerability"
+                categories[cat_name] = {
+                    "Name": cat_name,
+                    "Color": svi.colors[idx] if svi.colors else "#cccccc",
+                }
+
+        # Slices block: for each RP and SVI class
+        slices = {}
+        if svi:
+            for rp in rps:
+                for idx, svi_class in enumerate(svi.classes):
+                    cat_name = svi_class.replace(" ", "") + "Vulnerability"
+                    slice_key = f"{cat_name}_{int(rp)}Y"
+                    name = f"{int(rp)}Y {svi_class} Vulnerability"
+                    query = f"ImpactedHomes{int(rp)}Y{svi_class.replace(' ', '')}SVI"
+                    chart = f"{int(rp)}Y"
+                    category = cat_name
+                    slices[slice_key] = {
+                        "Name": name,
+                        "Query": query,
+                        "Chart": chart,
+                        "Category": category,
+                    }
+
+        # Other block: static info, but use config where possible
+        other = {
+            "Expected_Damages": {
+                "title": "Expected annual damages",
+                "image": f"{image_path}/money.png",
+                "image_scale": 1.3,
+                "title_font_size": 25,
+                "numbers_font_size": 20,
+                "height": 300,
+            },
+            "Flooded": {
+                "title": f"Number of homes with a high chance of being flooded in a {risk_config.flood_exceedance.period}-year period",
+                "image": f"{image_path}/house.png",
+                "image_scale": 0.7,
+                "title_font_size": 25,
+                "numbers_font_size": 20,
+                "height": 300,
+            },
+            "Return_Periods": {
+                "title": "Buildings impacted",
+                "font_size": 25,
+                "image_scale": 0.2,
+                "numbers_font": 15,
+                "subtitle_font": 22,
+                "legend_font": 20,
+                "plot_height": 300,
+            },
+            "Info": {
+                "text": (
+                    "Thresholds:<br>"
+                    f"    Impacted: >= {risk_config.flood_exceedance.threshold} {risk_config.flood_exceedance.unit}<br>"
+                ),
+                "image": "https://openclipart.org/image/800px/302413",
+                "scale": 0.1,
+            },
+        }
+
+        cfg = {
+            "Charts": charts,
+            "Categories": categories,
+            "Slices": slices,
+            "Other": other,
+        }
+        self.infographics_config["risk"] = cfg
         return cfg
