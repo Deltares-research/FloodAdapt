@@ -1847,27 +1847,39 @@ class DatabaseBuilder:
     def create_infometrics(self):
         path_im = self.root.joinpath("static", "templates", "infometrics")
         path_ig = self.root.joinpath("static", "templates", "infographics")
+
+        # Create directories and ensure they are empty
+        for path in [path_im, path_ig]:
+            if path.exists():
+                shutil.rmtree(path)
+                path.mkdir(parents=True, exist_ok=True)
+
         templates_path = (
             Path(__file__).parent.resolve().joinpath("templates", "infographics")
         )
         shutil.copytree(templates_path, path_ig)
-
-        metrics = self._create_mandatory_metrics()
-
-        if self.config.infographics:
-            self._create_event_infographics(metrics)
-            self._create_risk_infographics(metrics)
-
-        self._add_additional_event_metrics(metrics)
-        self._add_additional_risk_metrics(metrics)
-
-        self._write_infometrics(metrics, path_im, path_ig)
-
-    def _create_mandatory_metrics(self):
-        return Metrics(
+        metrics = Metrics(
             dmg_unit=self.read_damage_unit(),
             return_periods=self.create_risk_model().return_periods,
         )
+
+        self._create_mandatory_metrics(metrics)
+
+        if self.config.infographics:
+            self._create_event_infographics(metrics)
+            if self._probabilistic_set_name is not None:
+                self._create_risk_infographics(metrics)
+
+        self._add_additional_event_metrics(metrics)
+        if self._probabilistic_set_name is not None:
+            self._add_additional_risk_metrics(metrics)
+
+        self._write_infometrics(metrics, path_im, path_ig)
+
+    def _create_mandatory_metrics(self, metrics):
+        metrics.create_mandatory_metrics_event()
+        if self._probabilistic_set_name is not None:
+            metrics.create_mandatory_metrics_risk()
 
     def _create_event_infographics(self, metrics):
         exposure_type = self._get_exposure_type()

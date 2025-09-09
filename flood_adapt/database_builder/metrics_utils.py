@@ -855,61 +855,7 @@ def get_filter(
 
 
 class Metrics:
-    """
-    Main class for managing flood impact metrics configuration and generation.
-
-    Parameters
-    ----------
-    dmg_unit : str
-        The unit of measurement for damage values.
-    return_periods : list[float]
-        List of return periods in years for risk analysis.
-
-    Attributes
-    ----------
-    dmg_unit : str
-        The unit of measurement for damage values.
-    return_periods : list[float]
-        List of return periods in years.
-    mandatory_metrics_event : list[MetricModel]
-        List of mandatory metrics for event analysis.
-    mandatory_metrics_risk : list[MetricModel]
-        List of mandatory metrics for risk analysis.
-    additional_metrics_event : list[MetricModel]
-        List of additional metrics for event analysis.
-    additional_metrics_risk : list[MetricModel]
-        List of additional metrics for risk analysis.
-    infographics_metrics_event : list[MetricModel]
-        List of infographic metrics for event analysis.
-    infographics_metrics_risk : list[MetricModel]
-        List of infographic metrics for risk analysis.
-    additional_risk_configs : dict
-        Additional risk configuration parameters.
-    infographics_config : dict
-        Infographics configuration parameters.
-
-    Methods
-    -------
-    write_metrics(metrics, path, aggr_levels)
-        Write metrics configuration to a TOML file.
-    write(metrics_path, aggregation_levels, infographics_path)
-        Write all metrics configurations to files.
-    create_mandatory_metrics_event()
-        Create mandatory metrics for event analysis.
-    create_mandatory_metrics_risk()
-        Create mandatory metrics for risk analysis.
-    add_event_metric(metric)
-        Add an additional event metric.
-    add_risk_metric(metric)
-        Add an additional risk metric.
-    create_infographics_metrics_event(config, base_filt)
-        Create infographic metrics for event analysis.
-    create_infographics_metrics_risk(config, base_filt)
-        Create infographic metrics for risk analysis.
-    """
-
-    dmg_unit: str
-    return_periods: list[float]
+    """Main class for managing impact metrics configuration and generation."""
 
     def __init__(self, dmg_unit: str, return_periods: list[float]):
         """
@@ -924,14 +870,16 @@ class Metrics:
         """
         self.dmg_unit = dmg_unit
         self.return_periods = return_periods
-        self.create_mandatory_metrics_event()
-        self.create_mandatory_metrics_risk()
+
+        # Initialize all metric lists as empty instance attributes
+        self.mandatory_metrics_event: list[MetricModel] = []
+        self.mandatory_metrics_risk: list[MetricModel] = []
         self.additional_metrics_event: list[MetricModel] = []
         self.additional_metrics_risk: list[MetricModel] = []
         self.infographics_metrics_event: list[MetricModel] = []
         self.infographics_metrics_risk: list[MetricModel] = []
-        self.additional_risk_configs = {}
-        self.infographics_config = {}
+        self.additional_risk_configs: dict = {}
+        self.infographics_config: dict = {}
 
     @staticmethod
     def write_metrics(metrics, path, aggr_levels=[]):
@@ -990,11 +938,12 @@ class Metrics:
         )
 
         # Write mandatory risk metrics
-        self.write_metrics(
-            self.mandatory_metrics_risk,
-            path_im / "mandatory_metrics_config_risk.toml",
-            aggregation_levels,
-        )
+        if self.mandatory_metrics_risk:
+            self.write_metrics(
+                self.mandatory_metrics_risk,
+                path_im / "mandatory_metrics_config_risk.toml",
+                aggregation_levels,
+            )
 
         # Write additional event metrics if any
         if self.additional_metrics_event:
@@ -1069,7 +1018,6 @@ class Metrics:
         list[MetricModel]
             List of mandatory event metrics.
         """
-        self.mandatory_metrics_event = []
         self.mandatory_metrics_event.append(
             MetricModel(
                 name="TotalDamageEvent",
@@ -1091,7 +1039,6 @@ class Metrics:
         list[MetricModel]
             List of mandatory risk metrics.
         """
-        self.mandatory_metrics_risk = []
         self.mandatory_metrics_risk.append(
             MetricModel(
                 name="ExpectedAnnualDamages",
