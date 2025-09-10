@@ -1336,7 +1336,7 @@ class Metrics:
 
                 name = f"{cat}{svi_class.replace(' ', '')}Vulnerability"
                 desc = f"Number of {cat.lower()} homes with {svi_class.lower()} vulnerability"
-                long_name = f"{cat} Homes - {svi_class} (#)"
+                long_name = f"{cat} Homes - {svi_class} Vulnerability (#)"
 
                 svi_queries.append(
                     MetricModel(
@@ -1378,10 +1378,7 @@ class Metrics:
             desc = f"{unit} of roads disrupted for {config.users[i].lower()}"
             long_name = f"Length of roads with {cat.lower()} flooding ({unit})"
             select = f"SUM(`{road_length_field}`)*{unit_conversion}"
-            if i == 0:
-                filter_str = f"`{cat_field}` > {thresholds[0]}"
-            else:
-                filter_str = f"`{cat_field}` >= {thresholds[i]}"
+            filter_str = f"`{cat_field}` >= {thresholds[i]}"
             road_queries.append(
                 MetricModel(
                     name=name,
@@ -1739,6 +1736,12 @@ class Metrics:
                     "Name": cat_name,  # Original name with "Vulnerability"
                     "Color": svi.colors[idx] if svi.colors else "#cccccc",
                 }
+        else:
+            # Create a single "All Homes" category when no SVI data
+            categories["AllHomes"] = {
+                "Name": "All Homes",
+                "Color": "#88A2AA",  # Default color
+            }
 
         # Slices block - reference Chart and Category Names (not keys)
         slices = {}
@@ -1757,11 +1760,25 @@ class Metrics:
                         "Chart": chart_name,  # Reference Chart Name, not key
                         "Category": cat_name,  # Reference Category Name, not key
                     }
+        else:
+            # Create slices for each return period without SVI breakdown
+            for rp in rps:
+                chart_name = f"{int(rp)}Y"
+                slice_key = f"AllHomesRP{int(rp)}Y"
+                name = f"{int(rp)}Y All Homes"
+                query = f"ImpactedHomes{int(rp)}Y"
+                slices[slice_key] = {
+                    "Name": name,
+                    "Query": query,
+                    "Chart": chart_name,  # Reference Chart Name, not key
+                    "Category": "All Homes",  # Reference Category Name, not key
+                }
 
         # Other block: static info, but use config where possible
         other = {
             "Expected_Damages": {
                 "title": "Expected annual damages",
+                "query": "ExpectedAnnualDamages",
                 "image": f"{image_path}/money.png",
                 "image_scale": 1.3,
                 "title_font_size": 25,
@@ -1770,6 +1787,7 @@ class Metrics:
             },
             "Flooded": {
                 "title": f"Number of homes with a high chance of being flooded in a {risk_config.flood_exceedance.period}-year period",
+                "query": "LikelyFloodedHomes",
                 "image": f"{image_path}/house.png",
                 "image_scale": 0.7,
                 "title_font_size": 25,
