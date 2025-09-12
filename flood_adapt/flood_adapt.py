@@ -971,13 +971,21 @@ class FloodAdapt:
             include_long_names=True,
             include_description=True,
             include_metrics_table_selection=True,
+            include_metrics_map_selection=True,
         )
 
     def get_aggr_metric_layers(
-        self, name: str, type: str = "single_event", rp: Optional[int] = None
+        self,
+        name: str,
+        type: str = "single_event",
+        rp: Optional[int] = None,
+        equity: bool = False,
     ) -> list[dict]:
         # Read in the infometrics for the scenario
         metrics_df = self.get_infometrics(name)
+        # Filter based on "Show in Metrics Map" column
+        if "Show In Metrics Map" in metrics_df.columns:
+            metrics_df = metrics_df[metrics_df["Show In Metrics Map"]]
         metrics = metrics_df.to_dict(orient="index")
         metrics = [{**v, "name": k} for k, v in metrics.items()]
 
@@ -991,33 +999,45 @@ class FloodAdapt:
         filtered_metrics = []
         for metric in metrics:
             metric_name = metric.get("name", "")
-
-            # If type is "risk" and rp is None, skip metrics with RP# or #Y in their name
-            if type == "risk" and rp is None:
-                if re.search(r"RP\d+", metric_name) or re.search(r"\d+Y", metric_name):
+            metric["name_to_show"] = metric_name
+            if type == "risk":
+                rp_match = re.search(r"RP(\d+)", metric_name)
+                y_match = re.search(r"(\d+)Y", metric_name)
+                if rp_match and y_match:
+                    # If both are present, prioritize RP or handle as needed
+                    name_match = rp_match  # or raise an error/warning
+                else:
+                    name_match = rp_match or y_match
+                # If type is "risk" and rp is None, skip metrics with RP# or #Y in their name
+                if rp is None and name_match:
                     continue
-                # If rp is specified, filter metrics by rp in the name
-                rp_strs = [f"RP{rp}", f"{rp}Y"]
-                if not any(rp_str in metric_name for rp_str in rp_strs):
-                    continue  # Skip this metric if it doesn't match the rp
+                if equity and "EW" not in metric_name:
+                    continue
+                # If type is "risk" and rp is given, skip metrics that do not match the given rp
+                if rp is not None:
+                    if name_match:
+                        extracted_rp = int(name_match.group(1))
+                        name_check = extracted_rp == int(rp)
+                        # Remove 'RP' or 'Y' followed by digits from the metric name and strip trailing underscores for display purposes
+                        cleaned_name = re.sub(r"(RP\d+|\d+Y)", "", metric_name)
+                        metric["name_to_show"] = cleaned_name.rstrip("_")
+                    else:
+                        name_check = False
+                    if rp is not None and not name_check:
+                        continue
 
             for layer in layer_types:
-                field_name = layer.field_name
-                layer_keys = layer.keys  # Assuming this is a list of keys
-
-                if field_name in metric:
-                    metric_value = metric[field_name]
-                    # Check if any layer key matches the metric's field value
-                    if any(key in metric_value for key in layer_keys):
-                        filtered_metrics.append(
-                            {
-                                "metric": metric,
-                                "bins": getattr(layer, "bins", None),
-                                "colors": getattr(layer, "colors", None),
-                                "decimals": getattr(layer, "decimals", None),
-                            }
-                        )
-                        break  # Stop after first matching layer
+                # Check if the metric matches this layer's filter criteria
+                if layer.matches(metric):
+                    filtered_metrics.append(
+                        {
+                            "metric": metric,
+                            "bins": getattr(layer, "bins", None),
+                            "colors": getattr(layer, "colors", None),
+                            "decimals": getattr(layer, "decimals", None),
+                        }
+                    )
+                    break  # Stop after first matching layer
 
         return filtered_metrics
 

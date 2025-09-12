@@ -1365,6 +1365,11 @@ class FiatAdapter(IImpactAdapter):
             True,
             True,
         ]
+        metrics_new.loc["Show In Metrics Table", ["EW", "EWEAD", "EWCEAD"]] = [
+            True,
+            True,
+            True,
+        ]
         metrics_new.loc["Long Name", ["EW", "EWEAD", "EWCEAD"]] = [
             "Equity weight",
             "Equity weighted  expected annual damage",

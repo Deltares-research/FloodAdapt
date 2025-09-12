@@ -1,5 +1,6 @@
+from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, Union
 
 import geopandas as gpd
 import numpy as np
@@ -51,16 +52,107 @@ class BenefitsLayer(Layer):
     threshold: Optional[float] = None
 
 
+class LogicalOperator(str, Enum):
+    AND = "and"
+    OR = "or"
+
+
+class FieldName(str, Enum):
+    """Enum for valid field names with mapping to dictionary keys."""
+
+    NAME = "name"
+    LONG_NAME = "long_name"
+    DESCRIPTION = "description"
+
+    @property
+    def dict_key(self) -> str:
+        """Get the actual dictionary key for this field name."""
+        mapping = {
+            "name": "name",
+            "long_name": "Long Name",
+            "description": "Description",
+        }
+        return mapping[self.value]
+
+
+class FilterCondition(BaseModel):
+    """A single filter condition."""
+
+    field_name: FieldName
+    values: list[Any]
+    operator: LogicalOperator = (
+        LogicalOperator.OR
+    )  # How to combine values within this condition
+
+
+class FilterGroup(BaseModel):
+    """A group of filter conditions with logical operators."""
+
+    conditions: list[FilterCondition]
+    operator: LogicalOperator = (
+        LogicalOperator.OR
+    )  # How to combine conditions within this group
+
+
 class MetricLayer(Layer):
     type: str
-    field_name: str = "name"
-    keys: list[str] = Field(default_factory=list)
+    # Simplified: just a single FilterGroup or FilterCondition
+    filters: Union[FilterGroup, FilterCondition] = Field(
+        default_factory=lambda: FilterGroup(conditions=[])
+    )
+
+    def matches(self, data_dict: dict) -> bool:
+        """Check if the given data dictionary matches the filter criteria."""
+        if isinstance(self.filters, FilterCondition):
+            return self._evaluate_condition(self.filters, data_dict)
+        else:  # FilterGroup
+            return self._evaluate_filter_group(self.filters, data_dict)
+
+    def _evaluate_filter_group(self, group: FilterGroup, data_dict: dict) -> bool:
+        """Evaluate a single filter group."""
+        if not group.conditions:
+            return True
+
+        condition_results = []
+        for condition in group.conditions:
+            condition_results.append(self._evaluate_condition(condition, data_dict))
+
+        if group.operator == LogicalOperator.AND:
+            return all(condition_results)
+        else:  # OR
+            return any(condition_results)
+
+    def _evaluate_condition(self, condition: FilterCondition, data_dict: dict) -> bool:
+        """Evaluate a single condition."""
+        # Use the dict_key property to get the actual dictionary key
+        field_value = data_dict.get(condition.field_name.dict_key)
+        if field_value is None:
+            return False
+
+        value_matches = [value in field_value for value in condition.to_numpy()]
+
+        if condition.operator == LogicalOperator.AND:
+            return all(value_matches)
+        else:  # OR
+            return any(value_matches)
 
 
 class AggregationDmgLayer(MetricLayer):
     type: str = "damage"
-    field_name: str = "name"
-    keys: list[str] = ["TotalDamageEvent", "ExpectedAnnualDamages", "TotalDamageRP"]
+    filters: FilterGroup = Field(
+        default_factory=lambda: FilterGroup(
+            conditions=[
+                FilterCondition(
+                    field_name=FieldName.NAME,
+                    values=[
+                        "TotalDamageEvent",
+                        "ExpectedAnnualDamages",
+                        "TotalDamageRP",
+                    ],
+                )
+            ]
+        )
+    )
 
 
 class OutputLayers(BaseModel):
