@@ -936,7 +936,9 @@ class FloodAdapt:
 
         return infographic_path
 
-    def get_infometrics(self, name: str) -> pd.DataFrame:
+    def get_infometrics(
+        self, name: str, aggr_name: Optional[str] = None
+    ) -> pd.DataFrame:
         """Return the metrics for the given scenario.
 
         Parameters
@@ -954,40 +956,51 @@ class FloodAdapt:
         FileNotFoundError
             If the metrics file does not exist.
         """
+        if aggr_name is not None:
+            fn = f"Infometrics_{name}_{aggr_name}.csv"
+        else:
+            fn = f"Infometrics_{name}.csv"
         # Create the infographic path
-        metrics_path = self.database.scenarios.output_path.joinpath(
-            name,
-            f"Infometrics_{name}.csv",
-        )
+        metrics_path = self.database.scenarios.output_path.joinpath(name, fn)
 
         # Check if the file exists
         if not metrics_path.exists():
             raise FileNotFoundError(
                 f"The metrics file for scenario {name}({str(metrics_path)}) does not exist."
             )
-
         # Read the metrics file
-        return MetricsFileReader(str(metrics_path)).read_metrics_from_file(
+        df = MetricsFileReader(str(metrics_path)).read_metrics_from_file(
             include_long_names=True,
             include_description=True,
             include_metrics_table_selection=True,
             include_metrics_map_selection=True,
         )
+        if aggr_name is not None:
+            df = df.T
+        return df
 
     def get_aggr_metric_layers(
         self,
         name: str,
+        aggr_type: str,
         type: str = "single_event",
         rp: Optional[int] = None,
         equity: bool = False,
     ) -> list[dict]:
         # Read in the infometrics for the scenario
-        metrics_df = self.get_infometrics(name)
+        metrics_df = self.get_infometrics(name, aggr_name=aggr_type)
         # Filter based on "Show in Metrics Map" column
-        if "Show In Metrics Map" in metrics_df.columns:
-            metrics_df = metrics_df[metrics_df["Show In Metrics Map"]]
-        metrics = metrics_df.to_dict(orient="index")
-        metrics = [{**v, "name": k} for k, v in metrics.items()]
+        if "Show In Metrics Map" in metrics_df.index:
+            mask = metrics_df.loc["Show In Metrics Map"].to_numpy().astype(bool)
+            metrics_df = metrics_df.loc[:, mask]
+
+        metrics = []
+        for col in metrics_df.columns:
+            metric_dict = {"name": col}
+            # Add the first 4 rows as key-value pairs
+            for i, idx in enumerate(metrics_df.index[:4]):
+                metric_dict[idx] = metrics_df.loc[idx, col]
+            metrics.append(metric_dict)
 
         # Get scenario mode
 
@@ -1011,7 +1024,7 @@ class FloodAdapt:
                 # If type is "risk" and rp is None, skip metrics with RP# or #Y in their name
                 if rp is None and name_match:
                     continue
-                if equity and "EW" not in metric_name:
+                if rp is None and not equity and "EW" in metric_name:
                     continue
                 # If type is "risk" and rp is given, skip metrics that do not match the given rp
                 if rp is not None:

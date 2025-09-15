@@ -129,7 +129,7 @@ class MetricLayer(Layer):
         if field_value is None:
             return False
 
-        value_matches = [value in field_value for value in condition.to_numpy()]
+        value_matches = [value in field_value for value in condition.values]  # noqa: PD011
 
         if condition.operator == LogicalOperator.AND:
             return all(value_matches)
@@ -148,6 +148,7 @@ class AggregationDmgLayer(MetricLayer):
                         "TotalDamageEvent",
                         "ExpectedAnnualDamages",
                         "TotalDamageRP",
+                        "EWEAD",
                     ],
                 )
             ]
