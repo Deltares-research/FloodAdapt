@@ -8,7 +8,13 @@ import tomli_w
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
-from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import (
+    AlreadyExistsError,
+    DatabaseError,
+    DoesNotExistError,
+    IsStandardObjectError,
+    IsUsedInError,
+)
 from flood_adapt.objects.object_model import Object
 
 T_OBJECTMODEL = TypeVar("T_OBJECTMODEL", bound=Object)
@@ -41,13 +47,18 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         -------
         Object
             object of the type of the specified object model
+
+        Raises
+        ------
+        DoesNotExistError
+            Raise error if the object does not exist.
         """
         # Make the full path to the object
         full_path = self.input_path / name / f"{name}.toml"
 
         # Check if the object exists
         if not Path(full_path).is_file():
-            raise DatabaseError(f"{self.display_name}: '{name}' does not exist.")
+            raise DoesNotExistError(name, self.display_name)
 
         # Load and return the object
         return self._object_class.load_file(full_path)
@@ -74,6 +85,15 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             name of the new measure
         new_description : str
             description of the new measure
+
+        Raises
+        ------
+        AlreadyExistsError
+            Raise error if an object with the new name already exists.
+        IsStandardObjectError
+            Raise error if an object with the new name is a standard object.
+        DatabaseError
+            Raise error if the saving of the object fails.
         """
         copy_object = self.get(old_name)
         copy_object.name = new_name
@@ -123,8 +143,14 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Raises
         ------
+        AlreadyExistsError
+            Raise error if object to be saved already exists.
+        IsStandardObjectError
+            Raise error if object to be overwritten is a standard object.
+        IsUsedInError
+            Raise error if object to be overwritten is already in use.
         DatabaseError
-            Raise error if name is already in use.
+            Raise error if the overwriting of the object fails.
         """
         self._validate_to_save(object_model, overwrite=overwrite)
 
@@ -138,7 +164,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         )
 
     def delete(self, name: str, toml_only: bool = False):
-        """Delete an already existing object in the database.
+        """Delete an already existing object as well as its outputs from the database.
 
         Parameters
         ----------
@@ -150,34 +176,50 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Raises
         ------
-        DatabaseError
+        IsStandardObjectError
+            Raise error if object to be deleted is a standard object.
+        IsUsedInError
             Raise error if object to be deleted is already in use.
+        DoesNotExistError
+            Raise error if object to be deleted does not exist.
+        DatabaseError
+            Raise error if the deletion of the object fails.
         """
         # Check if the object is a standard object. If it is, raise an error
         if self._check_standard_objects(name):
-            raise DatabaseError(
-                f"'{name}' cannot be deleted/modified since it is a standard {self.display_name}."
-            )
+            raise IsStandardObjectError(name, self.display_name)
 
         # Check if object is used in a higher level object. If it is, raise an error
         if used_in := self.check_higher_level_usage(name):
-            raise DatabaseError(
-                f"{self.display_name}: '{name}' cannot be deleted/modified since it is already used in the {self._higher_lvl_object.capitalize()}(s): {', '.join(used_in)}"
+            raise IsUsedInError(
+                name, self.display_name, self._higher_lvl_object, used_in
             )
 
-        # Once all checks are passed, delete the object
+        # Check if the object exists
         toml_path = self.input_path / name / f"{name}.toml"
-        if toml_only:
-            # Only delete the toml file
-            toml_path.unlink(missing_ok=True)
-            # If the folder is empty, delete the folder
-            if not list(toml_path.parent.iterdir()):
-                toml_path.parent.rmdir()
-        else:
-            # Delete the entire folder
-            shutil.rmtree(toml_path.parent, ignore_errors=True)
-            if (self.output_path / name).exists():
-                shutil.rmtree(self.output_path / name, ignore_errors=True)
+        if not toml_path.exists():
+            raise DoesNotExistError(name, self.display_name)
+
+        # Once all checks are passed, delete the object
+        toml_path.unlink(missing_ok=True)
+
+        # Delete the entire folder
+        if not list(toml_path.parent.iterdir()):
+            shutil.rmtree(toml_path.parent)
+        elif not toml_only:
+            try:
+                shutil.rmtree(toml_path.parent)
+            except OSError as e:
+                raise DatabaseError(f"Failed to delete `{name}` due to: {e}") from e
+
+        # Delete output
+        if (self.output_path / name).exists():
+            try:
+                shutil.rmtree(self.output_path / name)
+            except OSError as e:
+                raise DatabaseError(
+                    f"Failed to delete output of `{name}` due to: {e}"
+                ) from e
 
     def _check_standard_objects(self, name: str) -> bool:
         """Check if an object is a standard object.
@@ -275,6 +317,4 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         if overwrite and object_exists:
             self.delete(object_model.name, toml_only=True)
         elif not overwrite and object_exists:
-            raise DatabaseError(
-                f"'{object_model.name}' name is already used by another {self.display_name.lower()}. Choose a different name"
-            )
+            raise AlreadyExistsError(object_model.name, self.display_name)

@@ -1,7 +1,6 @@
 import gc
 import os
 import shutil
-import time
 from pathlib import Path
 from typing import Any, Literal, Optional, Union
 
@@ -11,6 +10,8 @@ import pandas as pd
 import xarray as xr
 from geopandas import GeoDataFrame
 
+from flood_adapt.adapter.fiat_adapter import FiatAdapter
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.config.hazard import SlrScenariosModel
 from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.config.site import Site
@@ -22,7 +23,7 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     TopLevelDir,
@@ -140,8 +141,6 @@ class Database(IDatabase):
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
-        import gc
-
         self._instance = None
         self._init_done = False
 
@@ -191,7 +190,7 @@ class Database(IDatabase):
             SLR scenarios configuration model with the file path set to the static path.
         """
         if self.site.sfincs.slr_scenarios is None:
-            raise DatabaseError("No SLR scenarios defined in the site configuration.")
+            raise ConfigError("No SLR scenarios defined in the site configuration.")
         slr = self.site.sfincs.slr_scenarios
         slr.file = str(self.static_path / slr.file)
         return slr
@@ -577,20 +576,13 @@ class Database(IDatabase):
             for dir in os.listdir(self.scenarios.output_path)
         ]
 
-        def _call_garbage_collector(func, path, exc_info, retries=5, delay=0.1):
-            """Retry deletion up to 5 times if the file is locked."""
-            for attempt in range(retries):
-                gc.collect()
-                time.sleep(delay)
-                try:
-                    func(path)  # Retry deletion
-                    return  # Exit if successful
-                except Exception as e:
-                    print(
-                        f"Attempt {attempt + 1}/{retries} failed to delete {path}: {e}"
-                    )
-
-            print(f"Giving up on deleting {path} after {retries} attempts.")
+        # Init model instances outside the loop
+        overland = self.static.get_overland_sfincs_model()
+        fiat = self.static.get_fiat_model()
+        if self.site.sfincs.config.offshore_model is not None:
+            offshore = self.static.get_offshore_sfincs_model()
+        else:
+            offshore = None
 
         for _dir in output_scenarios:
             # Delete if: input was deleted or corrupted output due to unfinished run
@@ -598,12 +590,18 @@ class Database(IDatabase):
                 path.name for path in input_scenarios
             ] or not finished_file_exists(_dir):
                 logger.info(f"Cleaning up corrupted outputs of scenario: {_dir.name}.")
-                shutil.rmtree(_dir, onerror=_call_garbage_collector)
+                shutil.rmtree(_dir, ignore_errors=True)
             # If the scenario is finished, delete the simulation folders depending on `save_simulation`
             elif finished_file_exists(_dir):
-                self._delete_simulations(_dir.name)
+                self._delete_simulations(_dir.name, overland, fiat, offshore)
 
-    def _delete_simulations(self, scenario_name: str) -> None:
+    def _delete_simulations(
+        self,
+        scenario_name: str,
+        overland: SfincsAdapter,
+        fiat: FiatAdapter,
+        offshore: Optional[SfincsAdapter],
+    ) -> None:
         """Delete all simulation folders for a given scenario.
 
         Parameters
@@ -617,7 +615,6 @@ class Database(IDatabase):
 
         if not self.site.sfincs.config.save_simulation:
             # Delete SFINCS overland
-            overland = self.static.get_overland_sfincs_model()
             if sub_events:
                 for sub_event in sub_events:
                     overland._delete_simulation_folder(scn, sub_event=sub_event)
@@ -625,8 +622,7 @@ class Database(IDatabase):
                 overland._delete_simulation_folder(scn)
 
             # Delete SFINCS offshore
-            if self.site.sfincs.config.offshore_model:
-                offshore = self.static.get_offshore_sfincs_model()
+            if self.site.sfincs.config.offshore_model and offshore is not None:
                 if sub_events:
                     for sub_event in sub_events:
                         sim_path = offshore._get_simulation_path_offshore(
@@ -639,7 +635,7 @@ class Database(IDatabase):
                             sim_path.parent.iterdir()
                         ):
                             # Remove the parent directory `simulations` if it is empty
-                            sim_path.parent.rmdir()
+                            shutil.rmtree(sim_path.parent, ignore_errors=True)
                 else:
                     sim_path = offshore._get_simulation_path_offshore(scn)
                     if sim_path.exists():
@@ -648,9 +644,8 @@ class Database(IDatabase):
 
                     if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
                         # Remove the parent directory `simulations` if it is empty
-                        sim_path.parent.rmdir()
+                        shutil.rmtree(sim_path.parent, ignore_errors=True)
 
         if not self.site.fiat.config.save_simulation:
             # Delete FIAT
-            fiat = self.static.get_fiat_model()
             fiat._delete_simulation_folder(scn)
