@@ -1026,6 +1026,8 @@ class FloodAdapt:
                     continue
                 if rp is None and not equity and "EW" in metric_name:
                     continue
+                if rp is None and equity and "EW" not in metric_name:
+                    continue
                 # If type is "risk" and rp is given, skip metrics that do not match the given rp
                 if rp is not None:
                     if name_match:

@@ -1365,10 +1365,10 @@ class FiatAdapter(IImpactAdapter):
             True,
             True,
         ]
-        metrics_new.loc["Show In Metrics Table", ["EW", "EWEAD", "EWCEAD"]] = [
+        metrics_new.loc["Show In Metrics Map", ["EW", "EWEAD", "EWCEAD"]] = [
+            False,
             True,
-            True,
-            True,
+            False,
         ]
         metrics_new.loc["Long Name", ["EW", "EWEAD", "EWCEAD"]] = [
             "Equity weight",
