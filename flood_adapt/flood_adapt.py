@@ -1,6 +1,5 @@
-import re
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 import geopandas as gpd
 import numpy as np
@@ -939,22 +938,24 @@ class FloodAdapt:
     def get_infometrics(
         self, name: str, aggr_name: Optional[str] = None
     ) -> pd.DataFrame:
-        """Return the metrics for the given scenario.
+        """Return the infometrics DataFrame for the given scenario and optional aggregation.
 
         Parameters
         ----------
         name : str
             The name of the scenario.
+        aggr_name : Optional[str], default None
+            The name of the aggregation, if any.
 
         Returns
         -------
-        metrics: pd.DataFrame
-            The metrics for the scenario.
+        df : pd.DataFrame
+            The infometrics DataFrame for the scenario (and aggregation if specified).
 
         Raises
         ------
         FileNotFoundError
-            If the metrics file does not exist.
+            If the metrics file does not exist for the given scenario (and aggregation).
         """
         if aggr_name is not None:
             fn = f"Infometrics_{name}_{aggr_name}.csv"
@@ -983,76 +984,42 @@ class FloodAdapt:
         self,
         name: str,
         aggr_type: str,
-        type: str = "single_event",
+        type: Literal["single_event", "risk"] = "single_event",
         rp: Optional[int] = None,
         equity: bool = False,
     ) -> list[dict]:
-        # Read in the infometrics for the scenario
+        # Read infometrics from csv file
         metrics_df = self.get_infometrics(name, aggr_name=aggr_type)
+
         # Filter based on "Show in Metrics Map" column
         if "Show In Metrics Map" in metrics_df.index:
             mask = metrics_df.loc["Show In Metrics Map"].to_numpy().astype(bool)
             metrics_df = metrics_df.loc[:, mask]
 
+        # Keep only relevant attributes of the infometrics
+        keep_rows = [
+            "Description",
+            "Long Name",
+            "Show In Metrics Table",
+            "Show In Metrics Map",
+        ]
+        metrics_df = metrics_df.loc[
+            [row for row in keep_rows if row in metrics_df.index]
+        ]
+
+        # Transform to list of dicts
         metrics = []
         for col in metrics_df.columns:
             metric_dict = {"name": col}
             # Add the first 4 rows as key-value pairs
-            for i, idx in enumerate(metrics_df.index[:4]):
+            for i, idx in enumerate(metrics_df.index):
                 metric_dict[idx] = metrics_df.loc[idx, col]
             metrics.append(metric_dict)
 
-        # Get scenario mode
-
-        layer_types = [
-            self.database.site.gui.output_layers.aggregation_dmg
-        ] + self.database.site.gui.output_layers.aggregated_metrics
-
-        # Iterate through metrics and assign layer properties if matched
-        filtered_metrics = []
-        for metric in metrics:
-            metric_name = metric.get("name", "")
-            metric["name_to_show"] = metric_name
-            if type == "risk":
-                rp_match = re.search(r"RP(\d+)", metric_name)
-                y_match = re.search(r"(\d+)Y", metric_name)
-                if rp_match and y_match:
-                    # If both are present, prioritize RP or handle as needed
-                    name_match = rp_match  # or raise an error/warning
-                else:
-                    name_match = rp_match or y_match
-                # If type is "risk" and rp is None, skip metrics with RP# or #Y in their name
-                if rp is None and name_match:
-                    continue
-                if rp is None and not equity and "EW" in metric_name:
-                    continue
-                if rp is None and equity and "EW" not in metric_name:
-                    continue
-                # If type is "risk" and rp is given, skip metrics that do not match the given rp
-                if rp is not None:
-                    if name_match:
-                        extracted_rp = int(name_match.group(1))
-                        name_check = extracted_rp == int(rp)
-                        # Remove 'RP' or 'Y' followed by digits from the metric name and strip trailing underscores for display purposes
-                        cleaned_name = re.sub(r"(RP\d+|\d+Y)", "", metric_name)
-                        metric["name_to_show"] = cleaned_name.rstrip("_")
-                    else:
-                        name_check = False
-                    if rp is not None and not name_check:
-                        continue
-
-            for layer in layer_types:
-                # Check if the metric matches this layer's filter criteria
-                if layer.matches(metric):
-                    filtered_metrics.append(
-                        {
-                            "metric": metric,
-                            "bins": getattr(layer, "bins", None),
-                            "colors": getattr(layer, "colors", None),
-                            "decimals": getattr(layer, "decimals", None),
-                        }
-                    )
-                    break  # Stop after first matching layer
+        # Get the filtered metrics layers from the GUI configuration
+        filtered_metrics = self.database.site.gui.output_layers.get_aggr_metrics_layers(
+            metrics, type, rp, equity
+        )
 
         return filtered_metrics
 

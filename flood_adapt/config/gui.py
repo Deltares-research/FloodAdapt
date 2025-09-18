@@ -1,6 +1,7 @@
+import re
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 import geopandas as gpd
 import numpy as np
@@ -177,6 +178,81 @@ class OutputLayers(BaseModel):
     footprints_dmg: FootprintsDmgLayer
     aggregated_metrics: list[MetricLayer] = Field(default_factory=list)
     benefits: Optional[BenefitsLayer] = None
+
+    def get_aggr_metrics_layers(
+        self,
+        metrics: list[dict],
+        type: Literal["single_event", "risk"] = "single_event",
+        rp: Optional[int] = None,
+        equity: bool = False,
+    ):
+        layer_types = [self.aggregation_dmg] + self.aggregated_metrics
+        filtered_input_metrics = self._filter_metrics(metrics, type, rp, equity)
+        return self._match_metrics_to_layers(filtered_input_metrics, layer_types)
+
+    def _should_skip_metric(
+        self, metric_name: str, rp: Optional[int], equity: bool
+    ) -> bool:
+        rp_match = re.search(r"RP(\d+)", metric_name)
+        y_match = re.search(r"(\d+)Y", metric_name)
+        name_match = rp_match or y_match
+
+        if rp is None:
+            if name_match:
+                return True
+            if not equity and "EW" in metric_name:
+                return True
+            if equity and "EW" not in metric_name:
+                return True
+        return False
+
+    def _process_metric_name(
+        self, metric_name: str, rp: Optional[int]
+    ) -> tuple[str, bool]:
+        rp_match = re.search(r"RP(\d+)", metric_name)
+        y_match = re.search(r"(\d+)Y", metric_name)
+        name_match = rp_match or y_match
+        if rp is not None:
+            if name_match:
+                extracted_rp = int(name_match.group(1))
+                name_check = extracted_rp == int(rp)
+                cleaned_name = re.sub(r"(RP\d+|\d+Y)", "", metric_name)
+                return cleaned_name.rstrip("_"), name_check
+            else:
+                return metric_name, False
+        return metric_name, True
+
+    def _filter_metrics(self, metrics, type, rp, equity):
+        filtered = []
+        for metric in metrics:
+            metric_name = metric.get("name", "")
+            metric["name_to_show"] = metric_name
+            if type == "risk":
+                if self._should_skip_metric(metric_name, rp, equity):
+                    continue
+                metric["name_to_show"], name_check = self._process_metric_name(
+                    metric_name, rp
+                )
+                if rp is not None and not name_check:
+                    continue
+            filtered.append(metric)
+        return filtered
+
+    def _match_metrics_to_layers(self, metrics, layer_types):
+        filtered_metrics = []
+        for metric in metrics:
+            for layer in layer_types:
+                if layer.matches(metric):
+                    filtered_metrics.append(
+                        {
+                            "metric": metric,
+                            "bins": getattr(layer, "bins", None),
+                            "colors": getattr(layer, "colors", None),
+                            "decimals": getattr(layer, "decimals", None),
+                        }
+                    )
+                    break
+        return filtered_metrics
 
 
 class VisualizationLayer(Layer):
