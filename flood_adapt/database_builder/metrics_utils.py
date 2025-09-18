@@ -647,7 +647,7 @@ class RoadsInfographicModel(BaseModel):
         default_factory=lambda: ["Slight", "Minor", "Major", "Severe"]
     )
     colors: list[str] = Field(
-        default_factory=lambda: ["#e0f7fa", "#80deea", "#26c6da", "#006064"]
+        default_factory=lambda: ["#D5DEE1", "#D5DEE1", "#D5DEE1", "#D5DEE1"]
     )
     icons: list[str] = Field(
         default_factory=lambda: ["walking_person", "car", "truck", "ambulance"]
