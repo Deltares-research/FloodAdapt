@@ -64,7 +64,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ca/49/153dd6289a3d06e87c3199a5547ccc04c574d167d7f85c1a8196218bf040/duckdb-1.2.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7b/2e/3f80ba2fda9b8686681f0a1b18c8e95ad152ada1d6fb1d3f25281d9229fd/fiona-1.10.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -223,7 +223,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/df/74/8a05ef00c554882d8300c2c261e8f7e7ead74e2b3ff66059599ff2646cf4/duckdb-1.2.2-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/32/c1d53b4d77926414ffdf5bd38344e900e378ae9ccb2a65754cdb6d5344c2/fiona-1.10.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -399,7 +399,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ca/49/153dd6289a3d06e87c3199a5547ccc04c574d167d7f85c1a8196218bf040/duckdb-1.2.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7b/2e/3f80ba2fda9b8686681f0a1b18c8e95ad152ada1d6fb1d3f25281d9229fd/fiona-1.10.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -527,7 +527,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/54/69/9d703fee22236dc8c610eb6d728f102340fb8a1dfb4ae649564d77c6fb79/zarr-3.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/46/92/8a76eeccb5c176ea3de3965598b6fcd10dc9d72a560e59919b52845327ed/zeep-4.3.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl
-      - pypi: ./
+      - pypi: .
       win-64:
       - conda: https://conda.anaconda.org/conda-forge/win-64/bzip2-1.0.8-h2466b09_7.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2025.6.15-h4c7d964_0.conda
@@ -583,7 +583,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/df/74/8a05ef00c554882d8300c2c261e8f7e7ead74e2b3ff66059599ff2646cf4/duckdb-1.2.2-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/32/c1d53b4d77926414ffdf5bd38344e900e378ae9ccb2a65754cdb6d5344c2/fiona-1.10.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -710,7 +710,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/54/69/9d703fee22236dc8c610eb6d728f102340fb8a1dfb4ae649564d77c6fb79/zarr-3.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/46/92/8a76eeccb5c176ea3de3965598b6fcd10dc9d72a560e59919b52845327ed/zeep-4.3.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl
-      - pypi: ./
+      - pypi: .
   default:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
@@ -775,7 +775,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d7/46/4745aa10a1e460f4c8b473eddaffe2c783ac5280e1e5929dd84bd1a1acde/duckdb-1.2.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/dc/78/be204fb409b59876ef4658710a022794f16f779a3e9e7df654acc38b2104/fiona-1.10.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -934,7 +934,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/eb/c9/896e8ced7b408df81e015fe0c6497cda46c92d9dfc8bf84b6d13f5dad473/duckdb-1.2.2-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/0d/914fd3c4c32043c2c512fa5021e83b2348e1b7a79365d75a0a37cb545362/fiona-1.10.1-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -1108,7 +1108,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ca/49/153dd6289a3d06e87c3199a5547ccc04c574d167d7f85c1a8196218bf040/duckdb-1.2.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/4d/36/2a115987e2d8c300a974597416d9de88f2444426de9571f4b59b2cca3acc/filelock-3.18.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7b/2e/3f80ba2fda9b8686681f0a1b18c8e95ad152ada1d6fb1d3f25281d9229fd/fiona-1.10.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
@@ -1276,7 +1276,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/df/74/8a05ef00c554882d8300c2c261e8f7e7ead74e2b3ff66059599ff2646cf4/duckdb-1.2.2-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/4d/36/2a115987e2d8c300a974597416d9de88f2444426de9571f4b59b2cca3acc/filelock-3.18.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/32/c1d53b4d77926414ffdf5bd38344e900e378ae9ccb2a65754cdb6d5344c2/fiona-1.10.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
@@ -1476,7 +1476,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7b/8f/c4d9bafc34ad7ad5d8dc16dd1347ee0e507a52c3adb6bfa8887e1c6a26ba/executing-2.2.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/90/2b/0817a2b257fe88725c25589d89aec060581aabf668707a8d03b2e9e0cb2a/fastjsonschema-2.21.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7b/2e/3f80ba2fda9b8686681f0a1b18c8e95ad152ada1d6fb1d3f25281d9229fd/fiona-1.10.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -1686,7 +1686,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/54/69/9d703fee22236dc8c610eb6d728f102340fb8a1dfb4ae649564d77c6fb79/zarr-3.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/46/92/8a76eeccb5c176ea3de3965598b6fcd10dc9d72a560e59919b52845327ed/zeep-4.3.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl
-      - pypi: ./
+      - pypi: .
       win-64:
       - conda: https://conda.anaconda.org/conda-forge/win-64/bzip2-1.0.8-h2466b09_7.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2025.6.15-h4c7d964_0.conda
@@ -1758,7 +1758,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7b/8f/c4d9bafc34ad7ad5d8dc16dd1347ee0e507a52c3adb6bfa8887e1c6a26ba/executing-2.2.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/90/2b/0817a2b257fe88725c25589d89aec060581aabf668707a8d03b2e9e0cb2a/fastjsonschema-2.21.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/32/c1d53b4d77926414ffdf5bd38344e900e378ae9ccb2a65754cdb6d5344c2/fiona-1.10.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -1968,7 +1968,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/54/69/9d703fee22236dc8c610eb6d728f102340fb8a1dfb4ae649564d77c6fb79/zarr-3.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/46/92/8a76eeccb5c176ea3de3965598b6fcd10dc9d72a560e59919b52845327ed/zeep-4.3.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl
-      - pypi: ./
+      - pypi: .
   py310:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
@@ -2034,7 +2034,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/36/f4/c6e662dade71f56cd2f3735141b265c3c79293c109549c1e6933b0651ffc/exceptiongroup-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/bf/fd60001b3abc5222d8eaa4a204cd8c0ae78e75adc688f33ce4bf25b7fafa/fasteners-0.19-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/75/cb/73805030100447d40408c8a0f63ec146fb2b6e82692d0c194655c28b6783/fiona-1.10.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -2194,7 +2194,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/36/f4/c6e662dade71f56cd2f3735141b265c3c79293c109549c1e6933b0651ffc/exceptiongroup-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/bf/fd60001b3abc5222d8eaa4a204cd8c0ae78e75adc688f33ce4bf25b7fafa/fasteners-0.19-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ca/a3/57d33c2f16a2a6b27911d83301a697ed1491dca48d2f1dd2ed3b58a66244/fiona-1.10.1-cp310-cp310-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -2366,7 +2366,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ca/49/153dd6289a3d06e87c3199a5547ccc04c574d167d7f85c1a8196218bf040/duckdb-1.2.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7b/2e/3f80ba2fda9b8686681f0a1b18c8e95ad152ada1d6fb1d3f25281d9229fd/fiona-1.10.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -2525,7 +2525,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/df/74/8a05ef00c554882d8300c2c261e8f7e7ead74e2b3ff66059599ff2646cf4/duckdb-1.2.2-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/32/c1d53b4d77926414ffdf5bd38344e900e378ae9ccb2a65754cdb6d5344c2/fiona-1.10.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -2697,7 +2697,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d7/46/4745aa10a1e460f4c8b473eddaffe2c783ac5280e1e5929dd84bd1a1acde/duckdb-1.2.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/dc/78/be204fb409b59876ef4658710a022794f16f779a3e9e7df654acc38b2104/fiona-1.10.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -2856,7 +2856,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d5/c5db1ea3394c6e1732fb3286b3bd878b59507a8f77d32a2cebda7d7b7cd4/donfig-0.8.1.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/eb/c9/896e8ced7b408df81e015fe0c6497cda46c92d9dfc8bf84b6d13f5dad473/duckdb-1.2.2-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/0d/914fd3c4c32043c2c512fa5021e83b2348e1b7a79365d75a0a37cb545362/fiona-1.10.1-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl
@@ -3032,7 +3032,7 @@ packages:
   - pytest>=7.0 ; extra == 'test'
   - trustme ; extra == 'test'
   - truststore>=0.9.1 ; python_full_version >= '3.10' and extra == 'test'
-  - uvloop>=0.21 ; python_full_version < '3.14' and platform_python_implementation == 'CPython' and sys_platform != 'win32' and extra == 'test'
+  - uvloop>=0.21 ; python_full_version < '3.14' and platform_python_implementation == 'CPython' and platform_system != 'Windows' and extra == 'test'
   - packaging ; extra == 'doc'
   - sphinx~=8.2 ; extra == 'doc'
   - sphinx-rtd-theme ; extra == 'doc'
@@ -3725,7 +3725,7 @@ packages:
   version: 8.2.1
   sha256: 61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b
   requires_dist:
-  - colorama ; sys_platform == 'win32'
+  - colorama ; platform_system == 'Windows'
   requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/3d/9a/2abecb28ae875e39c8cad711eb1186d8d14eab564705325e77e4e6ab9ae5/click_plugins-1.1.1.2-py2.py3-none-any.whl
   name: click-plugins
@@ -4315,10 +4315,10 @@ packages:
   - pytest-benchmark ; extra == 'devel'
   - pytest-cache ; extra == 'devel'
   - validictory ; extra == 'devel'
-- pypi: https://files.pythonhosted.org/packages/b8/97/ed54f1f6740416e19d7e509f4ca20bf678870f2f7d0dbf1a1d4e6162de85/fiat_toolbox-0.1.20-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/42/e0/d8d5fb795e1ae2baf5080b1dfc1d037f5eab406c562a832860486782ab17/fiat_toolbox-0.1.21-py3-none-any.whl
   name: fiat-toolbox
-  version: 0.1.20
-  sha256: 63335655f52308c0f0462972c1c552115b23970d2fbd4992fc22ebdd1b9aae0f
+  version: 0.1.21
+  sha256: 7ebc78b7e7f2298598310a197b08d6c98706a27fc97c8ed4a16bec5f8364bc0e
   requires_dist:
   - numpy
   - pandas
@@ -4507,10 +4507,10 @@ packages:
   - pytest-cov ; extra == 'test'
   - pytest-subtests ; extra == 'test'
   requires_python: '>=3.9'
-- pypi: ./
+- pypi: .
   name: flood-adapt
   version: 1.0.4
-  sha256: 4601993ba8219daffd8dacd4baa2eca5b6e9300cc63772b6f7501d0ae56fb0d1
+  sha256: 6243c2c75b5c11d7e8e58943d2317ac4e22dedd2b824e968d5a8258fc68f6508
   requires_dist:
   - cht-cyclones==1.0.3
   - cht-meteo==0.3.1
@@ -4518,7 +4518,7 @@ packages:
   - cht-tide==0.1.1
   - dask==2024.11.2
   - numba-celltree==0.2.2
-  - fiat-toolbox==0.1.20
+  - fiat-toolbox==0.1.21
   - fiona>=1.0,<2.0
   - geojson>=3.0,<4.0
   - geopandas>=1.0,<2.0
@@ -5267,7 +5267,7 @@ packages:
   version: 6.29.5
   sha256: afdb66ba5aa354b09b91379bac28ae4afebbb30e8b39510c9690afb7a10421b5
   requires_dist:
-  - appnope ; sys_platform == 'darwin'
+  - appnope ; platform_system == 'Darwin'
   - comm>=0.1.1
   - debugpy>=1.6.5
   - ipython>=7.23.1
@@ -7832,12 +7832,12 @@ packages:
   - cryptography>=3.3
   - pynacl>=1.5
   - pyasn1>=0.1.7 ; extra == 'gssapi'
-  - gssapi>=1.4.1 ; sys_platform != 'win32' and extra == 'gssapi'
-  - pywin32>=2.1.8 ; sys_platform == 'win32' and extra == 'gssapi'
+  - gssapi>=1.4.1 ; platform_system != 'Windows' and extra == 'gssapi'
+  - pywin32>=2.1.8 ; platform_system == 'Windows' and extra == 'gssapi'
   - invoke>=2.0 ; extra == 'invoke'
   - pyasn1>=0.1.7 ; extra == 'all'
-  - gssapi>=1.4.1 ; sys_platform != 'win32' and extra == 'all'
-  - pywin32>=2.1.8 ; sys_platform == 'win32' and extra == 'all'
+  - gssapi>=1.4.1 ; platform_system != 'Windows' and extra == 'all'
+  - pywin32>=2.1.8 ; platform_system == 'Windows' and extra == 'all'
   - invoke>=2.0 ; extra == 'all'
   requires_python: '>=3.6'
 - pypi: https://files.pythonhosted.org/packages/d0/31/ba45bf0b2aa7898d81cbbfac0e88c267befb59ad91a19e36e1bc5578ddb1/parse-1.20.2-py2.py3-none-any.whl
@@ -8438,7 +8438,7 @@ packages:
   - typing-extensions>=4.12.2
   - typing-inspection>=0.4.0
   - email-validator>=2.0.0 ; extra == 'email'
-  - tzdata ; python_full_version >= '3.9' and sys_platform == 'win32' and extra == 'timezone'
+  - tzdata ; python_full_version >= '3.9' and platform_system == 'Windows' and extra == 'timezone'
   requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/31/0d/c8f7593e6bc7066289bbc366f2235701dcbebcd1ff0ef8e64f6f239fb47d/pydantic_core-2.33.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
   name: pydantic-core
@@ -10425,7 +10425,7 @@ packages:
   version: 4.67.1
   sha256: 26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2
   requires_dist:
-  - colorama ; sys_platform == 'win32'
+  - colorama ; platform_system == 'Windows'
   - pytest>=6 ; extra == 'dev'
   - pytest-cov ; extra == 'dev'
   - pytest-timeout ; extra == 'dev'

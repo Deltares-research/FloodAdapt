@@ -5,8 +5,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 import tomli_w
 from pydantic import BaseModel, Field, field_validator
 
-# TODO update use of impact columns to adapter definition of columns
-# TODO specify uniform impact thresholds for buildings and roads
+from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 
 
 def combine_filters(*filters):
@@ -209,7 +208,7 @@ class ImpactCategoriesModel(BaseModel):
     colors: Optional[list[str]] = Field(
         default_factory=lambda: ["#ffa500", "#ff0000", "#000000"]
     )
-    field: str = "Inundation Depth"
+    field: str = _FIAT_COLUMNS.inundation_depth
     unit: str
     bins: list[float]
 
@@ -353,21 +352,24 @@ class BuildingsInfographicModel(BaseModel):
                     "Residential": TypeMapping(
                         mappings=[
                             FieldMapping(
-                                field_name="Primary Object Type", values=["residential"]
+                                field_name=_FIAT_COLUMNS.primary_object_type,
+                                values=["residential"],
                             )
                         ]
                     ),
                     "Commercial": TypeMapping(
                         mappings=[
                             FieldMapping(
-                                field_name="Primary Object Type", values=["commercial"]
+                                field_name=_FIAT_COLUMNS.primary_object_type,
+                                values=["commercial"],
                             )
                         ]
                     ),
                     "Industrial": TypeMapping(
                         mappings=[
                             FieldMapping(
-                                field_name="Primary Object Type", values=["industrial"]
+                                field_name=_FIAT_COLUMNS.primary_object_type,
+                                values=["industrial"],
                             )
                         ]
                     ),
@@ -390,7 +392,8 @@ class BuildingsInfographicModel(BaseModel):
                     "Residential": TypeMapping(
                         mappings=[
                             FieldMapping(
-                                field_name="Primary Object Type", values=["RES"]
+                                field_name=_FIAT_COLUMNS.primary_object_type,
+                                values=["RES"],
                             )
                         ]
                     ),
@@ -576,7 +579,8 @@ class HomesInfographicModel(BaseModel):
                 mapping=TypeMapping(
                     mappings=[
                         FieldMapping(
-                            field_name="Primary Object Type", values=["residential"]
+                            field_name=_FIAT_COLUMNS.primary_object_type,
+                            values=["residential"],
                         )
                     ]
                 ),
@@ -592,7 +596,9 @@ class HomesInfographicModel(BaseModel):
                 svi=svi_model,
                 mapping=TypeMapping(
                     mappings=[
-                        FieldMapping(field_name="Primary Object Type", values=["RES"])
+                        FieldMapping(
+                            field_name=_FIAT_COLUMNS.primary_object_type, values=["RES"]
+                        )
                     ]
                 ),
                 impact_categories=ImpactCategoriesModel(
@@ -621,11 +627,11 @@ class RoadsInfographicModel(BaseModel):
         List of road user types for each category.
     thresholds : list[float]
         List of threshold values for categorizing road impacts.
-    field : str, default="Inundation Depth"
+    field : str, default=_FIAT_COLUMNS.inundation_depth
         The database field name used for categorization.
     unit : str
         The unit of measurement for the field.
-    road_length_field : str, default="Segment Length"
+    road_length_field : str, default=_FIAT_COLUMNS.segment_length
         The database field name containing road segment lengths.
 
     Methods
@@ -649,9 +655,9 @@ class RoadsInfographicModel(BaseModel):
         default_factory=lambda: ["Pedestrians", "Cars", "Trucks", "Rescue vehicles"]
     )
     thresholds: list[float]
-    field: str = "Inundation Depth"
+    field: str = _FIAT_COLUMNS.inundation_depth
     unit: str
-    road_length_field: str = "Segment Length"
+    road_length_field: str = _FIAT_COLUMNS.segment_length
 
     @field_validator("categories", mode="after")
     @classmethod
@@ -738,7 +744,7 @@ class FloodExceedanceModel(BaseModel):
 
     Parameters
     ----------
-    column : str, default="Inundation Depth"
+    column : str, default=_FIAT_COLUMNS.inundation_depth
         The database column name for flood depth measurements.
     threshold : float, default=0.1
         The flood depth threshold value.
@@ -748,7 +754,7 @@ class FloodExceedanceModel(BaseModel):
         The time period in years for exceedance analysis.
     """
 
-    column: str = "Inundation Depth"
+    column: str = _FIAT_COLUMNS.inundation_depth
     threshold: float = 0.1
     unit: str = "meters"
     period: int = 30
@@ -1023,7 +1029,7 @@ class Metrics:
                 name="TotalDamageEvent",
                 description="Total building damage",
                 long_name=f"Total building damage ({self.dmg_unit})",
-                select="SUM(`Total Damage`)",
+                select=f"SUM(`{_FIAT_COLUMNS.total_damage}`)",
                 filter="",
                 show_in_metrics_table=True,
             )
@@ -1044,7 +1050,7 @@ class Metrics:
                 name="ExpectedAnnualDamages",
                 description="Expected annual damages",
                 long_name=f"Expected annual damages ({self.dmg_unit})",
-                select="SUM(`Risk (EAD)`)",
+                select=f"SUM(`{_FIAT_COLUMNS.risk_ead}`)",
                 filter="",
                 show_in_metrics_table=True,
             )
@@ -1055,7 +1061,7 @@ class Metrics:
                     name=f"TotalDamageRP{int(rp)}",
                     description=f"Total damage with return period of {int(rp)} years",
                     long_name=f"Total building damage - {int(rp)}Y ({self.dmg_unit})",
-                    select=f"SUM(`Total Damage ({int(rp)}Y)`)",
+                    select=f"SUM(`{_FIAT_COLUMNS.total_damage_rp.format(years=int(rp))}`)",
                     filter="",
                     show_in_metrics_table=True,
                 )
@@ -1100,7 +1106,9 @@ class Metrics:
         self.additional_metrics_risk.append(metric)
 
     def create_infographics_metrics_event(
-        self, config: EventInfographicModel, base_filt="`Total Damage` > 0"
+        self,
+        config: EventInfographicModel,
+        base_filt=f"`{_FIAT_COLUMNS.total_damage}` > 0",
     ) -> list[MetricModel]:
         """
         Create infographic metrics for event analysis.
@@ -1127,7 +1135,7 @@ class Metrics:
         return self.infographics_metrics_event
 
     def create_infographics_metrics_risk(
-        self, config: RiskInfographicModel, base_filt="`Risk (EAD)` > 0"
+        self, config: RiskInfographicModel, base_filt=f"`{_FIAT_COLUMNS.risk_ead}` > 0"
     ) -> list[MetricModel]:
         """
         Create infographic metrics for risk analysis.

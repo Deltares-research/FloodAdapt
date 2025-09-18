@@ -271,7 +271,8 @@ class TideGaugeConfigModel(BaseModel):
 
 
 class ConfigModel(BaseModel):
-    """Represents the configuration model for FloodAdapt.
+    """
+    Represents the configuration model for FloodAdapt.
 
     Attributes
     ----------
@@ -285,8 +286,16 @@ class ConfigModel(BaseModel):
         The unit system.
     gui : GuiConfigModel
         The GUI model representing scaling values for the layers.
-    infographics : Optional[bool], default True
+    infographics : bool, default True
         Indicates if infographics are enabled.
+    event_infographics : Optional[EventInfographicModel], default None
+        Event infographic configuration.
+    risk_infographics : Optional[RiskInfographicModel], default None
+        Risk infographic configuration.
+    event_additional_infometrics : Optional[list[MetricModel]], default None
+        Additional event infometrics.
+    risk_additional_infometrics : Optional[list[MetricModel]], default None
+        Additional risk infometrics.
     fiat : str
         The FIAT model path.
     aggregation_areas : Optional[list[SpatialJoinModel]], default None
@@ -301,13 +310,13 @@ class ConfigModel(BaseModel):
         The BFE model.
     svi : Optional[SviConfigModel], default None
         The SVI model.
-    road_width : Optional[float], default 5
-        The road width in meters.
-    return_periods : list[int], default []
+    road_width : us.UnitfulLength, default 5 meters
+        The road width.
+    return_periods : Optional[list[int]], default None
         The list of return periods for risk calculations.
     floodmap_type : Optional[FloodmapType], default None
         The type of floodmap to use.
-    references : WaterlevelReferenceModel, default WaterlevelReferenceModel(...)
+    references : Optional[WaterlevelReferenceModel], default None
         The water level reference model.
     sfincs_overland : FloodModel
         The overland SFINCS model.
@@ -1845,6 +1854,7 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_infometrics(self):
+        # Define paths for infometrics and infographics templates
         path_im = self.root.joinpath("static", "templates", "infometrics")
         path_ig = self.root.joinpath("static", "templates", "infographics")
 
@@ -1854,26 +1864,33 @@ class DatabaseBuilder:
                 shutil.rmtree(path)
                 path.mkdir(parents=True, exist_ok=True)
 
+        # Use images and css from the database builder templates
         templates_path = (
             Path(__file__).parent.resolve().joinpath("templates", "infographics")
         )
         shutil.copytree(templates_path, path_ig)
+
+        # Create Metrics object
         metrics = Metrics(
             dmg_unit=self.read_damage_unit(),
             return_periods=self.create_risk_model().return_periods,
         )
 
+        # First define the mandatory metrics
         self._create_mandatory_metrics(metrics)
 
+        # Then the infographic metrics if needed
         if self.config.infographics:
             self._create_event_infographics(metrics)
             if self._probabilistic_set_name is not None:
                 self._create_risk_infographics(metrics)
 
+        # Then the additional metrics if needed
         self._add_additional_event_metrics(metrics)
         if self._probabilistic_set_name is not None:
             self._add_additional_risk_metrics(metrics)
 
+        # Write the metrics config files
         self._write_infometrics(metrics, path_im, path_ig)
 
     def _create_mandatory_metrics(self, metrics):
@@ -1883,6 +1900,7 @@ class DatabaseBuilder:
 
     def _create_event_infographics(self, metrics):
         exposure_type = self._get_exposure_type()
+        # If not specific infographic config is given, create a standard one
         if not self.config.event_infographics:
             buildings, svi, roads = None, None, None
             if exposure_type is None:
@@ -1914,6 +1932,7 @@ class DatabaseBuilder:
 
     def _create_risk_infographics(self, metrics):
         exposure_type = self._get_exposure_type()
+        # If not specific infographic config is given, create a standard one
         if not self.config.risk_infographics:
             if exposure_type is None:
                 logger.warning(
@@ -2392,16 +2411,16 @@ class DatabaseBuilder:
 
     def _get_exposure_type(self) -> Literal["OSM", "NSI", None]:
         # Define the allowed types for OSM
-        OSM_types = ["residential", "commercial", "industrial", "road"]
-        NSI_types = ["RES", "COM", "IND", "PUB", "road"]
+        osm_types = ["residential", "commercial", "industrial", "road"]
+        nsi_types = ["RES", "COM", "IND", "PUB", "road"]
         unique_types = set(
             self.fiat_model.exposure.exposure_db[
                 _FIAT_COLUMNS.primary_object_type
             ].unique()
         )
-        if unique_types.issubset(set(OSM_types)):
+        if unique_types.issubset(set(osm_types)):
             return "OSM"
-        elif unique_types.issubset(set(NSI_types)):
+        elif unique_types.issubset(set(nsi_types)):
             return "NSI"
         else:
             return None
