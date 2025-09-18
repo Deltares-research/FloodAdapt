@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.33">
+<meta name="generator" content="quarto-1.8.24">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -58,7 +58,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="../../../site_libs/quarto-search/fuse.min.js"></script>
@@ -69,18 +69,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../_static/logo.png" rel="icon" type="image/png">
 <script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-bc185b5c5bdbcb35c2eb49d8a876ef70.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b651517ce65839d647a86e2780455cfb.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../../site_libs/bootstrap/bootstrap-dark-0a88f9bf3c7dc6da7549435e9e0a9869.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-769930dfaaf8a5e8fa53cf8d4f3df975.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-500af84991fac2dfa6b1814205da6869.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-769930dfaaf8a5e8fa53cf8d4f3df975.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script src="../../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
@@ -110,7 +111,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
@@ -288,7 +289,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../../../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../../../_static/logo.png" alt="" class="navbar-logo">
+    <img src="../../../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../../../_static/logo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../../../index.html">
     <span class="navbar-title">FloodAdapt</span>
@@ -348,6 +350,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../../../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
         <div id="quarto-search" class="" title="Search"></div>
@@ -988,7 +994,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="step-1.-setup-and-imports">⏱️ Step 1. Setup and Imports</h2>
 <p>We begin by importing the required classes and modules for constructing forcings and managing event data within the flood_adapt framework.</p>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> flood_adapt.objects.forcing <span class="im">as</span> f</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> flood_adapt.objects.forcing <span class="im">as</span> f</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
@@ -1004,9 +1010,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    DATABASE_ROOT<span class="op">=</span>DATA_DIR <span class="op">/</span> <span class="st">"examples"</span>,</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    DATABASE_NAME<span class="op">=</span><span class="st">"charleston_test"</span></span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>2025-08-28 12:07:02 PM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
+<pre><code>2025-09-18 01:28:07 PM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
 </div>
 </div>
 </section>
@@ -1014,10 +1020,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="step-2.-define-the-simulation-time-frame">🗓️ Step 2. Define the Simulation Time Frame</h2>
 <p>We specify a one-day time frame for the historical event, from January 1 to January 2, 2025.</p>
 <div id="4" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an time frame for the simulation</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an time frame for the simulation</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>start_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2020</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">1</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>end_time <span class="op">=</span> datetime(year<span class="op">=</span><span class="dv">2020</span>, month<span class="op">=</span><span class="dv">1</span>, day<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>time_frame <span class="op">=</span> TimeFrame(start_time<span class="op">=</span>start_time, end_time<span class="op">=</span>end_time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>time_frame <span class="op">=</span> TimeFrame(start_time<span class="op">=</span>start_time, end_time<span class="op">=</span>end_time)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="step-3.-define-water-level-forcing" class="level2">
@@ -1030,7 +1036,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Model</strong>: Generate the storm surge to be used for the overland simulation by running an offshore model. For historic events, this model uses weather re-analysis data (wind and pressure) from the <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA GFS model</a>.</li>
 </ul>
 <div id="6" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Recorded water levels from a CSV file</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Recorded water levels from a CSV file</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>csv_file <span class="op">=</span> STATIC_DATA_DIR <span class="op">/</span> <span class="st">"tide.csv"</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>water_levels <span class="op">=</span> f.WaterlevelCSV(path<span class="op">=</span>csv_file)</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>wl_df <span class="op">=</span> water_levels.to_dataframe(time_frame<span class="op">=</span>time_frame)</span>
@@ -1060,9 +1066,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Water Level (m)"</span>,</span>
 <span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">False</span>,</span>
 <span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>2025-08-28 12:07:02 PM - FloodAdapt.TideGauge - INFO - Retrieving waterlevels for tide gauge 8665530 for 2020-01-01 00:00:00 - 2020-01-02 00:00:00</code></pre>
+<pre><code>2025-09-18 01:28:07 PM - FloodAdapt.TideGauge - INFO - Retrieving waterlevels for tide gauge 8665530 for 2020-01-01 00:00:00 - 2020-01-02 00:00:00</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
@@ -1085,26 +1091,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Given a <code>water level forcing</code>, and a <code>TimeFrame</code>, you can create the simplest possible event in FloodAdapt as shown below.</p>
 <p>In many cases, it is interesting to to investigate a combination of different forcings. In steps 5 - 9, we will show the creation of various forcings and how to add them to an event.</p>
 <div id="8" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>simple_event <span class="op">=</span> HistoricalEvent(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>simple_event <span class="op">=</span> HistoricalEvent(</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"simple_event"</span>,</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    forcings<span class="op">=</span>{</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WATERLEVEL: [water_levels], </span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="co"># or [water_levels_gauged], [water_levels_from_offshore]</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="step-5.-define-meteo-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="step-5.-define-meteo-forcing">🌧️ Step 5. Define Meteo Forcing</h2>
 <p>Historic events have several options to define wind and rainfall, see also <a href="../../../3_api_docs/examples/events/synthetic_event.html">Synthetic event</a>. Additionally, FloodAdapt provides an easy connection to <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA GFS model re-analysis</a> data for rainfall and wind that is automatically downloaded based on the event’s ‘TimeFrame’.</p>
 <div id="10" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>meteo_dataset <span class="op">=</span> f.MeteoHandler(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>meteo_dataset <span class="op">=</span> f.MeteoHandler(</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    lat<span class="op">=</span>fa.database.site.lat,</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    lon<span class="op">=</span>fa.database.site.lon,</span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">dir</span><span class="op">=</span>fa.database.static_path <span class="op">/</span> <span class="st">"meteo"</span>  <span class="co"># Directory to store meteo data</span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>).read(time_frame)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(meteo_dataset) <span class="co"># </span><span class="al">TODO</span><span class="co"> make sure the meteo files are already downloaded in the database to circumvent flaky noaa coops API calls</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(meteo_dataset) <span class="co"># </span><span class="al">TODO</span><span class="co"> make sure the meteo files are already downloaded in the database to circumvent flaky noaa coops API calls</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Requested meteo data already available
 &lt;xarray.Dataset&gt; Size: 485kB
@@ -1126,7 +1132,7 @@ Data variables:
 <p>It can be difficult to visualize spatially varying timeseries data. So, below is a simple animation generator to do some basic data checks on the downloaded NOAA GFS data.</p>
 <p>Choose any of the available timeseries data variables and generate the animation.</p>
 <div id="12" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> HTML</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -1144,7 +1150,7 @@ Data variables:
 <span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(fig, update, frames<span class="op">=</span><span class="bu">len</span>(var.time), interval<span class="op">=</span><span class="dv">200</span>)</span>
 <span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>plt.close(fig)</span>
 <span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>HTML(ani.to_jshtml()) <span class="co"># </span><span class="al">TODO</span><span class="co"> look at hvplot or other options to display the animation</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>HTML(ani.to_jshtml()) <span class="co"># </span><span class="al">TODO</span><span class="co"> look at hvplot or other options to display the animation</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
@@ -1330,36 +1336,36 @@ input[type=range].anim-slider {
 </style>
 
 <div class="animation">
-  <img id="_anim_img76ea41b1f0124f81bcb8cfe6655d4379">
+  <img id="_anim_img70732ff4905d48dd88c197c03c0d319f">
   <div class="anim-controls">
-    <input id="_anim_slider76ea41b1f0124f81bcb8cfe6655d4379" type="range" class="anim-slider" name="points" min="0" max="1" step="1" value="0" oninput="anim76ea41b1f0124f81bcb8cfe6655d4379.set_frame(parseInt(this.value));">
+    <input id="_anim_slider70732ff4905d48dd88c197c03c0d319f" type="range" class="anim-slider" name="points" min="0" max="1" step="1" value="0" oninput="anim70732ff4905d48dd88c197c03c0d319f.set_frame(parseInt(this.value));">
     <div class="anim-buttons">
-      <button title="Decrease speed" aria-label="Decrease speed" onclick="anim76ea41b1f0124f81bcb8cfe6655d4379.slower()">
+      <button title="Decrease speed" aria-label="Decrease speed" onclick="anim70732ff4905d48dd88c197c03c0d319f.slower()">
           <i class="fa fa-minus"></i></button>
-      <button title="First frame" aria-label="First frame" onclick="anim76ea41b1f0124f81bcb8cfe6655d4379.first_frame()">
+      <button title="First frame" aria-label="First frame" onclick="anim70732ff4905d48dd88c197c03c0d319f.first_frame()">
         <i class="fa fa-fast-backward"></i></button>
-      <button title="Previous frame" aria-label="Previous frame" onclick="anim76ea41b1f0124f81bcb8cfe6655d4379.previous_frame()">
+      <button title="Previous frame" aria-label="Previous frame" onclick="anim70732ff4905d48dd88c197c03c0d319f.previous_frame()">
           <i class="fa fa-step-backward"></i></button>
-      <button title="Play backwards" aria-label="Play backwards" onclick="anim76ea41b1f0124f81bcb8cfe6655d4379.reverse_animation()">
+      <button title="Play backwards" aria-label="Play backwards" onclick="anim70732ff4905d48dd88c197c03c0d319f.reverse_animation()">
           <i class="fa fa-play fa-flip-horizontal"></i></button>
-      <button title="Pause" aria-label="Pause" onclick="anim76ea41b1f0124f81bcb8cfe6655d4379.pause_animation()">
+      <button title="Pause" aria-label="Pause" onclick="anim70732ff4905d48dd88c197c03c0d319f.pause_animation()">
           <i class="fa fa-pause"></i></button>
-      <button title="Play" aria-label="Play" onclick="anim76ea41b1f0124f81bcb8cfe6655d4379.play_animation()">
+      <button title="Play" aria-label="Play" onclick="anim70732ff4905d48dd88c197c03c0d319f.play_animation()">
           <i class="fa fa-play"></i></button>
-      <button title="Next frame" aria-label="Next frame" onclick="anim76ea41b1f0124f81bcb8cfe6655d4379.next_frame()">
+      <button title="Next frame" aria-label="Next frame" onclick="anim70732ff4905d48dd88c197c03c0d319f.next_frame()">
           <i class="fa fa-step-forward"></i></button>
-      <button title="Last frame" aria-label="Last frame" onclick="anim76ea41b1f0124f81bcb8cfe6655d4379.last_frame()">
+      <button title="Last frame" aria-label="Last frame" onclick="anim70732ff4905d48dd88c197c03c0d319f.last_frame()">
           <i class="fa fa-fast-forward"></i></button>
-      <button title="Increase speed" aria-label="Increase speed" onclick="anim76ea41b1f0124f81bcb8cfe6655d4379.faster()">
+      <button title="Increase speed" aria-label="Increase speed" onclick="anim70732ff4905d48dd88c197c03c0d319f.faster()">
           <i class="fa fa-plus"></i></button>
     </div>
-    <form title="Repetition mode" aria-label="Repetition mode" action="#n" name="_anim_loop_select76ea41b1f0124f81bcb8cfe6655d4379" class="anim-state">
-      <input type="radio" name="state" value="once" id="_anim_radio1_76ea41b1f0124f81bcb8cfe6655d4379">
-      <label for="_anim_radio1_76ea41b1f0124f81bcb8cfe6655d4379">Once</label>
-      <input type="radio" name="state" value="loop" id="_anim_radio2_76ea41b1f0124f81bcb8cfe6655d4379" checked="">
-      <label for="_anim_radio2_76ea41b1f0124f81bcb8cfe6655d4379">Loop</label>
-      <input type="radio" name="state" value="reflect" id="_anim_radio3_76ea41b1f0124f81bcb8cfe6655d4379">
-      <label for="_anim_radio3_76ea41b1f0124f81bcb8cfe6655d4379">Reflect</label>
+    <form title="Repetition mode" aria-label="Repetition mode" action="#n" name="_anim_loop_select70732ff4905d48dd88c197c03c0d319f" class="anim-state">
+      <input type="radio" name="state" value="once" id="_anim_radio1_70732ff4905d48dd88c197c03c0d319f">
+      <label for="_anim_radio1_70732ff4905d48dd88c197c03c0d319f">Once</label>
+      <input type="radio" name="state" value="loop" id="_anim_radio2_70732ff4905d48dd88c197c03c0d319f" checked="">
+      <label for="_anim_radio2_70732ff4905d48dd88c197c03c0d319f">Loop</label>
+      <input type="radio" name="state" value="reflect" id="_anim_radio3_70732ff4905d48dd88c197c03c0d319f">
+      <label for="_anim_radio3_70732ff4905d48dd88c197c03c0d319f">Reflect</label>
     </form>
   </div>
 </div>
@@ -1369,9 +1375,9 @@ input[type=range].anim-slider {
   /* Instantiate the Animation class. */
   /* The IDs given should match those used in the template above. */
   (function() {
-    var img_id = "_anim_img76ea41b1f0124f81bcb8cfe6655d4379";
-    var slider_id = "_anim_slider76ea41b1f0124f81bcb8cfe6655d4379";
-    var loop_select_id = "_anim_loop_select76ea41b1f0124f81bcb8cfe6655d4379";
+    var img_id = "_anim_img70732ff4905d48dd88c197c03c0d319f";
+    var slider_id = "_anim_slider70732ff4905d48dd88c197c03c0d319f";
+    var loop_select_id = "_anim_loop_select70732ff4905d48dd88c197c03c0d319f";
     var frames = new Array(9);
     
   frames[0] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAHgCAYAAAB6jN80AAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90\
@@ -5901,7 +5907,7 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
     /* set a timeout to make sure all the above elements are created before
        the object is initialized. */
     setTimeout(function() {
-        anim76ea41b1f0124f81bcb8cfe6655d4379 = new Animation(frames, img_id, slider_id, 200.0,
+        anim70732ff4905d48dd88c197c03c0d319f = new Animation(frames, img_id, slider_id, 200.0,
                                  loop_select_id);
     }, 0);
   })()
@@ -5915,15 +5921,15 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
 <p>To use the downloaded NOAA’s GFS hindcast data in FloodAdapt, you need to create Meteo forcings and add them to your event.</p>
 <p>Under the hood, the meteo forcings use the MeteoHandler to download the data, and then return slices of that dataset.</p>
 <div id="14" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>rainfall <span class="op">=</span> f.RainfallMeteo()</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>wind <span class="op">=</span> f.WindMeteo()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>rainfall <span class="op">=</span> f.RainfallMeteo()</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>wind <span class="op">=</span> f.WindMeteo()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="step-7.-define-river-discharge-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="step-7.-define-river-discharge-forcing">🏞️ Step 7. Define River Discharge Forcing</h2>
 <p>Discharge is required to be defined for the pre-configured river(s). These rivers must be registered in the hazard model configuration beforehand.</p>
 <div id="16" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The available rivers are defined in the hazard model when creating the database.</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The available rivers are defined in the hazard model when creating the database.</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># You cannot add new rivers to the model in an event</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># You can only set the discharge of each given river.</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of available rivers: </span><span class="sc">{</span><span class="bu">len</span>(fa.database.site.sfincs.river)<span class="sc">}</span><span class="ss">"</span>)</span>
@@ -5943,7 +5949,7 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
 <span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">"Discharge (cms)"</span>,</span>
 <span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    legend<span class="op">=</span><span class="va">True</span>,</span>
 <span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">2</span>)</span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Number of available rivers: 1</code></pre>
 </div>
@@ -5963,7 +5969,7 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
 <p><strong>NOTE</strong>: each event can only have 1 forcing of the types: <code>water level</code>, <code>rainfall</code> and <code>wind</code>. For <code>discharge</code> however, each river is required to have a forcing associated with it.</p>
 </blockquote>
 <div id="18" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a HistoricalEvent with the forcings and time frame</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a HistoricalEvent with the forcings and time frame</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>event <span class="op">=</span> HistoricalEvent(</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"example_historical_event"</span>,</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    time<span class="op">=</span>time_frame,</span>
@@ -5974,15 +5980,15 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.WIND: [wind],</span>
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        f.ForcingType.DISCHARGE: [discharge_constant],</span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    },</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="step-9.-save-the-event-to-a-floodadapt-database" class="level2">
 <h2 class="anchored" data-anchor-id="step-9.-save-the-event-to-a-floodadapt-database">💾 Step 9. Save the Event to a FloodAdapt Database</h2>
 <p>Finally, we save the event to a FloodAdapt database.</p>
 <div id="20" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the event to the database</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>event)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the event to the database</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>fa.save_event(event<span class="op">=</span>event)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 
@@ -6053,13 +6059,14 @@ FAAAAFlFAAoAAADJpv8PzZBAjw822rcAAAAASUVORK5CYII=\
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

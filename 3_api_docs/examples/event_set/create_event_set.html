@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.33">
+<meta name="generator" content="quarto-1.8.24">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,18 +69,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../_static/logo.png" rel="icon" type="image/png">
 <script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-bc185b5c5bdbcb35c2eb49d8a876ef70.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b651517ce65839d647a86e2780455cfb.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../../site_libs/bootstrap/bootstrap-dark-0a88f9bf3c7dc6da7549435e9e0a9869.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../../site_libs/bootstrap/bootstrap-562b512568abf03695ff183f679b8708.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-769930dfaaf8a5e8fa53cf8d4f3df975.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-500af84991fac2dfa6b1814205da6869.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-769930dfaaf8a5e8fa53cf8d4f3df975.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -282,7 +283,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../../../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../../../_static/logo.png" alt="" class="navbar-logo">
+    <img src="../../../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../../../_static/logo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../../../index.html">
     <span class="navbar-title">FloodAdapt</span>
@@ -342,6 +344,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../../../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
         <div id="quarto-search" class="" title="Search"></div>
@@ -967,7 +973,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="step-1.-setup-and-imports" class="level2">
 <h2 class="anchored" data-anchor-id="step-1.-setup-and-imports">⏱️ Step 1. Setup and Imports</h2>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flood_adapt <span class="im">import</span> Settings, FloodAdapt</span>
@@ -999,9 +1005,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    DATABASE_NAME<span class="op">=</span><span class="st">"charleston_test"</span></span>
 <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>settings.database_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>2025-08-28 12:06:40 PM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
+<pre><code>2025-09-18 01:27:43 PM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
 </div>
 </div>
 </section>
@@ -1009,7 +1015,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="step-2.-set-name-frequencies-and-parameters-to-build-subevents">🗓️ Step 2. Set name, frequencies and parameters to build subevents</h2>
 <p>Set the name of the event set and the parameters for the input events and their frequencies. In this example, we are using three synthetic events with different storm surge heights and peak rainfall intensities. Alternatively, historic gauged and ungauged events or hurricanes are possible as well, see <a href="../../../3_api_docs/examples/events/index.html">Events</a> for examples on how to set up different subevents.</p>
 <div id="4" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>name <span class="op">=</span> <span class="st">"event_set"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>name <span class="op">=</span> <span class="st">"event_set"</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Peak surge values in the subevents. </span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Surge is timed to always peak at 24.8 hours after the event start, coinciding with high tide at a tidal phase of 0 and lasting for 10 hours.</span></span>
@@ -1020,14 +1026,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>rainfall_values <span class="op">=</span> [<span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">5</span>] <span class="co"># in mm/hr</span></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Occurrence frequencies of the three events</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>freq <span class="op">=</span> [<span class="fl">0.1</span>, <span class="dv">2</span>, <span class="fl">0.05</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>freq <span class="op">=</span> [<span class="fl">0.1</span>, <span class="dv">2</span>, <span class="fl">0.05</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="step-3.-create-subevents" class="level2">
 <h2 class="anchored" data-anchor-id="step-3.-create-subevents">🧩 Step 3. Create subevents</h2>
 <p>Create the subevents from the parameters defined in Step 1.</p>
 <div id="6" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>events <span class="op">=</span> []</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>events <span class="op">=</span> []</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>number <span class="op">=</span> <span class="dv">0</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> surge, rainfall <span class="kw">in</span> <span class="bu">zip</span>(surge_values, rainfall_values):</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    number <span class="op">+=</span> <span class="dv">1</span></span>
@@ -1114,7 +1120,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>        )</span>
 <span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(events)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(events)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[SyntheticEvent(name='subevent_1', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=10.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=2.5, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0), SyntheticEvent(name='subevent_2', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=15.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=1.0, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0), SyntheticEvent(name='subevent_3', description='', time=TimeFrame(start_time=datetime.datetime(2020, 1, 1, 0, 0), end_time=datetime.datetime(2020, 1, 3, 0, 0)), template=&lt;Template.Synthetic: 'Synthetic'&gt;, mode=&lt;Mode.single_event: 'single_event'&gt;, forcings={&lt;ForcingType.WIND: 'WIND'&gt;: [WindConstant(type=&lt;ForcingType.WIND: 'WIND'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, speed=UnitfulVelocity(value=10.0, units=UnitTypesVelocity.mps), direction=UnitfulDirection(value=90.0, units=UnitTypesDirection.degrees))], &lt;ForcingType.RAINFALL: 'RAINFALL'&gt;: [RainfallSynthetic(type=&lt;ForcingType.RAINFALL: 'RAINFALL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, timeseries=BlockTimeseries(shape_type=&lt;ShapeType.block: 'block'&gt;, duration=UnitfulTime(value=6.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=21.0, units=UnitTypesTime.hours), peak_value=UnitfulIntensity(value=5.0, units=UnitTypesIntensity.mm_hr), cumulative=None, fill_value=0.0))], &lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;: [DischargeConstant(type=&lt;ForcingType.DISCHARGE: 'DISCHARGE'&gt;, source=&lt;ForcingSource.CONSTANT: 'CONSTANT'&gt;, river=RiverModel(name='cooper', description='Cooper River', mean_discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs), x_coordinate=595546.3, y_coordinate=3675590.6), discharge=UnitfulDischarge(value=5000.0, units=UnitTypesDischarge.cfs))], &lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;: [WaterlevelSynthetic(type=&lt;ForcingType.WATERLEVEL: 'WATERLEVEL'&gt;, source=&lt;ForcingSource.SYNTHETIC: 'SYNTHETIC'&gt;, surge=SurgeModel(timeseries=GaussianTimeseries(shape_type=&lt;ShapeType.gaussian: 'gaussian'&gt;, duration=UnitfulTime(value=10.0, units=UnitTypesTime.hours), peak_time=UnitfulTime(value=24.0, units=UnitTypesTime.hours), peak_value=UnitfulLength(value=3.0, units=UnitTypesLength.meters), cumulative=None, fill_value=0.0)), tide=TideModel(harmonic_amplitude=UnitfulLength(value=1.0, units=UnitTypesLength.meters), harmonic_phase=UnitfulTime(value=0.0, units=UnitTypesTime.hours), harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours)))]}, rainfall_multiplier=1.0)]</code></pre>
 </div>
@@ -1124,7 +1130,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="step-4.-create-and-save-event-set">💾 Step 4. Create and save event set</h2>
 <p>In this step, we create an event set from the <code>SubEvents</code> created in Step 2, load the actual <code>Event</code> objects into it, and save it to the database. This event set can then be used like any other event in a Scenario. Click <a href="../../../3_api_docs/examples/scenarios/index.html">here</a> to see examples on how to build a scenario.</p>
 <div id="8" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>sub_events <span class="op">=</span> []</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>sub_events <span class="op">=</span> []</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> event, frequency <span class="kw">in</span> <span class="bu">zip</span>(events, freq):</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    sub_events.append(SubEventModel(name<span class="op">=</span>event.name, frequency<span class="op">=</span>frequency))</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -1136,7 +1142,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>event_set.load_sub_events(events)</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>fa.save_event(event_set)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(fa.get_events()[<span class="st">"name"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(fa.get_events()[<span class="st">"name"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>['event_set', 'test_set']</code></pre>
 </div>
@@ -1210,13 +1216,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
