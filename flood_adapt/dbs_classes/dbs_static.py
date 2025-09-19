@@ -12,7 +12,7 @@ from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
-from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 
 
 def cache_method_wrapper(func: Callable) -> Callable:
@@ -260,7 +260,7 @@ class DbsStatic(IDbsStatic):
     def get_offshore_sfincs_model(self) -> SfincsAdapter:
         """Get the template overland Sfincs model."""
         if self._database.site.sfincs.config.offshore_model is None:
-            raise DatabaseError("No offshore model defined in the site configuration.")
+            raise ConfigError("No offshore model defined in the site configuration.")
 
         offshore_path = (
             self._database.static_path
@@ -273,7 +273,7 @@ class DbsStatic(IDbsStatic):
     def get_fiat_model(self) -> FiatAdapter:
         """Get the path to the FIAT model."""
         if self._database.site.fiat is None:
-            raise DatabaseError("No FIAT model defined in the site configuration.")
+            raise ConfigError("No FIAT model defined in the site configuration.")
         template_path = self._database.static_path / "templates" / "fiat"
         with FiatAdapter(
             model_root=template_path,
@@ -287,7 +287,7 @@ class DbsStatic(IDbsStatic):
     @cache_method_wrapper
     def get_cyclone_track_database(self) -> CycloneTrackDatabase:
         if self._database.site.sfincs.cyclone_track_database is None:
-            raise DatabaseError(
+            raise ConfigError(
                 "No cyclone track database defined in the site configuration."
             )
         database_file = str(
