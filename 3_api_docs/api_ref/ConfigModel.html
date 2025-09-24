@@ -984,9 +984,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <dd>
 <p>The GUI model representing scaling values for the layers.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>infographics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[bool], default True</span></code></dt>
+<dt><code><span class="parameter-name"><strong>infographics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">bool, default True</span></code></dt>
 <dd>
 <p>Indicates if infographics are enabled.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>event_infographics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[EventInfographicModel], default None</span></code></dt>
+<dd>
+<p>Event infographic configuration.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>risk_infographics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[RiskInfographicModel], default None</span></code></dt>
+<dd>
+<p>Risk infographic configuration.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>event_additional_infometrics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[list[MetricModel]], default None</span></code></dt>
+<dd>
+<p>Additional event infometrics.</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>risk_additional_infometrics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[list[MetricModel]], default None</span></code></dt>
+<dd>
+<p>Additional risk infometrics.</p>
 </dd>
 <dt><code><span class="parameter-name"><strong>fiat</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
@@ -1016,11 +1032,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <dd>
 <p>The SVI model.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>road_width</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[float], default 5</span></code></dt>
+<dt><code><span class="parameter-name"><strong>road_width</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">us.UnitfulLength, default 5 meters</span></code></dt>
 <dd>
-<p>The road width in meters.</p>
+<p>The road width.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>return_periods</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">list[int], default []</span></code></dt>
+<dt><code><span class="parameter-name"><strong>return_periods</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[list[int]], default None</span></code></dt>
 <dd>
 <p>The list of return periods for risk calculations.</p>
 </dd>
@@ -1028,7 +1044,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <dd>
 <p>The type of floodmap to use.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>references</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">WaterlevelReferenceModel, default WaterlevelReferenceModel(…)</span></code></dt>
+<dt><code><span class="parameter-name"><strong>references</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[WaterlevelReferenceModel], default None</span></code></dt>
 <dd>
 <p>The water level reference model.</p>
 </dd>
