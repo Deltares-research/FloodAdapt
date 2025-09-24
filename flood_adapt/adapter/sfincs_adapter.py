@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import geopandas as gpd
 import hydromt_sfincs.utils as utils
@@ -23,6 +23,7 @@ from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
 from shapely.affinity import translate
 
+from flood_adapt.adapter.docker import HAS_DOCKER, run_sfincs
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.config.config import Settings
 from flood_adapt.config.site import Site
@@ -170,7 +171,7 @@ class SfincsAdapter(IHazardAdapter):
         """Check if the model has been run."""
         return self.run_completed(scenario)
 
-    def execute(self, path: Path, strict: bool = True) -> bool:
+    def execute(self, path: Path, strict: bool = True, **kwargs: Any) -> bool:
         """
         Run the sfincs executable in the specified path.
 
@@ -190,20 +191,24 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
-        with cd(path):
-            logger.info(f"Running SFINCS in {path}")
-            process = subprocess.run(
-                str(Settings().sfincs_bin_path),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-            self.sfincs_logger.info(process.stdout)
-            logger.debug(process.stdout)
+        if HAS_DOCKER:
+            success = run_sfincs(path)
+        else:
+            with cd(path):
+                logger.info(f"Running SFINCS in {path}")
+                process = subprocess.run(
+                    str(Settings().sfincs_bin_path),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+                self.sfincs_logger.info(process.stdout)
+                logger.debug(process.stdout)
+                success = process.returncode == 0
 
         self._cleanup_simulation_folder(path)
 
-        if process.returncode != 0:
+        if not success:
             if Settings().delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
                 for subdir, dirs, files in os.walk(path, topdown=False):
@@ -219,7 +224,7 @@ class SfincsAdapter(IHazardAdapter):
             else:
                 logger.error(f"SFINCS model failed to run in {path}.")
 
-        return process.returncode == 0
+        return success
 
     def run(self, scenario: Scenario):
         """Run the whole workflow (Preprocess, process and postprocess) for a given scenario."""

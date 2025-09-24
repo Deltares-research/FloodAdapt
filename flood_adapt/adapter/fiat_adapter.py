@@ -21,6 +21,7 @@ from fiat_toolbox.spatial_output.footprints import Footprints
 from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
+from flood_adapt.adapter.docker import HAS_DOCKER, run_fiat
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
@@ -288,10 +289,12 @@ class FiatAdapter(IImpactAdapter):
 
     def execute(
         self,
-        path: Optional[os.PathLike] = None,
-        exe_path: Optional[os.PathLike] = None,
-        delete_crashed_runs: Optional[bool] = None,
-        strict=True,
+        path: Path,
+        *,
+        strict: bool = True,
+        exe_path: Path | None = None,
+        delete_crashed_runs: bool | None = None,
+        **kwargs: Any,
     ) -> bool:
         """
         Execute the FIAT model.
@@ -319,32 +322,39 @@ class FiatAdapter(IImpactAdapter):
         RuntimeError
             If the FIAT model fails to run and `strict` is True.
         """
-        if path is None:
-            path = self.model_root
-        if exe_path is None:
-            if self.exe_path is None:
-                raise ValueError(
-                    "'exe_path' needs to be provided either when calling FiatAdapter.execute() or during initialization of the FiatAdapter object."
-                )
+        if HAS_DOCKER:
+            success = run_fiat(simulation_dir=path)
+        else:
+            if exe_path is None:
+                if self.exe_path is None:
+                    raise ValueError(
+                        "'exe_path' needs to be provided either when calling FiatAdapter.execute() or during initialization of the FiatAdapter object."
+                    )
             exe_path = self.exe_path
+            with cd(path):
+                fiat_log = path / "fiat.log"
+                with FloodAdaptLogging.to_file(file_path=fiat_log):
+                    FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
+
+                    logger.info(f"Running FIAT in {path}")
+                    process = subprocess.run(
+                        args=[
+                            Path(exe_path).resolve().as_posix(),
+                            "run",
+                            "settings.toml",
+                        ],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                    )
+                    logger.debug(process.stdout)
+                    success = process.returncode == 0
+
+        # cleanup
         if delete_crashed_runs is None:
             delete_crashed_runs = self.delete_crashed_runs
-        path = Path(path)
-        fiat_log = path / "fiat.log"
-        with cd(path):
-            with FloodAdaptLogging.to_file(file_path=fiat_log):
-                FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
 
-                logger.info(f"Running FIAT in {path}")
-                process = subprocess.run(
-                    args=[Path(exe_path).resolve().as_posix(), "run", "settings.toml"],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                )
-                logger.debug(process.stdout)
-
-        if process.returncode != 0:
+        if not success:
             if delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
                 for subdir, dirs, files in os.walk(path, topdown=False):
@@ -360,10 +370,10 @@ class FiatAdapter(IImpactAdapter):
             else:
                 logger.error(f"FIAT model failed to run in {path}.")
 
-        if process.returncode == 0:
+        if success:
             self.read_outputs()
 
-        return process.returncode == 0
+        return success
 
     def read_outputs(self) -> None:
         """

@@ -5,6 +5,10 @@ import geopandas as gpd
 import pandas as pd
 from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
+from flood_adapt.adapter.docker2 import (
+    FiatContainer,
+    SfincsContainer,
+)
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
@@ -41,6 +45,14 @@ class DbsStatic(IDbsStatic):
     def __init__(self, database: IDatabase):
         """Initialize any necessary attributes."""
         self._database = database
+        self._start_containers()
+
+    def _start_containers(self) -> None:
+        self.sfincs_container = SfincsContainer(self._database.base_path)
+        self.sfincs_container.start()
+
+        self.fiat_container = FiatContainer(self._database.base_path)
+        self.fiat_container.start()
 
     def load_static_data(self):
         """Read data into the cache.
@@ -160,6 +172,8 @@ class DbsStatic(IDbsStatic):
         list
             List of scenario names
         """
+        if self._database.site.sfincs.slr_scenarios is None:
+            raise ConfigError("No sea level rise scenarios defined in the site config.")
         input_file = self._database.static_path.joinpath(
             self._database.site.sfincs.slr_scenarios.file
         )
