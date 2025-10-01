@@ -26,18 +26,18 @@ requires-python = ">=3.10,<3.13"
 # Any package below will be taken from pypi.
 # These are ignored if any packages is also defined in the section: [tool.pixi.dependencies]
 dependencies = [
-    "cht-cyclones       ==1.0.3",
-    "cht-meteo          ==0.3.1",
-    "cht-observations   ==0.2.1",
-    "cht-tide           ==0.1.1",
+    "cht-cyclones       >=1.0.3,<2.0",
+    "cht-meteo          >=0.3.1,<1.0",
+    "cht-observations   >=0.2.1,<1.0",
+    "cht-tide           >=0.1.1,<1.0",
     "dask               ==2024.11.2",   # not a dependency, but a we need to use this version
     "numba_celltree     ==0.2.2",       # not a dependency, but a we need to use this version
     "fiat-toolbox       >=0.1.22,<0.2.0",
     "fiona              >=1.0,<2.0",
     "geojson            >=3.0,<4.0",
     "geopandas          >=1.0,<2.0",
-    "hydromt-fiat       ==0.5.5",
-    "hydromt-sfincs     ==1.2.0",
+    "hydromt-fiat       >=0.5.5,<1.0",
+    "hydromt-sfincs     >=1.2.0,<2.0",
     "numpy              >=1.0,<2.0",
     "numpy-financial    >=1.0,<2.0",
     "pandas             >=2.0,<3.0",
@@ -108,9 +108,6 @@ name = "flood-adapt"
 channels = ["conda-forge"]
 platforms = ["win-64", "linux-64"]
 
-[tool.pixi.feature.editable.pypi-dependencies]
-flood-adapt = { path = ".", editable = true }
-
 [tool.pixi.feature.py312.dependencies]
 python = "3.12.*"
 
@@ -120,9 +117,16 @@ python = "3.11.*"
 [tool.pixi.feature.py310.dependencies]
 python = "3.10.*"
 
+[tool.pixi.feature.build.pypi-dependencies]
+flood-adapt = { path = "." }
+
+[tool.pixi.feature.editable.pypi-dependencies]
+flood-adapt = { path = ".", editable = true }
+
 [tool.pixi.environments]
 default = { features = ["py312", "dev", "docs", "editable"], solve-group = "py312" }
-build = { features = ["py312", "build"], solve-group = "py312" }
+build = { features = ["py312", "build"] }
+
 dev-py310 = { features = ["py310", "dev", "editable"], solve-group = "py310" }
 dev-py311 = { features = ["py311", "dev", "editable"], solve-group = "py311" }
 dev-py312 = { features = ["py312", "dev", "editable"], solve-group = "py312" }
