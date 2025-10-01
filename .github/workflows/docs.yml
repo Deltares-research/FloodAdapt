@@ -43,7 +43,7 @@ jobs:
 
       - name: Read version
         run: |
-          DOC_VERSION=$(pixi run -e docs python -c "from flood_adapt import __version__; print(__version__)")
+          DOC_VERSION=$(pixi run python -c "from flood_adapt import __version__; print(__version__)")
           echo "DOC_VERSION=${DOC_VERSION}" >> $GITHUB_ENV
 
       - name: Upload to GitHub Pages
