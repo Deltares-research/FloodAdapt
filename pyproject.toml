@@ -141,8 +141,7 @@ lint = { depends-on=["pre-commit"] }
 tests = {cmd = "pytest tests"}
 
 [tool.pixi.feature.build.tasks]
-install-non-editable = {cmd = "pip install ." }
-build-db-builder = {cmd = "python distribution/build_database_builder_executable.py", depends-on = ["install-non-editable"] }
+build-db-builder = {cmd = "python distribution/build_database_builder_executable.py" }
 
 [tool.pixi.feature.docs.tasks]
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }

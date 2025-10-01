@@ -16,4 +16,4 @@ FloodAdapt is currently in an intensive development stage. Independent usage of 
 
 # Getting Started
 
-Please review our [`getting started guide`](GETTING_STARTED.md) for information on how to install and use FloodAdapt locally.
+Please review our [`developer guide`](DEVELOPER_GUIDE.md) for information on how to install and use FloodAdapt locally.
