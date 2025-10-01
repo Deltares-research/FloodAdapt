@@ -822,8 +822,10 @@ class SfincsAdapter(IHazardAdapter):
                 zs_rp_single.to_netcdf(
                     result_path / f"RP_{rp:04d}_max_water_level_map_qt.nc"
                 )
+                # Rasterize to regular grid with the finest resolution
+                zs_rp_single = self._rasterize_quadtree(zs_rp_single)
             # Prepare regular grid water level map
-            if self._model.grid_type == "regular":
+            elif self._model.grid_type == "regular":
                 # Create a DataArray with the mask coordinates
                 zs_rp_single = xr.DataArray(
                     zs_rp_single,
@@ -832,9 +834,7 @@ class SfincsAdapter(IHazardAdapter):
                     name="zsmax",
                 )
             else:
-                # Rasterize the quadtree data to a regular grid
-                zs_rp_single = self._rasterize_quadtree(zs_rp_single)
-
+                raise ValueError("unsupported sfincs model type")
             # Write COG geotiff with water levels
             zs_rp_single = zs_rp_single.rio.write_crs(self._model.crs)
             fn_rp = result_path / f"RP_{rp:04d}_max_water_level_map.tif"
