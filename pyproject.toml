@@ -21,23 +21,23 @@ classifiers = [
     "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
     "Topic :: Scientific/Engineering :: Hydrology",
 ]
-requires-python = ">=3.8,<3.13"
+requires-python = ">=3.10,<3.13"
 
 # Any package below will be taken from pypi.
 # These are ignored if any packages is also defined in the section: [tool.pixi.dependencies]
 dependencies = [
-    "cht-cyclones       ==1.0.3",
-    "cht-meteo          ==0.3.1",
-    "cht-observations   ==0.2.1",
-    "cht-tide           ==0.1.1",
+    "cht-cyclones       >=1.0.3,<2.0",
+    "cht-meteo          >=0.3.1,<1.0",
+    "cht-observations   >=0.2.1,<1.0",
+    "cht-tide           >=0.1.1,<1.0",
     "dask               ==2024.11.2",   # not a dependency, but a we need to use this version
     "numba_celltree     ==0.2.2",       # not a dependency, but a we need to use this version
     "fiat-toolbox       >=0.1.22,<0.2.0",
     "fiona              >=1.0,<2.0",
     "geojson            >=3.0,<4.0",
     "geopandas          >=1.0,<2.0",
-    "hydromt-fiat       ==0.5.5",
-    "hydromt-sfincs     ==1.2.0",
+    "hydromt-fiat       >=0.5.5,<1.0",
+    "hydromt-sfincs     >=1.2.0,<2.0",
     "numpy              >=1.0,<2.0",
     "numpy-financial    >=1.0,<2.0",
     "pandas             >=2.0,<3.0",
@@ -80,7 +80,6 @@ docs = [
     "mapclassify        >=2.8.0,<3.0",
     "contextily"
 ]
-all = ["flood-adapt[build,dev,docs]"]
 
 [project.urls]
 Source = "https://github.com/Deltares-research/FloodAdapt"
@@ -104,11 +103,10 @@ addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-
 testpaths = ["tests"]
 
 ### pixi ###
-[tool.pixi.feature.docs.pypi-dependencies]
-flood-adapt = { path = "." }
-
-[tool.pixi.feature.build.pypi-dependencies]
-flood-adapt = { path = "." }
+[tool.pixi.project]
+name = "flood-adapt"
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64"]
 
 [tool.pixi.feature.py312.dependencies]
 python = "3.12.*"
@@ -119,31 +117,31 @@ python = "3.11.*"
 [tool.pixi.feature.py310.dependencies]
 python = "3.10.*"
 
-[tool.pixi.project]
-name = "flood-adapt"
-channels = ["conda-forge"]
-platforms = ["win-64", "linux-64"]
+[tool.pixi.feature.build.pypi-dependencies]
+flood-adapt = { path = "." }
+
+[tool.pixi.feature.editable.pypi-dependencies]
+flood-adapt = { path = ".", editable = true }
 
 [tool.pixi.environments]
-py312 = { features = ["py312"], solve-group = "py312" }
-py311 = { features = ["py311"], solve-group = "py311" }
-py310 = { features = ["py310"], solve-group = "py310" }
+default = { features = ["py312", "dev", "docs", "editable"], solve-group = "py312" }
+build = { features = ["py312", "build"] }
 
-build = { features = ["build"], solve-group = "py311" }
-dev = { features = ["dev"], solve-group = "py311" }
-docs = { features = ["docs"], solve-group = "py311" }
-all = { features = ["all"], solve-group = "py311" }
+dev-py310 = { features = ["py310", "dev", "editable"], solve-group = "py310" }
+dev-py311 = { features = ["py311", "dev", "editable"], solve-group = "py311" }
+dev-py312 = { features = ["py312", "dev", "editable"], solve-group = "py312" }
 
 [tool.pixi.feature.dev.tasks]
 update-test-db-static = { cmd = "python tests/data/create_test_static.py" }
 update-test-db-input = { cmd = "python tests/data/create_test_input.py" }
 update-test-db = { depends-on = ["update-test-db-static", "update-test-db-input"] }
-install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"]}
-pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"]}
+install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"] }
+pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"] }
+lint = { depends-on=["pre-commit"] }
 tests = {cmd = "pytest tests"}
 
 [tool.pixi.feature.build.tasks]
-build-db-builder = {cmd = "python distribution/build_database_builder_executable.py"}
+build-db-builder = {cmd = "python distribution/build_database_builder_executable.py" }
 
 [tool.pixi.feature.docs.tasks]
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
