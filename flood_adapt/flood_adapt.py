@@ -9,6 +9,7 @@ from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
+from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.benefits.benefits import Benefit
@@ -46,7 +47,7 @@ logger = FloodAdaptLogging.getLogger()
 class FloodAdapt:
     database: Database
 
-    def __init__(self, database_path: Path) -> None:
+    def __init__(self, settings: Settings) -> None:
         """Initialize the FloodAdapt class with a database path.
 
         Parameters
@@ -54,9 +55,8 @@ class FloodAdapt:
         database_path : Path
             The path to the database file.
         """
-        self.database = Database(
-            database_path=database_path.parent, database_name=database_path.name
-        )
+        self._settings = settings
+        self.database = Database(settings=self._settings)
 
     # Measures
     def get_measures(self) -> dict[str, Any]:

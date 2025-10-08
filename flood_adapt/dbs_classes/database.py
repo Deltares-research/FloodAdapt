@@ -2,7 +2,7 @@ import gc
 import os
 import shutil
 from pathlib import Path
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal, Optional
 
 import geopandas as gpd
 import numpy as np
@@ -12,6 +12,7 @@ from geopandas import GeoDataFrame
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import SlrScenariosModel
 from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.config.site import Site
@@ -27,7 +28,6 @@ from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     TopLevelDir,
-    db_path,
 )
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.events import Mode
@@ -45,26 +45,23 @@ class Database(IDatabase):
     """
 
     _instance = None
-
-    database_path: Union[str, os.PathLike]
-    database_name: str
     _init_done: bool = False
+    _settings: Settings | None = None
 
     base_path: Path
     input_path: Path
     static_path: Path
     output_path: Path
 
-    _site: Site
+    site: Site
 
-    _events: DbsEvent
-    _scenarios: DbsScenario
-    _strategies: DbsStrategy
-    _measures: DbsMeasure
-    _projections: DbsProjection
-    _benefits: DbsBenefit
-
-    _static: DbsStatic
+    events: DbsEvent
+    scenarios: DbsScenario
+    strategies: DbsStrategy
+    measures: DbsMeasure
+    projections: DbsProjection
+    benefits: DbsBenefit
+    static: DbsStatic
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:  # Singleton pattern
@@ -73,8 +70,7 @@ class Database(IDatabase):
 
     def __init__(
         self,
-        database_path: Union[str, os.PathLike, None] = None,
-        database_name: Optional[str] = None,
+        settings: Settings | None = None,
     ) -> None:
         """
         Initialize the DatabaseController object.
@@ -87,57 +83,49 @@ class Database(IDatabase):
             The name of the database.
         -----
         """
-        if database_path is None or database_name is None:
+        if settings is None:
             if not self._init_done:
                 raise DatabaseError(
-                    """Database path and name must be provided for the first initialization.
-                    To do this, run `flood_adapt.api.static.read_database(database_path, site_name)` first."""
+                    "Settings is required for the first initialization of the Database."
                 )
             else:
                 return  # Skip re-initialization
 
-        if (
-            self._init_done
-            and self.database_path == database_path
-            and self.database_name == database_name
-        ):
+        if self._init_done and self._settings == settings:
             return  # Skip re-initialization
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
         re_option = "re-" if self._init_done else ""
         logger.info(
-            f"{re_option}initializing database to {database_name} at {database_path}".capitalize()
+            f"{re_option}initializing database to {settings.database_name} at {settings.database_root}".capitalize()
         )
-        self.database_path = database_path
-        self.database_name = database_name
 
         # Set the paths
-
-        self.base_path = Path(database_path) / database_name
-        self.input_path = db_path(TopLevelDir.input)
-        self.static_path = db_path(TopLevelDir.static)
-        self.output_path = db_path(TopLevelDir.output)
-
-        self._site = Site.load_file(self.static_path / "config" / "site.toml")
+        self.base_path = settings.database_path
+        self.input_path = self.base_path / TopLevelDir.input.value
+        self.static_path = self.base_path / TopLevelDir.static.value
+        self.output_path = self.base_path / TopLevelDir.output.value
 
         # Initialize the different database objects
-        self._static = DbsStatic(self)
-        self._events = DbsEvent(
-            self, standard_objects=self.site.standard_objects.events
-        )
-        self._scenarios = DbsScenario(self)
-        self._strategies = DbsStrategy(
+        self.site = Site.load_file(self.static_path / "config" / "site.toml")
+        self.static = DbsStatic(self)
+        self.events = DbsEvent(self, standard_objects=self.site.standard_objects.events)
+        self.scenarios = DbsScenario(self)
+        self.strategies = DbsStrategy(
             self, standard_objects=self.site.standard_objects.strategies
         )
-        self._measures = DbsMeasure(self)
-        self._projections = DbsProjection(
+        self.measures = DbsMeasure(self)
+        self.projections = DbsProjection(
             self, standard_objects=self.site.standard_objects.projections
         )
-        self._benefits = DbsBenefit(self)
+        self.benefits = DbsBenefit(self)
+
         self._init_done = True
+        self._settings = settings
 
         # Delete any unfinished/crashed scenario output after initialization
-        self.cleanup()
+        if settings.delete_crashed_runs:
+            self.cleanup()
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
@@ -147,39 +135,6 @@ class Database(IDatabase):
         self.__class__._instance = None
         self.__dict__.clear()
         gc.collect()
-
-    # Property methods
-    @property
-    def site(self) -> Site:
-        return self._site
-
-    @property
-    def static(self) -> DbsStatic:
-        return self._static
-
-    @property
-    def events(self) -> DbsEvent:
-        return self._events
-
-    @property
-    def scenarios(self) -> DbsScenario:
-        return self._scenarios
-
-    @property
-    def strategies(self) -> DbsStrategy:
-        return self._strategies
-
-    @property
-    def measures(self) -> DbsMeasure:
-        return self._measures
-
-    @property
-    def projections(self) -> DbsProjection:
-        return self._projections
-
-    @property
-    def benefits(self) -> DbsBenefit:
-        return self._benefits
 
     def get_slr_scenarios(self) -> SlrScenariosModel:
         """Get the path to the SLR scenarios file.
@@ -203,7 +158,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'path', 'last_modification_date' and "finished" info
         """
-        all_scenarios = pd.DataFrame(self._scenarios.summarize_objects())
+        all_scenarios = pd.DataFrame(self.scenarios.summarize_objects())
         if len(all_scenarios) > 0:
             df = all_scenarios[all_scenarios["finished"]]
         else:
@@ -233,7 +188,7 @@ class Database(IDatabase):
             if _type == FloodmapType.water_level:
                 paths = [base_dir / "max_water_level_map.nc"]
             elif _type == FloodmapType.water_depth:
-                paths = [base_dir / f"FloodMap_{self.name}.tif"]
+                paths = [base_dir / f"FloodMap_{scenario_name}.tif"]
         elif mode == Mode.risk:
             if _type == FloodmapType.water_level:
                 paths = list(base_dir.glob("RP_*_maps.nc"))

@@ -73,7 +73,7 @@ from flood_adapt.workflows.benefit_runner import BenefitRunner
 DATA_DIR = Path(__file__).parent
 
 
-def update_database_input(database_path: Path):
+def update_database_input(settings: Settings):
     """
     Create the input directory for the FloodAdapt testing database.
 
@@ -86,7 +86,7 @@ def update_database_input(database_path: Path):
         The path to the database directory. This is the directory that contains the `input`, `static` and `output` directories.
 
     """
-    database = Database(database_path.parent, database_path.name)
+    database = Database(settings)
     input_dir = database.input_path
     if input_dir.exists():
         shutil.rmtree(input_dir)

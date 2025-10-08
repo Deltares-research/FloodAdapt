@@ -94,8 +94,8 @@ def session_setup_teardown():
         ignore_warnings=[DeprecationWarning],
     )
 
-    update_database_static(settings.database_path)
-    update_database_input(settings.database_path)
+    update_database_static(settings)
+    update_database_input(settings)
     create_snapshot()
 
     yield
@@ -148,7 +148,7 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        fa = FloodAdapt(Settings().database_path)
+        fa = FloodAdapt(Settings())
 
         # Perform tests
         yield fa.database
@@ -217,7 +217,7 @@ def make_fa_fixture(scope):
                     assert ...
         """
         # Setup
-        fa = FloodAdapt(Settings().database_path)
+        fa = FloodAdapt(Settings())
 
         # Perform tests
         yield fa

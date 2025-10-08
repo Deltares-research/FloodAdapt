@@ -6,7 +6,7 @@ import geopandas as gpd
 import pandas as pd
 from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
-from flood_adapt.adapter.docker2 import FiatContainer, SfincsContainer
+from flood_adapt.adapter.docker import FiatContainer, SfincsContainer
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter

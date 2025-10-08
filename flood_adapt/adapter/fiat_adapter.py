@@ -9,6 +9,8 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import pandas as pd
 import tomli
+import tomli_w
+import tomllib
 from fiat_toolbox import FiatColumns, get_fiat_columns
 from fiat_toolbox.equity.equity import Equity
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
@@ -21,7 +23,7 @@ from fiat_toolbox.spatial_output.footprints import Footprints
 from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.adapter.docker import HAS_DOCKER, run_fiat
+from flood_adapt.adapter.docker import HAS_DOCKER
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
@@ -322,8 +324,12 @@ class FiatAdapter(IImpactAdapter):
         RuntimeError
             If the FIAT model fails to run and `strict` is True.
         """
+        FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
+        FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
+
         if HAS_DOCKER:
-            success = run_fiat(simulation_dir=path)
+            # success = run_fiat(simulation_dir=path)
+            success = self.database.static.fiat_container.run(path)
         else:
             if exe_path is None:
                 if self.exe_path is None:
@@ -334,8 +340,6 @@ class FiatAdapter(IImpactAdapter):
             with cd(path):
                 fiat_log = path / "fiat.log"
                 with FloodAdaptLogging.to_file(file_path=fiat_log):
-                    FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
-
                     logger.info(f"Running FIAT in {path}")
                     process = subprocess.run(
                         args=[
@@ -699,7 +703,7 @@ class FiatAdapter(IImpactAdapter):
 
     def set_hazard(
         self,
-        map_fn: Union[os.PathLike, list[os.PathLike]],
+        map_fn: list[Path],
         map_type: FloodmapType,
         var: str,
         is_risk: bool = False,
@@ -721,14 +725,18 @@ class FiatAdapter(IImpactAdapter):
         units : str, optional
             The units of the hazard map. Defaults to us.UnitTypesLength.meters.
         """
-        logger.info(f"Setting hazard to the {map_type} map {map_fn}")
         # Add the floodmap data to a data catalog with the unit conversion
         wl_current_units = us.UnitfulLength(value=1.0, units=units)
         conversion_factor = wl_current_units.convert(self.model.exposure.unit)
+        if isinstance(map_fn, list):
+            floodmap_paths = [Path(p).as_posix() for p in map_fn]
+        else:
+            floodmap_paths = Path(map_fn).as_posix()
 
+        logger.info(f"Setting hazard to the {map_type.value} map {floodmap_paths}")
         self.model.setup_hazard(
-            map_fn=map_fn,
-            map_type=map_type,
+            map_fn=floodmap_paths,
+            map_type=map_type.value,
             rp=None,
             crs=None,  # change this in new version (maybe to str(floodmap.crs.split(':')[1]))
             nodata=-999,  # change this in new version
@@ -1564,6 +1572,42 @@ class FiatAdapter(IImpactAdapter):
                         if line.startswith("#"):
                             line = "#" + " " * hash_spacing + line.lstrip("#")
                         file.write(line)
+
+    @staticmethod
+    def _normalize_paths_in_toml(toml_path: Path) -> None:
+        r"""
+        Normalize Windows-style paths in a TOML file by replacing '\\' with '/'.
+
+        Parameters
+        ----------
+        toml_path : Path
+            Path to the TOML file to clean up.
+        """
+        toml_path = Path(toml_path)
+        if not toml_path.exists():
+            raise FileNotFoundError(f"TOML file not found: {toml_path}")
+
+        with open(toml_path, "rb") as f:
+            data = tomllib.load(f)
+
+        def _normalize(obj):
+            if isinstance(obj, dict):
+                return {k: _normalize(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [_normalize(v) for v in obj]
+            elif isinstance(obj, str):
+                # Only replace if it looks like a path
+                if "\\" in obj:
+                    return obj.replace("\\", "/")
+                return obj
+            else:
+                return obj
+
+        normalized = _normalize(data)
+
+        # Write back the cleaned TOML
+        with open(toml_path, "wb") as f:
+            tomli_w.dump(normalized, f)
 
     def _delete_simulation_folder(self, scn: Scenario):
         """
