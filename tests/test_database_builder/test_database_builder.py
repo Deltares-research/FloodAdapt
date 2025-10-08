@@ -55,7 +55,7 @@ class TestDataBaseBuilder:
         self.static_path = self.db_path / "static"
         self.templates_path = self.db_path / "static" / "templates"
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:
-            config = Mock()
+            config = Mock(spec=ConfigModel)
             config.database_path = tmpdirname
             config.name = "charleston_db_builder"
             config.fiat = str(self.templates_path / "fiat")
@@ -67,7 +67,12 @@ class TestDataBaseBuilder:
                 name=str(self.templates_path / "offshore"),
                 reference="MSL",
             )
-            config.unit_system = UnitSystems.metric
+            config.unit_system = UnitSystems.imperial
+            config.event_infographics = None
+            config.risk_infographics = None
+            config.event_additional_infometrics = None
+            config.risk_additional_infometrics = None
+            config.return_periods = None
 
             yield config
 
@@ -124,19 +129,6 @@ class TestDataBaseBuilder:
 
         # Assert
         assert risk == RiskModel()
-
-    def test_create_risk_model_returns_none_if_no_risk_event_and_no_rp(
-        self, mock_config: ConfigModel
-    ):
-        # Arrange
-        mock_config.return_periods = []
-        builder = DatabaseBuilder(mock_config)
-
-        # Act
-        risk = builder.create_risk_model()
-
-        # Assert
-        assert risk is None
 
     def test_add_probabilistic_set(self, mock_config: ConfigModel):
         # Arrange
@@ -881,6 +873,7 @@ class TestDataBaseBuilder:
         builder = DatabaseBuilder(mock_config)
         builder.setup()
         builder.create_aggregation_areas = mock_aggregation_areas
+        builder._probabilistic_set_name = "test_set"
         # Act
         builder.create_infometrics()
 
@@ -915,7 +908,7 @@ class TestDataBaseBuilder:
                 "TotalDamageEvent" in query["name"] for query in attrs["queries"]
             )
 
-    def test_create_infometrics_with_infographics(
+    def test_create_infometrics_with_default_infographics(
         self, mock_config: ConfigModel, mock_aggregation_areas
     ):
         # Arrange
@@ -929,6 +922,7 @@ class TestDataBaseBuilder:
         builder.setup()
         builder.create_aggregation_areas = mock_aggregation_areas
         builder._has_roads = True
+        builder._probabilistic_set_name = "test_set"
         # Act
         builder.create_infometrics()
 
@@ -952,7 +946,9 @@ class TestDataBaseBuilder:
         with open(file_path, "rb") as f:
             attrs = tomli.load(f)
             assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-            assert any(query["name"] == "FloodedHomes" for query in attrs["queries"])
+            assert any(
+                query["name"] == "LikelyFloodedHomes" for query in attrs["queries"]
+            )
             assert any("ImpactedHomes" in query["name"] for query in attrs["queries"])
             assert any("HighSVI" in query["name"] for query in attrs["queries"])
             assert any("LowSVI" in query["name"] for query in attrs["queries"])
@@ -972,7 +968,6 @@ class TestDataBaseBuilder:
             assert any("road" in query["name"].lower() for query in attrs["queries"])
             assert any("Residential" in query["name"] for query in attrs["queries"])
             assert any("Commercial" in query["name"] for query in attrs["queries"])
-            assert any("Industrial" in query["name"] for query in attrs["queries"])
             assert any(
                 "LowVulnerability" in query["name"] for query in attrs["queries"]
             )
@@ -996,7 +991,7 @@ class TestDataBaseBuilder:
         builder = DatabaseBuilder(mock_config)
         builder.setup()
         builder.create_aggregation_areas = mock_aggregation_areas
-
+        builder._probabilistic_set_name = "test_set"
         # Act
         builder.create_infometrics()
 
@@ -1019,7 +1014,9 @@ class TestDataBaseBuilder:
         with open(file_path, "rb") as f:
             attrs = tomli.load(f)
             assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-            assert any(query["name"] == "FloodedHomes" for query in attrs["queries"])
+            assert any(
+                query["name"] == "LikelyFloodedHomes" for query in attrs["queries"]
+            )
             assert any("ImpactedHomes" in query["name"] for query in attrs["queries"])
             assert all("SVI" not in query["name"] for query in attrs["queries"])
 
@@ -1033,7 +1030,6 @@ class TestDataBaseBuilder:
             )
             assert any("Residential" in query["name"] for query in attrs["queries"])
             assert any("Commercial" in query["name"] for query in attrs["queries"])
-            assert any("Industrial" in query["name"] for query in attrs["queries"])
             assert all(
                 "Vulnerability" not in query["name"] for query in attrs["queries"]
             )
@@ -1048,6 +1044,7 @@ class TestDataBaseBuilder:
         builder.setup()
         builder.create_aggregation_areas = mock_aggregation_areas
         builder._has_roads = False
+        builder._probabilistic_set_name = "test_set"
         # Act
         builder.create_infometrics()
 
@@ -1063,6 +1060,39 @@ class TestDataBaseBuilder:
             "metrics_additional_risk_configs.toml",
             "infographic_metrics_config.toml",
             "infographic_metrics_config_risk.toml",
+        }
+
+        # Check event metrics
+        file_path = path_im / "infographic_metrics_config.toml"
+        with open(file_path, "rb") as f:
+            attrs = tomli.load(f)
+            assert all(
+                "road" not in query["name"].lower() for query in attrs["queries"]
+            )
+
+    def test_create_infometrics_no_risk(
+        self, mock_config: ConfigModel, mock_aggregation_areas
+    ):
+        # Arrange
+        mock_config.svi = None
+        mock_config.infographics = True
+        builder = DatabaseBuilder(mock_config)
+        builder.setup()
+        builder.create_aggregation_areas = mock_aggregation_areas
+        builder._has_roads = False
+        builder._probabilistic_set_name = None
+        # Act
+        builder.create_infometrics()
+
+        # Assert
+        path_im = builder.root / "static" / "templates" / "infometrics"
+        assert path_im.exists()
+        # Check that exactly two TOML files are generated with the expected names
+        files = list(path_im.glob("*.toml"))
+        assert len(files) == 2
+        assert {file.name for file in files} == {
+            "mandatory_metrics_config.toml",
+            "infographic_metrics_config.toml",
         }
 
         # Check event metrics

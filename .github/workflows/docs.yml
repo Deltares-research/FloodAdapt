@@ -33,7 +33,7 @@ jobs:
           pixi-version: v0.44.0
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }} # only save cache on push to main
-          environments: docs
+          environments: default
           frozen: true
 
       - name: Build docs
@@ -43,7 +43,7 @@ jobs:
 
       - name: Read version
         run: |
-          DOC_VERSION=$(pixi run -e docs python -c "from flood_adapt import __version__; print(__version__)")
+          DOC_VERSION=$(pixi run python -c "from flood_adapt import __version__; print(__version__)")
           echo "DOC_VERSION=${DOC_VERSION}" >> $GITHUB_ENV
 
       - name: Upload to GitHub Pages
