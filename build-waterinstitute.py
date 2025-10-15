@@ -205,7 +205,7 @@ if __name__ == "__main__":
 
 
 """
-THINGS i HAD TO FIX:
+Changes compared to the email from 14/10/2025
 
 fiat:
 # bugs
@@ -220,7 +220,23 @@ fiat:
 - exposure.csv: Assigned structure dmg functions to the buildings (was missing for all, please see https://deltares.github.io/hydromt_fiat/stable/_generated/hydromt_fiat.fiat.FiatModel.setup_vulnerability.html#hydromt_fiat.fiat.FiatModel.setup_vulnerability )
 
 sfincs:
-- delete forcing timeseries files from template and sfincs.inp: precip_2d.nc, press_2d.nc, wind_2d.nc, sfincs.bzs, sfincs.dis
+- delete forcing timeseries files and delete corresponding config entries in sfincs.inp: [precip_2d.nc, press_2d.nc, wind_2d.nc, sfincs.bzs, sfincs.dis]
 
+QUESTIONS FOR WATER INSTITUTE:
+? Question: what is `si.gpkg`? (SVI ?)
+? Question: Do you want Infometrics?
+? Question: Do you want Infographics?
+? Question: Do you want Hurricanes?
+? Question: Do you want Probabilistic event sets?
+? Question: Do you want Observation points?
+? Question: Do you want Tide Gauges?
+? Question: Do you want Water level references?
+
+LUUK TASKS:
 TODO: run the forcing validation of SfincsAdapter in DatabaseBuilder.build()
+TODO: Add automatic reading of obs points from a hydromt sfincs model in DatabaseBuilder. See ` DatabaseBuilder.create_rivers()`
+
+PANOS TASKS:
+TODO: check if the added if check in DatabaseBuilder._delete_extra_geometries is correct. @Panos
+TODO: check if the added early return statements in DatabaseBuilder.create_svi is correct. @Panos
 """
