@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 import rioxarray as rxr
 import tomli
+import tomli_w
 import xarray as xr
 from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
@@ -70,6 +71,15 @@ from flood_adapt.config.site import (
     Site,
     StandardObjectModel,
 )
+from flood_adapt.database_builder.metrics_utils import (
+    BuildingsInfographicModel,
+    EventInfographicModel,
+    HomesInfographicModel,
+    MetricModel,
+    Metrics,
+    RiskInfographicModel,
+    RoadsInfographicModel,
+)
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.debug_timer import debug_timer
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -86,16 +96,6 @@ from flood_adapt.objects.projections.projections import (
     SocioEconomicChange,
 )
 from flood_adapt.objects.strategies.strategies import Strategy
-
-from .metrics_utils import (
-    BuildingsInfographicModel,
-    EventInfographicModel,
-    HomesInfographicModel,
-    MetricModel,
-    Metrics,
-    RiskInfographicModel,
-    RoadsInfographicModel,
-)
 
 logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 
@@ -436,6 +436,20 @@ class ConfigModel(BaseModel):
                 aggr.file = path_check(aggr.file, toml_path)
 
         return config
+
+    def write(self, toml_path: Path) -> None:
+        """
+        Write the configuration model to a TOML file.
+
+        Parameters
+        ----------
+        toml_path : Path
+            The path to the TOML file where the configuration will be saved.
+        """
+        if not toml_path.parent.exists():
+            toml_path.parent.mkdir(parents=True)
+        with open(toml_path, mode="wb") as fp:
+            tomli_w.dump(self.model_dump(exclude_none=True), fp)
 
 
 class DatabaseBuilder:
@@ -1191,8 +1205,15 @@ class DatabaseBuilder:
                 "'SVI' column present in the FIAT exposure csv. Vulnerability type infometrics can be produced."
             )
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
+            if add_attrs is None:
+                logger.warning(
+                    "'SVI' column present in the FIAT exposure csv, but no spatial join found with the SVI map."
+                )
+                return None
+
             if "SVI" not in [attr["name"] for attr in add_attrs]:
                 logger.warning("No SVI map found to display in the FloodAdapt GUI!")
+                return None
 
             ind = [attr["name"] for attr in add_attrs].index("SVI")
             svi = add_attrs[ind]
@@ -2403,6 +2424,11 @@ class DatabaseBuilder:
         """
         # Make sure only csv objects have geometries
         for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
+            if _FIAT_COLUMNS.object_id not in geoms.columns:
+                logger.warning(
+                    f"Geometry '{self.fiat_model.exposure.geom_names[i]}' does not have an '{_FIAT_COLUMNS.object_id}' column and will be ignored."
+                )
+                continue
             keep = geoms[_FIAT_COLUMNS.object_id].isin(
                 self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.object_id]
             )
