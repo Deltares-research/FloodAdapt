@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 import rioxarray as rxr
 import tomli
+import tomli_w
 import xarray as xr
 from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
@@ -70,6 +71,15 @@ from flood_adapt.config.site import (
     Site,
     StandardObjectModel,
 )
+from flood_adapt.database_builder.metrics_utils import (
+    BuildingsInfographicModel,
+    EventInfographicModel,
+    HomesInfographicModel,
+    MetricModel,
+    Metrics,
+    RiskInfographicModel,
+    RoadsInfographicModel,
+)
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.debug_timer import debug_timer
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -86,16 +96,6 @@ from flood_adapt.objects.projections.projections import (
     SocioEconomicChange,
 )
 from flood_adapt.objects.strategies.strategies import Strategy
-
-from .metrics_utils import (
-    BuildingsInfographicModel,
-    EventInfographicModel,
-    HomesInfographicModel,
-    MetricModel,
-    Metrics,
-    RiskInfographicModel,
-    RoadsInfographicModel,
-)
 
 logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 
@@ -436,6 +436,20 @@ class ConfigModel(BaseModel):
                 aggr.file = path_check(aggr.file, toml_path)
 
         return config
+
+    def write(self, toml_path: Path) -> None:
+        """
+        Write the configuration model to a TOML file.
+
+        Parameters
+        ----------
+        toml_path : Path
+            The path to the TOML file where the configuration will be saved.
+        """
+        if not toml_path.parent.exists():
+            toml_path.parent.mkdir(parents=True)
+        with open(toml_path, mode="wb") as fp:
+            tomli_w.dump(self.model_dump(exclude_none=True), fp)
 
 
 class DatabaseBuilder:
@@ -815,7 +829,7 @@ class DatabaseBuilder:
         exposure[_FIAT_COLUMNS.ground_elevation] = exposure["elev"]
         del exposure["elev"]
 
-        self.fiat_model.exposure.exposure_db = exposure
+        self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(exposure)
 
     def read_damage_unit(self) -> str:
         if self.fiat_model.exposure.damage_unit is None:
@@ -1079,7 +1093,9 @@ class DatabaseBuilder:
                 exposure_csv = exposure_csv.merge(
                     gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
                 )
-                self.fiat_model.exposure.exposure_db = exposure_csv
+                self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                    exposure_csv
+                )
                 # Update spatial joins in FIAT model
                 if self.fiat_model.spatial_joins["aggregation_areas"] is None:
                     self.fiat_model.spatial_joins["aggregation_areas"] = []
@@ -1141,7 +1157,9 @@ class DatabaseBuilder:
             exposure_csv = exposure_csv.merge(
                 gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
-            self.fiat_model.exposure.exposure_db = exposure_csv
+            self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                exposure_csv
+            )
             logger.warning(
                 "No aggregation areas were available in the FIAT model and none were provided in the config file. The region file will be used as a mock aggregation area."
             )
@@ -1172,7 +1190,9 @@ class DatabaseBuilder:
             exposure_csv = exposure_csv.merge(
                 buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
-            self.fiat_model.exposure.exposure_db = exposure_csv
+            self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                exposure_csv
+            )
 
             # Save the spatial file for future use
             svi_path = self.static_path / "templates" / "fiat" / "svi" / "svi.gpkg"
@@ -1191,8 +1211,15 @@ class DatabaseBuilder:
                 "'SVI' column present in the FIAT exposure csv. Vulnerability type infometrics can be produced."
             )
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
+            if add_attrs is None:
+                logger.warning(
+                    "'SVI' column present in the FIAT exposure csv, but no spatial join found with the SVI map."
+                )
+                return None
+
             if "SVI" not in [attr["name"] for attr in add_attrs]:
                 logger.warning("No SVI map found to display in the FloodAdapt GUI!")
+                return None
 
             ind = [attr["name"] for attr in add_attrs].index("SVI")
             svi = add_attrs[ind]
@@ -2136,7 +2163,7 @@ class DatabaseBuilder:
 
         # Set model building footprints
         self.fiat_model.building_footprint = building_footprints
-        self.fiat_model.exposure.exposure_db = exposure_csv
+        self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(exposure_csv)
 
         # Save site attributes
         buildings_path = geo_path.relative_to(self.static_path)
@@ -2403,6 +2430,11 @@ class DatabaseBuilder:
         """
         # Make sure only csv objects have geometries
         for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
+            if _FIAT_COLUMNS.object_id not in geoms.columns:
+                logger.warning(
+                    f"Geometry '{self.fiat_model.exposure.geom_names[i]}' does not have an '{_FIAT_COLUMNS.object_id}' column and will be ignored."
+                )
+                continue
             keep = geoms[_FIAT_COLUMNS.object_id].isin(
                 self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.object_id]
             )
@@ -2442,6 +2474,35 @@ class DatabaseBuilder:
         ).reset_index(drop=True)
 
         return gdf
+
+    @staticmethod
+    def _clean_suffix_columns(df: pd.DataFrame) -> pd.DataFrame:
+        """Detect and resolves duplicate columns with _x/_y suffixes that appear after a pandas merge.
+
+        (e.g., 'Aggregation Label: Census Blockgroup_x' and 'Aggregation Label: Census Blockgroup_y').
+
+        Keeps the first non-null column of each pair and removes redundant ones.
+        """
+        cols = df.columns.tolist()
+        suffix_pairs = {}
+
+        for col in cols:
+            if col.endswith("_x"):
+                base = col[:-2]
+                if f"{base}_y" in df.columns:
+                    suffix_pairs[base] = (f"{base}_x", f"{base}_y")
+
+        for base, (col_x, col_y) in suffix_pairs.items():
+            # If both columns exist, prefer the one with more non-null values
+            x_notna = df[col_x].notna().sum()
+            y_notna = df[col_y].notna().sum()
+            keep_col = col_x if x_notna >= y_notna else col_y
+            df[base] = df[keep_col]
+
+            # Drop the old suffixed versions
+            df = df.drop(columns=[col_x, col_y])
+
+        return df
 
 
 def create_database(config: Union[str, Path, ConfigModel], overwrite=False) -> None:
