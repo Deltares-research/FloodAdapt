@@ -23,7 +23,7 @@ from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
 from shapely.affinity import translate
 
-from flood_adapt.adapter.docker import HAS_DOCKER
+from flood_adapt.adapter.docker import HAS_DOCKER, SFINCS_CONTAINER
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.config.config import Settings
 from flood_adapt.config.site import Site
@@ -192,7 +192,7 @@ class SfincsAdapter(IHazardAdapter):
 
         """
         if HAS_DOCKER:
-            success = self.database.static.sfincs_container.run(path)
+            success = SFINCS_CONTAINER.run(path)
         else:
             with cd(path):
                 logger.info(f"Running SFINCS in {path}")

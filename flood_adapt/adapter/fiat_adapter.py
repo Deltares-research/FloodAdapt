@@ -23,7 +23,7 @@ from fiat_toolbox.spatial_output.footprints import Footprints
 from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.adapter.docker import HAS_DOCKER
+from flood_adapt.adapter.docker import FIAT_CONTAINER, HAS_DOCKER
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
@@ -328,8 +328,7 @@ class FiatAdapter(IImpactAdapter):
         FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
 
         if HAS_DOCKER:
-            # success = run_fiat(simulation_dir=path)
-            success = self.database.static.fiat_container.run(path)
+            success = FIAT_CONTAINER.run(path)
         else:
             if exe_path is None:
                 if self.exe_path is None:

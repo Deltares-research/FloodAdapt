@@ -70,7 +70,8 @@ def test_cleanup_NoInput_RemoveOutput():
         f.write("run finished")
 
     # Act
-    dbs = Database(Settings().database_root, Settings().database_name)
+    settings = Settings()
+    dbs = Database(settings.database_root, settings.database_name, settings=settings)
 
     # Assert
     assert not output_path.exists()
@@ -96,7 +97,8 @@ def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
         f.write("run not finished")
 
     # Act
-    dbs = Database(Settings().database_root, Settings().database_name)
+    settings = Settings()
+    dbs = Database(settings.database_root, settings.database_name, settings=settings)
 
     # Assert
     assert input_dir.exists()
@@ -108,7 +110,8 @@ def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
 
 def test_shutdown_AfterShutdown_VarsAreNone():
     # Arrange
-    dbs = Database(Settings().database_root, Settings().database_name)
+    settings = Settings()
+    dbs = Database(settings.database_root, settings.database_name, settings=settings)
 
     # Act
     dbs.shutdown()
@@ -122,30 +125,30 @@ def test_shutdown_AfterShutdown_VarsAreNone():
 
 def test_shutdown_AfterShutdown_CanReadNewDatabase():
     # Arrange
-    dbs = Database(Settings().database_root, Settings().database_name)
+    # Act
+    settings = Settings()
+    dbs = Database(settings.database_root, settings.database_name, settings=settings)
 
     # Act
     dbs.shutdown()
-    dbs = Database(Settings().database_root, Settings().database_name)
+    dbs = Database(settings.database_root, settings.database_name, settings=settings)
 
     # Assert
     assert dbs.__class__._instance is not None
     assert dbs._instance is not None
     assert dbs._init_done
-    assert dbs.database_path is not None
-    assert dbs.database_name is not None
     assert dbs.base_path is not None
     assert dbs.input_path is not None
     assert dbs.static_path is not None
     assert dbs.output_path is not None
-    assert dbs._site is not None
-    assert dbs._static is not None
-    assert dbs._events is not None
-    assert dbs._scenarios is not None
-    assert dbs._strategies is not None
-    assert dbs._measures is not None
-    assert dbs._projections is not None
-    assert dbs._benefits is not None
+    assert dbs.site is not None
+    assert dbs.static is not None
+    assert dbs.events is not None
+    assert dbs.scenarios is not None
+    assert dbs.strategies is not None
+    assert dbs.measures is not None
+    assert dbs.projections is not None
+    assert dbs.benefits is not None
 
 
 def test_cannot_delete_standard_objects(test_db: Database):

@@ -316,22 +316,27 @@ class TestSettingsModel:
                 DELETE_CRASHED_RUNS=False,
                 VALIDATE_ALLOWED_FORCINGS=False,
                 VALIDATE_BINARIES=False,
+                MANUAL_DOCKER_CONTAINERS=False,
             )
 
             assert not settings.delete_crashed_runs
             assert not settings.validate_allowed_forcings
             assert not settings.validate_binaries
+            assert not settings.manual_docker_containers
             assert not os.getenv("DELETE_CRASHED_RUNS")
             assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert not os.getenv("VALIDATE_BINARIES")
+            assert not os.getenv("MANUAL_DOCKER_CONTAINERS")
 
             settings2 = Settings()
             assert not settings2.delete_crashed_runs
             assert not settings2.validate_allowed_forcings
             assert not settings2.validate_binaries
+            assert not settings2.manual_docker_containers
             assert not os.getenv("DELETE_CRASHED_RUNS")
             assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert not os.getenv("VALIDATE_BINARIES")
+            assert not os.getenv("MANUAL_DOCKER_CONTAINERS")
 
     def test_create_settings_with_persistent_booleans_true(self):
         with modified_environ():
@@ -339,19 +344,24 @@ class TestSettingsModel:
                 DELETE_CRASHED_RUNS=True,
                 VALIDATE_ALLOWED_FORCINGS=True,
                 VALIDATE_BINARIES=True,
+                MANUAL_DOCKER_CONTAINERS=True,
             )
 
             assert settings.delete_crashed_runs
             assert settings.validate_allowed_forcings
             assert settings.validate_binaries
+            assert settings.manual_docker_containers
             assert os.getenv("DELETE_CRASHED_RUNS")
             assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert os.getenv("VALIDATE_BINARIES")
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS")
 
             settings2 = Settings()
             assert settings2.delete_crashed_runs
             assert settings2.validate_allowed_forcings
             assert settings2.validate_binaries
+            assert settings2.manual_docker_containers
             assert os.getenv("DELETE_CRASHED_RUNS")
             assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert os.getenv("VALIDATE_BINARIES")
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS")

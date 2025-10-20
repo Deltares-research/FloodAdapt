@@ -10,6 +10,12 @@ import pytest
 from dotenv import load_dotenv
 
 from flood_adapt import __path__
+from flood_adapt.adapter.docker import (
+    FIAT_CONTAINER,
+    HAS_DOCKER,
+    SFINCS_CONTAINER,
+    DockerContainer,
+)
 from flood_adapt.config.config import Settings
 from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -19,7 +25,7 @@ from tests.fixtures import *  # noqa
 
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"
-logs_dir = Path(__file__).absolute().parent / "logs"
+logs_dir = Path(__file__).resolve().parent / "logs"
 src_dir = Path(
     *__path__
 ).resolve()  # __path__ is a list of paths to the package, but has only one element
@@ -30,79 +36,82 @@ src_dir = Path(
 clean = True
 
 
-def create_snapshot():
-    """Create a snapshot of the database directory."""
-    if snapshot_dir.exists():
-        shutil.rmtree(snapshot_dir)
-    shutil.copytree(Settings().database_path, snapshot_dir)
-
-
-def restore_db_from_snapshot():
-    """Restore the database directory from the snapshot."""
-    if not snapshot_dir.exists():
-        raise FileNotFoundError(
-            "Snapshot path does not exist. Create a snapshot first."
-        )
-    seen_files = set()
-    db_path = Settings().database_path
-
-    for root, _, files in os.walk(snapshot_dir):
-        # Copy deleted/changed files from snapshot to database
-        for file in files:
-            snapshot_file = Path(root) / file
-            relative_path = snapshot_file.relative_to(snapshot_dir)
-            database_file = db_path / relative_path
-            seen_files.add(database_file)
-
-            if not database_file.exists():
-                os.makedirs(os.path.dirname(database_file), exist_ok=True)
-                shutil.copy2(snapshot_file, database_file)
-            elif not filecmp.cmp(snapshot_file, database_file):
-                shutil.copy2(snapshot_file, database_file)
-
-    for root, dirs, files in os.walk(db_path, topdown=False):
-        # Remove created files from database
-        for file in files:
-            database_file = Path(root) / file
-            if database_file not in seen_files:
-                os.remove(database_file)
-
-        # Remove empty directories from the database
-        for directory in dirs:
-            dir_path = os.path.join(root, directory)
-            if not os.listdir(dir_path):
-                os.rmdir(dir_path)
-
-
+## AUTO USE FIXTURES ##
 @pytest.fixture(scope="session", autouse=True)
-def session_setup_teardown():
-    """Session-wide setup and teardown for creating the initial snapshot."""
+def setup_settings():
     load_dotenv()
-
-    settings = Settings(
+    return Settings(
         DATABASE_ROOT=src_dir.parents[1] / "Database",
         DATABASE_NAME="charleston_test",
         DELETE_CRASHED_RUNS=clean,
         VALIDATE_ALLOWED_FORCINGS=True,
         VALIDATE_BINARIES=True,
+        MANUAL_DOCKER_CONTAINERS=True,
     )
 
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_logging():
+    """Session-wide setup and teardown for creating the initial snapshot."""
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
-    FloodAdaptLogging(
-        file_path=log_path,
-        level=logging.DEBUG,
-        ignore_warnings=[DeprecationWarning],
-    )
+    logger = FloodAdaptLogging.getLogger()
+    logger.info(f"Logging test run to {log_path}")
+    start = datetime.now()
 
-    update_database_static(settings)
-    update_database_input(settings)
-    create_snapshot()
+    with FloodAdaptLogging.to_file(file_path=log_path, level=logging.DEBUG):
+        yield
+
+    end = datetime.now()
+    duration = end - start
+    logger.info("Finished test run.")
+    logger.info(f"Test run duration: {duration} (hh:mm:ss.ms)")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_database(setup_settings: Settings):
+    update_database_static(setup_settings)
+    update_database_input(setup_settings)
+    _create_snapshot()
 
     yield
 
     if clean:
-        restore_db_from_snapshot()
+        _restore_db_from_snapshot()
     shutil.rmtree(snapshot_dir, ignore_errors=True)
+
+
+@pytest.fixture(scope="session", autouse=HAS_DOCKER)
+def setup_docker_containers(setup_settings: Settings):
+    logger = FloodAdaptLogging.getLogger()
+    logger.info("Setting up Docker containers for testing.")
+
+    FIAT_CONTAINER.root_dir = setup_settings.database_path
+    SFINCS_CONTAINER.root_dir = setup_settings.database_path
+
+    SFINCS_CONTAINER.start()
+    FIAT_CONTAINER.start()
+
+    yield
+
+    SFINCS_CONTAINER.stop()
+    FIAT_CONTAINER.stop()
+    logger.info(
+        f"Docker containers initialized: {DockerContainer.CONTAINERS_INITIALIZED}"
+    )
+    logger.info("Finished tearing down Docker containers.")
+
+
+## GENERAL FIXTURES ##
+@pytest.fixture
+def test_data_dir():
+    return Path(__file__).parent / "data"
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item):
+    test_name = item.name
+    logger = FloodAdaptLogging.getLogger()
+    logger.info(f"\nStarting test: {test_name}\n")
 
 
 def make_db_fixture(scope):
@@ -156,22 +165,9 @@ def make_db_fixture(scope):
         # Teardown
         fa.database.shutdown()
         if clean:
-            restore_db_from_snapshot()
+            _restore_db_from_snapshot()
 
     return _db_fixture
-
-
-# NOTE: to access the contents the fixtures in the test functions,
-# the fixture name needs to be passed as an argument to the test function.
-# the first line of your test needs to initialize the yielded variables:
-# 'dbs = test_db_...'
-
-
-test_db = make_db_fixture("function")
-test_db_class = make_db_fixture("class")
-test_db_module = make_db_fixture("module")
-test_db_package = make_db_fixture("package")
-test_db_session = make_db_fixture("session")
 
 
 def make_fa_fixture(scope):
@@ -225,10 +221,20 @@ def make_fa_fixture(scope):
         # Teardown
         fa.database.shutdown()
         if clean:
-            restore_db_from_snapshot()
+            _restore_db_from_snapshot()
 
     return _db_fixture
 
+
+# NOTE: to access the contents the fixtures in the test functions,
+# the fixture name needs to be passed as an argument to the test function.
+# the first line of your test needs to initialize the yielded variables:
+# 'dbs = test_db_...'
+test_db = make_db_fixture("function")
+test_db_class = make_db_fixture("class")
+test_db_module = make_db_fixture("module")
+test_db_package = make_db_fixture("package")
+test_db_session = make_db_fixture("session")
 
 test_fa = make_fa_fixture("function")
 test_fa_class = make_fa_fixture("class")
@@ -237,13 +243,46 @@ test_fa_package = make_fa_fixture("package")
 test_fa_session = make_fa_fixture("session")
 
 
-@pytest.fixture
-def test_data_dir():
-    return Path(__file__).parent / "data"
+## HELPER FUNCTIONS ##
+def _create_snapshot():
+    """Create a snapshot of the database directory."""
+    if snapshot_dir.exists():
+        shutil.rmtree(snapshot_dir)
+    shutil.copytree(Settings().database_path, snapshot_dir)
 
 
-@pytest.hookimpl(tryfirst=True)
-def pytest_runtest_setup(item):
-    test_name = item.name
-    logger = FloodAdaptLogging.getLogger()
-    logger.info(f"\nStarting test: {test_name}\n")
+def _restore_db_from_snapshot():
+    """Restore the database directory from the snapshot."""
+    if not snapshot_dir.exists():
+        raise FileNotFoundError(
+            "Snapshot path does not exist. Create a snapshot first."
+        )
+    seen_files = set()
+    db_path = Settings().database_path
+
+    for root, _, files in os.walk(snapshot_dir):
+        # Copy deleted/changed files from snapshot to database
+        for file in files:
+            snapshot_file = Path(root) / file
+            relative_path = snapshot_file.relative_to(snapshot_dir)
+            database_file = db_path / relative_path
+            seen_files.add(database_file)
+
+            if not database_file.exists():
+                os.makedirs(os.path.dirname(database_file), exist_ok=True)
+                shutil.copy2(snapshot_file, database_file)
+            elif not filecmp.cmp(snapshot_file, database_file):
+                shutil.copy2(snapshot_file, database_file)
+
+    for root, dirs, files in os.walk(db_path, topdown=False):
+        # Remove created files from database
+        for file in files:
+            database_file = Path(root) / file
+            if database_file not in seen_files:
+                os.remove(database_file)
+
+        # Remove empty directories from the database
+        for directory in dirs:
+            dir_path = os.path.join(root, directory)
+            if not os.listdir(dir_path):
+                os.rmdir(dir_path)

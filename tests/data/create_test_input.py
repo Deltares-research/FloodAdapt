@@ -86,7 +86,11 @@ def update_database_input(settings: Settings):
         The path to the database directory. This is the directory that contains the `input`, `static` and `output` directories.
 
     """
-    database = Database(settings)
+    database = Database(
+        database_root=settings.database_root,
+        database_name=settings.database_name,
+        settings=settings,
+    )
     input_dir = database.input_path
     if input_dir.exists():
         shutil.rmtree(input_dir)

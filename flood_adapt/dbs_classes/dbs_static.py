@@ -5,10 +5,6 @@ import geopandas as gpd
 import pandas as pd
 from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
-from flood_adapt.adapter.docker import (
-    FiatContainer,
-    SfincsContainer,
-)
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
@@ -42,22 +38,9 @@ class DbsStatic(IDbsStatic):
     _cached_data: dict[str, Any] = {}
     _database: IDatabase
 
-    def __init__(self, database: IDatabase):
+    def __init__(self, database: IDatabase) -> None:
         """Initialize any necessary attributes."""
         self._database = database
-        self.sfincs_container = SfincsContainer(self._database.base_path)
-        self.sfincs_container.start()
-
-        self.fiat_container = FiatContainer(self._database.base_path)
-        self.fiat_container.start()
-
-    def _cleanup(self) -> None:
-        """Stop and remove any running containers."""
-        self.sfincs_container.stop()
-        self.fiat_container.stop()
-
-    def __del__(self):
-        self._cleanup()
 
     def load_static_data(self):
         """Read data into the cache.

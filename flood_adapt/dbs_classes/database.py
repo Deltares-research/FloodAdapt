@@ -70,38 +70,41 @@ class Database(IDatabase):
 
     def __init__(
         self,
-        settings: Settings | None = None,
+        database_root: Path | None = None,
+        database_name: str | None = None,
+        settings: Settings = Settings(),
     ) -> None:
         """
         Initialize the DatabaseController object.
 
         Parameters
         ----------
-        database_path : Union[str, os.PathLike]
+        database_root : Union[str, os.PathLike]
             The path to the database root
         database_name : str
             The name of the database.
+
         -----
         """
-        if settings is None:
+        if database_root is None or database_name is None:
             if not self._init_done:
                 raise DatabaseError(
-                    "Settings is required for the first initialization of the Database."
+                    "``database_root`` and ``database_name`` are required for the first initialization of the Database."
                 )
             else:
                 return  # Skip re-initialization
 
-        if self._init_done and self._settings == settings:
+        if self._init_done and self.base_path == Path(database_root) / database_name:
             return  # Skip re-initialization
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
         re_option = "re-" if self._init_done else ""
         logger.info(
-            f"{re_option}initializing database to {settings.database_name} at {settings.database_root}".capitalize()
+            f"{re_option}initializing database to {database_name} at {database_root}".capitalize()
         )
 
         # Set the paths
-        self.base_path = settings.database_path
+        self.base_path = database_root / database_name
         self.input_path = self.base_path / TopLevelDir.input.value
         self.static_path = self.base_path / TopLevelDir.static.value
         self.output_path = self.base_path / TopLevelDir.output.value
@@ -124,7 +127,7 @@ class Database(IDatabase):
         self._settings = settings
 
         # Delete any unfinished/crashed scenario output after initialization
-        if settings.delete_crashed_runs:
+        if self._settings.delete_crashed_runs:
             self.cleanup()
 
     def shutdown(self):

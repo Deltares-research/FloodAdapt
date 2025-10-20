@@ -111,6 +111,12 @@ class Settings(BaseSettings):
         description="The path of the fiat binary.",
         exclude=True,
     )
+    manual_docker_containers: bool = Field(
+        default=False,
+        alias="MANUAL_DOCKER_CONTAINERS",  # environment variable: MANUAL_DOCKER_CONTAINERS
+        description="Whether to manually start and stop Docker containers for SFINCS and FIAT when initializing/destroying FloodAdapt. Useful to prevent unnecessary re-initialization during testing.",
+        exclude=True,
+    )
 
     @computed_field
     @property
@@ -139,6 +145,11 @@ class Settings(BaseSettings):
             environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
         else:
             environ.pop("VALIDATE_ALLOWED_FORCINGS", None)
+
+        if self.manual_docker_containers:
+            environ["MANUAL_DOCKER_CONTAINERS"] = str(self.manual_docker_containers)
+        else:
+            environ.pop("MANUAL_DOCKER_CONTAINERS", None)
 
         if self.validate_binaries:
             environ["VALIDATE_BINARIES"] = str(self.validate_binaries)

@@ -1,7 +1,5 @@
 import logging
-import re
 import subprocess
-import uuid
 from abc import ABC
 from pathlib import Path
 
@@ -20,28 +18,33 @@ except Exception:
 
 
 class DockerContainer(ABC):
+    CONTAINERS_INITIALIZED: int = 0
+
     def __init__(
-        self, name: str, container_image: str, root_dir: Path, command: list[str]
+        self,
+        name: str,
+        container_image: str,
+        command: list[str],
+        root_dir: Path | None = None,
     ):
         self.container_image = container_image
-        self.root_dir = root_dir.resolve()
-        self.container_name = self._sanitize_container_name(container_image)
+        self.root_dir = root_dir.resolve() if root_dir else None
         self.name = name
         self._command = command
         self._mount_dir = "/data/flood_adapt"
 
     def start(self) -> None:
         if self._is_running():
-            raise RuntimeError(f"Container {self.container_name} is already running")
-        logger.info(
-            f"Starting container {self.container_name} from {self.container_image}…"
-        )
+            logger.info(f"Container {self.name} is already running.")
+            return
+
+        logger.info(f"Starting container {self.name} from {self.container_image}...")
         docker_command = [
             "docker",
             "run",
             "-d",
             "--name",
-            self.container_name,
+            self.name,
             "-v",
             f"{self.root_dir.as_posix()}:{self._mount_dir}",
             "-w",
@@ -60,14 +63,15 @@ class DockerContainer(ABC):
 
         if not self._is_running():
             raise RuntimeError(
-                f"Failed to start container: `{self.container_name}` from image `{self.container_image}`."
+                f"Failed to start container: `{self.name}` from image `{self.container_image}`."
             )
+        DockerContainer.CONTAINERS_INITIALIZED += 1
 
     def stop(self) -> None:
         if self._is_running():
-            logger.info(f"Stopping container `{self.container_name}`...")
-            subprocess.run(["docker", "stop", self.container_name], check=True)
-            subprocess.run(["docker", "rm", self.container_name], check=True)
+            logger.info(f"Stopping container `{self.name}`...")
+            subprocess.run(["docker", "stop", self.name], check=True)
+            subprocess.run(["docker", "rm", self.name], check=True)
 
     def run(self, scn_dir: Path) -> bool:
         """
@@ -78,6 +82,9 @@ class DockerContainer(ABC):
         scn_dir : Path
             Absolute path where simulation should run.
         """
+        if self.root_dir is None:
+            raise ValueError("root_dir must be set before running the container.")
+
         if not scn_dir.is_absolute():
             raise ValueError(f"scn_dir: {scn_dir} must be an absolute path")
 
@@ -88,7 +95,7 @@ class DockerContainer(ABC):
 
         if not self._is_running():
             logger.warning(
-                f"Expected container {self.container_name} to be running. (Re)starting it anyways."
+                f"Expected container {self.name} to be running. (Re)starting it anyways."
             )
             self.start()
 
@@ -110,7 +117,7 @@ class DockerContainer(ABC):
             "exec",
             "-w",
             cwd_inside,
-            self.container_name,
+            self.name,
         ] + self._command
 
         logger.info(f"Exec Docker: {' '.join(docker_command)}")
@@ -139,12 +146,12 @@ class DockerContainer(ABC):
                 "inspect",
                 "-f",
                 "{{.State.Running}}",
-                self.container_name,
+                self.name,
             ],
             capture_output=True,
             text=True,
         )
-        if result.returncode != 0:  # container does not exist
+        if result.returncode != 0:  # container does not exist / docker not installed
             return False
 
         if result.stdout is not None:  # should be "true" or "false"
@@ -152,17 +159,9 @@ class DockerContainer(ABC):
 
         return False  # fallback, should not happen
 
-    def _sanitize_container_name(
-        self, image_name: str, include_hex: bool = True
-    ) -> str:
-        name = re.sub(r"[^a-zA-Z0-9_.-]", "_", image_name)
-        if include_hex:
-            name += f"_{uuid.uuid4().hex[:8]}"
-        return name
-
 
 class SfincsContainer(DockerContainer):
-    def __init__(self, root_dir: Path):
+    def __init__(self, root_dir: Path | None = None):
         super().__init__(
             name="sfincs",
             container_image="deltares/sfincs-cpu:latest",
@@ -172,7 +171,7 @@ class SfincsContainer(DockerContainer):
 
 
 class FiatContainer(DockerContainer):
-    def __init__(self, root_dir: Path):
+    def __init__(self, root_dir: Path | None = None):
         super().__init__(
             name="fiat",
             container_image="deltares/fiat:latest",
@@ -190,3 +189,7 @@ class FiatContainer(DockerContainer):
                 "settings.toml",
             ],
         )
+
+
+FIAT_CONTAINER = FiatContainer()
+SFINCS_CONTAINER = SfincsContainer()
