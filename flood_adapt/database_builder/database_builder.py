@@ -829,7 +829,7 @@ class DatabaseBuilder:
         exposure[_FIAT_COLUMNS.ground_elevation] = exposure["elev"]
         del exposure["elev"]
 
-        self.fiat_model.exposure.exposure_db = exposure
+        self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(exposure)
 
     def read_damage_unit(self) -> str:
         if self.fiat_model.exposure.damage_unit is None:
@@ -1093,7 +1093,9 @@ class DatabaseBuilder:
                 exposure_csv = exposure_csv.merge(
                     gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
                 )
-                self.fiat_model.exposure.exposure_db = exposure_csv
+                self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                    exposure_csv
+                )
                 # Update spatial joins in FIAT model
                 if self.fiat_model.spatial_joins["aggregation_areas"] is None:
                     self.fiat_model.spatial_joins["aggregation_areas"] = []
@@ -1155,7 +1157,9 @@ class DatabaseBuilder:
             exposure_csv = exposure_csv.merge(
                 gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
-            self.fiat_model.exposure.exposure_db = exposure_csv
+            self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                exposure_csv
+            )
             logger.warning(
                 "No aggregation areas were available in the FIAT model and none were provided in the config file. The region file will be used as a mock aggregation area."
             )
@@ -1186,7 +1190,9 @@ class DatabaseBuilder:
             exposure_csv = exposure_csv.merge(
                 buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
-            self.fiat_model.exposure.exposure_db = exposure_csv
+            self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                exposure_csv
+            )
 
             # Save the spatial file for future use
             svi_path = self.static_path / "templates" / "fiat" / "svi" / "svi.gpkg"
@@ -2157,7 +2163,7 @@ class DatabaseBuilder:
 
         # Set model building footprints
         self.fiat_model.building_footprint = building_footprints
-        self.fiat_model.exposure.exposure_db = exposure_csv
+        self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(exposure_csv)
 
         # Save site attributes
         buildings_path = geo_path.relative_to(self.static_path)
@@ -2468,6 +2474,35 @@ class DatabaseBuilder:
         ).reset_index(drop=True)
 
         return gdf
+
+    @staticmethod
+    def _clean_suffix_columns(df: pd.DataFrame) -> pd.DataFrame:
+        """Detect and resolves duplicate columns with _x/_y suffixes that appear after a pandas merge.
+
+        (e.g., 'Aggregation Label: Census Blockgroup_x' and 'Aggregation Label: Census Blockgroup_y').
+
+        Keeps the first non-null column of each pair and removes redundant ones.
+        """
+        cols = df.columns.tolist()
+        suffix_pairs = {}
+
+        for col in cols:
+            if col.endswith("_x"):
+                base = col[:-2]
+                if f"{base}_y" in df.columns:
+                    suffix_pairs[base] = (f"{base}_x", f"{base}_y")
+
+        for base, (col_x, col_y) in suffix_pairs.items():
+            # If both columns exist, prefer the one with more non-null values
+            x_notna = df[col_x].notna().sum()
+            y_notna = df[col_y].notna().sum()
+            keep_col = col_x if x_notna >= y_notna else col_y
+            df[base] = df[keep_col]
+
+            # Drop the old suffixed versions
+            df = df.drop(columns=[col_x, col_y])
+
+        return df
 
 
 def create_database(config: Union[str, Path, ConfigModel], overwrite=False) -> None:

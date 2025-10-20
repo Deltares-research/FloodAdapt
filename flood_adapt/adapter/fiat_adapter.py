@@ -1225,8 +1225,6 @@ class FiatAdapter(IImpactAdapter):
         # Get the metrics configuration
         logger.info("Calculating infometrics")
 
-        self.outputs["table"] = self._clean_suffix_columns(self.outputs["table"])
-
         # Write the metrics to file
         # Check if type of metric configuration is available
         for metric_file in metric_config_paths:
@@ -1446,16 +1444,14 @@ class FiatAdapter(IImpactAdapter):
             columns={self.fiat_columns.object_id: self.impact_columns.object_id}
         )
 
-        self.outputs["table"] = self._clean_suffix_columns(
+        # Get all results per building
+        fiat_results_df = gpd.GeoDataFrame(
             self.outputs["table"].merge(
                 buildings,
                 on=self.impact_columns.object_id,
                 how="inner",
             )
         )
-
-        # Get all results per building
-        fiat_results_df = gpd.GeoDataFrame(self.outputs["table"])
 
         # Check which footprint case we have
         # If FIAT has points and external footprints are provided
@@ -1585,32 +1581,3 @@ class FiatAdapter(IImpactAdapter):
             self.close_files()
             shutil.rmtree(simulation_path, ignore_errors=True)
             logger.info(f"Deleted Delft-FIAT simulation folder: {simulation_path}")
-
-    @staticmethod
-    def _clean_suffix_columns(df):
-        """Detect and resolves duplicate columns with _x/_y suffixes that appear after a pandas merge.
-
-        (e.g., 'Aggregation Label: Census Blockgroup_x' and 'Aggregation Label: Census Blockgroup_y').
-
-        Keeps the first non-null column of each pair and removes redundant ones.
-        """
-        cols = df.columns.tolist()
-        suffix_pairs = {}
-
-        for col in cols:
-            if col.endswith("_x"):
-                base = col[:-2]
-                if f"{base}_y" in df.columns:
-                    suffix_pairs[base] = (f"{base}_x", f"{base}_y")
-
-        for base, (col_x, col_y) in suffix_pairs.items():
-            # If both columns exist, prefer the one with more non-null values
-            x_notna = df[col_x].notna().sum()
-            y_notna = df[col_y].notna().sum()
-            keep_col = col_x if x_notna >= y_notna else col_y
-            df[base] = df[keep_col]
-
-            # Drop the old suffixed versions
-            df = df.drop(columns=[col_x, col_y])
-
-        return df
