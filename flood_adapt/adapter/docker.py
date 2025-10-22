@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 try:
     subprocess.run(
-        ["docker", "info"],
+        ["docker", "--version"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         check=True,

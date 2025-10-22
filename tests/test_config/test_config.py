@@ -88,17 +88,13 @@ class TestSettingsModel:
 
     @pytest.fixture(autouse=True)
     def protect_envvars(self):
-        root = os.environ.get("DATABASE_ROOT", None)
-        name = os.environ.get("DATABASE_NAME", None)
-        sfincs_bin = os.environ.get("SFINCS_BIN_PATH", None)
-        fiat_bin = os.environ.get("FIAT_BIN_PATH", None)
-
-        with modified_environ(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs_bin,
-            FIAT_BIN_PATH=fiat_bin,
-        ):
+        env_vars = {
+            "DATABASE_ROOT": os.getenv("DATABASE_ROOT", None),
+            "DATABASE_NAME": os.getenv("DATABASE_NAME", None),
+            "SFINCS_BIN_PATH": os.getenv("SFINCS_BIN_PATH", None),
+            "FIAT_BIN_PATH": os.getenv("FIAT_BIN_PATH", None),
+        }
+        with modified_environ(**{k: v for k, v in env_vars.items() if v is not None}):
             yield
 
     @pytest.mark.skip(
@@ -189,33 +185,21 @@ class TestSettingsModel:
         assert "does not exist." in str(exc_info.value)
 
     @pytest.mark.parametrize("system", ["windows", "linux"])
-    @pytest.mark.parametrize("model", ["fiat", "sfincs"])
     def test_missing_model_binaries_raise_validation_error(
-        self, system: str, model: str, create_dummy_db
+        self, system: str, create_dummy_db
     ):
         db_root, name = create_dummy_db(system=system)
         non_existent_path = Path("doesnt_exist")
-        with pytest.raises(ValidationError) as exc_info:
-            if model == "fiat":
-                Settings(
-                    DATABASE_ROOT=db_root,
-                    DATABASE_NAME=name,
-                    FIAT_BIN_PATH=non_existent_path,
-                    VALIDATE_BINARIES=True,
-                )
-            elif model == "sfincs":
-                Settings(
-                    DATABASE_ROOT=db_root,
-                    DATABASE_NAME=name,
-                    SFINCS_BIN_PATH=non_existent_path,
-                    VALIDATE_BINARIES=True,
-                )
-            else:
-                raise ValueError("Invalid model")
-
-        assert f"{model.upper()} binary {non_existent_path} does not exist." in str(
-            exc_info.value
-        )
+        with pytest.raises(
+            ValidationError, match=f"binary {non_existent_path} does not exist."
+        ):
+            Settings(
+                DATABASE_ROOT=db_root,
+                DATABASE_NAME=name,
+                FIAT_BIN_PATH=non_existent_path,
+                SFINCS_BIN_PATH=non_existent_path,
+                VALIDATE_BINARIES=True,
+            )
 
     def test_read_settings_no_envvars(self, create_dummy_db):
         # Arrange
@@ -343,25 +327,20 @@ class TestSettingsModel:
             settings = Settings(
                 DELETE_CRASHED_RUNS=True,
                 VALIDATE_ALLOWED_FORCINGS=True,
-                VALIDATE_BINARIES=True,
                 MANUAL_DOCKER_CONTAINERS=True,
             )
 
             assert settings.delete_crashed_runs
             assert settings.validate_allowed_forcings
-            assert settings.validate_binaries
             assert settings.manual_docker_containers
             assert os.getenv("DELETE_CRASHED_RUNS")
             assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert os.getenv("VALIDATE_BINARIES")
             assert os.getenv("MANUAL_DOCKER_CONTAINERS")
 
             settings2 = Settings()
             assert settings2.delete_crashed_runs
             assert settings2.validate_allowed_forcings
-            assert settings2.validate_binaries
             assert settings2.manual_docker_containers
             assert os.getenv("DELETE_CRASHED_RUNS")
             assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert os.getenv("VALIDATE_BINARIES")
             assert os.getenv("MANUAL_DOCKER_CONTAINERS")

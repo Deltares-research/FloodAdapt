@@ -41,7 +41,7 @@ SETTINGS = Settings(
     DATABASE_NAME="charleston_test",
     DELETE_CRASHED_RUNS=clean,
     VALIDATE_ALLOWED_FORCINGS=True,
-    VALIDATE_BINARIES=True,
+    VALIDATE_BINARIES=not HAS_DOCKER,
     MANUAL_DOCKER_CONTAINERS=True,
 )
 CAN_EXECUTE_SCENARIOS = SETTINGS.can_execute_scenarios()
@@ -87,9 +87,6 @@ def setup_test_database(setup_settings: Settings):
 def setup_docker_containers(setup_settings: Settings):
     logger = FloodAdaptLogging.getLogger()
     logger.info("Setting up Docker containers for testing.")
-
-    FIAT_CONTAINER.root_dir = setup_settings.database_path
-    SFINCS_CONTAINER.root_dir = setup_settings.database_path
 
     SFINCS_CONTAINER.start(setup_settings.database_path)
     FIAT_CONTAINER.start(setup_settings.database_path)
