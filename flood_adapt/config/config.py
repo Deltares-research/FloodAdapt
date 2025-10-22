@@ -12,6 +12,8 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from flood_adapt.adapter.docker import HAS_DOCKER
+
 
 class Settings(BaseSettings):
     """
@@ -133,7 +135,7 @@ class Settings(BaseSettings):
         return self
 
     def _update_environment_variables(self):
-        environ["DATABASE_ROOT"] = str(self.database_root)
+        environ["DATABASE_ROOT"] = self.database_root.as_posix()
         environ["DATABASE_NAME"] = self.database_name
 
         if self.delete_crashed_runs:
@@ -153,8 +155,10 @@ class Settings(BaseSettings):
 
         if self.validate_binaries:
             environ["VALIDATE_BINARIES"] = str(self.validate_binaries)
-            environ["SFINCS_BIN_PATH"] = str(self.sfincs_bin_path)
-            environ["FIAT_BIN_PATH"] = str(self.fiat_bin_path)
+            if self.sfincs_bin_path is not None:
+                environ["SFINCS_BIN_PATH"] = self.sfincs_bin_path.as_posix()
+            if self.fiat_bin_path is not None:
+                environ["FIAT_BIN_PATH"] = self.fiat_bin_path.as_posix()
         else:
             environ.pop("VALIDATE_BINARIES", None)
 
@@ -193,18 +197,22 @@ class Settings(BaseSettings):
         return self
 
     def _validate_sfincs_path(self):
+        if self.sfincs_bin_path is None:
+            raise ValueError("SFINCS binary path is not set.")
         if not self.sfincs_bin_path.exists():
             raise ValueError(f"SFINCS binary {self.sfincs_bin_path} does not exist.")
         return self
 
     def _validate_fiat_path(self):
+        if self.fiat_bin_path is None:
+            raise ValueError("FIAT binary path is not set.")
         if not self.fiat_bin_path.exists():
             raise ValueError(f"FIAT binary {self.fiat_bin_path} does not exist.")
         return self
 
     @field_serializer("database_root", "database_path")
     def serialize_path(self, path: Path) -> str:
-        return str(path)
+        return path.as_posix()
 
     @staticmethod
     def read(toml_path: Path) -> "Settings":
@@ -257,3 +265,18 @@ class Settings(BaseSettings):
                 ),
                 f,
             )
+
+    def can_execute_scenarios(self) -> bool:
+        if HAS_DOCKER:
+            return True
+
+        if (
+            self.validate_binaries
+            and self.sfincs_bin_path is not None
+            and self.sfincs_bin_path.exists()
+            and self.fiat_bin_path is not None
+            and self.fiat_bin_path.exists()
+        ):
+            return True
+
+        return False

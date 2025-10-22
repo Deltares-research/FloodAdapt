@@ -35,19 +35,22 @@ src_dir = Path(
 # Only for debugging purposes, should always be set to true when pushing to github
 clean = True
 
+load_dotenv()
+SETTINGS = Settings(
+    DATABASE_ROOT=src_dir.parents[1] / "Database",
+    DATABASE_NAME="charleston_test",
+    DELETE_CRASHED_RUNS=clean,
+    VALIDATE_ALLOWED_FORCINGS=True,
+    VALIDATE_BINARIES=True,
+    MANUAL_DOCKER_CONTAINERS=True,
+)
+CAN_EXECUTE_SCENARIOS = SETTINGS.can_execute_scenarios()
+
 
 ## AUTO USE FIXTURES ##
 @pytest.fixture(scope="session", autouse=True)
 def setup_settings():
-    load_dotenv()
-    return Settings(
-        DATABASE_ROOT=src_dir.parents[1] / "Database",
-        DATABASE_NAME="charleston_test",
-        DELETE_CRASHED_RUNS=clean,
-        VALIDATE_ALLOWED_FORCINGS=True,
-        VALIDATE_BINARIES=True,
-        MANUAL_DOCKER_CONTAINERS=True,
-    )
+    return SETTINGS
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -157,7 +160,7 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        fa = FloodAdapt(Settings())
+        fa = FloodAdapt(SETTINGS)
 
         # Perform tests
         yield fa.database
@@ -213,7 +216,7 @@ def make_fa_fixture(scope):
                     assert ...
         """
         # Setup
-        fa = FloodAdapt(Settings())
+        fa = FloodAdapt(SETTINGS)
 
         # Perform tests
         yield fa
@@ -248,7 +251,7 @@ def _create_snapshot():
     """Create a snapshot of the database directory."""
     if snapshot_dir.exists():
         shutil.rmtree(snapshot_dir)
-    shutil.copytree(Settings().database_path, snapshot_dir)
+    shutil.copytree(SETTINGS.database_path, snapshot_dir)
 
 
 def _restore_db_from_snapshot():
@@ -258,7 +261,7 @@ def _restore_db_from_snapshot():
             "Snapshot path does not exist. Create a snapshot first."
         )
     seen_files = set()
-    db_path = Settings().database_path
+    db_path = SETTINGS.database_path
 
     for root, _, files in os.walk(snapshot_dir):
         # Copy deleted/changed files from snapshot to database

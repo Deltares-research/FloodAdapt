@@ -1,4 +1,3 @@
-import platform
 from pathlib import Path
 from tempfile import gettempdir
 
@@ -35,6 +34,7 @@ from flood_adapt.objects.forcing.waterlevels import (
 from flood_adapt.objects.forcing.wind import WindConstant
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
+from tests.conftest import CAN_EXECUTE_SCENARIOS
 from tests.data.create_test_input import _create_hurricane_event
 from tests.test_objects.test_events.test_historical import (
     setup_nearshore_event,
@@ -186,8 +186,8 @@ class TestEventSet:
             ).exists()
 
     @pytest.mark.skipif(
-        platform.system() == "Linux",
-        reason="Skipped on Linux due to broken sfincs binary",
+        not CAN_EXECUTE_SCENARIOS,
+        reason="Skipping scenario tests since binaries or docker are not available.",
     )
     def test_calculate_rp_floodmaps(
         self, setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet]

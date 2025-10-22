@@ -1,19 +1,18 @@
-import platform
-
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.hurricane import HurricaneEvent
 from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
+from tests.conftest import CAN_EXECUTE_SCENARIOS
 from tests.test_objects.test_events.test_hurricane import setup_hurricane_event
 
 __all__ = ["setup_hurricane_event"]
 
 
 @pytest.mark.skipif(
-    platform.system() == "Linux",
-    reason="Skipped on Linux due to broken sfincs binary",
+    not CAN_EXECUTE_SCENARIOS,
+    reason="Skipping scenario tests since binaries or docker are not available.",
 )
 class Test_scenario_run:
     @pytest.fixture(scope="class")
@@ -74,7 +73,8 @@ class Test_scenario_run:
 
 
 @pytest.mark.skipif(
-    platform.system() == "Linux", reason="Skipped on Linux due to broken sfincs binary"
+    not CAN_EXECUTE_SCENARIOS,
+    reason="Skipping scenario tests since binaries or docker are not available.",
 )
 @pytest.mark.parametrize(
     "scn_name",
