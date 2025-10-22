@@ -60,7 +60,7 @@ class TestSettingsModel:
         expected_fiat: Optional[Path] = None,
     ):
         assert settings.database_root == expected_root
-        assert os.environ["DATABASE_ROOT"] == str(expected_root)
+        assert os.environ["DATABASE_ROOT"] == expected_root.as_posix()
 
         assert settings.database_name == expected_name
         assert os.environ["DATABASE_NAME"] == expected_name
@@ -69,11 +69,11 @@ class TestSettingsModel:
 
         if expected_sfincs is not None:
             assert settings.sfincs_bin_path == expected_sfincs
-            assert os.environ["SFINCS_BIN_PATH"] == str(expected_sfincs)
+            assert os.environ["SFINCS_BIN_PATH"] == expected_sfincs.as_posix()
 
         if expected_fiat is not None:
             assert settings.fiat_bin_path == expected_fiat
-            assert os.environ["FIAT_BIN_PATH"] == str(expected_fiat)
+            assert os.environ["FIAT_BIN_PATH"] == expected_fiat.as_posix()
 
     @pytest.fixture(autouse=True, scope="class")
     def protect_external_settings(self):
@@ -139,7 +139,7 @@ class TestSettingsModel:
         db_root, name = create_dummy_db(system=system)
 
         with modified_environ(
-            DATABASE_ROOT=str(db_root),
+            DATABASE_ROOT=db_root.as_posix(),
             DATABASE_NAME=name,
         ):
             # Act
@@ -158,7 +158,7 @@ class TestSettingsModel:
         db_root, name = create_dummy_db(system=system)
 
         with modified_environ(
-            DATABASE_ROOT=str(db_root / "dummy"),
+            DATABASE_ROOT=(db_root / "dummy").as_posix(),
             DATABASE_NAME="invalid_name",
         ):
             # Act
@@ -223,7 +223,7 @@ class TestSettingsModel:
 
         config_path = db_root / "config.toml"
         config_path.write_text(
-            f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root}'\n"
+            f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root.as_posix()}'\n"
         )
 
         # Act
@@ -246,7 +246,7 @@ class TestSettingsModel:
         ):
             config_path = db_root / "config.toml"
             config_path.write_text(
-                f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root}'\n"
+                f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root.as_posix()}'\n"
             )
 
             # Act
@@ -264,7 +264,7 @@ class TestSettingsModel:
         db_root, name = create_dummy_db()
 
         with modified_environ(
-            DATABASE_ROOT=str(db_root),
+            DATABASE_ROOT=db_root.as_posix(),
             DATABASE_NAME="dummy_name",
         ):
             config_path = db_root / "config.toml"
@@ -287,7 +287,7 @@ class TestSettingsModel:
 
         # Act
         with modified_environ(
-            DATABASE_ROOT=str(db_root1),
+            DATABASE_ROOT=db_root1.as_posix(),
             DATABASE_NAME=name1,
         ):
             from_env1 = Settings()  # Create settings object with envvars

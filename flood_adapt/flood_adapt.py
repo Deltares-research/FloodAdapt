@@ -1301,9 +1301,6 @@ class FloodAdapt:
         self.cleanup()
 
     def _initialize_docker(self) -> None:
-        SFINCS_CONTAINER.root_dir = self.database.base_path
-        FIAT_CONTAINER.root_dir = self.database.base_path
-
         if not self._settings.manual_docker_containers:
-            SFINCS_CONTAINER.start()
-            FIAT_CONTAINER.start()
+            SFINCS_CONTAINER.start(self.database.base_path)
+            FIAT_CONTAINER.start(self.database.base_path)

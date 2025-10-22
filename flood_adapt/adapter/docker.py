@@ -25,18 +25,30 @@ class DockerContainer(ABC):
         name: str,
         container_image: str,
         command: list[str],
-        root_dir: Path | None = None,
     ):
-        self.container_image = container_image
-        self.root_dir = root_dir.resolve() if root_dir else None
-        self.name = name
-        self._command = command
-        self._mount_dir = "/data/flood_adapt"
+        self.container_image = container_image  # Docker image name on Docker Hub
+        self.name = name  # Name to assign to the container
+        self._command = command  # Command to run inside the container
+        self._mount_dir = "/data/flood_adapt"  # Directory inside the container
+        self._root_dir: Path | None = None  # Host directory the container has access to
 
-    def start(self) -> None:
-        if self._is_running():
+    def start(self, root_dir: Path) -> None:
+        """Start the Docker container by giving it access to root_dir.
+
+        Parameters
+        ----------
+        root_dir : Path
+            Absolute path to directory on host machine to mount inside container.
+
+        Raises
+        ------
+        RuntimeError
+            If the container fails to start.
+        """
+        if self._root_dir is not None:
             logger.info(f"Container {self.name} is already running.")
             return
+        self._root_dir = root_dir.resolve()
 
         logger.info(f"Starting container {self.name} from {self.container_image}...")
         docker_command = [
@@ -46,7 +58,7 @@ class DockerContainer(ABC):
             "--name",
             self.name,
             "-v",
-            f"{self.root_dir.as_posix()}:{self._mount_dir}",
+            f"{self._root_dir.as_posix()}:{self._mount_dir}",
             "-w",
             self._mount_dir,
             "--entrypoint",
@@ -72,6 +84,7 @@ class DockerContainer(ABC):
             logger.info(f"Stopping container `{self.name}`...")
             subprocess.run(["docker", "stop", self.name], check=True)
             subprocess.run(["docker", "rm", self.name], check=True)
+        self._root_dir = None
 
     def run(self, scn_dir: Path) -> bool:
         """
@@ -82,25 +95,20 @@ class DockerContainer(ABC):
         scn_dir : Path
             Absolute path where simulation should run.
         """
-        if self.root_dir is None:
-            raise ValueError("root_dir must be set before running the container.")
-
+        if self._root_dir is None:
+            raise ValueError(
+                "`root_dir` must be set before running commands in the container.\n"
+                "Call `container.start(root_dir)` first."
+            )
         if not scn_dir.is_absolute():
             raise ValueError(f"scn_dir: {scn_dir} must be an absolute path")
-
-        if self.root_dir not in scn_dir.parents and self.root_dir != scn_dir:
+        if self._root_dir not in scn_dir.parents and self._root_dir != scn_dir:
             raise ValueError(
-                f"scn_dir: {scn_dir} must be within root_dir: {self.root_dir}"
+                f"scn_dir: {scn_dir} must be within root_dir: {self._root_dir}"
             )
-
-        if not self._is_running():
-            logger.warning(
-                f"Expected container {self.name} to be running. (Re)starting it anyways."
-            )
-            self.start()
 
         log_file = scn_dir / f"{self.name}.log"
-        relative_cwd = scn_dir.relative_to(self.root_dir)
+        relative_cwd = scn_dir.relative_to(self._root_dir)
 
         return self._exec(
             cwd=relative_cwd,
@@ -161,21 +169,19 @@ class DockerContainer(ABC):
 
 
 class SfincsContainer(DockerContainer):
-    def __init__(self, root_dir: Path | None = None):
+    def __init__(self):
         super().__init__(
             name="sfincs",
             container_image="deltares/sfincs-cpu:latest",
-            root_dir=root_dir,
             command=["sfincs"],
         )
 
 
 class FiatContainer(DockerContainer):
-    def __init__(self, root_dir: Path | None = None):
+    def __init__(self):
         super().__init__(
             name="fiat",
             container_image="deltares/fiat:latest",
-            root_dir=root_dir,
             command=[
                 "pixi",
                 "run",

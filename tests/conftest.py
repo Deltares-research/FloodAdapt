@@ -91,8 +91,8 @@ def setup_docker_containers(setup_settings: Settings):
     FIAT_CONTAINER.root_dir = setup_settings.database_path
     SFINCS_CONTAINER.root_dir = setup_settings.database_path
 
-    SFINCS_CONTAINER.start()
-    FIAT_CONTAINER.start()
+    SFINCS_CONTAINER.start(setup_settings.database_path)
+    FIAT_CONTAINER.start(setup_settings.database_path)
 
     yield
 
