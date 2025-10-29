@@ -9,26 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: restore cache
-        id: cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ~/.cargo/bin
-          key: commitlint
       - name: install rust
-        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
             cache: false
       - name: compile binary
-        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           cargo install commitlint-rs
-      - uses: actions/cache/save@v4
-        if: steps.cache.outputs.cache-hit != 'true'
-        with:
-          key: commitlint
-          path: ~/.cargo/bin
       - name: Lint message
         env:
             PR_NUMBER: ${{ github.event.number }}
