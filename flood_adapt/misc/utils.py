@@ -151,13 +151,9 @@ def save_file_to_database(
     match src_file.suffix:
         case ".shp":
             # to_file docstring: `If no extension is specified, it saves ESRI Shapefile to a folder.`
-            gpd.read_file(src_file).to_file(
-                dst_file.with_suffix(""), driver="ESRI Shapefile", crs="EPSG:4326"
-            )
-        case ".geojson":
-            gpd.read_file(src_file).to_file(dst_file, driver="GeoJSON", crs="EPSG:4326")
-        case ".gpkg":
-            gpd.read_file(src_file).to_file(dst_file, driver="GPKG", crs="EPSG:4326")
+            gpd.read_file(src_file).to_crs(epsg=4326).to_file(dst_file.with_suffix(""))
+        case ".geojson" | ".gpkg":
+            gpd.read_file(src_file).to_crs(epsg=4326).to_file(dst_file)
         case _:
             shutil.copy2(src_file, dst_file)
 
@@ -168,7 +164,7 @@ def write_geodataframe(src_path: Path, output_dir: Path) -> Path:
     dst_path = Path(output_dir, src_path.name)
     if src_path == dst_path:
         return dst_path
-    gpd.read_file(src_path).to_file(dst_path, crs="EPSG:4326")
+    gpd.read_file(src_path).to_crs(epsg=4326).to_file(dst_path)
     return dst_path
 
 
