@@ -9,7 +9,7 @@ import tomli
 from pydantic import Field, field_serializer, field_validator, model_validator
 
 from flood_adapt.config.site import Site
-from flood_adapt.misc.utils import resolve_filepath, save_file_to_database
+from flood_adapt.misc.utils import resolve_filepath, write_geodataframe
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.object_model import Object
 
@@ -136,7 +136,6 @@ class Measure(Object):
 
     type: MeasureType
     selection_type: SelectionType
-
     polygon_file: Optional[str] = Field(
         default=None,
         min_length=1,
@@ -206,9 +205,9 @@ class Measure(Object):
         if self.polygon_file:
             Path(output_dir).mkdir(parents=True, exist_ok=True)
             src_path = resolve_filepath("measures", self.name, self.polygon_file)
-            path = save_file_to_database(src_path, Path(output_dir))
+            dst_path = write_geodataframe(src_path, Path(output_dir))
             # Update the shapefile path in the object so it is saved in the toml file as well
-            self.polygon_file = path.name
+            self.polygon_file = dst_path.name
 
 
 class HazardMeasure(Measure):

@@ -59,7 +59,8 @@ class DbsMeasure(DbsTemplate[Measure]):
                     obj_name=obj.name,
                     path=obj.polygon_file,
                 )
-                geometries.append(gpd.read_file(src_path))
+                gdf = gpd.read_file(src_path).to_crs(epsg=4326)
+                geometries.append(gdf)
             # If aggregation area is used read the polygon from the aggregation area name
             elif hasattr(obj, "aggregation_area_name") and obj.aggregation_area_name:
                 if (

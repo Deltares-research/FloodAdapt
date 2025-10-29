@@ -5,7 +5,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, model_validator
 
-from flood_adapt.misc.utils import resolve_filepath, save_file_to_database
+from flood_adapt.misc.utils import resolve_filepath, write_geodataframe
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.object_model import Object
 
@@ -97,7 +97,6 @@ class Projection(Object):
                 self.name,
                 self.socio_economic_change.new_development_shapefile,
             )
-            path = save_file_to_database(src_path, Path(output_dir))
-
+            dst_path = write_geodataframe(src_path, Path(output_dir))
             # Update the shapefile path in the object so it is saved in the toml file as well
-            self.socio_economic_change.new_development_shapefile = path.name
+            self.socio_economic_change.new_development_shapefile = dst_path.name
