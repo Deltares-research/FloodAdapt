@@ -1,15 +1,20 @@
 import os
+import warnings
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional, Type, TypeVar
+from typing import Any, Optional, TypeVar
 
 import geopandas as gpd
 import pyproj
-import tomli
-from pydantic import Field, field_serializer, field_validator, model_validator
+from pydantic import (
+    ConfigDict,
+    Field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 
 from flood_adapt.config.site import Site
-from flood_adapt.misc.utils import resolve_filepath, write_geodataframe
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.object_model import Object
 
@@ -126,20 +131,28 @@ class Measure(Object):
         Type of measure. Should be one of the MeasureType enum values.
     selection_type: SelectionType
         Type of selection. Should be one of the SelectionType enum values.
-    polygon_file: str, Optional
-        Path to a polygon file, either absolute or relative to the measure's toml path in the database.
+    polygon_file: str, Optional, DEPRECATED
+        [DEPRECATED] Use `gdf` instead.
+    gdf: gpd.GeoDataFrame | str | Path, Optional
+        GeoDataFrame representation of the polygon file. If a string or Path is provided, it is treated as a file path to load the GeoDataFrame from.
     aggregation_area_name: str, Optional
         Name of the aggregation area. Required if `selection_type` is 'aggregation_area'.
     aggregation_area_type: str, Optional
         Type of aggregation area. Required if `selection_type` is 'aggregation_area'.
     """
 
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     type: MeasureType
     selection_type: SelectionType
+    gdf: Optional[gpd.GeoDataFrame | str | Path] = Field(
+        default=None,
+        description="GeoDataFrame representation of the polygon file. If a string or Path is provided, it is treated as a file path to load the GeoDataFrame from.",
+    )
     polygon_file: Optional[str] = Field(
         default=None,
-        min_length=1,
-        description="Path to a polygon file, either absolute or relative to the measure path.",
+        description="[DEPRECATED] Use `gdf` instead.",
+        exclude=True,  # don't serialize back out
     )
 
     aggregation_area_type: Optional[str] = None
@@ -151,16 +164,16 @@ class Measure(Object):
             case SelectionType.all:
                 pass
             case SelectionType.polygon | SelectionType.polyline:
-                if not self.polygon_file:
+                if self.gdf is None:
                     raise ValueError(
-                        "If `selection_type` is 'polygon' or 'polyline', then `polygon_file` needs to be set."
+                        "If `selection_type` is 'polygon' or 'polyline', then `gdf` needs to be set."
                     )
             case SelectionType.aggregation_area:
-                if not self.aggregation_area_name:
+                if self.aggregation_area_name is None:
                     raise ValueError(
                         "If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set."
                     )
-                if not self.aggregation_area_type:
+                if self.aggregation_area_type is None:
                     raise ValueError(
                         "If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set."
                     )
@@ -171,43 +184,85 @@ class Measure(Object):
                 )
         return self
 
-    @field_serializer("polygon_file")
-    def serialize_polygon_file(self, value: Optional[str]) -> Optional[str]:
-        """Serialize the polygon_file attribute to a string of only the file name."""
-        if value is None:
-            return None
-        return Path(value).name
+    @model_validator(mode="before")
+    def migrate_polygon_file(cls, values):
+        """Migrate deprecated `polygon_file` to `gdf` automatically."""
+        if (
+            "polygon_file" in values
+            and values.get("polygon_file")
+            and not values.get("gdf")
+        ):
+            polygon_file = values.pop("polygon_file")
+            warnings.warn(
+                "`polygon_file` is deprecated and will be removed in a future release. "
+                "Use `gdf` instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            values["gdf"] = polygon_file
+        return values
 
-    @classmethod
-    def load_file(cls: Type[T], file_path: Path | str | os.PathLike) -> T:
-        """Load the measure from a file.
-
-        Parameters
-        ----------
-        file_path : Path | str | os.PathLike
-            Path to the file to load the measure from.
-
-        Returns
-        -------
-        Measure
-            The loaded measure object.
-        """
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
-        measure = cls.model_validate(toml)
-
-        if measure.polygon_file:
-            measure.polygon_file = str(Path(file_path).parent / measure.polygon_file)
-
-        return measure
+    @field_serializer("gdf")
+    def serialize_gdf(self, gdf: gpd.GeoDataFrame | str | Path) -> str:
+        if isinstance(gdf, gpd.GeoDataFrame):
+            return f"{self.name}.geojson"
+        elif isinstance(gdf, Path):
+            return gdf.as_posix()
+        return gdf
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.polygon_file:
+        if self.gdf is not None and isinstance(self.gdf, gpd.GeoDataFrame):
             Path(output_dir).mkdir(parents=True, exist_ok=True)
-            src_path = resolve_filepath("measures", self.name, self.polygon_file)
-            dst_path = write_geodataframe(src_path, Path(output_dir))
-            # Update the shapefile path in the object so it is saved in the toml file as well
-            self.polygon_file = dst_path.name
+            self.gdf.to_crs(epsg=4326).to_file(
+                Path(output_dir) / f"{self.name}.geojson"
+            )
+
+    def read(self, directory: Path) -> None:
+        if self.gdf is not None and isinstance(self.gdf, (str, Path)):
+            self.gdf = gpd.read_file(directory / self.gdf).to_crs(epsg=4326)
+
+    def __eq__(self, value):
+        if not isinstance(value, self.__class__):
+            # don't attempt to compare against unrelated types
+            return False
+
+        _self = self.model_dump(
+            exclude={"name", "description", "gdf"}, exclude_none=True
+        )
+        _other = value.model_dump(
+            exclude={"name", "description", "gdf"}, exclude_none=True
+        )
+        if _self != _other:
+            # different non-gdf attributes
+            return False
+
+        # different gdf attribute
+        if self.gdf is not None and value.gdf is None:
+            return False
+        elif value.gdf is not None and self.gdf is None:
+            return False
+
+        # Both not None, compare GeoDataFrames
+        if self.gdf is not None:
+            if isinstance(self.gdf, gpd.GeoDataFrame):
+                _self_gdf = self.gdf
+            elif isinstance(self.gdf, (str, Path)):
+                _self_gdf = gpd.read_file(self.gdf).to_crs(epsg=4326)
+            else:
+                return False
+
+            if isinstance(value.gdf, gpd.GeoDataFrame):
+                _other_gdf = value.gdf
+            elif isinstance(value.gdf, (str, Path)):
+                _other_gdf = gpd.read_file(value.gdf).to_crs(epsg=4326)
+            else:
+                return False
+
+            if not _self_gdf.equals(_other_gdf):
+                return False
+
+        # All attributes equal
+        return True
 
 
 class HazardMeasure(Measure):
@@ -223,8 +278,10 @@ class HazardMeasure(Measure):
         Type of measure. Should be one of the MeasureType enum values and is_hazard.
     selection_type: SelectionType
         Type of selection. Should be one of the SelectionType enum values.
-    polygon_file: str, Optional, default = None
-        Path to a polygon file, either absolute or relative to the measure path in the database.
+    polygon_file: str, Optional, DEPRECATED
+        [DEPRECATED] Use `gdf` instead.
+    gdf: gpd.GeoDataFrame | str | Path, Optional
+        GeoDataFrame representation of the polygon file. If a string or Path is provided, it is treated as a file path to load the GeoDataFrame from.
 
     """
 
@@ -248,8 +305,10 @@ class ImpactMeasure(Measure):
         Type of measure. Should be one of the MeasureType enum values and is_hazard.
     selection_type: SelectionType
         Type of selection. Should be one of the SelectionType enum values.
-    polygon_file: str, Optional, default = None
-        Path to a polygon file, either absolute or relative to the measure path in the database.
+    polygon_file: str, Optional, DEPRECATED
+        [DEPRECATED] Use `gdf` instead.
+    gdf: gpd.GeoDataFrame | str | Path, Optional
+        GeoDataFrame representation of the polygon file. If a string or Path is provided, it is treated as a file path to load the GeoDataFrame from.
     property_type: str
         Type of property. Should be one of the PropertyType enum values.
     aggregation_area_type: str, Optional, default = None
@@ -280,8 +339,10 @@ class Elevate(ImpactMeasure):
         Type of measure. Should be "elevate_properties".
     selection_type : SelectionType
         Type of selection. Should be "polygon" or "aggregation_area".
-    polygon_file : str, Optional
-        Path to a polygon file, either absolute or relative to the measure path.
+    polygon_file: str, Optional, DEPRECATED
+        [DEPRECATED] Use `gdf` instead.
+    gdf: gpd.GeoDataFrame | str | Path, Optional
+        GeoDataFrame representation of the polygon file. If a string or Path is provided, it is treated as a file path to load the GeoDataFrame from.
     aggregation_area_type : str, Optional
         Type of aggregation area. Should be "aggregation_area" or "all".
     aggregation_area_name : str, Optional
@@ -309,8 +370,10 @@ class Buyout(ImpactMeasure):
         Type of measure.
     selection_type : SelectionType
         Type of selection. Should be "polygon" or "aggregation_area".
-    polygon_file : str, Optional
-        Path to a polygon file, either absolute or relative to the measure path.
+    polygon_file: str, Optional, DEPRECATED
+        [DEPRECATED] Use `gdf` instead.
+    gdf: gpd.GeoDataFrame | str | Path, Optional
+        GeoDataFrame representation of the polygon file. If a string or Path is provided, it is treated as a file path to load the GeoDataFrame from.
     aggregation_area_type : str, Optional
         Type of aggregation area. Should be "aggregation_area" or "all".
     aggregation_area_name : str, Optional
@@ -339,8 +402,10 @@ class FloodProof(ImpactMeasure):
         Type of measure. Should be "floodproof_properties".
     selection_type : SelectionType
         Type of selection. Should be "polygon" or "aggregation_area".
-    polygon_file : str, Optional
-        Path to a polygon file, either absolute or relative to the measure path.
+    polygon_file: str, Optional, DEPRECATED
+        [DEPRECATED] Use `gdf` instead.
+    gdf: gpd.GeoDataFrame | str | Path, Optional
+        GeoDataFrame representation of the polygon file. If a string or Path is provided, it is treated as a file path to load the GeoDataFrame from.
     aggregation_area_type : str, Optional
         Type of aggregation area. Should be "aggregation_area" or "all".
     aggregation_area_name : str, Optional
@@ -369,8 +434,10 @@ class FloodWall(HazardMeasure):
         Type of measure. Should be "MeasureType.floodwall"
     selection_type : SelectionType
         Type of selection. Should be "SelectionType.polygon" or "SelectionType.aggregation_area".
-    polygon_file : Optional[str]
-        Path to a polygon file, either absolute or relative to the measure path.
+    polygon_file: str, Optional, DEPRECATED
+        [DEPRECATED] Use `gdf` instead.
+    gdf: gpd.GeoDataFrame | str | Path, Optional
+        GeoDataFrame representation of the polygon file. If a string or Path is provided, it is treated as a file path to load the GeoDataFrame from.
     elevation : us.UnitfulLength
         Height of the floodwall.
     absolute_elevation : bool
@@ -396,8 +463,10 @@ class Pump(HazardMeasure):
         Type of measure. Should be "pump"
     selection_type : SelectionType
         Type of selection. Should be "polyline".
-    polygon_file : str, Optional
-        Path to a polygon file, either absolute or relative to the measure path.
+    polygon_file: str, Optional, DEPRECATED
+        [DEPRECATED] Use `gdf` instead.
+    gdf: gpd.GeoDataFrame | str | Path, Optional
+        GeoDataFrame representation of the polygon file. If a string or Path is provided, it is treated as a file path to load the GeoDataFrame from.
     elevation : us.UnitfulLength
         Height of the floodwall.
     absolute_elevation : bool
@@ -425,8 +494,10 @@ class GreenInfrastructure(HazardMeasure):
         Height of the green infrastructure.
     volume : us.UnitfulVolume, Optional
         Volume of the green infrastructure.
-    polygon_file : str, Optional
-        Path to a polygon file, either absolute or relative to the measure path.
+    polygon_file: str, Optional, DEPRECATED
+        [DEPRECATED] Use `gdf` instead.
+    gdf: gpd.GeoDataFrame | str | Path, Optional
+        GeoDataFrame representation of the polygon file. If a string or Path is provided, it is treated as a file path to load the GeoDataFrame from.
     aggregation_area_type : str, Optional
         Type of aggregation area. Should be "aggregation_area".
     aggregation_area_name : str, Optional

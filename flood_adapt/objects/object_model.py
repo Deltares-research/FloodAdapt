@@ -1,10 +1,13 @@
 import os
 import re
 from pathlib import Path
+from typing import TypeVar
 
 import tomli
 import tomli_w
 from pydantic import BaseModel, Field, field_validator
+
+T = TypeVar("T", bound="Object")
 
 
 class Object(BaseModel):
@@ -32,7 +35,7 @@ class Object(BaseModel):
         return value
 
     @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "Object":
+    def load_file(cls: type[T], file_path: Path | str | os.PathLike) -> T:
         """Load object from file.
 
         Parameters
@@ -43,7 +46,16 @@ class Object(BaseModel):
         """
         with open(file_path, mode="rb") as fp:
             toml = tomli.load(fp)
-        return cls.model_validate(toml)
+        obj = cls.model_validate(toml)
+        obj.read(Path(file_path).parent)
+        return obj
+
+    def read(self, directory: Path) -> None:
+        """Read additional files from database if the object has any and update attrs to reflect the change in file location.
+
+        This method should be overridden if the object has additional files.
+        """
+        pass
 
     def save(self, toml_path: Path | str | os.PathLike) -> None:
         """Save object to disk.

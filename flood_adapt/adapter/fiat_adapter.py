@@ -25,16 +25,14 @@ from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.misc.path_builder import (
-    ObjectDir,
-)
-from flood_adapt.misc.utils import cd, resolve_filepath
+from flood_adapt.misc.utils import cd
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.measures.measures import (
     Buyout,
     Elevate,
     FloodProof,
+    ImpactMeasure,
     Measure,
     MeasureType,
 )
@@ -656,13 +654,6 @@ class FiatAdapter(IImpactAdapter):
         if not math.isclose(
             socio_economic_change.population_growth_new, 0, abs_tol=1e-6
         ):
-            # Get path of new development area geometry
-            area_path = resolve_filepath(
-                object_dir=ObjectDir.projection,
-                obj_name=projection.name,
-                path=socio_economic_change.new_development_shapefile,
-            )
-
             # Get DEM location for assigning elevation to new areas
             dem = (
                 self.database.static_path
@@ -673,8 +664,8 @@ class FiatAdapter(IImpactAdapter):
             self.apply_population_growth_new(
                 population_growth=socio_economic_change.population_growth_new,
                 ground_floor_height=socio_economic_change.new_development_elevation.value,
-                elevation_type=socio_economic_change.new_development_elevation.type,
-                area_path=area_path,
+                elevation_type=socio_economic_change.new_development_elevation.type.value,
+                new_dev_geom=socio_economic_change.gdf,
                 ground_elevation=dem,
             )
 
@@ -829,7 +820,7 @@ class FiatAdapter(IImpactAdapter):
         population_growth: float,
         ground_floor_height: float,
         elevation_type: str,
-        area_path: str,
+        new_dev_geom: gpd.GeoDataFrame,
         ground_elevation: Union[None, str, Path] = None,
     ) -> None:
         """
@@ -843,8 +834,8 @@ class FiatAdapter(IImpactAdapter):
             The height of the ground floor.
         elevation_type : str
             The type of elevation reference to use. Must be either 'floodmap' or 'datum'.
-        area_path : str
-            The path to the area file.
+        new_dev_geom : gpd.GeoDataFrame
+            The geometries of the new development area.
         ground_elevation : Union[None, str, Path], optional
             The ground elevation reference. Default is None.
 
@@ -855,7 +846,7 @@ class FiatAdapter(IImpactAdapter):
             If `elevation_type` is not 'floodmap' or 'datum'.
         """
         logger.info(
-            f"Applying population growth of {population_growth} %, by creating a new development area using the geometries from {area_path} and a ground floor height of {ground_floor_height} {self.model.exposure.unit} above '{elevation_type}'."
+            f"Applying population growth of {population_growth} %, by creating a new development area using the geometries from `new_dev_geom` and a ground floor height of {ground_floor_height} {self.model.exposure.unit} above '{elevation_type}'."
         )
         # Get reference type to align with hydromt
         if elevation_type == "floodmap":
@@ -884,19 +875,20 @@ class FiatAdapter(IImpactAdapter):
         ]
         new_dev_geom_name = Path(self.config.new_development_file_name).stem
         # Ensure new_devs geom is in the correct CRS
-        new_dev_geom = gpd.read_file(area_path)
+
         if new_dev_geom.crs != self.model.exposure.crs:
             logger.warning(
                 f"New development area geometries are in {new_dev_geom.crs}, but the model is in {self.model.exposure.crs}. Reprojecting geometries."
             )
             new_dev_geom = new_dev_geom.to_crs(self.model.exposure.crs)
-        # Replace file with the reprojected one
-        os.remove(area_path)
-        new_dev_geom.to_file(area_path)
+
+        path = Path(self.model.root, f"{new_dev_geom_name}.geojson")
+        new_dev_geom.to_file(path, driver="GeoJSON")
+
         # Use hydromt function
         self.model.exposure.setup_new_composite_areas(
             percent_growth=population_growth,
-            geom_file=Path(area_path),
+            geom_file=path.as_posix(),
             ground_floor_height=ground_floor_height,
             damage_types=self.damage_types,
             vulnerability=self.model.vulnerability,
@@ -928,7 +920,12 @@ class FiatAdapter(IImpactAdapter):
         if measure.selection_type == "aggregation_area":
             area = measure.aggregation_area_name
         elif measure.selection_type == "polygon":
-            area = measure.polygon_file
+            if isinstance(measure.gdf, gpd.GeoDataFrame):
+                area = f"{measure.name}.geojson"
+            elif isinstance(measure.gdf, (str, Path)):
+                area = measure.gdf
+            else:
+                area = "polygon_area"
         else:
             area = "all"
         return area
@@ -1129,13 +1126,13 @@ class FiatAdapter(IImpactAdapter):
         )
         return ids
 
-    def get_object_ids(self, measure: Measure) -> list[Any]:
+    def get_object_ids(self, measure: ImpactMeasure) -> list[Any]:
         """
         Retrieve the object IDs for a given impact measure.
 
         Parameters
         ----------
-        measure : Measure
+        measure : ImpactMeasure
             The impact measure for which to retrieve object IDs.
 
         Returns
@@ -1154,25 +1151,25 @@ class FiatAdapter(IImpactAdapter):
                 "Can only retrieve object ids for impact measures."
             )
 
-        # check if polygon file is used, then get the absolute path
-        if measure.polygon_file:
-            polygon_file = resolve_filepath(
-                object_dir=ObjectDir.measure,
-                obj_name=measure.name,
-                path=measure.polygon_file,
+        # check if gdf is used, then get the absolute path
+        if isinstance(measure.gdf, gpd.GeoDataFrame):
+            buildings = self.model.exposure.select_objects(
+                primary_object_type=measure.property_type,
+                non_building_names=self.config.non_building_names,
+                return_gdf=True,
             )
+            ids = gpd.sjoin(buildings, measure.gdf.to_crs(buildings.crs))[
+                _FIAT_COLUMNS.object_id
+            ]
         else:
-            polygon_file = None
-
-        # use the hydromt-fiat method to the ids
-        ids = self.model.exposure.get_object_ids(
-            selection_type=measure.selection_type,
-            property_type=measure.property_type,
-            non_building_names=self.config.non_building_names,
-            aggregation=measure.aggregation_area_type,
-            aggregation_area_name=measure.aggregation_area_name,
-            polygon_file=str(polygon_file),
-        )
+            # use the hydromt-fiat method to the ids
+            ids = self.model.exposure.get_object_ids(
+                selection_type=measure.selection_type,
+                property_type=measure.property_type,
+                non_building_names=self.config.non_building_names,
+                aggregation=measure.aggregation_area_type,
+                aggregation_area_name=measure.aggregation_area_name,
+            )
 
         return ids
 

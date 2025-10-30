@@ -5,7 +5,6 @@ import geopandas as gpd
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.misc.exceptions import DatabaseError, DoesNotExistError
-from flood_adapt.misc.utils import resolve_filepath
 from flood_adapt.objects.measures.measure_factory import MeasureFactory
 from flood_adapt.objects.measures.measures import Measure
 
@@ -52,15 +51,14 @@ class DbsMeasure(DbsTemplate[Measure]):
 
         geometries = []
         for obj in objects:
-            # If polygon is used read the polygon file
-            if hasattr(obj, "polygon_file") and obj.polygon_file:
-                src_path = resolve_filepath(
-                    object_dir=self.dir_name,
-                    obj_name=obj.name,
-                    path=obj.polygon_file,
-                )
-                gdf = gpd.read_file(src_path).to_crs(epsg=4326)
-                geometries.append(gdf)
+            if obj.gdf is not None:
+                if not isinstance(obj.gdf, gpd.GeoDataFrame):
+                    # Should never happen: .get() -> Measure.load_file() -> Measure.read()
+                    raise DatabaseError(
+                        f"`gdf` attribute of measure {obj.name} is not a valid GeoDataFrame: {obj.gdf}."
+                    )
+                geometries.append(obj.gdf)
+
             # If aggregation area is used read the polygon from the aggregation area name
             elif hasattr(obj, "aggregation_area_name") and obj.aggregation_area_name:
                 if (

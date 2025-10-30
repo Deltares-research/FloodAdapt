@@ -28,11 +28,10 @@ from flood_adapt.config.config import Settings
 from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
-    ObjectDir,
     TopLevelDir,
     db_path,
 )
-from flood_adapt.misc.utils import cd, resolve_filepath
+from flood_adapt.misc.utils import cd
 from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Event, Mode, Template
 from flood_adapt.objects.events.hurricane import TranslationModel
@@ -1176,15 +1175,12 @@ class SfincsAdapter(IHazardAdapter):
         floodwall : FloodWall
             floodwall information
         """
-        polygon_file = resolve_filepath(
-            object_dir=ObjectDir.measure,
-            obj_name=floodwall.name,
-            path=floodwall.polygon_file,
-        )
+        if not isinstance(floodwall.gdf, gpd.GeoDataFrame):
+            raise ValueError("Floodwall geometry must be a GeoDataFrame.")
 
         # HydroMT function: get geodataframe from filename
         gdf_floodwall = self._model.data_catalog.get_geodataframe(
-            polygon_file, geom=self._model.region, crs=self._model.crs
+            floodwall.gdf, geom=self._model.region, crs=self._model.crs
         )
 
         # Add floodwall attributes to geodataframe
@@ -1221,11 +1217,8 @@ class SfincsAdapter(IHazardAdapter):
     def _add_measure_greeninfra(self, green_infrastructure: GreenInfrastructure):
         # HydroMT function: get geodataframe from filename
         if green_infrastructure.selection_type == "polygon":
-            polygon_file = resolve_filepath(
-                ObjectDir.measure,
-                green_infrastructure.name,
-                green_infrastructure.polygon_file,
-            )
+            gdf = green_infrastructure.gdf
+
         elif green_infrastructure.selection_type == "aggregation_area":
             # TODO this logic already exists in the Database controller but cannot be used due to cyclic imports
             # Loop through available aggregation area types
@@ -1239,7 +1232,7 @@ class SfincsAdapter(IHazardAdapter):
                     engine="pyogrio",
                 ).to_crs(4326)
                 # keep only aggregation area chosen
-                polygon_file = aggr_areas.loc[
+                gdf = aggr_areas.loc[
                     aggr_areas[aggr_dict.field_name]
                     == green_infrastructure.aggregation_area_name,
                     ["geometry"],
@@ -1250,7 +1243,7 @@ class SfincsAdapter(IHazardAdapter):
             )
 
         gdf_green_infra = self._model.data_catalog.get_geodataframe(
-            polygon_file,
+            gdf,
             geom=self._model.region,
             crs=self._model.crs,
         )
@@ -1273,10 +1266,9 @@ class SfincsAdapter(IHazardAdapter):
         pump : Pump
             pump information
         """
-        polygon_file = resolve_filepath(ObjectDir.measure, pump.name, pump.polygon_file)
         # HydroMT function: get geodataframe from filename
         gdf_pump = self._model.data_catalog.get_geodataframe(
-            polygon_file, geom=self._model.region, crs=self._model.crs
+            pump.gdf, geom=self._model.region, crs=self._model.crs
         )
 
         # HydroMT function: create floodwall

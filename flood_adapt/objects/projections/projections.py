@@ -1,11 +1,12 @@
 import math
 import os
+import warnings
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel, Field, model_validator
+import geopandas as gpd
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
 
-from flood_adapt.misc.utils import resolve_filepath, write_geodataframe
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.object_model import Object
 
@@ -34,6 +35,19 @@ class PhysicalProjection(BaseModel):
     rainfall_multiplier: float = Field(default=1.0, ge=0.0)
     storm_frequency_increase: float = 0.0
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        if self.sea_level_rise != other.sea_level_rise:
+            return False
+        if self.subsidence != other.subsidence:
+            return False
+        if self.rainfall_multiplier != other.rainfall_multiplier:
+            return False
+        if self.storm_frequency_increase != other.storm_frequency_increase:
+            return False
+        return True
+
 
 class SocioEconomicChange(BaseModel):
     """The accepted input for socio-economic change in FloodAdapt.
@@ -49,24 +63,109 @@ class SocioEconomicChange(BaseModel):
     new_development_elevation : Optional[us.UnitfulLengthRefValue]
         The elevation of the new development areas. default=None.
     new_development_shapefile : Optional[str]
-        The path to the shapefile of the new development areas. default=None.
+        [DEPRECATED] The path to the shapefile of the new development areas. default=None. Use `gdf` instead.
+    gdf : Optional[gpd.GeoDataFrame | str | Path]
+        The GeoDataFrame representation of the new development areas or path to the file. default=None.
     """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     population_growth_existing: Optional[float] = 0.0
     economic_growth: Optional[float] = 0.0
 
     population_growth_new: Optional[float] = 0.0
     new_development_elevation: Optional[us.UnitfulLengthRefValue] = None
-    new_development_shapefile: Optional[str] = None
+    new_development_shapefile: Optional[str] = Field(
+        default=None,
+        description="[DEPRECATED] Path to the shapefile of the new development areas. Use `gdf` instead.",
+        exclude=True,
+    )
+    gdf: Optional[gpd.GeoDataFrame | str | Path] = Field(
+        default=None,
+        description="GeoDataFrame representation of the new development areas or path to the file.",
+    )
 
     @model_validator(mode="after")
     def validate_selection_type(self) -> "SocioEconomicChange":
         if not math.isclose(self.population_growth_new or 0.0, 0.0, abs_tol=1e-8):
-            if self.new_development_shapefile is None:
+            if self.gdf is None:
                 raise ValueError(
-                    "If `population_growth_new` is non-zero, then `new_development_shapefile` must also be provided."
+                    "If `population_growth_new` is non-zero, then `gdf` must also be provided."
                 )
         return self
+
+    @model_validator(mode="before")
+    def migrate_new_development_shapefile(cls, values):
+        """Migrate deprecated `new_development_shapefile` to `gdf` automatically."""
+        if (
+            "new_development_shapefile" in values
+            and values.get("new_development_shapefile")
+            and not values.get("gdf")
+        ):
+            new_development_shapefile = values.pop("new_development_shapefile")
+            warnings.warn(
+                "`new_development_shapefile` is deprecated and will be removed in a future release. "
+                "Use `gdf` instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            values["gdf"] = new_development_shapefile
+        return values
+
+    @field_serializer("gdf")
+    def serialize_gdf(self, gdf: gpd.GeoDataFrame | str | Path) -> str:
+        if isinstance(gdf, gpd.GeoDataFrame):
+            return "new_developments.geojson"
+        elif isinstance(gdf, Path):
+            return gdf.as_posix()
+        return gdf
+
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.gdf is not None and isinstance(self.gdf, gpd.GeoDataFrame):
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            self.gdf.to_crs(epsg=4326).to_file(
+                Path(output_dir) / "new_developments.geojson"
+            )
+
+    def read(self, directory: Path) -> None:
+        if self.gdf is not None and isinstance(self.gdf, (str, Path)):
+            self.gdf = gpd.read_file(directory / self.gdf).to_crs(epsg=4326)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        _self = self.model_dump(exclude={"gdf"})
+        _other = other.model_dump(exclude={"gdf"})
+        if not _self == _other:
+            return False
+
+        # different gdf attribute
+        if self.gdf is not None and other.gdf is None:
+            return False
+        elif other.gdf is not None and self.gdf is None:
+            return False
+
+        # Both not None, compare GeoDataFrames
+        if self.gdf is not None:
+            if isinstance(self.gdf, gpd.GeoDataFrame):
+                _self_gdf = self.gdf
+            elif isinstance(self.gdf, (str, Path)):
+                _self_gdf = gpd.read_file(self.gdf).to_crs(epsg=4326)
+            else:
+                return False
+
+            if isinstance(other.gdf, gpd.GeoDataFrame):
+                _other_gdf = other.gdf
+            elif isinstance(other.gdf, (str, Path)):
+                _other_gdf = gpd.read_file(other.gdf).to_crs(epsg=4326)
+            else:
+                return False
+
+            if not _self_gdf.equals(_other_gdf):
+                return False
+
+        # All attributes equal
+        return True
 
 
 class Projection(Object):
@@ -91,12 +190,19 @@ class Projection(Object):
     socio_economic_change: SocioEconomicChange = SocioEconomicChange()
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.socio_economic_change.new_development_shapefile:
-            src_path = resolve_filepath(
-                "projections",
-                self.name,
-                self.socio_economic_change.new_development_shapefile,
-            )
-            dst_path = write_geodataframe(src_path, Path(output_dir))
-            # Update the shapefile path in the object so it is saved in the toml file as well
-            self.socio_economic_change.new_development_shapefile = dst_path.name
+        self.socio_economic_change.save_additional(output_dir)
+
+    def read(self, directory: Path) -> None:
+        self.socio_economic_change.read(directory)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+
+        if self.physical_projection != other.physical_projection:
+            return False
+
+        if self.socio_economic_change != other.socio_economic_change:
+            return False
+
+        return True
