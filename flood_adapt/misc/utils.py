@@ -7,10 +7,13 @@ from typing import Union
 import geopandas as gpd
 from pydantic import BeforeValidator
 
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     ObjectDir,
     db_path,
 )
+
+logger = FloodAdaptLogging.getLogger(__name__)
 
 
 @contextmanager
@@ -158,14 +161,6 @@ def save_file_to_database(
             shutil.copy2(src_file, dst_file)
 
     return dst_file
-
-
-def write_geodataframe(src_path: Path, output_dir: Path) -> Path:
-    dst_path = Path(output_dir, src_path.name)
-    if src_path == dst_path:
-        return dst_path
-    gpd.read_file(src_path).to_crs(epsg=4326).to_file(dst_path)
-    return dst_path
 
 
 def copy_file_to_output_dir(file_path: Path, output_dir: Path) -> Path:
