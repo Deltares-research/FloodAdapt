@@ -12,8 +12,8 @@ import shapely
 import tomli
 from shapely import Polygon
 
-from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt import unit_system as us
+from flood_adapt.config import Settings
 from flood_adapt.config.hazard import (
     DatumModel,
     DemModel,
@@ -43,6 +43,7 @@ from flood_adapt.database_builder.database_builder import (
     UnitSystems,
 )
 from flood_adapt.dbs_classes.database import Database
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.forcing.tide_gauge import TideGaugeSource
 from flood_adapt.objects.forcing.timeseries import Scstype
 

@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from flood_adapt.config.fiat import FiatModel
 from flood_adapt.config.gui import GuiModel
+from flood_adapt.config.hazard import RiverModel
 from flood_adapt.config.sfincs import SfincsModel
 
 
@@ -96,6 +97,18 @@ class Site(BaseModel):
     def load_file(filepath: Union[str, os.PathLike]) -> "Site":
         """Create Site from toml file."""
         return SiteBuilder.load_file(Path(filepath))
+
+    def add_river(self, river: RiverModel) -> None:
+        """Add a river to the site sfincs model.
+
+        Parameters
+        ----------
+        river : RiverModel
+            River model to add to the site.
+        """
+        if self.sfincs.river is None:
+            self.sfincs.river = []
+        self.sfincs.river.append(river)
 
 
 class SiteBuilder(BaseModel):

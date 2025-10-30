@@ -4,6 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
+import geopandas as gpd
+
 from flood_adapt import unit_system as us
 from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import RiverModel
@@ -150,7 +152,7 @@ def create_projections():
                 units=us.UnitTypesLength.feet,
                 type=VerticalReference.floodmap,
             ),
-            new_development_shapefile=str(DATA_DIR / "new_areas.geojson"),
+            gdf=gpd.read_file(DATA_DIR / "new_areas.geojson").to_crs(epsg=4326),
         ),
     )
 
@@ -177,7 +179,7 @@ def create_projections():
                 units=us.UnitTypesLength.feet,
                 type=VerticalReference.floodmap,
             ),
-            new_development_shapefile=str(DATA_DIR / "new_areas.geojson"),
+            gdf=gpd.read_file(DATA_DIR / "new_areas.geojson").to_crs(epsg=4326),
         ),
     )
 
@@ -209,7 +211,7 @@ def create_measures():
         type=MeasureType.pump,
         discharge=us.UnitfulDischarge(value=500, units=us.UnitTypesDischarge.cfs),
         selection_type=SelectionType.polyline,
-        polygon_file=str(DATA_DIR / "pump.geojson"),
+        gdf=gpd.read_file(DATA_DIR / "pump.geojson").to_crs(epsg=4326),
     )
 
     GREEN_INFRA = GreenInfrastructure(
@@ -219,14 +221,14 @@ def create_measures():
         height=us.UnitfulHeight(value=2, units=us.UnitTypesLength.meters),
         percent_area=100,
         selection_type=SelectionType.polygon,
-        polygon_file=str(DATA_DIR / "green_infra.geojson"),
+        gdf=gpd.read_file(DATA_DIR / "green_infra.geojson").to_crs(epsg=4326),
     )
 
     GREENING = GreenInfrastructure(
         name="greening",
         type=MeasureType.greening,
         selection_type=SelectionType.polygon,
-        polygon_file=str(DATA_DIR / "greening.geojson"),
+        gdf=gpd.read_file(DATA_DIR / "greening.geojson").to_crs(epsg=4326),
         percent_area=30.0,
         volume=us.UnitfulVolume(value=13181722.5726565, units=us.UnitTypesVolume.cf),
         height=us.UnitfulHeight(value=3.0, units=us.UnitTypesLength.feet),
@@ -236,7 +238,7 @@ def create_measures():
         name="seawall",
         type=MeasureType.floodwall,
         selection_type=SelectionType.polygon,
-        polygon_file=str(DATA_DIR / "seawall.geojson"),
+        gdf=gpd.read_file(DATA_DIR / "seawall.geojson").to_crs(epsg=4326),
         elevation=us.UnitfulLengthRefValue(
             value=12,
             units=us.UnitTypesLength.feet,
@@ -248,7 +250,7 @@ def create_measures():
         name="total_storage",
         type=MeasureType.total_storage,
         selection_type=SelectionType.polygon,
-        polygon_file=str(DATA_DIR / "total_storage.geojson"),
+        gdf=gpd.read_file(DATA_DIR / "total_storage.geojson").to_crs(epsg=4326),
         volume=us.UnitfulVolume(value=100000000.0, units=us.UnitTypesVolume.cf),
     )
 
@@ -265,7 +267,7 @@ def create_measures():
         name="water_square",
         type=MeasureType.water_square,
         selection_type=SelectionType.polygon,
-        polygon_file=str(DATA_DIR / "water_square.geojson"),
+        gdf=gpd.read_file(DATA_DIR / "water_square.geojson").to_crs(epsg=4326),
         volume=us.UnitfulVolume(value=43975190.31512848, units=us.UnitTypesVolume.cf),
         height=us.UnitfulHeight(value=3.0, units=us.UnitTypesLength.feet),
     )
@@ -335,7 +337,9 @@ def create_measures():
         ),
         selection_type=SelectionType.polygon,
         property_type="RES",
-        polygon_file=str(DATA_DIR / "raise_property_polygon.geojson"),
+        gdf=gpd.read_file(DATA_DIR / "raise_property_polygon.geojson").to_crs(
+            epsg=4326
+        ),
     )
 
     MEASURES = [

@@ -13,24 +13,25 @@ from flood_adapt.misc.exceptions import (
     IsUsedInError,
 )
 from flood_adapt.misc.utils import finished_file_exists
-from flood_adapt.objects.events.hurricane import HurricaneEvent
 from flood_adapt.objects.measures.measures import Measure
-from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.workflows.benefit_runner import BenefitRunner
 from tests.data.create_test_input import create_event_set_with_hurricanes
-from tests.test_adapter.test_sfincs_adapter import mock_meteohandler_read
-from tests.test_objects.test_events.test_eventset import (
-    test_eventset,
-    test_sub_event,
+from tests.test_adapter.conftest import mock_meteohandler_read
+from tests.test_objects.conftest import (
+    gdf_polygon,
+    gdf_polyline,
+    gdf_single_line,
 )
-from tests.test_objects.test_events.test_historical import (
+from tests.test_objects.test_events.conftest import (
+    setup_hurricane_event,
     setup_nearshore_event,
     setup_offshore_meteo_event,
     setup_offshore_scenario,
+    test_event_all_synthetic,
+    test_eventset,
+    test_sub_event,
 )
-from tests.test_objects.test_events.test_hurricane import setup_hurricane_event
-from tests.test_objects.test_events.test_synthetic import test_event_all_synthetic
-from tests.test_objects.test_measures.test_measures import (
+from tests.test_objects.test_measures.conftest import (
     test_buyout,
     test_elevate,
     test_floodproof,
@@ -54,6 +55,9 @@ __all__ = [
     # Mock
     "mock_meteohandler_read",
     # Measures
+    "gdf_polygon",
+    "gdf_polyline",
+    "gdf_single_line",
     "test_buyout",
     "test_elevate",
     "test_floodproof",
@@ -182,18 +186,19 @@ class TestProjections:
         test_fa.delete_projection(projection.name)
 
 
-class TestMeasures:
-    # dict of measure fixture names and their corresponding measure type
-    measure_fixtures = {
-        "test_elevate": "elevate_properties",
-        "test_buyout": "buyout_properties",
-        "test_floodproof": "floodproof_properties",
-        "test_floodwall": "floodwall",
-        "test_pump": "pump",
-        "test_green_infra": "greening",
-    }
+# dict of measure fixture names and their corresponding measure type
+measure_fixtures = {
+    "test_elevate": "elevate_properties",
+    "test_buyout": "buyout_properties",
+    "test_floodproof": "floodproof_properties",
+    "test_floodwall": "floodwall",
+    "test_pump": "pump",
+    "test_green_infra": "greening",
+}
 
-    @pytest.mark.parametrize("measure_fixture_name", measure_fixtures.keys())
+
+@pytest.mark.parametrize("measure_fixture_name", measure_fixtures.keys())
+class TestMeasures:
     def test_create_measure(
         self, test_fa_class: FloodAdapt, measure_fixture_name, request
     ):
@@ -203,16 +208,14 @@ class TestMeasures:
         )
         assert measure is not None
 
-    @pytest.mark.parametrize("measure_fixture", measure_fixtures.keys())
-    def test_save_measure(self, test_fa: FloodAdapt, measure_fixture, request):
-        measure = request.getfixturevalue(measure_fixture)
+    def test_save_measure(self, test_fa: FloodAdapt, measure_fixture_name, request):
+        measure = request.getfixturevalue(measure_fixture_name)
 
         test_fa.save_measure(measure)
         assert (test_fa.database.measures.input_path / measure.name).exists()
 
-    @pytest.mark.parametrize("measure_fixture", measure_fixtures.keys())
-    def test_get_measure(self, test_fa: FloodAdapt, measure_fixture, request):
-        measure = request.getfixturevalue(measure_fixture)
+    def test_get_measure(self, test_fa: FloodAdapt, measure_fixture_name, request):
+        measure = request.getfixturevalue(measure_fixture_name)
 
         test_fa.save_measure(measure)
         assert (test_fa.database.measures.input_path / measure.name).exists()
@@ -220,18 +223,16 @@ class TestMeasures:
         loaded_measure = test_fa.get_measure(measure.name)
         assert loaded_measure == measure
 
-    @pytest.mark.parametrize("measure_fixture", measure_fixtures.keys())
-    def test_delete_measure(self, test_fa: FloodAdapt, measure_fixture, request):
-        measure = request.getfixturevalue(measure_fixture)
+    def test_delete_measure(self, test_fa: FloodAdapt, measure_fixture_name, request):
+        measure = request.getfixturevalue(measure_fixture_name)
         test_fa.save_measure(measure)
         assert (test_fa.database.measures.input_path / measure.name).exists()
 
         test_fa.delete_measure(measure.name)
         assert not (test_fa.database.measures.input_path / measure.name).exists()
 
-    @pytest.mark.parametrize("measure_fixture", measure_fixtures.keys())
-    def test_copy_measure(self, test_fa: FloodAdapt, measure_fixture, request):
-        measure = request.getfixturevalue(measure_fixture)
+    def test_copy_measure(self, test_fa: FloodAdapt, measure_fixture_name, request):
+        measure = request.getfixturevalue(measure_fixture_name)
         test_fa.save_measure(measure)
         assert (test_fa.database.measures.input_path / measure.name).exists()
 
@@ -285,83 +286,6 @@ class TestStrategies:
     reason="Skipped on Linux due to broken sfincs binary",
 )
 class TestScenarios:
-    @pytest.fixture()
-    def setup_nearshore_scenario(self, test_fa: FloodAdapt, setup_nearshore_event):
-        test_fa.save_event(setup_nearshore_event)
-
-        scn = Scenario(
-            name="gauged_nearshore",
-            description="current_extreme12ft_no_measures",
-            event=setup_nearshore_event.name,
-            projection="current",
-            strategy="no_measures",
-        )
-        return scn
-
-    @pytest.fixture()
-    def setup_offshore_meteo_scenario(
-        self,
-        test_fa: FloodAdapt,
-        setup_offshore_meteo_event,
-        mock_meteohandler_read,
-    ):
-        test_fa.save_event(setup_offshore_meteo_event)
-
-        scn = Scenario(
-            name="offshore_meteo",
-            event=setup_offshore_meteo_event.name,
-            projection="current",
-            strategy="no_measures",
-        )
-
-        return scn
-
-    @pytest.fixture()
-    def setup_hurricane_scenario(
-        self,
-        test_fa: FloodAdapt,
-        setup_hurricane_event: HurricaneEvent,
-        mock_meteohandler_read,
-    ) -> tuple[Scenario, HurricaneEvent]:
-        event = setup_hurricane_event
-        scn = Scenario(
-            name="hurricane",
-            event=event.name,
-            projection="current",
-            strategy="no_measures",
-        )
-        test_fa.save_event(event)
-
-        return scn, event
-
-    @pytest.fixture()
-    def setup_synthetic_scenario(self, test_fa: FloodAdapt, test_event_all_synthetic):
-        test_fa.save_event(test_event_all_synthetic)
-
-        scn = Scenario(
-            name="synthetic",
-            event=test_event_all_synthetic.name,
-            projection="current",
-            strategy="no_measures",
-        )
-        return scn
-
-    @pytest.fixture()
-    def setup_eventset_scenario(
-        self, test_fa: FloodAdapt, dummy_projection, dummy_strategy, test_eventset
-    ):
-        test_fa.save_projection(dummy_projection)
-        test_fa.save_strategy(dummy_strategy)
-        test_fa.save_event(test_eventset)
-
-        scn = Scenario(
-            name="test_risk_scenario_with_hurricanes",
-            event=test_eventset.name,
-            projection=dummy_projection.name,
-            strategy=dummy_strategy.name,
-        )
-        return test_fa, scn, test_eventset
-
     @pytest.mark.skip(
         reason="Skipped until METEO forcing is fixed in hydromt-sfincs 1.3.0",
     )

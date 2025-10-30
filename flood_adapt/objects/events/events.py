@@ -3,7 +3,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, ClassVar, List, Optional, Protocol, runtime_checkable
 
-import tomli
 from pydantic import (
     Field,
     field_serializer,
@@ -117,40 +116,16 @@ class Event(Object):
         for forcing in self.get_forcings():
             forcing.save_additional(output_dir)
 
-    @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "Event":
-        """Load object from file.
-
-        Parameters
-        ----------
-        file_path : Path | str | os.PathLike
-            Path to the file to load.
-
-        """
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
-
-        event = cls.model_validate(toml)
-
-        # Update all forcings with paths to absolute paths
-        for forcing in event.get_forcings():
+    def read(self, directory: Path) -> None:
+        for forcing in self.get_forcings():
             if isinstance(forcing, PathBasedForcing):
-                if forcing.path.exists():
-                    continue
-                elif forcing.path == Path(forcing.path.name):
-                    # convert relative path to absolute path
-                    in_dir = Path(file_path).parent / forcing.path.name
+                if not forcing.path.exists():
+                    in_dir = directory / forcing.path.name
                     if not in_dir.exists():
                         raise FileNotFoundError(
-                            f"Failed to load Event. File {forcing.path} does not exist in {in_dir.parent}."
+                            f"Failed to read Event. File {forcing.path} does not exist in {in_dir.parent}."
                         )
                     forcing.path = in_dir
-                else:
-                    raise FileNotFoundError(
-                        f"Failed to load Event. File {forcing.path} does not exist."
-                    )
-
-        return event
 
     @staticmethod
     def _parse_forcing_from_dict(

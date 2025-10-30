@@ -3,74 +3,13 @@ from pathlib import Path
 
 import pytest
 
-from flood_adapt.config.hazard import RiverModel
-from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.objects.events.events import (
     ForcingType,
 )
 from flood_adapt.objects.events.hurricane import (
     HurricaneEvent,
 )
-from flood_adapt.objects.forcing import unit_system as us
-from flood_adapt.objects.forcing.discharge import DischargeConstant
-from flood_adapt.objects.forcing.rainfall import RainfallTrack
-from flood_adapt.objects.forcing.time_frame import (
-    TimeFrame,
-)
-from flood_adapt.objects.forcing.waterlevels import (
-    WaterlevelModel,
-)
 from flood_adapt.objects.forcing.wind import WindTrack
-from flood_adapt.objects.scenarios.scenarios import Scenario
-from tests.fixtures import TEST_DATA_DIR
-
-
-@pytest.fixture()
-def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
-    cyc_file = TEST_DATA_DIR / "IAN.cyc"
-    event = HurricaneEvent(
-        name="hurricane",
-        time=TimeFrame(),
-        track_name="IAN",
-        forcings={
-            ForcingType.WATERLEVEL: [WaterlevelModel()],
-            ForcingType.WIND: [WindTrack(path=cyc_file)],
-            ForcingType.RAINFALL: [RainfallTrack(path=cyc_file)],
-            ForcingType.DISCHARGE: [
-                DischargeConstant(
-                    river=RiverModel(
-                        name="cooper",
-                        description="Cooper River",
-                        x_coordinate=595546.3,
-                        y_coordinate=3675590.6,
-                        mean_discharge=us.UnitfulDischarge(
-                            value=5000, units=us.UnitTypesDischarge.cfs
-                        ),
-                    ),
-                    discharge=us.UnitfulDischarge(
-                        value=5000, units=us.UnitTypesDischarge.cfs
-                    ),
-                ),
-            ],
-        },
-    )
-    return event
-
-
-@pytest.fixture()
-def setup_hurricane_scenario(
-    test_db: IDatabase, setup_hurricane_event: HurricaneEvent
-) -> tuple[Scenario, HurricaneEvent]:
-    event = setup_hurricane_event
-    scn = Scenario(
-        name="test_scenario",
-        event=event.name,
-        projection="current",
-        strategy="no_measures",
-    )
-    test_db.events.save(event)
-    test_db.scenarios.save(scn)
-    return scn, event
 
 
 class TestHurricaneEvent:
@@ -115,13 +54,10 @@ class TestHurricaneEvent:
 
         cyc_file.unlink()
 
-        with pytest.raises(FileNotFoundError) as e:
+        with pytest.raises(
+            FileNotFoundError, match=f"Failed to read Event. File {cyc_file.name}"
+        ):
             HurricaneEvent.load_file(path)
-
-        assert (
-            f"Failed to load Event. File {cyc_file.name} does not exist in {cyc_file.parent}."
-            in str(e.value)
-        )
 
     def test_save_additional_saves_cyc_file(
         self, setup_hurricane_event: HurricaneEvent

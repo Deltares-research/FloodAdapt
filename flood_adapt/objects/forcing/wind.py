@@ -81,7 +81,13 @@ class WindTrack(IWind):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
-            self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+            if self.path.suffix == ".spw" and self.path.with_suffix(".cyc").exists():
+                # Try to copy the much smaller .cyc file if it exists
+                self.path = copy_file_to_output_dir(
+                    self.path.with_suffix(".cyc"), Path(output_dir)
+                )
+            else:
+                self.path = copy_file_to_output_dir(self.path, Path(output_dir))
 
 
 class WindCSV(IWind):

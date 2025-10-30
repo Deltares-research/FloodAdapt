@@ -4,12 +4,16 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Union
 
+import geopandas as gpd
 from pydantic import BeforeValidator
 
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     ObjectDir,
     db_path,
 )
+
+logger = FloodAdaptLogging.getLogger(__name__)
 
 
 @contextmanager
@@ -109,6 +113,9 @@ def save_file_to_database(
 ) -> Path:
     """Save a file to the database.
 
+    Geospatial files (`.shp`, `.geojson`, `.gpkg`), are read, converted, and saved in standard format (EPSG:4326).
+    Other files are simply copied.
+
     Parameters
     ----------
     src_file : Path | str | os.PathLike
@@ -136,18 +143,22 @@ def save_file_to_database(
     if src_file == dst_file:
         return dst_file
     elif dst_file.exists():
-        if dst_file.suffix == ".shp":
-            for file in list(dst_file.parent.glob(f"{dst_file.stem}.*")):
-                os.remove(file)
-        else:
-            os.remove(dst_file)
+        match dst_file.suffix:
+            case ".shp":
+                for file in list(dst_file.parent.glob(f"{dst_file.stem}.*")):
+                    os.remove(file)
+            case _:
+                os.remove(dst_file)
 
     dst_file.parent.mkdir(parents=True, exist_ok=True)
-    if src_file.suffix == ".shp":
-        for file in list(src_file.parent.glob(f"{src_file.stem}.*")):
-            shutil.copy2(file, dst_file.parent.joinpath(file.name))
-    else:
-        shutil.copy2(src_file, dst_file)
+    match src_file.suffix:
+        case ".shp":
+            # to_file docstring: `If no extension is specified, it saves ESRI Shapefile to a folder.`
+            gpd.read_file(src_file).to_crs(epsg=4326).to_file(dst_file.with_suffix(""))
+        case ".geojson" | ".gpkg":
+            gpd.read_file(src_file).to_crs(epsg=4326).to_file(dst_file)
+        case _:
+            shutil.copy2(src_file, dst_file)
 
     return dst_file
 
