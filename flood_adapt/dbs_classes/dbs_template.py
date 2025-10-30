@@ -102,24 +102,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         copy_object.model_validate(copy_object)
         self.save(copy_object)
 
-        # TODO : check which Object classes have additional files (e.g. .spw, .cyc, .gpkg) and implement `read` and `save_additional` so this works properly
-
-        # with open(toml_path, "wb") as f:
-        #     tomli_w.dump(copy_object.model_dump(exclude_none=True), f)
-
-        # # Then copy all the accompanied files
-        # src = self.input_path / old_name
-        # dest = self.input_path / new_name
-
-        # EXCLUDE = [".spw", ".toml"]
-        # for file in src.glob("*"):
-        #     if file.suffix in EXCLUDE:
-        #         continue
-        #     if file.is_dir():
-        #         shutil.copytree(file, dest / file.name, dirs_exist_ok=True)
-        #     else:
-        #         shutil.copy2(file, dest / file.name)
-
     def save(
         self,
         object_model: T_OBJECTMODEL,

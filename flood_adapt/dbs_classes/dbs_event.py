@@ -36,6 +36,35 @@ class DbsEvent(DbsTemplate[Event]):
         # Load event
         return EventFactory.load_file(event_path, load_all=load_all)
 
+    def copy(self, old_name: str, new_name: str, new_description: str):
+        """Copy (duplicate) an existing object, and give it a new name.
+
+        Parameters
+        ----------
+        old_name : str
+            name of the existing measure
+        new_name : str
+            name of the new measure
+        new_description : str
+            description of the new measure
+
+        Raises
+        ------
+        AlreadyExistsError
+            Raise error if an object with the new name already exists.
+        IsStandardObjectError
+            Raise error if an object with the new name is a standard object.
+        DatabaseError
+            Raise error if the saving of the object fails.
+        """
+        copy_object = self.get(old_name, load_all=True)
+        copy_object.name = new_name
+        copy_object.description = new_description
+
+        # After changing the name and description, re-trigger the validators
+        copy_object.model_validate(copy_object)
+        self.save(copy_object)
+
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if an event is used in a scenario.
 
