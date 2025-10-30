@@ -15,8 +15,11 @@ from pydantic import (
 )
 
 from flood_adapt.config.site import Site
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.object_model import Object
+
+logger = FloodAdaptLogging.getLogger(__name__)
 
 
 class MeasureCategory(str, Enum):
@@ -207,19 +210,33 @@ class Measure(Object):
         if isinstance(gdf, gpd.GeoDataFrame):
             return f"{self.name}.geojson"
         elif isinstance(gdf, Path):
-            return gdf.as_posix()
-        return gdf
+            return gdf.with_suffix(".geojson").as_posix()
+        return Path(gdf).with_suffix(".geojson").as_posix()
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.gdf is not None and isinstance(self.gdf, gpd.GeoDataFrame):
-            Path(output_dir).mkdir(parents=True, exist_ok=True)
-            self.gdf.to_crs(epsg=4326).to_file(
-                Path(output_dir) / f"{self.name}.geojson"
-            )
+        if self.gdf is not None:
+            output_dir = Path(output_dir)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            if isinstance(self.gdf, gpd.GeoDataFrame):
+                self.gdf.to_crs(epsg=4326).to_file(
+                    Path(output_dir) / f"{self.name}.geojson"
+                )
+            elif isinstance(self.gdf, Path):
+                dst = Path(output_dir, self.gdf.name).with_suffix(".geojson")
+                gpd.read_file(self.gdf).to_file(dst)
+            else:
+                dst = Path(output_dir, Path(self.gdf).name).with_suffix(".geojson")
+                gpd.read_file(self.gdf).to_file(dst)
 
     def read(self, directory: Path) -> None:
         if self.gdf is not None and isinstance(self.gdf, (str, Path)):
-            self.gdf = gpd.read_file(directory / self.gdf).to_crs(epsg=4326)
+            gdf = gpd.read_file(directory / self.gdf)
+            if gdf.crs is not None:
+                gdf = gdf.to_crs(epsg=4326)
+            else:
+                logger.warning(f"No CRS defined in {self.gdf}, assuming EPSG:4326")
+                gdf = gdf.set_crs(epsg=4326)
+            self.gdf = gdf
 
     def __eq__(self, value):
         if not isinstance(value, self.__class__):

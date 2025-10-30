@@ -37,3 +37,57 @@ def test_save_with_new_development_areas_shapefile_already_exists(
     assert expected_new_path.exists()
     assert test_projection.socio_economic_change.new_development_shapefile is None
     assert isinstance(test_projection.socio_economic_change.gdf, gpd.GeoDataFrame)
+
+
+def test_save_additional_with_path(
+    projection_full: Projection, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
+):
+    path = tmp_path / "projection.geojson"
+    gdf_polygon.to_file(path)
+
+    projection_full.socio_economic_change.gdf = path
+
+    output_dir = tmp_path / "output"
+    projection_full.save_additional(output_dir)
+
+    expected_path = output_dir / path.name
+    assert expected_path.exists()
+
+
+def test_save_additional_with_gdf(
+    projection_full: Projection, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
+):
+    projection_full.socio_economic_change.gdf = gdf_polygon
+
+    output_dir = tmp_path / "output"
+    projection_full.save_additional(output_dir)
+
+    expected_path = output_dir / "new_developments.geojson"
+    assert expected_path.exists()
+
+
+def test_save_additional_with_shapefile(
+    projection_full: Projection, tmp_path: Path, shapefile: Path
+):
+    projection_full.socio_economic_change.gdf = shapefile
+
+    output_dir = tmp_path / "output"
+    projection_full.save_additional(output_dir)
+
+    expected_path = output_dir / shapefile.with_suffix(".geojson").name
+    assert expected_path.exists()
+
+
+def test_save_additional_with_str(
+    projection_full: Projection, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
+):
+    path = tmp_path / "projection.geojson"
+    gdf_polygon.to_file(path)
+
+    projection_full.socio_economic_change.gdf = path.as_posix()
+
+    output_dir = tmp_path / "output"
+    projection_full.save_additional(output_dir)
+
+    expected_path = output_dir / path.name
+    assert expected_path.exists()

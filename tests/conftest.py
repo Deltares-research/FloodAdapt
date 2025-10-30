@@ -316,6 +316,11 @@ def spw_file(test_data_dir) -> Path:
     return spw_file
 
 
+@pytest.fixture
+def shapefile(test_data_dir: Path):
+    return test_data_dir / "shapefiles" / "pop_growth_new_20.shp"
+
+
 ## Dummy fixtures
 
 

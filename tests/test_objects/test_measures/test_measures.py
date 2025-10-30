@@ -267,6 +267,58 @@ class TestMeasure:
         assert isinstance(loaded.gdf, gpd.GeoDataFrame)
         assert saved == loaded
 
+    def test_save_additional_with_path(
+        self, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
+    ):
+        path = tmp_path / "measure.geojson"
+        gdf_polygon.to_file(path)
+        measure = Measure(
+            name="test_measure",
+            description="test desc",
+            type=MeasureType.floodwall,
+            selection_type=SelectionType.polygon,
+            gdf=path,
+        )
+        output_dir = tmp_path / "output"
+        measure.save_additional(output_dir)
+
+        expected_path = output_dir / path.name
+        assert expected_path.exists()
+
+    def test_save_additional_with_gdf(
+        self, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
+    ):
+        measure = Measure(
+            name="test_measure",
+            description="test desc",
+            type=MeasureType.floodwall,
+            selection_type=SelectionType.polygon,
+            gdf=gdf_polygon,
+        )
+        output_dir = tmp_path / "output"
+        measure.save_additional(output_dir)
+
+        expected_path = output_dir / f"{measure.name}.geojson"
+        assert expected_path.exists()
+
+    def test_save_additional_with_str(
+        self, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
+    ):
+        path = tmp_path / "measure.geojson"
+        gdf_polygon.to_file(path)
+        measure = Measure(
+            name="test_measure",
+            description="test desc",
+            type=MeasureType.floodwall,
+            selection_type=SelectionType.polygon,
+            gdf=path.as_posix(),
+        )
+        output_dir = tmp_path / "output"
+        measure.save_additional(output_dir)
+
+        expected_path = output_dir / path.name
+        assert expected_path.exists()
+
 
 class TestGreenInfrastructure:
     def test_green_infrastructure_model_correct_aggregation_area_greening_input(self):
