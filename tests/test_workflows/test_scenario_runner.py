@@ -4,9 +4,9 @@ import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.utils import finished_file_exists
-from flood_adapt.objects.events.hurricane import HurricaneEvent
-from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
-from tests.test_objects.test_events.test_hurricane import setup_hurricane_event
+from flood_adapt.objects import HurricaneEvent, Scenario
+from flood_adapt.workflows.scenario_runner import ScenarioRunner
+from tests.test_objects.test_events.conftest import setup_hurricane_event
 
 __all__ = ["setup_hurricane_event"]
 

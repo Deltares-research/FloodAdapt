@@ -6,16 +6,42 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
+import geopandas as gpd
+import numpy as np
+import pandas as pd
 import pytest
+from cht_cyclones.tropical_cyclone import TropicalCyclone
 from dotenv import load_dotenv
 
-from flood_adapt import __path__
-from flood_adapt.config.config import Settings
-from flood_adapt.flood_adapt import FloodAdapt
-from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt import FloodAdapt, FloodAdaptLogging, __path__
+from flood_adapt.config import RiverModel, Settings
+from flood_adapt.objects import (
+    Buyout,
+    MeasureType,
+    PhysicalProjection,
+    Projection,
+    Pump,
+    Scenario,
+    SelectionType,
+    SocioEconomicChange,
+    Strategy,
+    SyntheticEvent,
+)
+from flood_adapt.objects.forcing import (
+    DischargeConstant,
+    ForcingType,
+    RainfallConstant,
+    ShapeType,
+    SurgeModel,
+    TideModel,
+    TimeFrame,
+    TimeseriesFactory,
+    WaterlevelSynthetic,
+    WindConstant,
+)
+from flood_adapt.objects.forcing import unit_system as us
 from tests.data.create_test_input import update_database_input
 from tests.data.create_test_static import update_database_static
-from tests.fixtures import *  # noqa
 
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"
@@ -247,3 +273,180 @@ def pytest_runtest_setup(item):
     test_name = item.name
     logger = FloodAdaptLogging.getLogger()
     logger.info(f"\nStarting test: {test_name}\n")
+
+
+@pytest.fixture()
+def dummy_time_model() -> TimeFrame:
+    return TimeFrame()
+
+
+@pytest.fixture()
+def dummy_1d_timeseries_df(dummy_time_model) -> pd.DataFrame:
+    return _n_dim_dummy_timeseries_df(1, dummy_time_model)
+
+
+@pytest.fixture()
+def dummy_2d_timeseries_df(dummy_time_model) -> pd.DataFrame:
+    return _n_dim_dummy_timeseries_df(2, dummy_time_model)
+
+
+def _n_dim_dummy_timeseries_df(n_dims: int, time_model: TimeFrame) -> pd.DataFrame:
+    time = pd.date_range(
+        start=time_model.start_time - 10 * time_model.time_step,
+        end=time_model.end_time + 10 * time_model.time_step,
+        freq=time_model.time_step,
+        name="time",
+    )
+    gen = np.random.default_rng()
+    data = {f"data_{i}": gen.random(len(time)) for i in range(n_dims)}
+    df = pd.DataFrame(index=time, data=data, dtype=float)
+    return df
+
+
+@pytest.fixture(scope="session")
+def spw_file(test_data_dir) -> Path:
+    cyc_file = test_data_dir / "IAN.cyc"
+    spw_file = test_data_dir / "IAN.spw"
+    if spw_file.exists():
+        return spw_file
+    tc = TropicalCyclone()
+    tc.include_rainfall = True
+    tc.read_track(cyc_file, fmt="ddb_cyc")
+    tc.to_spiderweb(spw_file)
+    return spw_file
+
+
+## Dummy fixtures
+
+
+@pytest.fixture()
+def dummy_buyout_measure():
+    return Buyout(
+        name="dummy_buyout_measure",
+        type=MeasureType.buyout_properties,
+        selection_type=SelectionType.aggregation_area,
+        aggregation_area_type="aggr_lvl_2",
+        aggregation_area_name="name1",
+        property_type="residential",
+    )
+
+
+@pytest.fixture()
+def dummy_pump_measure(test_data_dir):
+    return Pump(
+        name="dummy_pump_measure",
+        type=MeasureType.pump,
+        selection_type=SelectionType.polyline,
+        gdf=gpd.read_file(test_data_dir / "pump.geojson").to_crs(epsg=4326),
+        discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cfs),
+    )
+
+
+@pytest.fixture()
+def dummy_strategy(dummy_buyout_measure, dummy_pump_measure):
+    pump = dummy_pump_measure
+    buyout = dummy_buyout_measure
+    strategy = Strategy(
+        name="dummy_strategy",
+        description="",
+        measures=[buyout.name, pump.name],
+    )
+    strategy.initialize_measure_objects([buyout, pump])
+    return strategy
+
+
+@pytest.fixture()
+def dummy_projection():
+    return Projection(
+        name="dummy_projection",
+        physical_projection=PhysicalProjection(),
+        socio_economic_change=SocioEconomicChange(),
+    )
+
+
+@pytest.fixture()
+def dummy_event():
+    return SyntheticEvent(
+        name="test_synthetic_nearshore",
+        time=TimeFrame(
+            start_time=datetime(2020, 1, 1),
+            end_time=datetime(2020, 1, 2),
+        ),
+        forcings={
+            ForcingType.WIND: [
+                WindConstant(
+                    speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
+                    direction=us.UnitfulDirection(
+                        value=60, units=us.UnitTypesDirection.degrees
+                    ),
+                )
+            ],
+            ForcingType.RAINFALL: [
+                RainfallConstant(
+                    intensity=us.UnitfulIntensity(
+                        value=20, units=us.UnitTypesIntensity.mm_hr
+                    )
+                )
+            ],
+            ForcingType.DISCHARGE: [
+                DischargeConstant(
+                    river=RiverModel(
+                        name="cooper",
+                        description="Cooper River",
+                        x_coordinate=595546.3,
+                        y_coordinate=3675590.6,
+                        mean_discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
+                        ),
+                    ),
+                    discharge=us.UnitfulDischarge(
+                        value=5000, units=us.UnitTypesDischarge.cfs
+                    ),
+                )
+            ],
+            ForcingType.WATERLEVEL: [
+                WaterlevelSynthetic(
+                    surge=SurgeModel(
+                        timeseries=TimeseriesFactory.from_args(
+                            shape_type=ShapeType.triangle,
+                            duration=us.UnitfulTime(
+                                value=1, units=us.UnitTypesTime.days
+                            ),
+                            peak_time=us.UnitfulTime(
+                                value=8, units=us.UnitTypesTime.hours
+                            ),
+                            peak_value=us.UnitfulLength(
+                                value=1, units=us.UnitTypesLength.meters
+                            ),
+                        )
+                    ),
+                    tide=TideModel(
+                        harmonic_amplitude=us.UnitfulLength(
+                            value=1, units=us.UnitTypesLength.meters
+                        ),
+                        harmonic_period=us.UnitfulTime(
+                            value=12.4, units=us.UnitTypesTime.hours
+                        ),
+                        harmonic_phase=us.UnitfulTime(
+                            value=0, units=us.UnitTypesTime.hours
+                        ),
+                    ),
+                )
+            ],
+        },
+    )
+
+
+@pytest.fixture()
+def dummy_scenario(
+    dummy_event,
+    dummy_projection,
+    dummy_strategy,
+):
+    scn = Scenario(
+        name="dummy_scenario",
+        event=dummy_event.name,
+        projection=dummy_projection.name,
+        strategy=dummy_strategy.name,
+    )
+    return scn
