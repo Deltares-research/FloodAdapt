@@ -149,10 +149,7 @@ def save_file_to_database(
 
     dst_file.parent.mkdir(parents=True, exist_ok=True)
     match src_file.suffix:
-        case ".shp":
-            # to_file docstring: `If no extension is specified, it saves ESRI Shapefile to a folder.`
-            write_gdf_with_global_crs(src_file, dst_file.with_suffix(""))
-        case ".geojson" | ".gpkg":
+        case ".shp" | ".geojson" | ".gpkg":
             write_gdf_with_global_crs(src_file, dst_file)
         case _:
             shutil.copy2(src_file, dst_file)
