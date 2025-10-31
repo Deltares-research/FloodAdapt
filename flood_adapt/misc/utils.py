@@ -168,7 +168,7 @@ def write_gdf_with_global_crs(src: gpd.GeoDataFrame | Path, dst_path: Path) -> N
 
     if gdf.crs is None:
         logger.warning(f"CRS is not defined for {src}. Assuming EPSG:4326.")
-        gdf.set_crs(epsg=4326, inplace=True)
+        gdf = gdf.set_crs(epsg=4326)
     else:
         gdf = gdf.to_crs(epsg=4326)
     gdf.to_file(dst_path)
