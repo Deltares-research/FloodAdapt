@@ -122,7 +122,6 @@ flood-adapt = { path = "." }
 
 [tool.pixi.feature.editable.pypi-dependencies]
 flood-adapt = { path = ".", editable = true }
-hydromt-fiat = { path = "../hydromt_fiat", editable = true }
 
 [tool.pixi.environments]
 default = { features = ["py312", "dev", "docs", "editable"], solve-group = "py312" }
