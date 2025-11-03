@@ -341,7 +341,7 @@ class SlrScenariosModel(BaseModel):
         # write html to results folder
         output_loc.parent.mkdir(parents=True, exist_ok=True)
         fig.write_html(output_loc)
-        return str(output_loc)
+        return output_loc.as_posix()
 
 
 class FloodModel(BaseModel):
