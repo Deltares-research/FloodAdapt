@@ -192,7 +192,7 @@ class Database(IDatabase):
         if self.site.sfincs.slr_scenarios is None:
             raise ConfigError("No SLR scenarios defined in the site configuration.")
         slr = self.site.sfincs.slr_scenarios
-        slr.file = str(self.static_path / slr.file)
+        slr.file = (self.static_path / slr.file).as_posix()
         return slr
 
     def get_outputs(self) -> dict[str, Any]:
@@ -285,7 +285,7 @@ class Database(IDatabase):
             path to topobathy tiles
         """
         path = self.static_path / "dem" / self.site.sfincs.dem.filename
-        return str(path)
+        return path.as_posix()
 
     def get_index_path(self) -> str:
         """Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.
@@ -296,7 +296,7 @@ class Database(IDatabase):
             path to index tiles
         """
         path = self.static_path / "dem" / self.site.sfincs.dem.index_filename
-        return str(path)
+        return path.as_posix()
 
     def get_depth_conversion(self) -> float:
         """Return the flood depth conversion that is need in the gui to plot the flood map.

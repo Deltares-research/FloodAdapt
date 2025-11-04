@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
+import requests
 import xarray as xr
 
 from flood_adapt.objects.forcing.meteo_handler import MeteoHandler
@@ -70,6 +71,14 @@ class TestMeteoHandler:
     def test_download_meteo_data(
         self, setup_meteo_test: tuple[MeteoHandler, TimeFrame]
     ):
+        # Url taken from cht_meteo.MeteoDatasetGFSAnalysis0p50.gfs_anl_0p50.py
+        api_url = "https://www.ncei.noaa.gov/thredds/dodsC/model-gfs-g4-anl-files/202101/20210101/gfs_4_20210101_0000_000.grb2"
+        try:
+            response = requests.get(api_url, timeout=5)
+            response.raise_for_status()
+        except requests.RequestException:
+            pytest.skip("Skipping: NOAA COOPS API is unavailable")
+
         # Arrange
         handler, time_model = setup_meteo_test
 
