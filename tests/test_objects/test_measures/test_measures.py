@@ -726,8 +726,9 @@ def test_elevate_polygon_read(test_db):
     assert elevate.elevation.units == us.UnitTypesLength.feet
     assert elevate.elevation.type == "floodmap"
     assert elevate.selection_type == "polygon"
-    assert elevate.polygon_file == str(
-        test_toml.parent / "raise_property_polygon.geojson"
+    assert (
+        elevate.polygon_file
+        == (test_toml.parent / "raise_property_polygon.geojson").as_posix()
     )
 
     polygon = gpd.read_file(elevate.polygon_file)

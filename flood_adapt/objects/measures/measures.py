@@ -198,7 +198,9 @@ class Measure(Object):
         measure = cls.model_validate(toml)
 
         if measure.polygon_file:
-            measure.polygon_file = str(Path(file_path).parent / measure.polygon_file)
+            measure.polygon_file = (
+                Path(file_path).parent / measure.polygon_file
+            ).as_posix()
 
         return measure
 

@@ -106,7 +106,7 @@ class FiatAdapter(IImpactAdapter):
         self.config_base_path = config_base_path
         self.exe_path = exe_path
         self.delete_crashed_runs = delete_crashed_runs
-        self._model_root = str(model_root.resolve())
+        self._model_root = model_root.resolve().as_posix()
         self.fiat_columns = _FIAT_COLUMNS
         self.impact_columns = _IMPACT_COLUMNS  # columns of FA impact output
 
@@ -135,7 +135,7 @@ class FiatAdapter(IImpactAdapter):
     def read(self, path: Path) -> None:
         """Read the fiat model from the current model root."""
         if Path(self.model.root).resolve() != Path(path).resolve():
-            self.model.set_root(root=str(path), mode="r")
+            self.model.set_root(root=path.as_posix(), mode="r")
         self.model.read()
 
     def write(self, path_out: Union[str, os.PathLike], overwrite: bool = True) -> None:
@@ -148,7 +148,7 @@ class FiatAdapter(IImpactAdapter):
 
         write_mode = "w+" if overwrite else "w"
         with cd(path_out):
-            self.model.set_root(root=str(path_out), mode=write_mode)
+            self.model.set_root(root=path_out.as_posix(), mode=write_mode)
             self.model.write()
 
     def close_files(self):
@@ -717,7 +717,7 @@ class FiatAdapter(IImpactAdapter):
         conversion_factor = wl_current_units.convert(self.model.exposure.unit)
 
         self.model.setup_hazard(
-            map_fn=map_fn,
+            map_fn=[Path(p).as_posix() for p in map_fn],
             map_type=map_type.value,
             rp=None,
             crs=None,  # change this in new version (maybe to str(floodmap.crs.split(':')[1]))
@@ -1160,7 +1160,7 @@ class FiatAdapter(IImpactAdapter):
                 object_dir=ObjectDir.measure,
                 obj_name=measure.name,
                 path=measure.polygon_file,
-            )
+            ).as_posix()
         else:
             polygon_file = None
 
@@ -1171,7 +1171,7 @@ class FiatAdapter(IImpactAdapter):
             non_building_names=self.config.non_building_names,
             aggregation=measure.aggregation_area_type,
             aggregation_area_name=measure.aggregation_area_name,
-            polygon_file=str(polygon_file),
+            polygon_file=polygon_file,
         )
 
         return ids
