@@ -1503,66 +1503,30 @@ class TestPostProcessing:
     @pytest.fixture(scope="class")
     def floodmaps_1d(self):
         # 3 simulations, 5 grid cells (1D for simplicity)
-        coords_1d = {"z": [0, 1, 2, 3, 4]}
         floodmaps = [
-            xr.DataArray(
-                [np.nan, 2.0, np.nan, 4.0, np.nan],
-                dims=["z"],
-                coords=coords_1d,
-            ),
-            xr.DataArray(
-                [2.0, 3.0, np.nan, 5.0, np.nan],
-                dims=["z"],
-                coords=coords_1d,
-            ),
-            xr.DataArray(
-                [3.0, 4.0, np.nan, 6.0, np.nan],
-                dims=["z"],
-                coords=coords_1d,
-            ),
+            np.array([np.nan, 2.0, np.nan, 4.0, np.nan]),
+            np.array([2.0, 3.0, np.nan, 5.0, np.nan]),
+            np.array([3.0, 4.0, np.nan, 6.0, np.nan]),
         ]
         frequencies = [1.2, 0.01, 0.001]  # decreasing probability
-        zb = xr.DataArray(
-            [0.0, 1.0, 0.0, 2.0, 2.0],
-            dims=["z"],
-            coords=coords_1d,
-        )  # bed elevation as DataArray
-        mask = xr.DataArray([1, 1, 0, 1, 1], dims=["z"], coords=coords_1d)
+        zb = np.array([0.0, 1.0, 0.0, 2.0, 2.0])  # bed elevation as numpy array
+        mask = np.array([1, 1, 0, 1, 1])
         return_periods = [2, 50, 100]
         return floodmaps, frequencies, zb, mask, return_periods
 
     @pytest.fixture(scope="class")
     def floodmaps_2d(self):
         # 3 simulations, 2x3 grid (2D)
-        coords_2d = {"y": [0, 1], "x": [0, 1, 2]}
         floodmaps = [
-            xr.DataArray(
-                [[np.nan, 2.0, 3.0], [np.nan, 4.0, np.nan]],
-                dims=["y", "x"],
-                coords=coords_2d,
-            ),
-            xr.DataArray(
-                [[2.0, 3.0, 4.0], [np.nan, 5.0, np.nan]],
-                dims=["y", "x"],
-                coords=coords_2d,
-            ),
-            xr.DataArray(
-                [[3.0, 4.0, 5.0], [np.nan, 6.0, np.nan]],
-                dims=["y", "x"],
-                coords=coords_2d,
-            ),
+            np.array([[np.nan, 2.0, 3.0], [np.nan, 4.0, np.nan]]),
+            np.array([[2.0, 3.0, 4.0], [np.nan, 5.0, np.nan]]),
+            np.array([[3.0, 4.0, 5.0], [np.nan, 6.0, np.nan]]),
         ]
         frequencies = [1.2, 0.01, 0.001]  # decreasing probability
-        zb = xr.DataArray(
-            [[0.0, 1.0, 2.0], [0.0, 3.0, 0.0]],
-            dims=["y", "x"],
-            coords=coords_2d,
-        )  # bed elevation as DataArray
-        mask = xr.DataArray(
-            [[1, 1, 1], [0, 1, 1]],
-            dims=["y", "x"],
-            coords=coords_2d,
-        )
+        zb = np.array(
+            [[0.0, 1.0, 2.0], [0.0, 3.0, 0.0]]
+        )  # bed elevation as numpy array
+        mask = np.array([[1, 1, 1], [0, 1, 1]])
         return_periods = [2, 50, 100]
         return floodmaps, frequencies, zb, mask, return_periods
 
@@ -1588,14 +1552,13 @@ class TestPostProcessing:
         rp_maps = SfincsAdapter.calc_rp_maps(
             floodmaps, frequencies, zb, mask, return_periods
         )
-        # Should return a list of xr.DataArray, one per return period
+        # Should return a list of np.ndarray, one per return period
         assert isinstance(rp_maps, list)
         assert len(rp_maps) == len(return_periods)
         for da in rp_maps:
-            assert isinstance(da, xr.DataArray)
+            assert isinstance(da, np.ndarray)
             # Should have the same coordinates as the input (excluding masked cells)
             assert floodmaps[0].shape == da.shape
-            xr.testing.assert_identical(floodmaps[0].coords, da.coords)
 
     @pytest.mark.parametrize("floodmaps_fixture", ["floodmaps_1d", "floodmaps_2d"])
     def test_calc_rp_maps_dry_cells(self, request, floodmaps_fixture):
@@ -1610,9 +1573,9 @@ class TestPostProcessing:
 
         for da in rp_maps:
             # Assert that masked cells (mask == 0) are nan in all rp_maps
-            assert np.all(np.isnan(da.to_numpy())[mask.to_numpy() == 0])
+            assert np.all(np.isnan(da)[mask == 0])
             # Assert that cells that are always dry (no flood in any simulation) are nan
-            assert np.all(np.isnan(da.to_numpy()[always_dry]))
+            assert np.all(np.isnan(da[always_dry]))
 
     def test_calc_rp_maps_increase_freq(self, floodmaps_2d):
         floodmaps, frequencies, zb, mask, return_periods = floodmaps_2d
@@ -1626,9 +1589,9 @@ class TestPostProcessing:
         )
         # Ensure the rp with increased frequencies have larger values
         for rp1, rp2 in zip(rp_maps1, rp_maps2):
-            mask_valid = ~np.isnan(rp1.to_numpy()) & ~np.isnan(rp2.to_numpy())
+            mask_valid = ~np.isnan(rp1) & ~np.isnan(rp2)
             assert np.all(
-                rp2.to_numpy()[mask_valid] >= rp1.to_numpy()[mask_valid]
+                rp2[mask_valid] >= rp1[mask_valid]
             ), "Return period maps with increased frequencies should have larger values (for non-NaN values)"
 
     def test_calc_rp_maps_increase_value(self, floodmaps_2d):
@@ -1639,10 +1602,7 @@ class TestPostProcessing:
         )
 
         for i in range(len(rp_maps) - 1):
-            mask_valid = ~np.isnan(rp_maps[i].to_numpy()) & ~np.isnan(
-                rp_maps[i + 1].to_numpy()
-            )
+            mask_valid = ~np.isnan(rp_maps[i]) & ~np.isnan(rp_maps[i + 1])
             assert np.all(
-                rp_maps[i + 1].to_numpy()[mask_valid]
-                >= rp_maps[i].to_numpy()[mask_valid]
+                rp_maps[i + 1][mask_valid] >= rp_maps[i][mask_valid]
             ), f"Return period map at index {i + 1} should have values greater than or equal to index {i}"
