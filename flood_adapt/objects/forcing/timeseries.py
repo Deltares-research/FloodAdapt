@@ -12,8 +12,9 @@ import tomli
 import tomli_w
 from pydantic import BaseModel, model_validator
 
-from flood_adapt.misc.path_builder import TopLevelDir, db_path
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.config import SCSModel
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.forcing.csv import read_csv
 from flood_adapt.objects.forcing.time_frame import REFERENCE_TIME, TimeFrame
 
@@ -232,8 +233,10 @@ class SyntheticTimeseries(BaseModel):
 class ScsTimeseries(SyntheticTimeseries):
     shape_type: ShapeType = ShapeType.scs
 
-    scs_file_name: str
+    curves: DataFrameContainer
     scs_type: Scstype
+
+    # TODO add DataFrameContainer and remove `db_path`
 
     def calculate_data(
         self, time_step: timedelta = TimeFrame().time_step
@@ -241,10 +244,8 @@ class ScsTimeseries(SyntheticTimeseries):
         _duration = self.duration.convert(us.UnitTypesTime.seconds)
         _start_time = self.start_time.convert(us.UnitTypesTime.seconds)
 
-        scs_df = pd.read_csv(
-            db_path(top_level_dir=TopLevelDir.static) / "scs" / self.scs_file_name,
-            index_col=0,
-        )[self.scs_type]
+        self.curves.read(open_kwargs={"index_col": 0})
+        scs_df = self.curves.data[self.scs_type]
 
         tt = pd.date_range(
             start=(REFERENCE_TIME + self.start_time.to_timedelta()),
@@ -497,8 +498,7 @@ class TimeseriesFactory:
         peak_value: Optional[us.ValueUnitPairs] = None,
         cumulative: Optional[us.ValueUnitPairs] = None,
         fill_value: float = 0.0,
-        scs_file_name: Optional[str] = None,
-        scs_type: Optional[Scstype] = None,
+        scs: SCSModel | None = None,
     ) -> SyntheticTimeseries:
         """Create a timeseries object based on the shape type."""
         match shape_type:
@@ -527,22 +527,16 @@ class TimeseriesFactory:
                     fill_value=fill_value,
                 )
             case ShapeType.scs:
-                if scs_file_name is None or scs_type is None:
-                    from flood_adapt.dbs_classes.database import Database
-
-                    scs_config = Database().site.sfincs.scs
-                    if scs_config is None:
-                        raise ValueError("SCS configuration not found in database.")
-                    scs_file_name = scs_file_name or scs_config.file
-                    scs_type = scs_type or scs_config.type
+                if scs is None:
+                    raise ValueError("SCS configuration not found in database.")
                 return ScsTimeseries(
                     duration=duration,
                     peak_time=peak_time,
                     peak_value=peak_value,
                     cumulative=cumulative,
                     fill_value=fill_value,
-                    scs_file_name=scs_file_name,
-                    scs_type=scs_type,
+                    curves=scs.curves,
+                    scs_type=scs.type,
                 )
             case _:
                 raise ValueError(f"Unknown shape type {shape_type}.")

@@ -1,3 +1,4 @@
+from flood_adapt.objects import unit_system
 from flood_adapt.objects.benefits.benefits import Benefit, CurrentSituationModel
 from flood_adapt.objects.events.event_factory import EventFactory
 from flood_adapt.objects.events.event_set import EventSet, SubEventModel
@@ -38,6 +39,7 @@ from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
 
 __all__ = [
+    "unit_system",
     # Object
     "Object",
     # Measures

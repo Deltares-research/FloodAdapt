@@ -1,4 +1,3 @@
-import geopandas as gpd
 import pytest
 
 from flood_adapt import unit_system as us
@@ -7,6 +6,7 @@ from flood_adapt.objects import (
     Projection,
     SocioEconomicChange,
 )
+from flood_adapt.objects.data_container import GeoDataFrameContainer
 
 
 @pytest.fixture()
@@ -28,7 +28,7 @@ def projection_full(test_data_dir):
                 units=us.UnitTypesLength.feet,
                 type=us.VerticalReference.floodmap,
             ),
-            gdf=gpd.read_file(test_data_dir / "new_areas.geojson").to_crs(epsg=4326),
+            gdf=GeoDataFrameContainer(path=test_data_dir / "new_areas.geojson"),
         ),
     )
 

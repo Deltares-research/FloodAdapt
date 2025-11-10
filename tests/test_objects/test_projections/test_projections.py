@@ -3,6 +3,7 @@ from pathlib import Path
 import geopandas as gpd
 
 from flood_adapt.objects import Projection
+from flood_adapt.objects.data_container import GeoDataFrameContainer
 
 
 def test_projection_save_and_load_file(projection_full: Projection, tmp_path: Path):
@@ -39,55 +40,27 @@ def test_save_with_new_development_areas_shapefile_already_exists(
     assert isinstance(test_projection.socio_economic_change.gdf, gpd.GeoDataFrame)
 
 
-def test_save_additional_with_path(
-    projection_full: Projection, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
+def test_save_additional(
+    projection_full: Projection,
+    tmp_path: Path,
+    gdf_container_polygon: GeoDataFrameContainer,
 ):
-    path = tmp_path / "projection.geojson"
-    gdf_polygon.to_file(path)
-
-    projection_full.socio_economic_change.gdf = path
+    projection_full.socio_economic_change.gdf = gdf_container_polygon
 
     output_dir = tmp_path / "output"
     projection_full.save_additional(output_dir)
 
-    expected_path = output_dir / path.name
-    assert expected_path.exists()
-
-
-def test_save_additional_with_gdf(
-    projection_full: Projection, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
-):
-    projection_full.socio_economic_change.gdf = gdf_polygon
-
-    output_dir = tmp_path / "output"
-    projection_full.save_additional(output_dir)
-
-    expected_path = output_dir / "new_developments.geojson"
+    expected_path = output_dir / f"{gdf_container_polygon.name}.geojson"
     assert expected_path.exists()
 
 
 def test_save_additional_with_shapefile(
     projection_full: Projection, tmp_path: Path, shapefile: Path
 ):
-    projection_full.socio_economic_change.gdf = shapefile
+    projection_full.socio_economic_change.gdf = GeoDataFrameContainer(path=shapefile)
 
     output_dir = tmp_path / "output"
     projection_full.save_additional(output_dir)
 
     expected_path = output_dir / shapefile.with_suffix(".geojson").name
-    assert expected_path.exists()
-
-
-def test_save_additional_with_str(
-    projection_full: Projection, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
-):
-    path = tmp_path / "projection.geojson"
-    gdf_polygon.to_file(path)
-
-    projection_full.socio_economic_change.gdf = path.as_posix()
-
-    output_dir = tmp_path / "output"
-    projection_full.save_additional(output_dir)
-
-    expected_path = output_dir / path.name
     assert expected_path.exists()

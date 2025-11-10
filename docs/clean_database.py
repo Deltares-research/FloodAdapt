@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 import shutil
 import sys
-from flood_adapt import FloodAdapt, Settings
+from flood_adapt import FloodAdapt, SETTINGS
 
 def clean_database(database_dir: Path):
     EXCLUDES = [
@@ -28,7 +28,8 @@ def clean_database(database_dir: Path):
             print(f"Removed directory: {dir_path}")
 
     # Validate
-    Settings(DATABASE_ROOT=database_dir.parent, DATABASE_NAME=database_dir.name)
+    SETTINGS.database_root = database_dir.parent
+    SETTINGS.database_name = database_dir.name
     FloodAdapt(database_dir)
 
 if __name__ == "__main__":

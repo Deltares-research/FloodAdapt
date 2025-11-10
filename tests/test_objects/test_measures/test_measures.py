@@ -13,7 +13,8 @@ from flood_adapt.objects import (
     MeasureType,
     SelectionType,
 )
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.measures.measures import GeoDataFrameContainer
 
 
 def assert_validation_error(
@@ -119,13 +120,15 @@ class TestMeasure:
         error = excinfo.value.errors()[0]
         assert error["type"] == "enum", error["type"]
 
-    def test_measure_polygon_correct_input(self, gdf_polygon: gpd.GeoDataFrame):
+    def test_measure_polygon_correct_input(
+        self, gdf_container_polygon: GeoDataFrameContainer
+    ):
         # Arrange
         hazard_measure = Measure(
             name="test_hazard_measure",
             description="test description",
             type=MeasureType.floodwall,
-            gdf=gdf_polygon,
+            gdf=gdf_container_polygon,
             selection_type=SelectionType.polygon,
         )
 
@@ -136,13 +139,15 @@ class TestMeasure:
         assert isinstance(hazard_measure.gdf, gpd.GeoDataFrame)
         assert hazard_measure.selection_type == "polygon"
 
-    def test_measure_polyline_correct_input(self, gdf_polygon):
+    def test_measure_polyline_correct_input(
+        self, gdf_container_polygon: GeoDataFrameContainer
+    ):
         # Arrange
         hazard_measure = Measure(
             name="test_hazard_measure",
             description="test description",
             type=MeasureType.floodwall,
-            gdf=gdf_polygon,
+            gdf=gdf_container_polygon,
             selection_type=SelectionType.polyline,
         )
 
@@ -249,14 +254,14 @@ class TestMeasure:
         assert "Measure\nselection_type\n  Input should be " in str(excinfo.value)
 
     def test_save_and_load_with_gdf(
-        self, gdf_polygon: gpd.GeoDataFrame, tmp_path: Path
+        self, gdf_container_polygon: GeoDataFrameContainer, tmp_path: Path
     ):
         dst_toml = tmp_path / "test_measure_with_gdf.toml"
         saved = Measure(
             name="test_measure_with_gdf",
             type=MeasureType.floodwall,
             selection_type=SelectionType.polygon,
-            gdf=gdf_polygon,
+            gdf=gdf_container_polygon,
         )
 
         saved.save(dst_toml)
@@ -277,7 +282,7 @@ class TestMeasure:
             description="test desc",
             type=MeasureType.floodwall,
             selection_type=SelectionType.polygon,
-            gdf=path,
+            gdf=GeoDataFrameContainer(path=path),
         )
         output_dir = tmp_path / "output"
         measure.save_additional(output_dir)
@@ -286,14 +291,14 @@ class TestMeasure:
         assert expected_path.exists()
 
     def test_save_additional_with_gdf(
-        self, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
+        self, tmp_path: Path, gdf_container_polygon: GeoDataFrameContainer
     ):
         measure = Measure(
             name="test_measure",
             description="test desc",
             type=MeasureType.floodwall,
             selection_type=SelectionType.polygon,
-            gdf=gdf_polygon,
+            gdf=gdf_container_polygon,
         )
         output_dir = tmp_path / "output"
         measure.save_additional(output_dir)
@@ -355,14 +360,14 @@ class TestGreenInfrastructure:
         assert green_infrastructure.percent_area == 100.0
 
     def test_green_infrastructure_model_correct_total_storage_polygon_input(
-        self, gdf_polygon
+        self, gdf_container_polygon: GeoDataFrameContainer
     ):
         # Arrange
         green_infrastructure = GreenInfrastructure(
             name="test_green_infrastructure",
             description="test description",
             type=MeasureType.total_storage,
-            gdf=gdf_polygon,
+            gdf=gdf_container_polygon,
             selection_type=SelectionType.polygon,
             volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
         )  # No height or percent_area needed for total storage
@@ -378,14 +383,14 @@ class TestGreenInfrastructure:
         )
 
     def test_green_infrastructure_model_correct_water_square_polygon_input(
-        self, gdf_polygon
+        self, gdf_container_polygon: GeoDataFrameContainer
     ):
         # Arrange
         green_infrastructure = GreenInfrastructure(
             name="test_green_infrastructure",
             description="test description",
             type=MeasureType.water_square,
-            gdf=gdf_polygon,
+            gdf=gdf_container_polygon,
             selection_type=SelectionType.polygon,
             volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
             height=us.UnitfulHeight(value=1, units=us.UnitTypesLength.meters),

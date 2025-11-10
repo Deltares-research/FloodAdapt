@@ -32,7 +32,12 @@ from flood_adapt.objects import (
     SelectionType,
     SyntheticEvent,
 )
-from flood_adapt.objects.events.hurricane import TranslationModel
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import (
+    CycloneTrackContainer,
+    GeoDataFrameContainer,
+    TranslationModel,
+)
 from flood_adapt.objects.forcing import (
     DischargeConstant,
     DischargeCSV,
@@ -61,7 +66,6 @@ from flood_adapt.objects.forcing import (
     WindSynthetic,
     WindTrack,
 )
-from flood_adapt.objects.forcing import unit_system as us
 from tests.test_adapter.conftest import _unsupported_forcing_source
 from tests.test_objects.test_forcing.test_netcdf import (
     get_test_dataset,
@@ -162,7 +166,7 @@ class TestAddForcing:
                 ),
             )
 
-            forcing = WindTrack(path=track_file)
+            forcing = WindTrack(track=CycloneTrackContainer(path=track_file))
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
@@ -181,7 +185,7 @@ class TestAddForcing:
             spw_file: Path,
         ):
             # Arrange
-            forcing = WindTrack(path=spw_file)
+            forcing = WindTrack(track=CycloneTrackContainer(path=spw_file))
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
@@ -324,7 +328,7 @@ class TestAddForcing:
                 ),
             )
 
-            forcing = RainfallTrack(path=track_file)
+            forcing = RainfallTrack(track=CycloneTrackContainer(path=track_file))
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
@@ -341,7 +345,7 @@ class TestAddForcing:
             spw_file: Path,
         ):
             # Arrange
-            forcing = RainfallTrack(path=spw_file)
+            forcing = RainfallTrack(track=CycloneTrackContainer(path=spw_file))
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
@@ -704,20 +708,20 @@ class TestAddMeasure:
 
     @staticmethod
     def get_measure_gdf(adapter: SfincsAdapter, measure: Measure) -> gpd.GeoDataFrame:
-        measure = adapter.database.measures.get(measure.name)
-        if measure.gdf is None or not isinstance(measure.gdf, gpd.GeoDataFrame):
+        measure = adapter.database.measures.get(measure.name, load_all=True)
+        if measure.gdf is None or not isinstance(measure.gdf.data, gpd.GeoDataFrame):
             raise ValueError("Measure does not have a valid gdf attribute.")
-        return measure.gdf.to_crs(adapter._model.crs.to_epsg())
+        return measure.gdf.data.to_crs(adapter._model.crs.to_epsg())
 
     class TestFloodwall:
         @pytest.fixture()
-        def floodwall(self, test_data_dir, test_db) -> FloodWall:
+        def floodwall(self, test_data_dir: Path, test_db) -> FloodWall:
             floodwall = FloodWall(
                 name="test_seawall",
                 description="seawall",
                 selection_type=SelectionType.polyline,
                 elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
-                gdf=gpd.read_file(test_data_dir / "seawall.geojson").to_crs(epsg=4326),
+                gdf=GeoDataFrameContainer(path=test_data_dir / "seawall.geojson"),
             )
 
             test_db.measures.save(floodwall)
@@ -811,7 +815,7 @@ class TestAddMeasure:
                     value=100, units=us.UnitTypesDischarge.cfs
                 ),
                 selection_type=SelectionType.polyline,
-                gdf=gpd.read_file(test_data_dir / "pump.geojson").to_crs(epsg=4326),
+                gdf=GeoDataFrameContainer(path=test_data_dir / "pump.geojson"),
             )
             test_db.measures.save(pump)
             return pump
@@ -917,9 +921,7 @@ class TestAddMeasure:
                 name="test_greeninfra",
                 description="greeninfra",
                 selection_type=SelectionType.polygon,
-                gdf=gpd.read_file(test_data_dir / "green_infra.geojson").to_crs(
-                    epsg=4326
-                ),
+                gdf=GeoDataFrameContainer(path=test_data_dir / "green_infra.geojson"),
                 volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
                 height=us.UnitfulHeight(value=2, units=us.UnitTypesLength.meters),
                 percent_area=0.5,

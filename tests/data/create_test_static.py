@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 from flood_adapt import unit_system as us
-from flood_adapt.config.config import Settings
+from flood_adapt.config import SETTINGS
 from flood_adapt.config.fiat import (
     FiatConfigModel,
     FiatModel,
@@ -47,6 +47,7 @@ from flood_adapt.config.sfincs import (
     SfincsModel,
 )
 from flood_adapt.config.site import Site, StandardObjectModel
+from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.forcing.tide_gauge import (
     TideGauge,
     TideGaugeSource,
@@ -285,7 +286,10 @@ def create_sfincs_config() -> SfincsModel:
         water_level=waterlevel_reference,
         slr_scenarios=SlrScenariosModel(relative_to_year=2020, file="slr/slr.csv"),
         dem=DemModel(filename="charleston_14m.tif", units=us.UnitTypesLength.meters),
-        scs=SCSModel(file="scs_rainfall.csv", type=Scstype.type3),
+        scs=SCSModel(
+            curves=DataFrameContainer(path=DATA_DIR / "scs_rainfall.csv"),
+            type=Scstype.type3,
+        ),
         cyclone_track_database=CycloneTrackDatabaseModel(file="IBTrACS.NA.v04r00.nc"),
         tide_gauge=tide_gauge,
         river=rivers,
@@ -347,9 +351,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    settings = Settings(
-        DATABASE_ROOT=Path(args.database_root).resolve(),
-        DATABASE_NAME=args.database_name,
-    )
-    print(f"Updating database: {settings.database_path}")
-    update_database_static(settings.database_path)
+    SETTINGS.database_root = Path(args.database_root).resolve()
+    SETTINGS.database_name = args.database_name
+
+    print(f"Updating database: {SETTINGS.database_path}")
+    update_database_static(SETTINGS.database_path)

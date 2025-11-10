@@ -6,10 +6,6 @@ from fiat_toolbox import get_fiat_columns
 from pandas.testing import assert_frame_equal
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.misc.path_builder import (
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
 
 _FIAT_COLUMNS = get_fiat_columns()
@@ -77,9 +73,9 @@ class TestFiatAdapter:
         )
 
         socio_economic_change = test_db.projections.get(
-            test_scenario.projection
+            test_scenario.projection, load_all=True
         ).socio_economic_change
-        strategy = test_db.strategies.get(test_scenario.strategy)
+        strategy = test_db.strategies.get(test_scenario.strategy, load_all=True)
 
         # check if new development area was added
         assert len(exposure_scenario) > len(exposure_template)
@@ -126,7 +122,7 @@ class TestFiatAdapter:
         elevate_val = impact_measures[0].elevation.value
 
         # Read the base flood map information
-        bfes = pd.read_csv(db_path(TopLevelDir.static) / "bfe" / "bfe.csv")
+        bfes = pd.read_csv(test_db.static_path / "bfe" / "bfe.csv")
 
         # Create a dataframe to save the initial object attributes
         exposures = exposure_template.merge(bfes, on=_FIAT_COLUMNS.object_id)[
@@ -208,7 +204,7 @@ class TestFiatAdapter:
                 scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
             )
         )
-        strategy = test_db.strategies.get(test_scenario.strategy)
+        strategy = test_db.strategies.get(test_scenario.strategy, load_all=True)
         impact_measures = strategy.get_impact_measures()
 
         # check if buildings are elevated

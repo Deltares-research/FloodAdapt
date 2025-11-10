@@ -25,16 +25,18 @@ class MeasureFactory:
         return MeasureType(type)
 
     @staticmethod
-    def get_measure_object(filepath: Union[str, os.PathLike]) -> Measure:
+    def get_measure_object(
+        filepath: Union[str, os.PathLike], load_all: bool = False
+    ) -> Measure:
         measure_type = MeasureFactory.get_measure_type(filepath)
 
         if MeasureType.is_impact(measure_type):
             return ImpactMeasureFactory.get_impact_measure(measure_type).load_file(
-                filepath
+                filepath, load_all=load_all
             )
         elif MeasureType.is_hazard(measure_type):
             return HazardMeasureFactory.get_hazard_measure(measure_type).load_file(
-                filepath
+                filepath, load_all=load_all
             )
         else:
             raise ValueError(f"Measure type {measure_type} not recognized.")

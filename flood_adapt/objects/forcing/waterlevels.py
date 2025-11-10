@@ -11,7 +11,7 @@ from flood_adapt.misc.utils import (
     copy_file_to_output_dir,
     validate_file_extension,
 )
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     IWaterlevel,
@@ -87,6 +87,7 @@ class WaterlevelSynthetic(IWaterlevel):
 
 class WaterlevelCSV(IWaterlevel):
     source: ForcingSource = ForcingSource.CSV
+    # TODO add DataFrameContainer
 
     path: Annotated[Path, validate_file_extension([".csv"])]
     units: us.UnitTypesLength = us.UnitTypesLength.meters
@@ -98,6 +99,12 @@ class WaterlevelCSV(IWaterlevel):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+
+    def read(self, directory: Path) -> None:
+        path = directory / self.path
+        if not path.exists():
+            raise FileNotFoundError(f"Could not find file: {path}")
+        self.path = path
 
 
 class WaterlevelModel(IWaterlevel):

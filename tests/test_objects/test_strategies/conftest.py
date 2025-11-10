@@ -6,6 +6,7 @@ from flood_adapt.objects import (
     SelectionType,
     Strategy,
 )
+from flood_adapt.objects.data_container import GeoDataFrameContainer
 from tests.test_objects.test_measures.conftest import (
     test_buyout,
     test_elevate,
@@ -29,28 +30,20 @@ def strategy_all_measures(
     test_elevate, test_pump, test_buyout, test_floodproof, test_green_infra
 ) -> Strategy:
     measures = [test_elevate, test_pump, test_buyout, test_floodproof, test_green_infra]
-    strategy = Strategy(
-        name="strategy_all_measures",
-        description="strategy_all_measures",
-        measures=[measure.name for measure in measures],
-    )
-    strategy.initialize_measure_objects(measures)
+    strategy = Strategy(name="strategy_all_measures")
+    strategy.set_measures(measures)
     return strategy
 
 
 @pytest.fixture()
 def strategy_no_measures() -> Strategy:
-    strategy = Strategy(
-        name="no_measures",
-        description="strategy_comb",
-        measures=[],
-    )
-    strategy.initialize_measure_objects([])
+    strategy = Strategy(name="no_measures")
+    strategy.set_measures([])
     return strategy
 
 
 @pytest.fixture()
-def strategy_with_overlapping_measures(gdf_polygon):
+def strategy_with_overlapping_measures(gdf_container_polygon: GeoDataFrameContainer):
     measures = []
     for i in range(1, 4):
         test_buyout = Buyout(
@@ -59,16 +52,12 @@ def strategy_with_overlapping_measures(gdf_polygon):
             type=MeasureType.buyout_properties,
             selection_type=SelectionType.polygon,
             property_type="RES",
-            gdf=gdf_polygon,
+            gdf=gdf_container_polygon,
         )
 
         measures.append(test_buyout)
 
-    strategy = Strategy(
-        name="test_strategy_overlap",
-        description="test_strategy_overlap",
-        measures=[measure.name for measure in measures],
-    )
-    strategy.initialize_measure_objects(measures)
+    strategy = Strategy(name="test_strategy_overlap")
+    strategy.set_measures(measures)
 
     return strategy

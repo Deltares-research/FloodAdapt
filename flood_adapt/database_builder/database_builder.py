@@ -70,12 +70,22 @@ from flood_adapt.config.site import (
     Site,
     StandardObjectModel,
 )
+from flood_adapt.database_builder.metrics_utils import (
+    BuildingsInfographicModel,
+    EventInfographicModel,
+    HomesInfographicModel,
+    MetricModel,
+    Metrics,
+    RiskInfographicModel,
+    RoadsInfographicModel,
+)
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.debug_timer import debug_timer
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import modified_environ
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.events.event_set import EventSet
-from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.tide_gauge import (
     TideGauge,
     TideGaugeSource,
@@ -86,16 +96,6 @@ from flood_adapt.objects.projections.projections import (
     SocioEconomicChange,
 )
 from flood_adapt.objects.strategies.strategies import Strategy
-
-from .metrics_utils import (
-    BuildingsInfographicModel,
-    EventInfographicModel,
-    HomesInfographicModel,
-    MetricModel,
-    Metrics,
-    RiskInfographicModel,
-    RoadsInfographicModel,
-)
 
 logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 
@@ -1293,12 +1293,14 @@ class DatabaseBuilder:
     def create_scs_model(self) -> Optional[SCSModel]:
         if self.config.scs is None:
             return None
-        scs_file = self._check_exists_and_absolute(self.config.scs.file)
+        scs_file = self._check_exists_and_absolute(self.config.scs.curves.path)
         db_scs_file = self.static_path / "scs" / scs_file.name
         db_scs_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(scs_file, db_scs_file)
 
-        return SCSModel(file=scs_file.name, type=self.config.scs.type)
+        return SCSModel(
+            curves=DataFrameContainer(path=db_scs_file), type=self.config.scs.type
+        )
 
     @debug_timer
     def create_dem_model(self) -> DemModel:

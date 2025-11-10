@@ -10,23 +10,24 @@ from flood_adapt.objects import (
     Pump,
     SelectionType,
 )
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import GeoDataFrameContainer
 
 
 @pytest.fixture
-def test_pump(gdf_polyline):
+def test_pump(gdf_container_polyline: GeoDataFrameContainer) -> Pump:
     return Pump(
         name="test_pump",
         description="test_pump",
         type=MeasureType.pump,
         discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cfs),
         selection_type=SelectionType.polygon,
-        gdf=gdf_polyline,
+        gdf=gdf_container_polyline,
     )
 
 
 @pytest.fixture
-def test_elevate(gdf_polygon):
+def test_elevate(gdf_container_polygon: GeoDataFrameContainer) -> Elevate:
     return Elevate(
         name="test_elevate",
         description="test_elevate",
@@ -38,12 +39,12 @@ def test_elevate(gdf_polygon):
         ),
         selection_type=SelectionType.polygon,
         property_type="RES",
-        gdf=gdf_polygon,
+        gdf=gdf_container_polygon,
     )
 
 
 @pytest.fixture()
-def test_elevate_aggr():
+def test_elevate_aggr() -> Elevate:
     return Elevate(
         name="test_elevate_aggr",
         description="elevate_aggr_area",
@@ -59,19 +60,19 @@ def test_elevate_aggr():
 
 
 @pytest.fixture
-def test_buyout(gdf_polygon):
+def test_buyout(gdf_container_polygon: GeoDataFrameContainer) -> Buyout:
     return Buyout(
         name="test_buyout",
         description="test_buyout",
         type=MeasureType.buyout_properties,
         selection_type=SelectionType.polygon,
         property_type="RES",
-        gdf=gdf_polygon,
+        gdf=gdf_container_polygon,
     )
 
 
 @pytest.fixture()
-def test_floodproof_aggr():
+def test_floodproof_aggr() -> FloodProof:
     return FloodProof(
         name="floodproof",
         type=MeasureType.floodproof_properties,
@@ -86,7 +87,7 @@ def test_floodproof_aggr():
 
 
 @pytest.fixture
-def test_floodproof(gdf_polygon):
+def test_floodproof(gdf_container_polygon: GeoDataFrameContainer) -> FloodProof:
     return FloodProof(
         name="test_floodproof",
         description="test_floodproof",
@@ -98,12 +99,14 @@ def test_floodproof(gdf_polygon):
             type=us.VerticalReference.floodmap,
         ),
         property_type="RES",
-        gdf=gdf_polygon,
+        gdf=gdf_container_polygon,
     )
 
 
 @pytest.fixture
-def test_green_infra(gdf_polygon):
+def test_green_infra(
+    gdf_container_polygon: GeoDataFrameContainer,
+) -> GreenInfrastructure:
     return GreenInfrastructure(
         name="test_green_infra",
         description="test_green_infra",
@@ -111,18 +114,18 @@ def test_green_infra(gdf_polygon):
         volume=us.UnitfulVolume(value=100, units=us.UnitTypesVolume.cf),
         height=us.UnitfulHeight(value=1, units=us.UnitTypesLength.feet),
         selection_type=SelectionType.polygon,
-        gdf=gdf_polygon,
+        gdf=gdf_container_polygon,
         percent_area=10,
     )
 
 
 @pytest.fixture
-def test_floodwall(gdf_polyline):
+def test_floodwall(gdf_container_polyline: GeoDataFrameContainer) -> FloodWall:
     return FloodWall(
         name="test_seawall",
         description="seawall",
         type=MeasureType.floodwall,
         selection_type=SelectionType.polygon,
         elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
-        gdf=gdf_polyline,
+        gdf=gdf_container_polyline,
     )

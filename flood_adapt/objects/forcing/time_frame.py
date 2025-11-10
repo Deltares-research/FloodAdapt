@@ -6,7 +6,7 @@ from pydantic import (
     model_validator,
 )
 
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
 
 REFERENCE_TIME = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
 

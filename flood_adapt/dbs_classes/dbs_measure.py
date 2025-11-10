@@ -15,7 +15,7 @@ class DbsMeasure(DbsTemplate[Measure]):
     _object_class = Measure
     _higher_lvl_object = "Strategy"
 
-    def get(self, name: str) -> Measure:
+    def get(self, name: str, load_all: bool = False) -> Measure:
         """Return a measure object.
 
         Parameters
@@ -36,7 +36,7 @@ class DbsMeasure(DbsTemplate[Measure]):
             raise DoesNotExistError(name, self.display_name)
 
         # Load and return the object
-        return MeasureFactory.get_measure_object(full_path)
+        return MeasureFactory.get_measure_object(full_path, load_all=load_all)
 
     def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the measures that currently exist in the database.
@@ -47,17 +47,17 @@ class DbsMeasure(DbsTemplate[Measure]):
             Includes 'name', 'description', 'path' and 'last_modification_date' and 'geometry' info
         """
         measures = self._get_object_summary()
-        objects = [self.get(name) for name in measures["name"]]
+        objects = [self.get(name, load_all=True) for name in measures["name"]]
 
         geometries = []
         for obj in objects:
             if obj.gdf is not None:
-                if not isinstance(obj.gdf, gpd.GeoDataFrame):
+                if not isinstance(obj.gdf.data, gpd.GeoDataFrame):
                     # Should never happen: .get() -> Measure.load_file() -> Measure.read()
                     raise DatabaseError(
-                        f"`gdf` attribute of measure {obj.name} is not a valid GeoDataFrame: {obj.gdf}."
+                        f"`gdf` attribute of measure {obj.name} is not a valid GeoDataFrame: {obj.gdf.data}."
                     )
-                geometries.append(obj.gdf)
+                geometries.append(obj.gdf.data)
 
             # If aggregation area is used read the polygon from the aggregation area name
             elif hasattr(obj, "aggregation_area_name") and obj.aggregation_area_name:

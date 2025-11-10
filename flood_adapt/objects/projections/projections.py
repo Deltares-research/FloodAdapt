@@ -4,11 +4,11 @@ import warnings
 from pathlib import Path
 from typing import Optional
 
-import geopandas as gpd
-from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import GeoDataFrameContainer
 from flood_adapt.objects.object_model import Object
 
 logger = FloodAdaptLogging.getLogger(__name__)
@@ -83,7 +83,7 @@ class SocioEconomicChange(BaseModel):
         description="[DEPRECATED] Path to the shapefile of the new development areas. Use `gdf` instead.",
         exclude=True,
     )
-    gdf: Optional[gpd.GeoDataFrame | str | Path] = Field(
+    gdf: GeoDataFrameContainer | None = Field(
         default=None,
         description="GeoDataFrame representation of the new development areas or path to the file.",
     )
@@ -115,38 +115,13 @@ class SocioEconomicChange(BaseModel):
             values["gdf"] = new_development_shapefile
         return values
 
-    @field_serializer("gdf")
-    def serialize_gdf(self, gdf: gpd.GeoDataFrame | str | Path) -> str:
-        if isinstance(gdf, gpd.GeoDataFrame):
-            return "new_developments.geojson"
-        elif isinstance(gdf, Path):
-            return gdf.with_suffix(".geojson").as_posix()
-        return Path(gdf).with_suffix(".geojson").as_posix()
-
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.gdf is not None:
-            output_dir = Path(output_dir)
-            output_dir.mkdir(parents=True, exist_ok=True)
-            if isinstance(self.gdf, gpd.GeoDataFrame):
-                self.gdf.to_crs(epsg=4326).to_file(
-                    Path(output_dir) / "new_developments.geojson"
-                )
-            elif isinstance(self.gdf, Path):
-                dst = Path(output_dir, self.gdf.name).with_suffix(".geojson")
-                gpd.read_file(self.gdf).to_file(dst)
-            else:
-                dst = Path(output_dir, Path(self.gdf).name).with_suffix(".geojson")
-                gpd.read_file(self.gdf).to_file(dst)
+            self.gdf.write(output_dir)
 
-    def read(self, directory: Path) -> None:
-        if self.gdf is not None and isinstance(self.gdf, (str, Path)):
-            gdf = gpd.read_file(directory / self.gdf)
-            if gdf.crs is not None:
-                gdf = gdf.to_crs(epsg=4326)
-            else:
-                logger.warning(f"No CRS defined in {self.gdf}, assuming EPSG:4326")
-                gdf = gdf.set_crs(epsg=4326)
-            self.gdf = gdf
+    def read(self, directory: Path | None = None) -> None:
+        if self.gdf is not None:
+            self.gdf.read(directory)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
@@ -155,31 +130,8 @@ class SocioEconomicChange(BaseModel):
         _other = other.model_dump(exclude={"gdf"})
         if not _self == _other:
             return False
-
-        # different gdf attribute
-        if self.gdf is not None and other.gdf is None:
+        if self.gdf != other.gdf:
             return False
-        elif other.gdf is not None and self.gdf is None:
-            return False
-
-        # Both not None, compare GeoDataFrames
-        if self.gdf is not None:
-            if isinstance(self.gdf, gpd.GeoDataFrame):
-                _self_gdf = self.gdf
-            elif isinstance(self.gdf, (str, Path)):
-                _self_gdf = gpd.read_file(self.gdf).to_crs(epsg=4326)
-            else:
-                return False
-
-            if isinstance(other.gdf, gpd.GeoDataFrame):
-                _other_gdf = other.gdf
-            elif isinstance(other.gdf, (str, Path)):
-                _other_gdf = gpd.read_file(other.gdf).to_crs(epsg=4326)
-            else:
-                return False
-
-            if not _self_gdf.equals(_other_gdf):
-                return False
 
         # All attributes equal
         return True
@@ -209,7 +161,7 @@ class Projection(Object):
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.socio_economic_change.save_additional(output_dir)
 
-    def read(self, directory: Path) -> None:
+    def read(self, directory: Path | None = None) -> None:
         self.socio_economic_change.read(directory)
 
     def __eq__(self, other: object) -> bool:

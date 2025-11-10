@@ -17,13 +17,15 @@ class AbstractDatabaseElement(ABC, Generic[T_OBJECT_MODEL]):
         pass
 
     @abstractmethod
-    def get(self, name: str) -> T_OBJECT_MODEL:
+    def get(self, name: str, load_all: bool = False) -> T_OBJECT_MODEL:
         """Return the object of the type of the database with the given name.
 
         Parameters
         ----------
         name : str
             name of the object to be returned
+        load_all : bool, optional
+            whether to load all associated files from disk, by default False
 
         Returns
         -------

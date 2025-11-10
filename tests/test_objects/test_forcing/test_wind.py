@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.time_frame import TimeFrame
 from flood_adapt.objects.forcing.wind import (
     WindConstant,

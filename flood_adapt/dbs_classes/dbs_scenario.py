@@ -77,21 +77,23 @@ class DbsScenario(DbsTemplate[Scenario]):
             bool
                 True if the scenarios have the same hazard components, False otherwise
         """
-        event_left = self._database.events.get(left.event)
-        event_right = self._database.events.get(right.event)
+        event_left = self._database.events.get(left.event, load_all=True)
+        event_right = self._database.events.get(right.event, load_all=True)
         equal_events = event_left == event_right
 
-        left_projection = self._database.projections.get(left.projection)
-        right_projection = self._database.projections.get(right.projection)
+        left_projection = self._database.projections.get(left.projection, load_all=True)
+        right_projection = self._database.projections.get(
+            right.projection, load_all=True
+        )
         equal_projection = (
             left_projection.physical_projection == right_projection.physical_projection
         )
 
         left_strategy = self._database.strategies.get(
-            left.strategy
+            left.strategy, load_all=True
         ).get_hazard_strategy()
         right_strategy = self._database.strategies.get(
-            right.strategy
+            right.strategy, load_all=True
         ).get_hazard_strategy()
         equal_strategy = left_strategy == right_strategy
 

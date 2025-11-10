@@ -103,7 +103,7 @@ addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-
 testpaths = ["tests"]
 
 ### pixi ###
-[tool.pixi.project]
+[tool.pixi.workspace]
 name = "flood-adapt"
 channels = ["conda-forge"]
 platforms = ["win-64", "linux-64"]

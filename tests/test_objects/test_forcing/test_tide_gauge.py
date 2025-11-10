@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from noaa_coops.station import COOPSAPIError
 
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.tide_gauge import (
     TideGauge,
     TideGaugeSource,

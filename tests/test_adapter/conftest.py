@@ -15,6 +15,7 @@ from flood_adapt.config.hazard import (
 )
 from flood_adapt.dbs_classes import Database
 from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing import (
     DischargeSynthetic,
     ForcingSource,
@@ -28,7 +29,6 @@ from flood_adapt.objects.forcing import (
     WaterlevelSynthetic,
     WindSynthetic,
 )
-from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.forcing import (
     IDischarge,
     IRainfall,

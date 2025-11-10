@@ -18,6 +18,9 @@ from flood_adapt.workflows.benefit_runner import BenefitRunner
 from tests.data.create_test_input import create_event_set_with_hurricanes
 from tests.test_adapter.conftest import mock_meteohandler_read
 from tests.test_objects.conftest import (
+    gdf_container_polygon,
+    gdf_container_polyline,
+    gdf_container_single_line,
     gdf_polygon,
     gdf_polyline,
     gdf_single_line,
@@ -58,6 +61,9 @@ __all__ = [
     "gdf_polygon",
     "gdf_polyline",
     "gdf_single_line",
+    "gdf_container_polyline",
+    "gdf_container_polygon",
+    "gdf_container_single_line",
     "test_buyout",
     "test_elevate",
     "test_floodproof",
@@ -65,11 +71,6 @@ __all__ = [
     "test_pump",
     "test_green_infra",
 ]
-
-
-@pytest.fixture(scope="session")
-def get_rng():
-    yield np.random.default_rng(2021)
 
 
 class TestEvents:

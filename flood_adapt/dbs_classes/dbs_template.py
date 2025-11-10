@@ -34,13 +34,15 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         self.output_path = database.output_path / self.dir_name
         self.standard_objects = standard_objects
 
-    def get(self, name: str) -> T_OBJECTMODEL:
+    def get(self, name: str, load_all: bool = False) -> T_OBJECTMODEL:
         """Return an object of the type of the database with the given name.
 
         Parameters
         ----------
         name : str
             name of the object to be returned
+        load_all : bool, optional
+            whether to load all associated files from disk, by default False
 
         Returns
         -------
@@ -60,7 +62,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             raise DoesNotExistError(name, self.display_name)
 
         # Load and return the object
-        return self._object_class.load_file(full_path)
+        return self._object_class.load_file(full_path, load_all=load_all)
 
     def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the objects that currently exist in the database.
@@ -94,7 +96,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         DatabaseError
             Raise error if the saving of the object fails.
         """
-        copy_object = self.get(old_name)
+        copy_object = self.get(old_name, load_all=True)
         copy_object.name = new_name
         copy_object.description = new_description
 

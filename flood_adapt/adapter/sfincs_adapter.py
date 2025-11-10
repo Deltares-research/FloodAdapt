@@ -24,19 +24,15 @@ from numpy import matlib
 from shapely.affinity import translate
 
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
-from flood_adapt.config.config import Settings
+from flood_adapt.config import SETTINGS
 from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.misc.path_builder import (
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.misc.utils import cd
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import TranslationModel
 from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Event, Mode, Template
-from flood_adapt.objects.events.hurricane import TranslationModel
 from flood_adapt.objects.events.synthetic import SyntheticEvent
-from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -126,6 +122,11 @@ class SfincsAdapter(IHazardAdapter):
         )
         self._model.read()
 
+        # State variables for scenario, event and eventset
+        self._scenario: Optional[Scenario] = None
+        self._event: Optional[Event] = None
+        self._event_set: Optional[EventSet] = None
+
     def read(self, path: Path):
         """Read the sfincs model from the current model root."""
         if Path(self._model.root).resolve() != Path(path).resolve():
@@ -192,7 +193,7 @@ class SfincsAdapter(IHazardAdapter):
         with cd(path):
             logger.info(f"Running SFINCS in {path}")
             process = subprocess.run(
-                str(Settings().sfincs_bin_path),
+                str(SETTINGS.sfincs_bin_path),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -203,7 +204,7 @@ class SfincsAdapter(IHazardAdapter):
         self._cleanup_simulation_folder(path)
 
         if process.returncode != 0:
-            if Settings().delete_crashed_runs:
+            if SETTINGS.delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
                 for subdir, dirs, files in os.walk(path, topdown=False):
                     for file in files:
@@ -223,11 +224,13 @@ class SfincsAdapter(IHazardAdapter):
     def run(self, scenario: Scenario):
         """Run the whole workflow (Preprocess, process and postprocess) for a given scenario."""
         self._ensure_no_existing_forcings()
-        event = self.database.events.get(scenario.event)
+        event = self.database.events.get(scenario.event, load_all=True)
 
-        if event.mode == Mode.risk:
-            self._run_risk_scenario(scenario=scenario)
+        if isinstance(event, EventSet):
+            self._event_set = event
+            self._run_risk_scenario(scenario=scenario, event_set=event)
         else:
+            self._event_set = None
             self._run_single_event(scenario=scenario, event=event)
 
     def preprocess(self, scenario: Scenario, event: Event):
@@ -251,8 +254,8 @@ class SfincsAdapter(IHazardAdapter):
         )
 
         with SfincsAdapter(model_root=template_path) as model:
-            model._load_scenario_objects(scenario, event)
-            is_risk = "Probabilistic " if model._event_set is not None else ""
+            model._load_scenario_objects(scenario, event, event_set=self._event_set)
+            is_risk = "Probabilistic " if self._event_set is not None else ""
             logger.info(
                 f"Preprocessing Scenario `{model._scenario.name}`: {is_risk}Event `{model._event.name}`, Strategy `{model._strategy.name}`, Projection `{model._projection.name}`"
             )
@@ -829,17 +832,19 @@ class SfincsAdapter(IHazardAdapter):
             # Remove the parent directory `simulations` if it is empty
             shutil.rmtree(sim_path.parent, ignore_errors=True)
 
-    def _run_risk_scenario(self, scenario: Scenario):
+    def _run_risk_scenario(self, scenario: Scenario, event_set: EventSet):
         """Run the whole workflow for a risk scenario.
 
         This means preprocessing and running the SFINCS model for each event in the event set, and then postprocessing the results.
         """
-        event_set: EventSet = self.database.events.get(scenario.event, load_all=True)
-        total = len(event_set._events)
+        self._event_set = event_set
+        total = len(self._event_set._events)
 
-        for i, sub_event in enumerate(event_set._events):
+        for i, sub_event in enumerate(self._event_set._events):
             sim_path = self._get_simulation_path(scenario, sub_event=sub_event)
-
+            self._load_scenario_objects(
+                scenario, event=sub_event, event_set=self._event_set
+            )
             # Preprocess
             self.preprocess(scenario, event=sub_event)
             logger.info(
@@ -1098,7 +1103,7 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
             df_ts = OffshoreSfincsHandler(
-                scenario=self._scenario, event=self._event
+                scenario=self._scenario, event=self._event, event_set=self._event_set
             ).get_resulting_waterlevels()
             if df_ts is None:
                 raise ValueError("Failed to get waterlevel data.")
@@ -1123,48 +1128,26 @@ class SfincsAdapter(IHazardAdapter):
         if forcing.source != ForcingSource.TRACK:
             raise ValueError("Forcing source should be TRACK.")
 
-        if forcing.path is None:
-            raise ValueError("No path to track file provided.")
-
-        if not forcing.path.exists():
-            # Check if the file is in the database
-            in_db = self._get_event_input_path(self._event) / forcing.path.name
-            if not in_db.exists():
-                raise FileNotFoundError(
-                    f"Input file for track forcing not found: {forcing.path}"
-                )
-            forcing.path = in_db
-
-        if forcing.path.suffix == ".cyc":
-            forcing.path = self._create_spw_file_from_track(
-                track_forcing=forcing,
-                hurricane_translation=self._event.hurricane_translation,
-                name=self._event.name,
-                output_dir=forcing.path.parent,
-                include_rainfall=bool(self._event.forcings.get(ForcingType.RAINFALL)),
-                recreate=False,
-            )
-
-        if forcing.path.suffix != ".spw":
-            raise ValueError(
-                "Track files should be in one of [spw, ddb_cyc] file format and must have [.spw, .cyc] extension."
-            )
+        if forcing.track.data is None:
+            raise ValueError("No track data provided.")
 
         sim_path = self.get_model_root()
         logger.info(f"Adding spiderweb forcing to Sfincs model: {sim_path.name}")
 
-        # prevent SameFileError
-        output_spw_path = sim_path / forcing.path.name
-        if forcing.path == output_spw_path:
-            raise ValueError(
-                "Add a different SPW file than the one already in the model."
-            )
-
-        if output_spw_path.exists():
-            os.remove(output_spw_path)
-        shutil.copy2(forcing.path, output_spw_path)
-
-        self._model.set_config("spwfile", output_spw_path.name)
+        forcing.track.translate_track(self._event.hurricane_translation)
+        should_include_rainfall = bool(
+            [
+                f
+                for f in self._event.get_forcings()
+                if f.source == ForcingSource.TRACK and f.type == ForcingType.RAINFALL
+            ]
+        )
+        spw_file = forcing.track.to_spw(
+            sim_path,
+            include_rainfall=should_include_rainfall,
+            recreate=False,
+        )
+        self._model.set_config("spwfile", spw_file.name)
 
     ### MEASURES ###
     def _add_measure_floodwall(self, floodwall: FloodWall):
@@ -1175,12 +1158,12 @@ class SfincsAdapter(IHazardAdapter):
         floodwall : FloodWall
             floodwall information
         """
-        if not isinstance(floodwall.gdf, gpd.GeoDataFrame):
+        if not isinstance(floodwall.gdf.data, gpd.GeoDataFrame):
             raise ValueError("Floodwall geometry must be a GeoDataFrame.")
 
         # HydroMT function: get geodataframe from filename
         gdf_floodwall = self._model.data_catalog.get_geodataframe(
-            floodwall.gdf, geom=self._model.region, crs=self._model.crs
+            floodwall.gdf.data, geom=self._model.region, crs=self._model.crs
         )
 
         # Add floodwall attributes to geodataframe
@@ -1217,7 +1200,7 @@ class SfincsAdapter(IHazardAdapter):
     def _add_measure_greeninfra(self, green_infrastructure: GreenInfrastructure):
         # HydroMT function: get geodataframe from filename
         if green_infrastructure.selection_type == "polygon":
-            gdf = green_infrastructure.gdf
+            gdf = green_infrastructure.gdf.data
 
         elif green_infrastructure.selection_type == "aggregation_area":
             # TODO this logic already exists in the Database controller but cannot be used due to cyclic imports
@@ -1228,7 +1211,7 @@ class SfincsAdapter(IHazardAdapter):
                     continue
                 # load geodataframe
                 aggr_areas = gpd.read_file(
-                    db_path(TopLevelDir.static) / aggr_dict.file,
+                    self.database.static_path / aggr_dict.file,
                     engine="pyogrio",
                 ).to_crs(4326)
                 # keep only aggregation area chosen
@@ -1268,7 +1251,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         # HydroMT function: get geodataframe from filename
         gdf_pump = self._model.data_catalog.get_geodataframe(
-            pump.gdf, geom=self._model.region, crs=self._model.crs
+            pump.gdf.data, geom=self._model.region, crs=self._model.crs
         )
 
         # HydroMT function: create floodwall
@@ -1518,8 +1501,12 @@ class SfincsAdapter(IHazardAdapter):
 
         return map_fn
 
-    def _get_event_input_path(self, event: Event) -> Path:
+    def _get_event_input_path(
+        self, event: Event, event_set: Optional[EventSet] = None
+    ) -> Path:
         """Return the path to the event input directory."""
+        if event_set is not None:
+            return self.database.events.input_path / event_set.name / event.name
         return self.database.events.input_path / event.name
 
     def _get_zsmax(self):
@@ -1743,17 +1730,16 @@ class SfincsAdapter(IHazardAdapter):
             for file in path.glob(f"*{ext}"):
                 file.unlink()
 
-    def _load_scenario_objects(self, scenario: Scenario, event: Event) -> None:
+    def _load_scenario_objects(
+        self, scenario: Scenario, event: Event, event_set: EventSet | None = None
+    ) -> None:
         self._scenario = scenario
-        self._projection = self.database.projections.get(scenario.projection)
-        self._strategy = self.database.strategies.get(scenario.strategy)
         self._event = event
-
-        _event = self.database.events.get(scenario.event)
-        if isinstance(_event, EventSet):
-            self._event_set = _event
-        else:
-            self._event_set = None
+        self._event_set = event_set
+        self._projection = self.database.projections.get(
+            scenario.projection, load_all=True
+        )
+        self._strategy = self.database.strategies.get(scenario.strategy, load_all=True)
 
     def _add_tide_gauge_plot(
         self, fig, event: Event, units: us.UnitTypesLength

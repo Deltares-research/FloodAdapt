@@ -1,5 +1,4 @@
 from pathlib import Path
-from tempfile import gettempdir
 from typing import List, Optional
 
 import pandas as pd
@@ -8,9 +7,6 @@ import plotly.graph_objects as go
 
 from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.misc.path_builder import (
-    db_path,
-)
 from flood_adapt.objects.events.events import Event, Template
 from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
@@ -47,6 +43,7 @@ def plot_forcing(
     event: Event,
     site: Site,
     forcing_type: ForcingType,
+    output_dir: Path,
 ) -> tuple[str, Optional[List[Exception]]]:
     """Plot the forcing data for the event."""
     if event.forcings.get(forcing_type) is None:
@@ -54,13 +51,13 @@ def plot_forcing(
 
     match forcing_type:
         case ForcingType.RAINFALL:
-            return plot_rainfall(event, site)
+            return plot_rainfall(event, site, output_dir)
         case ForcingType.WIND:
-            return plot_wind(event, site)
+            return plot_wind(event, site, output_dir)
         case ForcingType.WATERLEVEL:
-            return plot_waterlevel(event, site)
+            return plot_waterlevel(event, site, output_dir)
         case ForcingType.DISCHARGE:
-            return plot_discharge(event, site)
+            return plot_discharge(event, site, output_dir)
         case _:
             raise NotImplementedError(
                 "Plotting only available for rainfall, wind, waterlevel, and discharge forcings."
@@ -70,6 +67,7 @@ def plot_forcing(
 def plot_discharge(
     event: Event,
     site: Site,
+    output_dir: Path,
 ) -> tuple[str, Optional[List[Exception]]]:
     rivers: List[IDischarge] = event.forcings.get(ForcingType.DISCHARGE)
     if site.sfincs.river is None:
@@ -154,10 +152,7 @@ def plot_discharge(
 
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir="events", obj_name=event.name)
-    if not output_dir.exists():
-        output_dir = gettempdir()
-    output_loc = Path(output_dir) / "discharge_timeseries.html"
+    output_loc = output_dir / "discharge_timeseries.html"
     if output_loc.exists():
         output_loc.unlink()
     fig.write_html(output_loc)
@@ -167,6 +162,7 @@ def plot_discharge(
 def plot_waterlevel(
     event: Event,
     site: Site,
+    output_dir: Path,
 ) -> tuple[str, Optional[List[Exception]]]:
     forcing_list = event.forcings.get(ForcingType.WATERLEVEL)
     if not forcing_list:
@@ -271,10 +267,7 @@ def plot_waterlevel(
 
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir="events", obj_name=event.name)
-    if not output_dir.exists():
-        output_dir = gettempdir()
-    output_loc = Path(output_dir) / "waterlevel_timeseries.html"
+    output_loc = output_dir / "waterlevel_timeseries.html"
     if output_loc.exists():
         output_loc.unlink()
     fig.write_html(output_loc)
@@ -284,6 +277,7 @@ def plot_waterlevel(
 def plot_rainfall(
     event: Event,
     site: Site,
+    output_dir: Path,
 ) -> tuple[str, Optional[List[Exception]]]:
     forcing_list = event.forcings.get(ForcingType.RAINFALL)
     if not forcing_list:
@@ -344,10 +338,7 @@ def plot_rainfall(
     )
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir="events", obj_name=event.name)
-    if not output_dir.exists():
-        output_dir = gettempdir()
-    output_loc = Path(output_dir) / "rainfall_timeseries.html"
+    output_loc = output_dir / "rainfall_timeseries.html"
     if output_loc.exists():
         output_loc.unlink()
     fig.write_html(output_loc)
@@ -357,6 +348,7 @@ def plot_rainfall(
 def plot_wind(
     event: Event,
     site: Site,
+    output_dir: Path,
 ) -> tuple[str, Optional[List[Exception]]]:
     logger.debug("Plotting wind data")
     forcing_list = event.forcings.get(ForcingType.WIND)
@@ -416,10 +408,7 @@ def plot_wind(
 
     # Only save to the the event folder if that has been created already.
     # Otherwise this will create the folder and break the db since there is no event.toml yet
-    output_dir = db_path(object_dir="events", obj_name=event.name)
-    if not output_dir.exists():
-        output_dir = gettempdir()
-    output_loc = Path(output_dir) / "wind_timeseries.html"
+    output_loc = output_dir / "wind_timeseries.html"
     if output_loc.exists():
         output_loc.unlink()
     fig.write_html(output_loc)

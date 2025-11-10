@@ -12,12 +12,13 @@ class DbsStrategy(DbsTemplate[Strategy]):
     _object_class = Strategy
     _higher_lvl_object = "Scenario"
 
-    def get(self, name: str) -> Strategy:
-        strategy = super().get(name)
+    def get(self, name: str, load_all: bool = False) -> Strategy:
+        strategy = super().get(name, load_all=load_all)
         measures = [
-            self._database.measures.get(measure) for measure in strategy.measures
+            self._database.measures.get(measure, load_all=load_all)
+            for measure in strategy.measures
         ]
-        strategy.initialize_measure_objects(measures)
+        strategy.set_measures(measures)
         return strategy
 
     def save(
@@ -71,7 +72,9 @@ class DbsStrategy(DbsTemplate[Strategy]):
         DatabaseError
             information on which combinations of measures have overlapping properties
         """
-        measure_objects = [self._database.measures.get(measure) for measure in measures]
+        measure_objects = [
+            self._database.measures.get(measure, load_all=True) for measure in measures
+        ]
         impact_measures = [
             measure
             for measure in measure_objects

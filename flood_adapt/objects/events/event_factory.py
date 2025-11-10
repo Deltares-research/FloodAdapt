@@ -3,6 +3,7 @@ from typing import Any, List
 
 import tomli
 
+from flood_adapt.objects.data_container import TranslationModel
 from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import (
     Event,
@@ -12,7 +13,6 @@ from flood_adapt.objects.events.events import (
 from flood_adapt.objects.events.historical import HistoricalEvent
 from flood_adapt.objects.events.hurricane import (
     HurricaneEvent,
-    TranslationModel,
 )
 from flood_adapt.objects.events.synthetic import SyntheticEvent
 
@@ -97,7 +97,7 @@ class EventFactory:
         elif mode == Mode.single_event:
             template = Template(EventFactory.read_template(toml_file))
             event_type = EventFactory.get_event_from_template(template)
-            return event_type.load_file(toml_file)
+            return event_type.load_file(toml_file, load_all=load_all)
         else:
             raise ValueError(f"Invalid event mode: {mode}")
 

@@ -15,6 +15,10 @@ from flood_adapt.objects import (
     SubEventModel,
     SyntheticEvent,
 )
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import (
+    CycloneTrackContainer,
+)
 from flood_adapt.objects.forcing import (
     DischargeConstant,
     DischargeCSV,
@@ -35,7 +39,6 @@ from flood_adapt.objects.forcing import (
     WindMeteo,
     WindTrack,
 )
-from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.time_frame import (
     REFERENCE_TIME,
     TimeFrame,
@@ -208,8 +211,10 @@ def setup_hurricane_event(test_data_dir) -> tuple[HurricaneEvent, Path]:
         track_name="IAN",
         forcings={
             ForcingType.WATERLEVEL: [WaterlevelModel()],
-            ForcingType.WIND: [WindTrack(path=cyc_file)],
-            ForcingType.RAINFALL: [RainfallTrack(path=cyc_file)],
+            ForcingType.WIND: [WindTrack(track=CycloneTrackContainer(path=cyc_file))],
+            ForcingType.RAINFALL: [
+                RainfallTrack(track=CycloneTrackContainer(path=cyc_file))
+            ],
             ForcingType.DISCHARGE: [
                 DischargeConstant(
                     river=RiverModel(

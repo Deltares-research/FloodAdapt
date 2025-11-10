@@ -6,7 +6,6 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
@@ -14,7 +13,8 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from dotenv import load_dotenv
 
 from flood_adapt import FloodAdapt, FloodAdaptLogging, __path__
-from flood_adapt.config import RiverModel, Settings
+from flood_adapt.config.config import SETTINGS, Settings
+from flood_adapt.config.hazard import RiverModel
 from flood_adapt.objects import (
     Buyout,
     MeasureType,
@@ -27,6 +27,8 @@ from flood_adapt.objects import (
     Strategy,
     SyntheticEvent,
 )
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import GeoDataFrameContainer
 from flood_adapt.objects.forcing import (
     DischargeConstant,
     ForcingType,
@@ -39,7 +41,6 @@ from flood_adapt.objects.forcing import (
     WaterlevelSynthetic,
     WindConstant,
 )
-from flood_adapt.objects.forcing import unit_system as us
 from tests.data.create_test_input import update_database_input
 from tests.data.create_test_static import update_database_static
 
@@ -60,7 +61,7 @@ def create_snapshot():
     """Create a snapshot of the database directory."""
     if snapshot_dir.exists():
         shutil.rmtree(snapshot_dir)
-    shutil.copytree(Settings().database_path, snapshot_dir)
+    shutil.copytree(SETTINGS.database_path, snapshot_dir)
 
 
 def restore_db_from_snapshot():
@@ -70,7 +71,7 @@ def restore_db_from_snapshot():
             "Snapshot path does not exist. Create a snapshot first."
         )
     seen_files = set()
-    db_path = Settings().database_path
+    db_path = SETTINGS.database_path
 
     for root, _, files in os.walk(snapshot_dir):
         # Copy deleted/changed files from snapshot to database
@@ -105,7 +106,7 @@ def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
     load_dotenv()
 
-    settings = Settings(
+    SETTINGS = Settings(
         DATABASE_ROOT=src_dir.parents[1] / "Database",
         DATABASE_NAME="charleston_test",
         DELETE_CRASHED_RUNS=clean,
@@ -120,8 +121,8 @@ def session_setup_teardown():
         ignore_warnings=[DeprecationWarning],
     )
 
-    update_database_static(settings.database_path)
-    update_database_input(settings.database_path)
+    update_database_static(SETTINGS.database_path)
+    update_database_input(SETTINGS.database_path)
     create_snapshot()
 
     yield
@@ -174,7 +175,7 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        fa = FloodAdapt(Settings().database_path)
+        fa = FloodAdapt(SETTINGS.database_path)
 
         # Perform tests
         yield fa.database
@@ -243,7 +244,7 @@ def make_fa_fixture(scope):
                     assert ...
         """
         # Setup
-        fa = FloodAdapt(Settings().database_path)
+        fa = FloodAdapt(SETTINGS.database_path)
 
         # Perform tests
         yield fa
@@ -273,6 +274,11 @@ def pytest_runtest_setup(item):
     test_name = item.name
     logger = FloodAdaptLogging.getLogger()
     logger.info(f"\nStarting test: {test_name}\n")
+
+
+@pytest.fixture(scope="session")
+def get_rng():
+    yield np.random.default_rng(2021)
 
 
 @pytest.fixture()
@@ -342,7 +348,7 @@ def dummy_pump_measure(test_data_dir):
         name="dummy_pump_measure",
         type=MeasureType.pump,
         selection_type=SelectionType.polyline,
-        gdf=gpd.read_file(test_data_dir / "pump.geojson").to_crs(epsg=4326),
+        gdf=GeoDataFrameContainer(path=test_data_dir / "pump.geojson"),
         discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cfs),
     )
 
@@ -351,12 +357,8 @@ def dummy_pump_measure(test_data_dir):
 def dummy_strategy(dummy_buyout_measure, dummy_pump_measure):
     pump = dummy_pump_measure
     buyout = dummy_buyout_measure
-    strategy = Strategy(
-        name="dummy_strategy",
-        description="",
-        measures=[buyout.name, pump.name],
-    )
-    strategy.initialize_measure_objects([buyout, pump])
+    strategy = Strategy(name="dummy_strategy")
+    strategy.set_measures([buyout, pump])
     return strategy
 
 

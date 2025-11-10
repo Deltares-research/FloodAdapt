@@ -47,7 +47,7 @@ class TestHurricaneEvent:
         wind = saved_event.forcings[ForcingType.WIND][0]
         assert isinstance(wind, WindTrack)
 
-        cyc_file = path.parent / wind.path
+        cyc_file = wind.track.path
 
         assert path.exists()
         assert cyc_file.exists()

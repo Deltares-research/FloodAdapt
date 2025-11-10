@@ -10,7 +10,8 @@ from plotly.express.colors import sample_colorscale
 from pydantic import AfterValidator, BaseModel, Field, model_validator
 from typing_extensions import Annotated
 
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.forcing.timeseries import Scstype
 
 
@@ -42,7 +43,7 @@ class SCSModel(BaseModel):
         The type of the SCS rainfall curve.
     """
 
-    file: str
+    curves: DataFrameContainer
     type: Scstype
 
 

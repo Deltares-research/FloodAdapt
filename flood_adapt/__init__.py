@@ -2,17 +2,16 @@
 __version__ = "1.1.1-rc1"
 
 from flood_adapt import adapter, database_builder, dbs_classes, objects
-from flood_adapt.config.config import Settings
-from flood_adapt.config.site import Site
+from flood_adapt.config import SETTINGS, Site
 from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.exceptions import DatabaseError, FloodAdaptError
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.objects.forcing import unit_system
+from flood_adapt.objects import unit_system
 
 __all__ = [
     "FloodAdapt",
     "Site",
-    "Settings",
+    "SETTINGS",
     "FloodAdaptLogging",
     "unit_system",
     "objects",

@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from flood_adapt.config.hazard import RiverModel
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,

@@ -3,7 +3,7 @@ from datetime import timedelta
 import pandas as pd
 import pytest
 
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.rainfall import (
     RainfallConstant,
     RainfallSynthetic,

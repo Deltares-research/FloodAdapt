@@ -1,4 +1,5 @@
 from pathlib import Path
+from tempfile import gettempdir
 from typing import Any, List, Literal, Optional, Union
 
 import geopandas as gpd
@@ -91,7 +92,7 @@ class FloodAdapt:
         DatabaseError
             If the measure with the given name does not exist.
         """
-        return self.database.measures.get(name)
+        return self.database.measures.get(name, load_all=True)
 
     def create_measure(self, attrs: dict[str, Any], type: str = None) -> Measure:
         """Create a measure from a dictionary of attributes and a type string.
@@ -223,7 +224,7 @@ class FloodAdapt:
         DatabaseError
             If the strategy with the given name does not exist.
         """
-        return self.database.strategies.get(name)
+        return self.database.strategies.get(name, load_all=True)
 
     def create_strategy(self, attrs: dict[str, Any]) -> Strategy:
         """Create a new strategy object.
@@ -325,7 +326,7 @@ class FloodAdapt:
         DatabaseError
             If the event with the given name does not exist.
         """
-        return self.database.events.get(name)
+        return self.database.events.get(name, load_all=True)
 
     def create_event(self, attrs: dict[str, Any] | Event) -> Event:
         """Create a event object from a dictionary of attributes.
@@ -431,7 +432,12 @@ class FloodAdapt:
         forcing_type : ForcingType
             The type of forcing data to plot
         """
-        return _plot_forcing(event, self.database.site, forcing_type)
+        write_dir = self.database.events.input_path / event.name
+        if not write_dir.exists():
+            write_dir = Path(gettempdir())
+        return _plot_forcing(
+            event, self.database.site, forcing_type, output_dir=write_dir
+        )
 
     def get_cyclone_track_by_index(self, index: int) -> TropicalCyclone:
         """
@@ -487,7 +493,7 @@ class FloodAdapt:
         DatabaseError
             If the projection with the given name does not exist.
         """
-        return self.database.projections.get(name)
+        return self.database.projections.get(name, load_all=True)
 
     def create_projection(self, attrs: dict[str, Any]) -> Projection:
         """Create a new projection object.
@@ -645,7 +651,7 @@ class FloodAdapt:
         DatabaseError
             If the scenario with the given name does not exist.
         """
-        return self.database.scenarios.get(name)
+        return self.database.scenarios.get(name, load_all=True)
 
     def create_scenario(self, attrs: dict[str, Any]) -> Scenario:
         """Create a new scenario object.
@@ -1175,7 +1181,7 @@ class FloodAdapt:
         DatabaseError
             If the benefit with the given name does not exist.
         """
-        return self.database.benefits.get(name)
+        return self.database.benefits.get(name, load_all=True)
 
     def create_benefit(self, attrs: dict[str, Any]) -> Benefit:
         """Create a new benefit object.

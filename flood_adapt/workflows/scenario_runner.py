@@ -43,9 +43,11 @@ class ScenarioRunner:
     def _load_objects(self, scenario: Scenario) -> None:
         """Load objects from the database."""
         self._scenario = scenario
-        self._event = self._database.events.get(scenario.event)
-        self._projection = self._database.projections.get(scenario.projection)
-        self._strategy = self._database.strategies.get(scenario.strategy)
+        self._event = self._database.events.get(scenario.event, load_all=True)
+        self._projection = self._database.projections.get(
+            scenario.projection, load_all=True
+        )
+        self._strategy = self._database.strategies.get(scenario.strategy, load_all=True)
 
     ### General methods ###
     def run(self) -> None:

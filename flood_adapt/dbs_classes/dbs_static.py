@@ -9,7 +9,7 @@ from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
-from flood_adapt.config.config import Settings
+from flood_adapt.config import SETTINGS
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
@@ -278,8 +278,8 @@ class DbsStatic(IDbsStatic):
         with FiatAdapter(
             model_root=template_path,
             config=self._database.site.fiat.config,
-            exe_path=Settings().fiat_bin_path,
-            delete_crashed_runs=Settings().delete_crashed_runs,
+            exe_path=SETTINGS.fiat_bin_path,
+            delete_crashed_runs=SETTINGS.delete_crashed_runs,
             config_base_path=self._database.static_path,
         ) as fm:
             return fm

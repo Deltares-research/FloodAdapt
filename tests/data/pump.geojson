@@ -1,1 +1,8 @@
-{"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {}, "geometry": {"type": "LineString", "coordinates": [[-79.93324915652738, 32.774694859120345], [-79.91334235703914, 32.77142889638445]]}}]}
+{
+"type": "FeatureCollection",
+"name": "pump",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { }, "geometry": { "type": "LineString", "coordinates": [ [ -79.933249156527381, 32.774694859120345 ], [ -79.913342357039141, 32.77142889638445 ] ] } }
+]
+}

@@ -10,7 +10,7 @@ from pydantic import (
     model_validator,
 )
 
-from flood_adapt.config.config import Settings
+from flood_adapt.config import SETTINGS
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,
@@ -116,16 +116,11 @@ class Event(Object):
         for forcing in self.get_forcings():
             forcing.save_additional(output_dir)
 
-    def read(self, directory: Path) -> None:
+    def read(self, directory: Path | None = None) -> None:
+        if directory is None:
+            directory = Path.cwd()
         for forcing in self.get_forcings():
-            if isinstance(forcing, PathBasedForcing):
-                if not forcing.path.exists():
-                    in_dir = directory / forcing.path.name
-                    if not in_dir.exists():
-                        raise FileNotFoundError(
-                            f"Failed to read Event. File {forcing.path} does not exist in {in_dir.parent}."
-                        )
-                    forcing.path = in_dir
+            forcing.read(directory)
 
     @staticmethod
     def _parse_forcing_from_dict(
@@ -190,7 +185,7 @@ class Event(Object):
                     f"Allowed sources are: {allowed_sources}"
                 )
 
-        if Settings().validate_allowed_forcings and hasattr(self, "ALLOWED_FORCINGS"):
+        if SETTINGS.validate_allowed_forcings and hasattr(self, "ALLOWED_FORCINGS"):
             # Validate forcings
             for _, concrete_forcings in self.forcings.items():
                 for concrete_forcing in concrete_forcings:

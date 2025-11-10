@@ -8,10 +8,6 @@ import geopandas as gpd
 from pydantic import BeforeValidator
 
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.misc.path_builder import (
-    ObjectDir,
-    db_path,
-)
 
 logger = FloodAdaptLogging.getLogger(__name__)
 
@@ -68,44 +64,6 @@ def write_finished_file(path: Path):
 
 def finished_file_exists(path: Path):
     return (Path(path) / "finished.txt").exists()
-
-
-def resolve_filepath(
-    object_dir: ObjectDir, obj_name: str, path: Path | str | os.PathLike
-) -> Path:
-    """
-    Determine whether a given path is an external file or a file in the database.
-
-    Users can set the path to a file in the database directly, meaning it will be an absolute path.
-    Users can also read the path from loading a toml file, meaning it will be a filename relative to the toml file.
-
-    Parameters
-    ----------
-    object_dir : ObjectDir
-        The directory name of the object in the database.
-    obj_name : str
-        The name of the object.
-    path : Union[Path, str, os.PathLike]
-        The path to the file, which can be an absolute path or a relative path.
-
-    Returns
-    -------
-    Path
-        The resolved path to the file.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the file does not exist in either the provided path or the database path.
-    """
-    _path = Path(path)
-    if str(_path) == _path.name:
-        # this is a filename, so it is in the database
-        src_path = db_path(object_dir=object_dir, obj_name=obj_name) / path
-    else:
-        # this is a path, so it is an external file
-        src_path = Path(path)
-    return src_path
 
 
 def save_file_to_database(

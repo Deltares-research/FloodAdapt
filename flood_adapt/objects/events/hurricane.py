@@ -1,27 +1,14 @@
 from typing import ClassVar, List
 
-from pydantic import BaseModel
-
+from flood_adapt.objects.data_container import TranslationModel
 from flood_adapt.objects.events.events import Event, Template
-from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,
 )
 from flood_adapt.objects.forcing.time_frame import TimeFrame
 
-__all__ = ["HurricaneEvent", "TranslationModel", "TimeFrame"]
-
-
-class TranslationModel(BaseModel):
-    """BaseModel describing the expected variables and data types for translation parameters of hurricane model."""
-
-    eastwest_translation: us.UnitfulLength = us.UnitfulLength(
-        value=0.0, units=us.UnitTypesLength.meters
-    )
-    northsouth_translation: us.UnitfulLength = us.UnitfulLength(
-        value=0.0, units=us.UnitTypesLength.meters
-    )
+__all__ = ["HurricaneEvent", "TimeFrame"]
 
 
 class HurricaneEvent(Event):

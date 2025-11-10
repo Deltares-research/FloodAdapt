@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
 
 
 def _perform_conversion_test(

@@ -10,7 +10,8 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.config.hazard import DataFrameContainer
+from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.time_frame import REFERENCE_TIME, TimeFrame
 from flood_adapt.objects.forcing.timeseries import (
     BlockTimeseries,
@@ -25,7 +26,7 @@ from flood_adapt.objects.forcing.timeseries import (
 
 class TestTimeseriesModel:
     @staticmethod
-    def get_test_model(shape_type: ShapeType):
+    def get_test_model(shape_type: ShapeType, test_data_dir: Path):
         _TIMESERIES_MODEL_SIMPLE = {
             "shape_type": ShapeType.block.value,
             "duration": {"value": 1, "units": us.UnitTypesTime.hours},
@@ -43,7 +44,7 @@ class TestTimeseriesModel:
             "peak_time": {"value": 0, "units": us.UnitTypesTime.hours},
             "duration": {"value": 1, "units": us.UnitTypesTime.hours},
             "cumulative": {"value": 1, "units": us.UnitTypesLength.millimeters},
-            "scs_file_name": "scs_rainfall.csv",
+            "curves": DataFrameContainer(path=test_data_dir / "scs_rainfall.csv"),
             "scs_type": Scstype.type1.value,
         }
 
@@ -62,9 +63,11 @@ class TestTimeseriesModel:
             ShapeType.triangle,
         ],
     )
-    def test_timeseriesmodel_valid_input_simple_shapetypes(self, shape_type):
+    def test_timeseriesmodel_valid_input_simple_shapetypes(
+        self, shape_type, test_data_dir
+    ):
         # Arrange
-        model = self.get_test_model(shape_type)
+        model = self.get_test_model(shape_type, test_data_dir)
 
         # Act
         timeseries_model = TimeseriesFactory.from_args(**model)
@@ -81,9 +84,9 @@ class TestTimeseriesModel:
             value=1, units=us.UnitTypesIntensity.mm_hr
         )
 
-    def test_timeseriesmodel_valid_input_gaussian_shapetype(self):
+    def test_timeseriesmodel_valid_input_gaussian_shapetype(self, test_data_dir):
         # Arrange
-        model = self.get_test_model(ShapeType.gaussian)
+        model = self.get_test_model(ShapeType.gaussian, test_data_dir)
 
         # Act
         timeseries_model = TimeseriesFactory.from_args(**model)
@@ -101,9 +104,9 @@ class TestTimeseriesModel:
             value=1, units=us.UnitTypesLength.millimeters
         )
 
-    def test_timeseriesmodel_valid_input_scs_shapetype(self):
+    def test_timeseriesmodel_valid_input_scs_shapetype(self, test_data_dir):
         # Arrange
-        model = self.get_test_model(ShapeType.scs)
+        model = self.get_test_model(ShapeType.scs, test_data_dir)
 
         # Act
         timeseries_model = TimeseriesFactory.from_args(**model)
@@ -121,9 +124,9 @@ class TestTimeseriesModel:
             value=1, units=us.UnitTypesLength.millimeters
         )
 
-    def test_synthetictimeseries_save_load(self, tmp_path):
+    def test_synthetictimeseries_save_load(self, tmp_path, test_data_dir):
         # Arrange
-        model = self.get_test_model(ShapeType.block)
+        model = self.get_test_model(ShapeType.block, test_data_dir)
         model_path = tmp_path / "test.toml"
         saved = TimeseriesFactory.from_args(**model)
 
@@ -134,9 +137,9 @@ class TestTimeseriesModel:
         # Assert
         assert saved.model_dump() == loaded.model_dump()
 
-    def test_timeseriesmodel_invalid_input_shapetype_scs(self, test_db_class):
+    def test_timeseriesmodel_invalid_input_shapetype_scs(self, test_data_dir):
         # Arrange
-        model = self.get_test_model(ShapeType.scs)
+        model = self.get_test_model(ShapeType.scs, test_data_dir)
         model["peak_value"] = model.pop("cumulative")
 
         # Act
@@ -159,10 +162,10 @@ class TestTimeseriesModel:
         ],
     )
     def test_timeseriesmodel_invalid_input_simple_shapetypes_both_peak_and_cumulative(
-        self, shape_type
+        self, shape_type, test_data_dir
     ):
         # Arrange
-        model = self.get_test_model(shape_type)
+        model = self.get_test_model(shape_type, test_data_dir)
         model["peak_value"] = {"value": 1, "units": us.UnitTypesIntensity.mm_hr}
         model["cumulative"] = {"value": 1, "units": us.UnitTypesIntensity.mm_hr}
 
@@ -186,10 +189,10 @@ class TestTimeseriesModel:
         ],
     )
     def test_timeseriesmodel_invalid_input_simple_shapetypes_neither_peak_nor_cumulative(
-        self, shape_type
+        self, shape_type, test_data_dir
     ):
         # Arrange
-        model = self.get_test_model(shape_type)
+        model = self.get_test_model(shape_type, test_data_dir)
         model.pop("peak_value")
         if "cumulative" in model:
             model.pop("cumulative")
@@ -227,6 +230,7 @@ class TestSyntheticTimeseries:
         peak_value: float = 1,
         peak_time: float = 0,
         cumulative: float = 1,
+        test_data_dir: Path | None = None,
     ):
         match shape_type:
             case ShapeType.scs:
@@ -241,7 +245,7 @@ class TestSyntheticTimeseries:
                     cumulative=us.UnitfulLength(
                         value=cumulative, units=us.UnitTypesLength.inch
                     ),
-                    scs_file_name="scs_rainfall.csv",
+                    curves=DataFrameContainer(path=test_data_dir / "scs_rainfall.csv"),
                     scs_type=Scstype.type3,
                 )
             case ShapeType.gaussian:

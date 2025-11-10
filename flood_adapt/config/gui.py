@@ -10,7 +10,7 @@ import tomli
 from pydantic import BaseModel, Field, model_validator
 
 from flood_adapt.config.impacts import DamageType
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
 
 
 class Layer(BaseModel):

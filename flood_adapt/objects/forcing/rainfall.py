@@ -9,7 +9,8 @@ from flood_adapt.misc.utils import (
     copy_file_to_output_dir,
     validate_file_extension,
 )
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import CycloneTrackContainer
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     IRainfall,
@@ -53,28 +54,25 @@ class RainfallMeteo(IRainfall):
     source: ForcingSource = ForcingSource.METEO
     precip_units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
     wind_units: us.UnitTypesVelocity = us.UnitTypesVelocity.mps
+    # TODO add NetCDFContainer
 
 
 class RainfallTrack(IRainfall):
     source: ForcingSource = ForcingSource.TRACK
+    track: CycloneTrackContainer
 
-    path: Annotated[Path, validate_file_extension([".cyc", ".spw"])]
+    def save_additional(self, output_dir: Path) -> None:
+        self.track.write(output_dir)
 
-    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.path:
-            if self.path.suffix == ".spw" and self.path.with_suffix(".cyc").exists():
-                # Try to copy the much smaller .cyc file if it exists
-                self.path = copy_file_to_output_dir(
-                    self.path.with_suffix(".cyc"), Path(output_dir)
-                )
-            else:
-                self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+    def read(self, directory: Path | None = None) -> None:
+        self.track.read(directory)
 
 
 class RainfallCSV(IRainfall):
     source: ForcingSource = ForcingSource.CSV
 
     path: Annotated[Path, validate_file_extension([".csv"])]
+    # TODO add DataFrameContainer
 
     units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
@@ -86,12 +84,21 @@ class RainfallCSV(IRainfall):
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))
 
+    def read(self, directory: Path | None = None) -> None:
+        if directory is None:
+            directory = Path.cwd()
+        path = directory / self.path
+        if not path.exists():
+            raise FileNotFoundError(f"Could not find file: {path}")
+        self.path = path
+
 
 class RainfallNetCDF(IRainfall):
     source: ForcingSource = ForcingSource.NETCDF
     units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
     path: Annotated[Path, validate_file_extension([".nc"])]
+    # TODO add NetCDFContainer
 
     def read(self) -> xr.Dataset:
         required_vars = ("precip",)

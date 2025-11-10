@@ -7,11 +7,6 @@ from flood_adapt.adapter.interface.offshore import IOffshoreSfincsHandler
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.misc.database_user import DatabaseUser
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.misc.path_builder import (
-    ObjectDir,
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Event, Mode
 from flood_adapt.objects.events.historical import HistoricalEvent
@@ -29,16 +24,19 @@ logger = FloodAdaptLogging.getLogger("OffshoreSfincsAdapter")
 class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
     template_path: Path
 
-    def __init__(self, scenario: Scenario, event: Event) -> None:
+    def __init__(
+        self, scenario: Scenario, event: Event, event_set: EventSet | None = None
+    ) -> None:
         self.template_path = (
             self.database.static.get_offshore_sfincs_model().get_model_root()
         )
         self.scenario = scenario
         if isinstance(event, EventSet):
             raise ValueError(
-                "OffshoreSfincsHandler does not support EventSets. Provide the sub events directly "
+                "OffshoreSfincsHandler does not support EventSets. Provide the sub events directly instead."
             )
         self.event = event
+        self.event_set = event_set
 
     def get_resulting_waterlevels(self) -> pd.DataFrame:
         """Get the water levels from the offshore model.
@@ -101,7 +99,9 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
         with SfincsAdapter(model_root=self.template_path) as _offshore_model:
             # Load objects, set root & write template model
-            _offshore_model._load_scenario_objects(self.scenario, self.event)
+            _offshore_model._load_scenario_objects(
+                self.scenario, self.event, event_set=self.event_set
+            )
             _offshore_model.write(path_out=sim_path)
             _offshore_model.set_timing(self.event.time)
 
@@ -167,11 +167,8 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         main_event = self.database.events.get(self.scenario.event)
         if main_event.mode == Mode.risk:
             return (
-                db_path(
-                    TopLevelDir.output,
-                    object_dir=ObjectDir.scenario,
-                    obj_name=self.scenario.name,
-                )
+                self.database.scenarios.output_path
+                / self.scenario.name
                 / "Flooding"
                 / "simulations"
                 / self.event.name
@@ -179,11 +176,8 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             )
         else:
             return (
-                db_path(
-                    TopLevelDir.output,
-                    object_dir=ObjectDir.scenario,
-                    obj_name=self.scenario.name,
-                )
+                self.database.scenarios.output_path
+                / self.scenario.name
                 / "Flooding"
                 / "simulations"
                 / self.template_path.name

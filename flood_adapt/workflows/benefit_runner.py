@@ -11,11 +11,6 @@ import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 from flood_adapt.misc.exceptions import DatabaseError
-from flood_adapt.misc.path_builder import (
-    ObjectDir,
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.objects.benefits.benefits import Benefit
 from flood_adapt.objects.scenarios.scenarios import Scenario
 
@@ -233,7 +228,7 @@ class BenefitRunner:
         scenarios = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
 
-        scn_output_path = db_path(TopLevelDir.output, ObjectDir.scenario)
+        scn_output_path = self.database.scenarios.output_path
 
         # Get metrics per scenario
         for index, scenario in scenarios.iterrows():
@@ -311,7 +306,7 @@ class BenefitRunner:
 
     def cba_aggregation(self):
         """Zonal Benefits analysis for the different aggregation areas."""
-        results_path = db_path(TopLevelDir.output, ObjectDir.scenario)
+        results_path = self.database.scenarios.output_path
         # Get years of interest
         year_start = self.benefit.current_situation.year
         year_end = self.benefit.future_year
@@ -404,7 +399,7 @@ class BenefitRunner:
                 if n.name == aggr_name
             ][0]
             aggr_areas_path = (
-                db_path(TopLevelDir.static)
+                self.database.static_path
                 / self.site_info.fiat.config.aggregation[ind].file
             )
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")

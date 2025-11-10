@@ -16,7 +16,7 @@ from flood_adapt.config.hazard import (
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.tide_gauge import TideGauge
 
 

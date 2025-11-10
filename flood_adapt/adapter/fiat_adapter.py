@@ -26,8 +26,8 @@ from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import cd
+from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.events.events import Mode
-from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.measures.measures import (
     Buyout,
     Elevate,
@@ -239,11 +239,11 @@ class FiatAdapter(IImpactAdapter):
         """
         logger.info("Pre-processing Delft-FIAT model")
         # Projection
-        projection = self.database.projections.get(scenario.projection)
+        projection = self.database.projections.get(scenario.projection, load_all=True)
         self.add_projection(projection)
 
         # Measures
-        strategy = self.database.strategies.get(scenario.strategy)
+        strategy = self.database.strategies.get(scenario.strategy, load_all=True)
         for measure in strategy.get_impact_measures():
             self.add_measure(measure)
 
@@ -665,7 +665,7 @@ class FiatAdapter(IImpactAdapter):
                 population_growth=socio_economic_change.population_growth_new,
                 ground_floor_height=socio_economic_change.new_development_elevation.value,
                 elevation_type=socio_economic_change.new_development_elevation.type.value,
-                new_dev_geom=socio_economic_change.gdf,
+                new_dev_geom=socio_economic_change.gdf.data,
                 ground_elevation=dem,
             )
 
@@ -920,12 +920,12 @@ class FiatAdapter(IImpactAdapter):
         if measure.selection_type == "aggregation_area":
             area = measure.aggregation_area_name
         elif measure.selection_type == "polygon":
-            if isinstance(measure.gdf, gpd.GeoDataFrame):
-                area = f"{measure.name}.geojson"
-            elif isinstance(measure.gdf, (str, Path)):
-                area = measure.gdf
-            else:
+            if measure.gdf is None:
                 area = "polygon_area"
+            elif measure.gdf.has_data():
+                area = f"{measure.name}.geojson"
+            else:
+                area = measure.gdf.path.as_posix()
         else:
             area = "all"
         return area
@@ -1152,13 +1152,13 @@ class FiatAdapter(IImpactAdapter):
             )
 
         # check if gdf is used, then get the absolute path
-        if isinstance(measure.gdf, gpd.GeoDataFrame):
+        if measure.gdf is not None:
             buildings = self.model.exposure.select_objects(
                 primary_object_type=measure.property_type,
                 non_building_names=self.config.non_building_names,
                 return_gdf=True,
             )
-            ids = gpd.sjoin(buildings, measure.gdf.to_crs(buildings.crs))[
+            ids = gpd.sjoin(buildings, measure.gdf.data.to_crs(buildings.crs))[
                 _FIAT_COLUMNS.object_id
             ]
         else:

@@ -55,8 +55,8 @@ class IForcing(BaseModel, ABC):
     source: ForcingSource
 
     @classmethod
-    def load_file(cls, path: Path):
-        with open(path, mode="rb") as fp:
+    def load_file(cls, file_path: Path | str | os.PathLike, load_all: bool = False):
+        with open(file_path, mode="rb") as fp:
             toml_data = tomli.load(fp)
         return cls.load_dict(toml_data)
 
@@ -72,6 +72,10 @@ class IForcing(BaseModel, ABC):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         """Save additional data of the forcing."""
+        return
+
+    def read(self, directory: Path | None = None):
+        """Read additional data from a directory."""
         return
 
     @field_serializer("path", check_fields=False)

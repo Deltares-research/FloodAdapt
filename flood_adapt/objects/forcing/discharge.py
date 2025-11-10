@@ -8,7 +8,7 @@ from flood_adapt.misc.utils import (
     copy_file_to_output_dir,
     validate_file_extension,
 )
-from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     IDischarge,
@@ -54,6 +54,7 @@ class DischargeCSV(IDischarge):
     source: ForcingSource = ForcingSource.CSV
 
     path: Annotated[Path, validate_file_extension([".csv"])]
+    # TODO add DataFrameContainer
 
     units: us.UnitTypesDischarge = us.UnitTypesDischarge.cms
 
@@ -64,3 +65,11 @@ class DischargeCSV(IDischarge):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+
+    def read(self, directory: Path | None = None) -> None:
+        if directory is None:
+            directory = Path.cwd()
+        path = directory / self.path
+        if not path.exists():
+            raise FileNotFoundError(f"Could not find file: {path}")
+        self.path = path

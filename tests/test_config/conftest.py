@@ -1,6 +1,6 @@
 import pytest
 
-from flood_adapt.config.config import Settings
+from flood_adapt.config import SETTINGS
 from flood_adapt.config.fiat import (
     FiatModel,
 )
@@ -26,7 +26,7 @@ def test_sfincs():
 
 @pytest.fixture
 def test_gui():
-    return create_gui_config(Settings().database_path)
+    return create_gui_config(SETTINGS.database_path)
 
 
 @pytest.fixture

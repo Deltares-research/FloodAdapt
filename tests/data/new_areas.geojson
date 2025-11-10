@@ -1,5 +1,6 @@
 {
 "type": "FeatureCollection",
+"name": "new_areas",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "id": 1, "name": "new_area_1", "FID": 0 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -79.932658540024306, 32.776542492844499 ], [ -79.933197835702856, 32.780587210433609 ], [ -79.927288053892099, 32.780969211539251 ], [ -79.927063347359365, 32.776969435256682 ], [ -79.932658540024306, 32.776542492844499 ] ] ] ] } },

@@ -4,6 +4,7 @@ from typing import Optional
 
 import tomli
 import tomli_w
+from dotenv import load_dotenv
 from pydantic import (
     Field,
     computed_field,
@@ -246,3 +247,7 @@ class Settings(BaseSettings):
                 ),
                 f,
             )
+
+
+load_dotenv()
+SETTINGS = Settings()

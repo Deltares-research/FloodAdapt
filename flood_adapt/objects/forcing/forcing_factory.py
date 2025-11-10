@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Any, List, Type
 
@@ -137,9 +138,11 @@ class ForcingFactory(IForcingFactory):
         return forcing_cls
 
     @classmethod
-    def load_file(cls, toml_file: Path) -> IForcing:
+    def load_file(
+        cls, file_path: Path | str | os.PathLike, load_all: bool = False
+    ) -> IForcing:
         """Create a forcing object from a TOML file."""
-        with open(toml_file, mode="rb") as fp:
+        with open(file_path, mode="rb") as fp:
             toml_data = tomli.load(fp)
         return cls.load_dict(toml_data)
 

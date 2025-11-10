@@ -13,7 +13,7 @@ import tomli
 from shapely import Polygon
 
 from flood_adapt import unit_system as us
-from flood_adapt.config import Settings
+from flood_adapt.config import SETTINGS
 from flood_adapt.config.hazard import (
     DatumModel,
     DemModel,
@@ -44,6 +44,7 @@ from flood_adapt.database_builder.database_builder import (
 )
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.forcing.tide_gauge import TideGaugeSource
 from flood_adapt.objects.forcing.timeseries import Scstype
 
@@ -52,7 +53,7 @@ class TestDataBaseBuilder:
     @pytest.fixture(scope="function")
     def mock_config(self):
         """Create a temporary database path and return a minimal mocked ConfigModel object."""
-        self.db_path = Settings().database_path
+        self.db_path = SETTINGS.database_path
         self.static_path = self.db_path / "static"
         self.templates_path = self.db_path / "static" / "templates"
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:
@@ -608,8 +609,11 @@ class TestDataBaseBuilder:
 
     def test_create_scs(self, mock_config: ConfigModel):
         # Arrange
+        mock_curves = DataFrameContainer(
+            path=self.static_path / "scs" / "scs_rainfall.csv"
+        )
         mock_config.scs = SCSModel(
-            file=str(self.static_path / "scs/scs_rainfall.csv"),
+            curves=mock_curves,
             type=Scstype.type3,
         )
         builder = DatabaseBuilder(mock_config)
@@ -618,9 +622,11 @@ class TestDataBaseBuilder:
         scs = builder.create_scs_model()
 
         # Assert
-        expected_file = builder.static_path / "scs" / Path(mock_config.scs.file).name
+        expected_file = (
+            builder.static_path / "scs" / Path(mock_config.scs.curves.path).name
+        )
         expected_scs = SCSModel(
-            file=expected_file.name,
+            curves=mock_curves,
             type=mock_config.scs.type,
         )
         assert scs == expected_scs
@@ -1151,7 +1157,7 @@ class TestDataBaseBuilder:
 
     @pytest.fixture(scope="function")
     def full_config(self):
-        db_path = Settings().database_path
+        db_path = SETTINGS.database_path
         static_path = db_path / "static"
         templates_path = db_path / "static" / "templates"
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:
@@ -1194,7 +1200,9 @@ class TestDataBaseBuilder:
                     relative_to_year=2020,
                 ),
                 scs=SCSModel(
-                    file=str(static_path / "scs/scs_rainfall.csv"),
+                    curves=DataFrameContainer(
+                        path=static_path / "scs" / "scs_rainfall.csv"
+                    ),
                     type=Scstype.type3,
                 ),
                 tide_gauge=TideGaugeConfigModel(

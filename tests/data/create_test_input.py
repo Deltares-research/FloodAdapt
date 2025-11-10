@@ -4,15 +4,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-import geopandas as gpd
-
 from flood_adapt import unit_system as us
-from flood_adapt.config.config import Settings
+from flood_adapt.config import SETTINGS
 from flood_adapt.config.hazard import RiverModel
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.objects.benefits.benefits import (
     Benefit,
     CurrentSituationModel,
+)
+from flood_adapt.objects.data_container import (
+    CycloneTrackContainer,
+    GeoDataFrameContainer,
 )
 from flood_adapt.objects.events.event_set import (
     EventSet,
@@ -42,7 +44,6 @@ from flood_adapt.objects.forcing.timeseries import (
     ShapeType,
     TimeseriesFactory,
 )
-from flood_adapt.objects.forcing.unit_system import VerticalReference
 from flood_adapt.objects.forcing.waterlevels import (
     SurgeModel,
     TideModel,
@@ -70,6 +71,7 @@ from flood_adapt.objects.projections.projections import (
 )
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
+from flood_adapt.objects.unit_system import VerticalReference
 from flood_adapt.workflows.benefit_runner import BenefitRunner
 
 DATA_DIR = Path(__file__).parent
@@ -152,7 +154,7 @@ def create_projections():
                 units=us.UnitTypesLength.feet,
                 type=VerticalReference.floodmap,
             ),
-            gdf=gpd.read_file(DATA_DIR / "new_areas.geojson").to_crs(epsg=4326),
+            gdf=GeoDataFrameContainer(path=DATA_DIR / "new_areas.geojson"),
         ),
     )
 
@@ -179,7 +181,7 @@ def create_projections():
                 units=us.UnitTypesLength.feet,
                 type=VerticalReference.floodmap,
             ),
-            gdf=gpd.read_file(DATA_DIR / "new_areas.geojson").to_crs(epsg=4326),
+            gdf=GeoDataFrameContainer(path=DATA_DIR / "new_areas.geojson"),
         ),
     )
 
@@ -211,7 +213,7 @@ def create_measures():
         type=MeasureType.pump,
         discharge=us.UnitfulDischarge(value=500, units=us.UnitTypesDischarge.cfs),
         selection_type=SelectionType.polyline,
-        gdf=gpd.read_file(DATA_DIR / "pump.geojson").to_crs(epsg=4326),
+        gdf=GeoDataFrameContainer(path=DATA_DIR / "pump.geojson"),
     )
 
     GREEN_INFRA = GreenInfrastructure(
@@ -221,14 +223,14 @@ def create_measures():
         height=us.UnitfulHeight(value=2, units=us.UnitTypesLength.meters),
         percent_area=100,
         selection_type=SelectionType.polygon,
-        gdf=gpd.read_file(DATA_DIR / "green_infra.geojson").to_crs(epsg=4326),
+        gdf=GeoDataFrameContainer(path=DATA_DIR / "green_infra.geojson"),
     )
 
     GREENING = GreenInfrastructure(
         name="greening",
         type=MeasureType.greening,
         selection_type=SelectionType.polygon,
-        gdf=gpd.read_file(DATA_DIR / "greening.geojson").to_crs(epsg=4326),
+        gdf=GeoDataFrameContainer(path=DATA_DIR / "greening.geojson"),
         percent_area=30.0,
         volume=us.UnitfulVolume(value=13181722.5726565, units=us.UnitTypesVolume.cf),
         height=us.UnitfulHeight(value=3.0, units=us.UnitTypesLength.feet),
@@ -238,7 +240,7 @@ def create_measures():
         name="seawall",
         type=MeasureType.floodwall,
         selection_type=SelectionType.polygon,
-        gdf=gpd.read_file(DATA_DIR / "seawall.geojson").to_crs(epsg=4326),
+        gdf=GeoDataFrameContainer(path=DATA_DIR / "seawall.geojson"),
         elevation=us.UnitfulLengthRefValue(
             value=12,
             units=us.UnitTypesLength.feet,
@@ -250,7 +252,7 @@ def create_measures():
         name="total_storage",
         type=MeasureType.total_storage,
         selection_type=SelectionType.polygon,
-        gdf=gpd.read_file(DATA_DIR / "total_storage.geojson").to_crs(epsg=4326),
+        gdf=GeoDataFrameContainer(path=DATA_DIR / "total_storage.geojson"),
         volume=us.UnitfulVolume(value=100000000.0, units=us.UnitTypesVolume.cf),
     )
 
@@ -267,7 +269,7 @@ def create_measures():
         name="water_square",
         type=MeasureType.water_square,
         selection_type=SelectionType.polygon,
-        gdf=gpd.read_file(DATA_DIR / "water_square.geojson").to_crs(epsg=4326),
+        gdf=GeoDataFrameContainer(path=DATA_DIR / "water_square.geojson"),
         volume=us.UnitfulVolume(value=43975190.31512848, units=us.UnitTypesVolume.cf),
         height=us.UnitfulHeight(value=3.0, units=us.UnitTypesLength.feet),
     )
@@ -337,9 +339,7 @@ def create_measures():
         ),
         selection_type=SelectionType.polygon,
         property_type="RES",
-        gdf=gpd.read_file(DATA_DIR / "raise_property_polygon.geojson").to_crs(
-            epsg=4326
-        ),
+        gdf=GeoDataFrameContainer(path=DATA_DIR / "raise_property_polygon.geojson"),
     )
 
     MEASURES = [
@@ -669,9 +669,19 @@ def _create_single_events():
                 )
             ],
             ForcingType.WATERLEVEL: [WaterlevelModel()],
-            ForcingType.WIND: [WindTrack(path=DATA_DIR / "cyclones" / "FLORENCE.cyc")],
+            ForcingType.WIND: [
+                WindTrack(
+                    track=CycloneTrackContainer(
+                        path=DATA_DIR / "cyclones" / "FLORENCE.cyc"
+                    )
+                )
+            ],
             ForcingType.RAINFALL: [
-                RainfallTrack(path=DATA_DIR / "cyclones" / "FLORENCE.cyc")
+                RainfallTrack(
+                    track=CycloneTrackContainer(
+                        path=DATA_DIR / "cyclones" / "FLORENCE.cyc"
+                    )
+                ),
             ],
         },
     )
@@ -856,8 +866,10 @@ def _create_hurricane_event(name: str) -> HurricaneEvent:
         track_name="IAN",
         forcings={
             ForcingType.WATERLEVEL: [WaterlevelModel()],
-            ForcingType.WIND: [WindTrack(path=cyc_file)],
-            ForcingType.RAINFALL: [RainfallTrack(path=cyc_file)],
+            ForcingType.WIND: [WindTrack(track=CycloneTrackContainer(path=cyc_file))],
+            ForcingType.RAINFALL: [
+                RainfallTrack(track=CycloneTrackContainer(path=cyc_file))
+            ],
             ForcingType.DISCHARGE: [
                 DischargeConstant(
                     river=RiverModel(
@@ -896,9 +908,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    settings = Settings(
-        DATABASE_ROOT=args.database_root,
-        DATABASE_NAME=args.database_name,
-    )
-    print(f"Updating database: {settings.database_path}")
-    update_database_input(settings.database_path)
+    SETTINGS.database_root = args.database_root
+    SETTINGS.database_name = args.database_name
+
+    print(f"Updating database: {SETTINGS.database_path}")
+    update_database_input(SETTINGS.database_path)
