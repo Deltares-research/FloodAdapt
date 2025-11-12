@@ -8,20 +8,12 @@ jobs:
   lint-description:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: clear cache
-        run: |
-          if gh cache list commitlint; then
-            gh cache delete commilint
-          fi
+      - uses: actions/checkout@v5
       - name: install rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
             cache: false
+
       - name: compile binary
         run: |
           cargo install commitlint-rs
-      - uses: actions/cache/save@v4
-        with:
-          key: commitlint
-          path: ~/.cargo/bin
