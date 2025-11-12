@@ -1310,10 +1310,14 @@ class SfincsAdapter(IHazardAdapter):
             )
             return
 
-        logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
-
-        time_frame = self.get_model_time()
         model_rivers = self._read_river_locations()
+        if model_rivers.empty:
+            logger.warning(
+                "Cannot add discharge forcing: No rivers defined in the sfincs model."
+            )
+            return
+        logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
+        time_frame = self.get_model_time()
 
         # Check that the river is defined in the model and that the coordinates match
         river_loc = shapely.Point(
