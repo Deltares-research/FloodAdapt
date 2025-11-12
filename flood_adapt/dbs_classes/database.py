@@ -72,7 +72,7 @@ class Database(IDatabase):
         self,
         database_root: Path | None = None,
         database_name: str | None = None,
-        settings: Settings = Settings(),
+        settings: Settings | None = None,
     ) -> None:
         """
         Initialize the DatabaseController object.
@@ -124,7 +124,7 @@ class Database(IDatabase):
         self.benefits = DbsBenefit(self)
 
         self._init_done = True
-        self._settings = settings
+        self._settings = settings or Settings()
 
         # Delete any unfinished/crashed scenario output after initialization
         if self._settings.delete_crashed_runs:

@@ -37,16 +37,24 @@ src_dir = Path(
 clean = True
 
 load_dotenv()
+IS_WINDOWS = platform.system() == "Windows"
 SETTINGS = Settings(
     DATABASE_ROOT=src_dir.parents[1] / "Database",
     DATABASE_NAME="charleston_test",
     DELETE_CRASHED_RUNS=clean,
     VALIDATE_ALLOWED_FORCINGS=True,
-    VALIDATE_BINARIES=not HAS_DOCKER,
-    USE_DOCKER=platform.system() != "Windows",
     MANUAL_DOCKER_CONTAINERS=True,
+    USE_DOCKER=not IS_WINDOWS,
+    VALIDATE_BINARIES=IS_WINDOWS,
 )
+
+# We should always be able to execute scenarios in the test environment, either via Docker or local binaries
 CAN_EXECUTE_SCENARIOS = SETTINGS.can_execute_scenarios()
+if not CAN_EXECUTE_SCENARIOS:
+    raise RuntimeError(
+        "We expect to be able to execute scenarios in the test environment, "
+        "either via Docker or local binaries, but cannot. Please check your configuration."
+    )
 
 
 ## AUTO USE FIXTURES ##
