@@ -192,9 +192,10 @@ class SfincsAdapter(IHazardAdapter):
 
         """
         settings = Settings()
+
         if HAS_DOCKER and settings.use_docker:
             success = SFINCS_CONTAINER.run(path)
-        else:
+        elif settings.validate_binaries:
             with cd(path):
                 logger.info(f"Running SFINCS in {path}")
                 process = subprocess.run(
@@ -206,6 +207,10 @@ class SfincsAdapter(IHazardAdapter):
                 self.sfincs_logger.info(process.stdout)
                 logger.debug(process.stdout)
                 success = process.returncode == 0
+        else:
+            raise RuntimeError(
+                "SFINCS execution method not configured properly. Choose to validate binaries or use Docker. See ``Settings``."
+            )
 
         self._cleanup_simulation_folder(path)
 

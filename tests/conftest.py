@@ -1,6 +1,7 @@
 import filecmp
 import logging
 import os
+import platform
 import shutil
 import tempfile
 from datetime import datetime
@@ -42,6 +43,7 @@ SETTINGS = Settings(
     DELETE_CRASHED_RUNS=clean,
     VALIDATE_ALLOWED_FORCINGS=True,
     VALIDATE_BINARIES=not HAS_DOCKER,
+    USE_DOCKER=platform.system() != "Windows",
     MANUAL_DOCKER_CONTAINERS=True,
 )
 CAN_EXECUTE_SCENARIOS = SETTINGS.can_execute_scenarios()

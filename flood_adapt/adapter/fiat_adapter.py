@@ -327,23 +327,18 @@ class FiatAdapter(IImpactAdapter):
         """
         FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
         FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
+        exe = exe_path or self.exe_path
 
         if HAS_DOCKER and Settings().use_docker:
             success = FIAT_CONTAINER.run(path)
-        else:
-            if exe_path is None:
-                if self.exe_path is None:
-                    raise ValueError(
-                        "'exe_path' needs to be provided either when calling FiatAdapter.execute() or during initialization of the FiatAdapter object."
-                    )
-            exe_path = self.exe_path
+        elif exe is not None:
             with cd(path):
                 fiat_log = path / "fiat.log"
                 with FloodAdaptLogging.to_file(file_path=fiat_log):
                     logger.info(f"Running FIAT in {path}")
                     process = subprocess.run(
                         args=[
-                            Path(exe_path).resolve().as_posix(),
+                            Path(exe).resolve().as_posix(),
                             "run",
                             "settings.toml",
                         ],
@@ -353,6 +348,11 @@ class FiatAdapter(IImpactAdapter):
                     )
                     logger.debug(process.stdout)
                     success = process.returncode == 0
+        else:
+            raise RuntimeError(
+                "FIAT execution method not configured properly. Choose to validate binaries or use Docker. See ``Settings``."
+                f"'exe_path': `{exe}` needs to be provided either when calling FiatAdapter.execute() or during initialization of the FiatAdapter object."
+            )
 
         # cleanup
         if delete_crashed_runs is None:
