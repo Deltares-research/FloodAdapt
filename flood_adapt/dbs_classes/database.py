@@ -233,7 +233,7 @@ class Database(IDatabase):
             if _type == FloodmapType.water_level:
                 paths = [base_dir / "max_water_level_map.nc"]
             elif _type == FloodmapType.water_depth:
-                paths = [base_dir / f"FloodMap_{self.name}.tif"]
+                paths = [base_dir / f"FloodMap_{scenario_name}.tif"]
         elif mode == Mode.risk:
             if _type == FloodmapType.water_level:
                 paths = list(base_dir.glob("RP_*_maps.nc"))
