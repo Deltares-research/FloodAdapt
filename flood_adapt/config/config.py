@@ -119,6 +119,12 @@ class Settings(BaseSettings):
         description="Whether to manually start and stop Docker containers for SFINCS and FIAT when initializing/destroying FloodAdapt. Useful to prevent unnecessary re-initialization during testing.",
         exclude=True,
     )
+    use_docker: bool = Field(
+        alias="USE_DOCKER",  # environment variable: USE_DOCKER
+        default=False,
+        description="Whether to use Docker containers for SFINCS and FIAT execution. If True, Docker must be installed and running. If False, local binaries will be used.",
+        exclude=True,
+    )
 
     @computed_field
     @property
@@ -161,6 +167,11 @@ class Settings(BaseSettings):
                 environ["FIAT_BIN_PATH"] = self.fiat_bin_path.as_posix()
         else:
             environ.pop("VALIDATE_BINARIES", None)
+
+        if self.use_docker:
+            environ["USE_DOCKER"] = str(self.use_docker)
+        else:
+            environ.pop("USE_DOCKER", None)
 
         return self
 
@@ -267,7 +278,7 @@ class Settings(BaseSettings):
             )
 
     def can_execute_scenarios(self) -> bool:
-        if HAS_DOCKER:
+        if HAS_DOCKER and self.use_docker:
             return True
 
         if (

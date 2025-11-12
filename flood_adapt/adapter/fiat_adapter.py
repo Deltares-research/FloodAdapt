@@ -25,6 +25,7 @@ from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.adapter.docker import FIAT_CONTAINER, HAS_DOCKER
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
+from flood_adapt.config.config import Settings
 from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -327,7 +328,7 @@ class FiatAdapter(IImpactAdapter):
         FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
         FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
 
-        if HAS_DOCKER:
+        if HAS_DOCKER and Settings().use_docker:
             success = FIAT_CONTAINER.run(path)
         else:
             if exe_path is None:

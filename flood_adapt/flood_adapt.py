@@ -9,7 +9,7 @@ from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-from flood_adapt.adapter.docker import FIAT_CONTAINER, HAS_DOCKER, SFINCS_CONTAINER
+from flood_adapt.adapter.docker import FIAT_CONTAINER, SFINCS_CONTAINER
 from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -63,7 +63,7 @@ class FloodAdapt:
             settings=settings,
         )
 
-        if HAS_DOCKER:
+        if settings.use_docker:
             self._initialize_docker()
 
     # Measures

@@ -191,13 +191,14 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
-        if HAS_DOCKER:
+        settings = Settings()
+        if HAS_DOCKER and settings.use_docker:
             success = SFINCS_CONTAINER.run(path)
         else:
             with cd(path):
                 logger.info(f"Running SFINCS in {path}")
                 process = subprocess.run(
-                    Settings().sfincs_bin_path.as_posix(),
+                    settings.sfincs_bin_path.as_posix(),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
@@ -209,7 +210,7 @@ class SfincsAdapter(IHazardAdapter):
         self._cleanup_simulation_folder(path)
 
         if not success:
-            if Settings().delete_crashed_runs:
+            if settings.delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
                 for subdir, dirs, files in os.walk(path, topdown=False):
                     for file in files:
