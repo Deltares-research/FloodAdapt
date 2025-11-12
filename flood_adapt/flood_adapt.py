@@ -899,7 +899,7 @@ class FloodAdapt:
 
         output_path = self.database.get_flooding_path(scenario.name)
         obs_points["html"] = [
-            str(output_path.joinpath(f"{station}_timeseries.html"))
+            (output_path / f"{station}_timeseries.html").as_posix()
             for station in obs_points.name
         ]
 
@@ -975,10 +975,10 @@ class FloodAdapt:
         # Check if the file exists
         if not metrics_path.exists():
             raise FileNotFoundError(
-                f"The metrics file for scenario {name}({str(metrics_path)}) does not exist."
+                f"The metrics file for scenario {name}({metrics_path.as_posix()}) does not exist."
             )
         # Read the metrics file
-        df = MetricsFileReader(str(metrics_path)).read_metrics_from_file(
+        df = MetricsFileReader(metrics_path.as_posix()).read_metrics_from_file(
             include_long_names=True,
             include_description=True,
             include_metrics_table_selection=True,

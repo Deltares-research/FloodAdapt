@@ -1,4 +1,5 @@
 import shutil
+from pathlib import Path
 from typing import Any
 
 import geopandas as gpd
@@ -32,7 +33,7 @@ class BenefitRunner:
         self.benefit = benefit
 
         # Get output path based on database path
-        self.results_path = self.database.benefits.output_path.joinpath(
+        self.results_path: Path = self.database.benefits.output_path.joinpath(
             self.benefit.name
         )
         self.site_info = self.database.site
@@ -71,7 +72,7 @@ class BenefitRunner:
         results_html = self.results_path.joinpath("benefits.html")
         with open(results_toml, mode="rb") as fp:
             results = tomli.load(fp)
-        results["html"] = str(results_html)
+        results["html"] = results_html.as_posix()
         self._results = results
         return results
 

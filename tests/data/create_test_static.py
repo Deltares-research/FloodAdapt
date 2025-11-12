@@ -70,6 +70,7 @@ def update_database_static(settings: Settings):
     site.save(config_dir / "site.toml")
 
     sfincs.river = None
+    sfincs.config.overland_model.name = "overland_0_rivers"  # this model has template the .src file deleted, and the sfincs.inp updated accordingly
     no_river = create_site_config(database_path=database_path, sfincs=sfincs)
     no_river.save(
         config_dir / "site_without_river.toml", sfincs="sfincs_without_river.toml"
