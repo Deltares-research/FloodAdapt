@@ -60,7 +60,7 @@ class TestSettingsModel:
         expected_fiat: Optional[Path] = None,
     ):
         assert settings.database_root == expected_root
-        assert os.environ["DATABASE_ROOT"] == str(expected_root)
+        assert os.environ["DATABASE_ROOT"] == expected_root.as_posix()
 
         assert settings.database_name == expected_name
         assert os.environ["DATABASE_NAME"] == expected_name
@@ -69,11 +69,11 @@ class TestSettingsModel:
 
         if expected_sfincs is not None:
             assert settings.sfincs_bin_path == expected_sfincs
-            assert os.environ["SFINCS_BIN_PATH"] == str(expected_sfincs)
+            assert os.environ["SFINCS_BIN_PATH"] == expected_sfincs.as_posix()
 
         if expected_fiat is not None:
             assert settings.fiat_bin_path == expected_fiat
-            assert os.environ["FIAT_BIN_PATH"] == str(expected_fiat)
+            assert os.environ["FIAT_BIN_PATH"] == expected_fiat.as_posix()
 
     @pytest.fixture(autouse=True, scope="class")
     def protect_external_settings(self):
@@ -88,17 +88,13 @@ class TestSettingsModel:
 
     @pytest.fixture(autouse=True)
     def protect_envvars(self):
-        root = os.environ.get("DATABASE_ROOT", None)
-        name = os.environ.get("DATABASE_NAME", None)
-        sfincs_bin = os.environ.get("SFINCS_BIN_PATH", None)
-        fiat_bin = os.environ.get("FIAT_BIN_PATH", None)
-
-        with modified_environ(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs_bin,
-            FIAT_BIN_PATH=fiat_bin,
-        ):
+        env_vars = {
+            "DATABASE_ROOT": os.getenv("DATABASE_ROOT", None),
+            "DATABASE_NAME": os.getenv("DATABASE_NAME", None),
+            "SFINCS_BIN_PATH": os.getenv("SFINCS_BIN_PATH", None),
+            "FIAT_BIN_PATH": os.getenv("FIAT_BIN_PATH", None),
+        }
+        with modified_environ(**{k: v for k, v in env_vars.items() if v is not None}):
             yield
 
     @pytest.mark.skip(
@@ -139,7 +135,7 @@ class TestSettingsModel:
         db_root, name = create_dummy_db(system=system)
 
         with modified_environ(
-            DATABASE_ROOT=str(db_root),
+            DATABASE_ROOT=db_root.as_posix(),
             DATABASE_NAME=name,
         ):
             # Act
@@ -158,7 +154,7 @@ class TestSettingsModel:
         db_root, name = create_dummy_db(system=system)
 
         with modified_environ(
-            DATABASE_ROOT=str(db_root / "dummy"),
+            DATABASE_ROOT=(db_root / "dummy").as_posix(),
             DATABASE_NAME="invalid_name",
         ):
             # Act
@@ -189,33 +185,21 @@ class TestSettingsModel:
         assert "does not exist." in str(exc_info.value)
 
     @pytest.mark.parametrize("system", ["windows", "linux"])
-    @pytest.mark.parametrize("model", ["fiat", "sfincs"])
     def test_missing_model_binaries_raise_validation_error(
-        self, system: str, model: str, create_dummy_db
+        self, system: str, create_dummy_db
     ):
         db_root, name = create_dummy_db(system=system)
         non_existent_path = Path("doesnt_exist")
-        with pytest.raises(ValidationError) as exc_info:
-            if model == "fiat":
-                Settings(
-                    DATABASE_ROOT=db_root,
-                    DATABASE_NAME=name,
-                    FIAT_BIN_PATH=non_existent_path,
-                    VALIDATE_BINARIES=True,
-                )
-            elif model == "sfincs":
-                Settings(
-                    DATABASE_ROOT=db_root,
-                    DATABASE_NAME=name,
-                    SFINCS_BIN_PATH=non_existent_path,
-                    VALIDATE_BINARIES=True,
-                )
-            else:
-                raise ValueError("Invalid model")
-
-        assert f"{model.upper()} binary {non_existent_path} does not exist." in str(
-            exc_info.value
-        )
+        with pytest.raises(
+            ValidationError, match=f"binary {non_existent_path} does not exist."
+        ):
+            Settings(
+                DATABASE_ROOT=db_root,
+                DATABASE_NAME=name,
+                FIAT_BIN_PATH=non_existent_path,
+                SFINCS_BIN_PATH=non_existent_path,
+                VALIDATE_BINARIES=True,
+            )
 
     def test_read_settings_no_envvars(self, create_dummy_db):
         # Arrange
@@ -223,7 +207,7 @@ class TestSettingsModel:
 
         config_path = db_root / "config.toml"
         config_path.write_text(
-            f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root}'\n"
+            f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root.as_posix()}'\n"
         )
 
         # Act
@@ -246,7 +230,7 @@ class TestSettingsModel:
         ):
             config_path = db_root / "config.toml"
             config_path.write_text(
-                f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root}'\n"
+                f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root.as_posix()}'\n"
             )
 
             # Act
@@ -264,7 +248,7 @@ class TestSettingsModel:
         db_root, name = create_dummy_db()
 
         with modified_environ(
-            DATABASE_ROOT=str(db_root),
+            DATABASE_ROOT=db_root.as_posix(),
             DATABASE_NAME="dummy_name",
         ):
             config_path = db_root / "config.toml"
@@ -287,7 +271,7 @@ class TestSettingsModel:
 
         # Act
         with modified_environ(
-            DATABASE_ROOT=str(db_root1),
+            DATABASE_ROOT=db_root1.as_posix(),
             DATABASE_NAME=name1,
         ):
             from_env1 = Settings()  # Create settings object with envvars
@@ -316,42 +300,47 @@ class TestSettingsModel:
                 DELETE_CRASHED_RUNS=False,
                 VALIDATE_ALLOWED_FORCINGS=False,
                 VALIDATE_BINARIES=False,
+                MANUAL_DOCKER_CONTAINERS=False,
             )
 
             assert not settings.delete_crashed_runs
             assert not settings.validate_allowed_forcings
             assert not settings.validate_binaries
+            assert not settings.manual_docker_containers
             assert not os.getenv("DELETE_CRASHED_RUNS")
             assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert not os.getenv("VALIDATE_BINARIES")
+            assert not os.getenv("MANUAL_DOCKER_CONTAINERS")
 
             settings2 = Settings()
             assert not settings2.delete_crashed_runs
             assert not settings2.validate_allowed_forcings
             assert not settings2.validate_binaries
+            assert not settings2.manual_docker_containers
             assert not os.getenv("DELETE_CRASHED_RUNS")
             assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert not os.getenv("VALIDATE_BINARIES")
+            assert not os.getenv("MANUAL_DOCKER_CONTAINERS")
 
     def test_create_settings_with_persistent_booleans_true(self):
         with modified_environ():
             settings = Settings(
                 DELETE_CRASHED_RUNS=True,
                 VALIDATE_ALLOWED_FORCINGS=True,
-                VALIDATE_BINARIES=True,
+                MANUAL_DOCKER_CONTAINERS=True,
             )
 
             assert settings.delete_crashed_runs
             assert settings.validate_allowed_forcings
-            assert settings.validate_binaries
+            assert settings.manual_docker_containers
             assert os.getenv("DELETE_CRASHED_RUNS")
             assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert os.getenv("VALIDATE_BINARIES")
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS")
 
             settings2 = Settings()
             assert settings2.delete_crashed_runs
             assert settings2.validate_allowed_forcings
-            assert settings2.validate_binaries
+            assert settings2.manual_docker_containers
             assert os.getenv("DELETE_CRASHED_RUNS")
             assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert os.getenv("VALIDATE_BINARIES")
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS")

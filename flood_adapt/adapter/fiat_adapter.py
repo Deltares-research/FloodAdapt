@@ -9,6 +9,8 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import pandas as pd
 import tomli
+import tomli_w
+import tomllib
 from fiat_toolbox import FiatColumns, get_fiat_columns
 from fiat_toolbox.equity.equity import Equity
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
@@ -21,6 +23,7 @@ from fiat_toolbox.spatial_output.footprints import Footprints
 from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
+from flood_adapt.adapter.docker import FIAT_CONTAINER, HAS_DOCKER
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
@@ -288,10 +291,12 @@ class FiatAdapter(IImpactAdapter):
 
     def execute(
         self,
-        path: Optional[os.PathLike] = None,
-        exe_path: Optional[os.PathLike] = None,
-        delete_crashed_runs: Optional[bool] = None,
-        strict=True,
+        path: Path,
+        *,
+        strict: bool = True,
+        exe_path: Path | None = None,
+        delete_crashed_runs: bool | None = None,
+        **kwargs: Any,
     ) -> bool:
         """
         Execute the FIAT model.
@@ -319,32 +324,40 @@ class FiatAdapter(IImpactAdapter):
         RuntimeError
             If the FIAT model fails to run and `strict` is True.
         """
-        if path is None:
-            path = self.model_root
-        if exe_path is None:
-            if self.exe_path is None:
-                raise ValueError(
-                    "'exe_path' needs to be provided either when calling FiatAdapter.execute() or during initialization of the FiatAdapter object."
-                )
+        FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
+        FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
+
+        if HAS_DOCKER:
+            success = FIAT_CONTAINER.run(path)
+        else:
+            if exe_path is None:
+                if self.exe_path is None:
+                    raise ValueError(
+                        "'exe_path' needs to be provided either when calling FiatAdapter.execute() or during initialization of the FiatAdapter object."
+                    )
             exe_path = self.exe_path
+            with cd(path):
+                fiat_log = path / "fiat.log"
+                with FloodAdaptLogging.to_file(file_path=fiat_log):
+                    logger.info(f"Running FIAT in {path}")
+                    process = subprocess.run(
+                        args=[
+                            Path(exe_path).resolve().as_posix(),
+                            "run",
+                            "settings.toml",
+                        ],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                    )
+                    logger.debug(process.stdout)
+                    success = process.returncode == 0
+
+        # cleanup
         if delete_crashed_runs is None:
             delete_crashed_runs = self.delete_crashed_runs
-        path = Path(path)
-        fiat_log = path / "fiat.log"
-        with cd(path):
-            with FloodAdaptLogging.to_file(file_path=fiat_log):
-                FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
 
-                logger.info(f"Running FIAT in {path}")
-                process = subprocess.run(
-                    args=[Path(exe_path).resolve().as_posix(), "run", "settings.toml"],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                )
-                logger.debug(process.stdout)
-
-        if process.returncode != 0:
+        if not success:
             if delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
                 for subdir, dirs, files in os.walk(path, topdown=False):
@@ -360,10 +373,10 @@ class FiatAdapter(IImpactAdapter):
             else:
                 logger.error(f"FIAT model failed to run in {path}.")
 
-        if process.returncode == 0:
+        if success:
             self.read_outputs()
 
-        return process.returncode == 0
+        return success
 
     def read_outputs(self) -> None:
         """
@@ -689,7 +702,7 @@ class FiatAdapter(IImpactAdapter):
 
     def set_hazard(
         self,
-        map_fn: Union[os.PathLike, list[os.PathLike]],
+        map_fn: list[Path],
         map_type: FloodmapType,
         var: str,
         is_risk: bool = False,
@@ -711,13 +724,17 @@ class FiatAdapter(IImpactAdapter):
         units : str, optional
             The units of the hazard map. Defaults to us.UnitTypesLength.meters.
         """
-        logger.info(f"Setting hazard to the {map_type} map {map_fn}")
         # Add the floodmap data to a data catalog with the unit conversion
         wl_current_units = us.UnitfulLength(value=1.0, units=units)
         conversion_factor = wl_current_units.convert(self.model.exposure.unit)
+        if isinstance(map_fn, list):
+            floodmap_paths = [Path(p) for p in map_fn]
+        else:
+            floodmap_paths = [Path(map_fn)]
 
+        logger.info(f"Setting hazard to the {map_type.value} map {floodmap_paths}")
         self.model.setup_hazard(
-            map_fn=[Path(p).as_posix() for p in map_fn],
+            map_fn=[p.as_posix() for p in floodmap_paths],
             map_type=map_type.value,
             rp=None,
             crs=None,  # change this in new version (maybe to str(floodmap.crs.split(':')[1]))
@@ -1559,6 +1576,42 @@ class FiatAdapter(IImpactAdapter):
                         if line.startswith("#"):
                             line = "#" + " " * hash_spacing + line.lstrip("#")
                         file.write(line)
+
+    @staticmethod
+    def _normalize_paths_in_toml(toml_path: Path) -> None:
+        r"""
+        Normalize Windows-style paths in a TOML file by replacing '\\' with '/'.
+
+        Parameters
+        ----------
+        toml_path : Path
+            Path to the TOML file to clean up.
+        """
+        toml_path = Path(toml_path)
+        if not toml_path.exists():
+            raise FileNotFoundError(f"TOML file not found: {toml_path}")
+
+        with open(toml_path, "rb") as f:
+            data = tomllib.load(f)
+
+        def _normalize(obj):
+            if isinstance(obj, dict):
+                return {k: _normalize(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [_normalize(v) for v in obj]
+            elif isinstance(obj, str):
+                # Only replace if it looks like a path
+                if "\\" in obj:
+                    return obj.replace("\\", "/")
+                return obj
+            else:
+                return obj
+
+        normalized = _normalize(data)
+
+        # Write back the cleaned TOML
+        with open(toml_path, "wb") as f:
+            tomli_w.dump(normalized, f)
 
     def _delete_simulation_folder(self, scn: Scenario):
         """
