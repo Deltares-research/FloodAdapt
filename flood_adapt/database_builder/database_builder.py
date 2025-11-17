@@ -135,16 +135,17 @@ def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
 
 
 class SpatialJoinModel(BaseModel):
-    """Represents a spatial join model.
+    """
+    Model for representing a spatial join between geometries and tabular data.
 
-    Attributes
+    Parameters
     ----------
-    name : Optional[str], default None
-        The name of the model.
+    name : Optional[str]
+        Name of the spatial join (optional).
     file : str
-        The file associated with the model.
+        Path to the file containing the spatial data to join.
     field_name : str
-        The field name used for the spatial join.
+        Name of the field used for joining.
     """
 
     name: Optional[str] = None
@@ -153,14 +154,13 @@ class SpatialJoinModel(BaseModel):
 
 
 class UnitSystems(str, Enum):
-    """Enumeration for accepted values for the unit_system field.
+    """
+    Enumeration for supported unit systems.
 
-    Attributes
-    ----------
-    imperial : str
-        Represents the imperial unit system.
-    metric : str
-        Represents the metric unit system.
+    Values
+    ------
+    imperial : Imperial units (feet, miles, etc.)
+    metric : Metric units (meters, kilometers, etc.)
     """
 
     imperial = "imperial"
@@ -168,36 +168,30 @@ class UnitSystems(str, Enum):
 
 
 class FootprintsOptions(str, Enum):
-    """Enumeration for accepted values for the building_footprints field.
+    """
+    Enumeration for building footprints data sources.
 
-    Attributes
-    ----------
-    OSM : str
-        Use OpenStreetMap for building footprints.
+    Values
+    ------
+    OSM : Use OpenStreetMap for building footprints.
     """
 
     OSM = "OSM"
 
 
 class Basins(str, Enum):
-    """Enumeration class representing different basins.
+    """
+    Enumeration of global cyclone basins.
 
-    Attributes
-    ----------
-    NA : str
-        North Atlantic
-    SA : str
-        South Atlantic
-    EP : str
-        Eastern North Pacific (which includes the Central Pacific region)
-    WP : str
-        Western North Pacific
-    SP : str
-        South Pacific
-    SI : str
-        South Indian
-    NI : str
-        North Indian
+    Values
+    ------
+    NA : North Atlantic
+    SA : South Atlantic
+    EP : Eastern North Pacific (includes Central Pacific)
+    WP : Western North Pacific
+    SP : South Pacific
+    SI : South Indian
+    NI : North Indian
     """
 
     NA = "NA"
@@ -210,18 +204,21 @@ class Basins(str, Enum):
 
 
 class GuiConfigModel(BaseModel):
-    """Represents a GUI model for FloodAdapt.
+    """
+    Configuration for FloodAdapt GUI visualization scaling.
 
-    Attributes
+    Parameters
     ----------
     max_flood_depth : float
-        The last visualization bin will be ">value".
+        Maximum flood depth for visualization bins (last bin is ">value").
     max_aggr_dmg : float
-        The last visualization bin will be ">value".
+        Maximum aggregated damage for visualization bins.
     max_footprint_dmg : float
-        The last visualization bin will be ">value".
+        Maximum footprint damage for visualization bins.
     max_benefits : float
-        The last visualization bin will be ">value".
+        Maximum benefits for visualization bins.
+    additional_aggregated_layers : Optional[list[MetricLayer]]
+        Additional metric layers for aggregation (optional).
     """
 
     max_flood_depth: float
@@ -232,38 +229,42 @@ class GuiConfigModel(BaseModel):
 
 
 class SviConfigModel(SpatialJoinModel):
-    """Represents a model for the Social Vulnerability Index (SVI).
+    """
+    Model for Social Vulnerability Index (SVI) spatial join.
 
-    Attributes
+    Inherits from SpatialJoinModel.
+
+    Parameters
     ----------
     threshold : float
-        The threshold value for the SVI model to specify vulnerability.
+        Threshold value to specify vulnerability.
     """
 
     threshold: float
 
 
 class TideGaugeConfigModel(BaseModel):
-    """Represents a tide gauge model.
+    """
+    Model for tide gauge configuration.
 
-    Attributes
+    Parameters
     ----------
     source : TideGaugeSource
-        The source of the tide gauge data.
-    description : str, default ""
+        Source of tide gauge data.
+    description : str
         Description of the tide gauge.
-    ref : Optional[str], default None
-        The reference name. Should be defined in the water level references.
-    id : Optional[int], default None
-        The station ID.
-    lon : Optional[float], default None
-        Longitude of the tide gauge.
-    lat : Optional[float], default None
-        Latitude of the tide gauge.
-    file : Optional[str], default None
-        The file associated with the tide gauge data.
-    max_distance : Optional[us.UnitfulLength], default None
-        The maximum distance.
+    ref : Optional[str]
+        Reference name (should match water level references).
+    id : Optional[int]
+        Station ID.
+    lon : Optional[float]
+        Longitude.
+    lat : Optional[float]
+        Latitude.
+    file : Optional[str]
+        Path to tide gauge data file.
+    max_distance : Optional[us.UnitfulLength]
+        Maximum distance for gauge association.
     """
 
     source: TideGaugeSource
@@ -278,74 +279,76 @@ class TideGaugeConfigModel(BaseModel):
 
 class ConfigModel(BaseModel):
     """
-    Represents the configuration model for FloodAdapt.
+    Main configuration model for FloodAdapt database builder.
 
-    Attributes
+    Parameters
     ----------
     name : str
-        The name of the site.
-    description : Optional[str], default None
-        The description of the site.
-    database_path : Optional[str], default None
-        The path to the database where all the sites are located.
+        Name of the site (must be valid for folder names).
+    description : Optional[str]
+        Description of the site.
+    database_path : Optional[str]
+        Path to the database root directory.
     unit_system : UnitSystems
-        The unit system.
+        Unit system for all calculations (imperial or metric).
     gui : GuiConfigModel
-        The GUI model representing scaling values for the layers.
-    infographics : bool, default True
-        Indicates if infographics are enabled.
-    event_infographics : Optional[EventInfographicModel], default None
-        Event infographic configuration.
-    risk_infographics : Optional[RiskInfographicModel], default None
-        Risk infographic configuration.
-    event_additional_infometrics : Optional[list[MetricModel]], default None
+        GUI visualization scaling configuration.
+    infographics : bool
+        Enable/disable infographics.
+    event_infographics : Optional[EventInfographicModel]
+        Configuration for event infographics.
+    risk_infographics : Optional[RiskInfographicModel]
+        Configuration for risk infographics.
+    event_additional_infometrics : Optional[list[MetricModel]]
         Additional event infometrics.
-    risk_additional_infometrics : Optional[list[MetricModel]], default None
+    risk_additional_infometrics : Optional[list[MetricModel]]
         Additional risk infometrics.
     fiat : str
-        The FIAT model path.
-    aggregation_areas : Optional[list[SpatialJoinModel]], default None
-        The list of aggregation area models.
-    building_footprints : Optional[SpatialJoinModel | FootprintsOptions], default FootprintsOptions.OSM
-        The building footprints model or OSM option.
-    fiat_buildings_name : str | list[str], default "buildings"
-        The name(s) of the buildings geometry in the FIAT model.
-    fiat_roads_name : Optional[str], default "roads"
-        The name of the roads geometry in the FIAT model.
-    bfe : Optional[SpatialJoinModel], default None
-        The BFE model.
-    svi : Optional[SviConfigModel], default None
-        The SVI model.
-    road_width : us.UnitfulLength, default 5 meters
-        The road width.
-    return_periods : Optional[list[int]], default None
-        The list of return periods for risk calculations.
-    floodmap_type : Optional[FloodmapType], default None
-        The type of floodmap to use.
-    references : Optional[WaterlevelReferenceModel], default None
-        The water level reference model.
+        Path to the FIAT model directory.
+    aggregation_areas : Optional[list[SpatialJoinModel]]
+        List of aggregation area spatial join models.
+    building_footprints : Optional[SpatialJoinModel | FootprintsOptions]
+        Building footprints source or spatial join model.
+    fiat_buildings_name : str | list[str]
+        Name(s) of buildings geometry in FIAT model.
+    fiat_roads_name : Optional[str]
+        Name of roads geometry in FIAT model.
+    bfe : Optional[SpatialJoinModel]
+        Base Flood Elevation spatial join model.
+    svi : Optional[SviConfigModel]
+        Social Vulnerability Index spatial join model.
+    road_width : us.UnitfulLength
+        Road width (default 5 meters).
+    return_periods : Optional[list[int]]
+        List of return periods for risk calculations.
+    floodmap_type : Optional[FloodmapType]
+        Type of floodmap to use.
+    references : Optional[WaterlevelReferenceModel]
+        Water level reference model.
     sfincs_overland : FloodModel
-        The overland SFINCS model.
-    sfincs_offshore : Optional[FloodModel], default None
-        The offshore SFINCS model.
-    dem : Optional[DemModel], default None
-        The DEM model.
-    excluded_datums : list[str], default []
+        Overland SFINCS model configuration.
+    sfincs_offshore : Optional[FloodModel]
+        Offshore SFINCS model configuration.
+    dem : Optional[DemModel]
+        Digital Elevation Model configuration.
+    river_names : Optional[list[str]]
+        List of river names (optional).
+    excluded_datums : list[str]
         List of datums to exclude from plotting.
-    slr_scenarios : Optional[SlrScenariosModel], default None
-        The sea level rise scenarios model.
-    scs : Optional[SCSModel], default None
-        The SCS model.
-    tide_gauge : Optional[TideGaugeConfigModel], default None
-        The tide gauge model.
-    cyclones : Optional[bool], default True
-        Indicates if cyclones are enabled.
-    cyclone_basin : Optional[Basins], default None
-        The cyclone basin.
-    obs_point : Optional[list[ObsPointModel]], default None
-        The list of observation point models.
-    probabilistic_set : Optional[str], default None
-        The probabilistic set path.
+    slr_scenarios : Optional[SlrScenariosModel]
+        Sea level rise scenarios configuration.
+    scs : Optional[SCSModel]
+        SCS model configuration.
+    tide_gauge : Optional[TideGaugeConfigModel]
+        Tide gauge configuration.
+    cyclones : Optional[bool]
+        Enable/disable cyclones.
+    cyclone_basin : Optional[Basins]
+        Cyclone basin selection.
+    obs_point : Optional[list[ObsPointModel]]
+        List of observation point models.
+    probabilistic_set : Optional[str]
+        Path to probabilistic event set.
     """
 
     # General
@@ -381,7 +384,7 @@ class ConfigModel(BaseModel):
     sfincs_overland: FloodModel
     sfincs_offshore: Optional[FloodModel] = None
     dem: Optional[DemModel] = None
-
+    river_names: Optional[list[str]] = None
     excluded_datums: list[str] = Field(default_factory=list)
 
     slr_scenarios: Optional[SlrScenariosModel] = None
@@ -1451,6 +1454,17 @@ class DatabaseBuilder:
             geometry=gpd.points_from_xy(df.x, df.y),
             crs=self.sfincs_overland_model.crs,
         )
+
+        if self.config.river_names:
+            if len(self.config.river_names) != len(river_locs):
+                msg = "The number of river names provided does not match the number of rivers found in the SFINCS model."
+                logger.error(msg)
+                raise ValueError(msg)
+            else:
+                river_locs["name"] = self.config.river_names
+        else:
+            river_locs["name"] = [f"river_{idx}" for idx in range(len(river_locs))]
+
         rivers = []
         for idx, row in river_locs.iterrows():
             if "dis" in self.sfincs_overland_model.forcing:
@@ -1467,7 +1481,7 @@ class DatabaseBuilder:
                 )
 
             river = RiverModel(
-                name=f"river_{idx}",
+                name=row["name"],
                 x_coordinate=row.x,
                 y_coordinate=row.y,
                 mean_discharge=us.UnitfulDischarge(
