@@ -1859,7 +1859,7 @@ class DatabaseBuilder:
                     conditions=[
                         FilterCondition(
                             field_name=FieldName.NAME,
-                            values=["RoadLength"],
+                            values=["RoadsLength"],
                         ),
                         FilterCondition(
                             field_name=FieldName.LONG_NAME,
