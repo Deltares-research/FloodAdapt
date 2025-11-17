@@ -32,10 +32,15 @@ from flood_adapt.config.fiat import (
 from flood_adapt.config.gui import (
     AggregationDmgLayer,
     BenefitsLayer,
+    FieldName,
+    FilterCondition,
+    FilterGroup,
     FloodMapLayer,
     FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
+    LogicalOperator,
+    MetricLayer,
     OutputLayers,
     PlottingModel,
     SyntheticTideModel,
@@ -223,6 +228,7 @@ class GuiConfigModel(BaseModel):
     max_aggr_dmg: float
     max_footprint_dmg: float
     max_benefits: float
+    additional_aggregated_layers: Optional[list[MetricLayer]] = None
 
 
 class SviConfigModel(SpatialJoinModel):
@@ -484,12 +490,12 @@ class DatabaseBuilder:
             # Make folder structure and read models
             self.setup()
 
+            # Add infometric and infographic configurations
+            self.create_infometrics()
+
             # Prepare site configuration
             site = self.create_site_config()
             site.save(self.static_path / "config" / "site.toml")
-
-            # Add infometric and infographic configurations
-            self.create_infometrics()
 
             # Save standard objects
             self.create_standard_objects()
@@ -1347,7 +1353,12 @@ class DatabaseBuilder:
         if delete_sfincs_folder:
             gc.collect()
             if subgrid_sfincs_folder.exists() and subgrid_sfincs_folder.is_dir():
-                shutil.rmtree(subgrid_sfincs_folder)
+                try:
+                    shutil.rmtree(subgrid_sfincs_folder)
+                except Exception:
+                    logger.warning(
+                        f"Could not delete temporary SFINCS subgrid folder at {subgrid_sfincs_folder.as_posix()}."
+                    )
 
         return DemModel(
             filename=fa_subgrid_path.name, units=us.UnitTypesLength.meters
@@ -1782,6 +1793,69 @@ class DatabaseBuilder:
                 ],
                 threshold=0.0,
             )
+        red_colors_6 = [
+            "#FFFFFF",
+            "#FEE9CE",
+            "#FDBB84",
+            "#FC844E",
+            "#E03720",
+            "#860000",
+        ]
+
+        aggregated_metrics = []
+
+        building_count = MetricLayer(
+            type="building_count",
+            bins=[1, 10, 25, 50, 100],  # TODO provide max values
+            colors=red_colors_6,
+            filters=FilterGroup(
+                conditions=[
+                    FilterCondition(
+                        field_name=FieldName.NAME,
+                        values=["Count"],
+                    ),
+                    FilterCondition(
+                        field_name=FieldName.LONG_NAME,
+                        values=["(#)"],
+                    ),
+                ],
+                operator=LogicalOperator.OR,
+            ),
+        )
+        aggregated_metrics.append(building_count)
+
+        if self.config.gui.additional_aggregated_layers:
+            aggregated_metrics.extend(self.config.gui.additional_aggregated_layers)
+
+        if self._has_roads:
+            bins = [0.0001, 1, 5, 10, 20]  # in kms
+            if self.unit_system == GuiUnitModel.imperial():
+                # convert to miles
+                bins = [
+                    us.UnitfulLength(value=b * 1000, units=us.UnitTypesLength.meters)
+                    .transform(us.UnitTypesLength.miles)
+                    .value
+                    for b in bins
+                ]
+            roads_length = MetricLayer(
+                type="road_length",
+                bins=bins,  # TODO provide max values
+                colors=red_colors_6,
+                filters=FilterGroup(
+                    conditions=[
+                        FilterCondition(
+                            field_name=FieldName.NAME,
+                            values=["RoadLength"],
+                        ),
+                        FilterCondition(
+                            field_name=FieldName.LONG_NAME,
+                            values=["roads"],
+                        ),
+                    ],
+                    operator=LogicalOperator.AND,
+                ),
+            )
+            aggregated_metrics.append(roads_length)
 
         output_layers = OutputLayers(
             floodmap=FloodMapLayer(
@@ -1792,25 +1866,12 @@ class DatabaseBuilder:
             ),
             aggregation_dmg=AggregationDmgLayer(
                 bins=[0.00001, 0.1 * ad_max, 0.25 * ad_max, 0.5 * ad_max, ad_max],
-                colors=[
-                    "#FFFFFF",
-                    "#FEE9CE",
-                    "#FDBB84",
-                    "#FC844E",
-                    "#E03720",
-                    "#860000",
-                ],
+                colors=red_colors_6,
             ),
+            aggregated_metrics=aggregated_metrics,
             footprints_dmg=FootprintsDmgLayer(
                 bins=[0.00001, 0.06 * ftd_max, 0.2 * ftd_max, 0.4 * ftd_max, ftd_max],
-                colors=[
-                    "#FFFFFF",
-                    "#FEE9CE",
-                    "#FDBB84",
-                    "#FC844E",
-                    "#E03720",
-                    "#860000",
-                ],
+                colors=red_colors_6,
             ),
             benefits=benefits_layer,
         )
@@ -1892,6 +1953,8 @@ class DatabaseBuilder:
 
         # Write the metrics config files
         self._write_infometrics(metrics, path_im, path_ig)
+
+        self.metrics = metrics
 
     def _create_mandatory_metrics(self, metrics):
         metrics.create_mandatory_metrics_event()
