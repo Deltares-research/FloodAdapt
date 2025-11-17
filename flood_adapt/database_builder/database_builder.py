@@ -493,12 +493,12 @@ class DatabaseBuilder:
             # Make folder structure and read models
             self.setup()
 
-            # Add infometric and infographic configurations
-            self.create_infometrics()
-
             # Prepare site configuration
             site = self.create_site_config()
             site.save(self.static_path / "config" / "site.toml")
+
+            # Add infometric and infographic configurations
+            self.create_infometrics()
 
             # Save standard objects
             self.create_standard_objects()
@@ -1820,7 +1820,7 @@ class DatabaseBuilder:
 
         building_count = MetricLayer(
             type="building_count",
-            bins=[1, 10, 25, 50, 100],  # TODO provide max values
+            bins=[1, 10, 50, 200, 500],  # TODO provide max values
             colors=red_colors_6,
             filters=FilterGroup(
                 conditions=[
