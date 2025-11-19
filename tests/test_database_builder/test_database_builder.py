@@ -13,13 +13,14 @@ import tomli
 from shapely import Polygon
 
 from flood_adapt import unit_system as us
-from flood_adapt.config import SETTINGS
+from flood_adapt.config import get_settings
 from flood_adapt.config.hazard import (
     DatumModel,
     DemModel,
     FloodModel,
     ObsPointModel,
     SCSModel,
+    Scstype,
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
@@ -46,14 +47,13 @@ from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.forcing.tide_gauge import TideGaugeSource
-from flood_adapt.objects.forcing.timeseries import Scstype
 
 
 class TestDataBaseBuilder:
     @pytest.fixture(scope="function")
     def mock_config(self):
         """Create a temporary database path and return a minimal mocked ConfigModel object."""
-        self.db_path = SETTINGS.database_path
+        self.db_path = get_settings().database_path
         self.static_path = self.db_path / "static"
         self.templates_path = self.db_path / "static" / "templates"
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:
@@ -1157,7 +1157,7 @@ class TestDataBaseBuilder:
 
     @pytest.fixture(scope="function")
     def full_config(self):
-        db_path = SETTINGS.database_path
+        db_path = get_settings().database_path
         static_path = db_path / "static"
         templates_path = db_path / "static" / "templates"
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:

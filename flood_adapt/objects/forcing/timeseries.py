@@ -12,7 +12,7 @@ import tomli
 import tomli_w
 from pydantic import BaseModel, model_validator
 
-from flood_adapt.config import SCSModel
+from flood_adapt.config.hazard import SCSModel, Scstype
 from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.forcing.csv import read_csv
@@ -26,13 +26,6 @@ class ShapeType(str, Enum):
     block = "block"
     triangle = "triangle"
     scs = "scs"
-
-
-class Scstype(str, Enum):
-    type1 = "type_1"
-    type1a = "type_1a"
-    type2 = "type_2"
-    type3 = "type_3"
 
 
 class SyntheticTimeseries(BaseModel):

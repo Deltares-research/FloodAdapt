@@ -10,7 +10,6 @@ from pydantic import (
     model_validator,
 )
 
-from flood_adapt.config import SETTINGS
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,
@@ -185,7 +184,7 @@ class Event(Object):
                     f"Allowed sources are: {allowed_sources}"
                 )
 
-        if SETTINGS.validate_allowed_forcings and hasattr(self, "ALLOWED_FORCINGS"):
+        if hasattr(self, "ALLOWED_FORCINGS"):
             # Validate forcings
             for _, concrete_forcings in self.forcings.items():
                 for concrete_forcing in concrete_forcings:

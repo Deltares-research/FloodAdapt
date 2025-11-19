@@ -12,7 +12,6 @@ from typing_extensions import Annotated
 
 from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.data_container import DataFrameContainer
-from flood_adapt.objects.forcing.timeseries import Scstype
 
 
 def ensure_ascii(s: str):
@@ -28,6 +27,13 @@ class Cstype(str, Enum):
 
     projected = "projected"
     spherical = "spherical"
+
+
+class Scstype(str, Enum):
+    type1 = "type_1"
+    type1a = "type_1a"
+    type2 = "type_2"
+    type3 = "type_3"
 
 
 class SCSModel(BaseModel):

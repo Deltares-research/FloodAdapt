@@ -20,7 +20,6 @@ from flood_adapt.objects.forcing.timeseries import (
     CSVTimeseries,
     GaussianTimeseries,
     ScsTimeseries,
-    Scstype,
     ShapeType,
     SyntheticTimeseries,
     TimeseriesFactory,
@@ -50,7 +49,6 @@ __all__ = [
     "ForcingType",
     # Timeseries
     "ShapeType",
-    "Scstype",
     "CSVTimeseries",
     "TimeseriesFactory",
     "SyntheticTimeseries",

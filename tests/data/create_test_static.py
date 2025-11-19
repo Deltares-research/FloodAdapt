@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 from flood_adapt import unit_system as us
-from flood_adapt.config import SETTINGS
+from flood_adapt.config.config import get_settings
 from flood_adapt.config.fiat import (
     FiatConfigModel,
     FiatModel,
@@ -351,8 +351,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    SETTINGS.database_root = Path(args.database_root).resolve()
-    SETTINGS.database_name = args.database_name
+    settings = get_settings()
+    settings.database_root = Path(args.database_root).resolve()
+    settings.database_name = args.database_name
 
-    print(f"Updating database: {SETTINGS.database_path}")
-    update_database_static(SETTINGS.database_path)
+    print(f"Updating database: {settings.database_path}")
+    update_database_static(settings.database_path)

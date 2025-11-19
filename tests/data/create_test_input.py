@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List
 
 from flood_adapt import unit_system as us
-from flood_adapt.config import SETTINGS
+from flood_adapt.config import get_settings
 from flood_adapt.config.hazard import RiverModel
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.objects.benefits.benefits import (
@@ -908,8 +908,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    SETTINGS.database_root = args.database_root
-    SETTINGS.database_name = args.database_name
+    settings = get_settings()
+    settings.database_root = args.database_root
+    settings.database_name = args.database_name
 
-    print(f"Updating database: {SETTINGS.database_path}")
-    update_database_input(SETTINGS.database_path)
+    print(f"Updating database: {settings.database_path}")
+    update_database_input(settings.database_path)

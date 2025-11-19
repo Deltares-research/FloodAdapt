@@ -24,7 +24,7 @@ from numpy import matlib
 from shapely.affinity import translate
 
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
-from flood_adapt.config import SETTINGS
+from flood_adapt.config import get_settings
 from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import cd
@@ -193,7 +193,7 @@ class SfincsAdapter(IHazardAdapter):
         with cd(path):
             logger.info(f"Running SFINCS in {path}")
             process = subprocess.run(
-                str(SETTINGS.sfincs_bin_path),
+                str(get_settings().sfincs_bin_path),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -204,7 +204,7 @@ class SfincsAdapter(IHazardAdapter):
         self._cleanup_simulation_folder(path)
 
         if process.returncode != 0:
-            if SETTINGS.delete_crashed_runs:
+            if get_settings().delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
                 for subdir, dirs, files in os.walk(path, topdown=False):
                     for file in files:
