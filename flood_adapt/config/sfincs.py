@@ -1,3 +1,4 @@
+from enum import StrEnum
 from pathlib import Path
 from typing import Optional
 
@@ -18,6 +19,13 @@ from flood_adapt.config.hazard import (
 )
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.tide_gauge import TideGauge
+
+
+class SfincsVersion(StrEnum):
+    """Enumeration of supported Sfincs versions."""
+
+    v2_1_1_dollerup = "2.1-1-dollerup"
+    v2_2_1_alpha = "v2.2.1-alpha col d'Eze"
 
 
 class SfincsConfigModel(BaseModel):
@@ -44,7 +52,7 @@ class SfincsConfigModel(BaseModel):
 
     csname: str
     cstype: Cstype
-    version: Optional[str] = None
+    version: SfincsVersion = SfincsVersion.v2_2_1_alpha
     offshore_model: Optional[FloodModel] = None
     overland_model: FloodModel
     floodmap_units: us.UnitTypesLength

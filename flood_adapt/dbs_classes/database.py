@@ -10,6 +10,7 @@ import pandas as pd
 import xarray as xr
 from geopandas import GeoDataFrame
 
+from flood_adapt import Settings
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.config.hazard import SlrScenariosModel
@@ -25,10 +26,6 @@ from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.misc.path_builder import (
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
@@ -45,6 +42,7 @@ class Database(IDatabase):
     """
 
     _instance = None
+    _settings: Settings
 
     database_path: Union[str, os.PathLike]
     database_name: str
@@ -55,16 +53,16 @@ class Database(IDatabase):
     static_path: Path
     output_path: Path
 
-    _site: Site
+    site: Site
 
-    _events: DbsEvent
-    _scenarios: DbsScenario
-    _strategies: DbsStrategy
-    _measures: DbsMeasure
-    _projections: DbsProjection
-    _benefits: DbsBenefit
+    events: DbsEvent
+    scenarios: DbsScenario
+    strategies: DbsStrategy
+    measures: DbsMeasure
+    projections: DbsProjection
+    benefits: DbsBenefit
 
-    _static: DbsStatic
+    static: DbsStatic
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:  # Singleton pattern
@@ -112,32 +110,48 @@ class Database(IDatabase):
         self.database_name = database_name
 
         # Set the paths
-
         self.base_path = Path(database_path) / database_name
-        self.input_path = db_path(TopLevelDir.input)
-        self.static_path = db_path(TopLevelDir.static)
-        self.output_path = db_path(TopLevelDir.output)
+        self.input_path = self.base_path / "input"
+        self.static_path = self.base_path / "static"
+        self.output_path = self.base_path / "output"
 
-        self._site = Site.load_file(self.static_path / "config" / "site.toml")
+        self._settings = Settings()
+        self.site = Site.load_file(self.static_path / "config" / "site.toml")
+        if self._settings.validate_binaries:
+            self.check_binary_versions()
 
         # Initialize the different database objects
-        self._static = DbsStatic(self)
-        self._events = DbsEvent(
-            self, standard_objects=self.site.standard_objects.events
-        )
-        self._scenarios = DbsScenario(self)
-        self._strategies = DbsStrategy(
+        self.static = DbsStatic(self)
+        self.events = DbsEvent(self, standard_objects=self.site.standard_objects.events)
+        self.scenarios = DbsScenario(self)
+        self.strategies = DbsStrategy(
             self, standard_objects=self.site.standard_objects.strategies
         )
-        self._measures = DbsMeasure(self)
-        self._projections = DbsProjection(
+        self.measures = DbsMeasure(self)
+        self.projections = DbsProjection(
             self, standard_objects=self.site.standard_objects.projections
         )
-        self._benefits = DbsBenefit(self)
+        self.benefits = DbsBenefit(self)
         self._init_done = True
 
         # Delete any unfinished/crashed scenario output after initialization
         self.cleanup()
+
+    def check_binary_versions(self):
+        """Check that the versions of the binaries in the config match those expected."""
+        expected_sfincs_version = self.site.sfincs.config.version
+        actual_sfincs_version = self._settings.get_sfincs_version()
+        if expected_sfincs_version != actual_sfincs_version:
+            raise ValueError(
+                f"Sfincs version mismatch: expected {expected_sfincs_version}, got {actual_sfincs_version}."
+            )
+
+        expected_fiat_version = self.site.fiat.config.version
+        actual_fiat_version = self._settings.get_fiat_version()
+        if expected_fiat_version != actual_fiat_version:
+            raise ValueError(
+                f"FIAT version mismatch: expected {expected_fiat_version}, got {actual_fiat_version}."
+            )
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
@@ -147,39 +161,6 @@ class Database(IDatabase):
         self.__class__._instance = None
         self.__dict__.clear()
         gc.collect()
-
-    # Property methods
-    @property
-    def site(self) -> Site:
-        return self._site
-
-    @property
-    def static(self) -> DbsStatic:
-        return self._static
-
-    @property
-    def events(self) -> DbsEvent:
-        return self._events
-
-    @property
-    def scenarios(self) -> DbsScenario:
-        return self._scenarios
-
-    @property
-    def strategies(self) -> DbsStrategy:
-        return self._strategies
-
-    @property
-    def measures(self) -> DbsMeasure:
-        return self._measures
-
-    @property
-    def projections(self) -> DbsProjection:
-        return self._projections
-
-    @property
-    def benefits(self) -> DbsBenefit:
-        return self._benefits
 
     def get_slr_scenarios(self) -> SlrScenariosModel:
         """Get the path to the SLR scenarios file.
@@ -203,7 +184,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'path', 'last_modification_date' and "finished" info
         """
-        all_scenarios = pd.DataFrame(self._scenarios.summarize_objects())
+        all_scenarios = pd.DataFrame(self.scenarios.summarize_objects())
         if len(all_scenarios) > 0:
             df = all_scenarios[all_scenarios["finished"]]
         else:
