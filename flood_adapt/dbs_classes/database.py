@@ -12,11 +12,8 @@ from geopandas import GeoDataFrame
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
-from flood_adapt.config.config import Settings
-from flood_adapt.config.fiat import FIAT_VERSION
 from flood_adapt.config.hazard import SlrScenariosModel
 from flood_adapt.config.impacts import FloodmapType
-from flood_adapt.config.sfincs import SFINCS_VERSION
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -44,7 +41,6 @@ class Database(IDatabase):
     """
 
     _instance = None
-    _settings: Settings
 
     database_path: Union[str, os.PathLike]
     database_name: str
@@ -117,10 +113,7 @@ class Database(IDatabase):
         self.static_path = self.base_path / "static"
         self.output_path = self.base_path / "output"
 
-        self._settings = Settings()
         self.site = Site.load_file(self.static_path / "config" / "site.toml")
-        if self._settings.validate_binaries:
-            self.check_binary_versions()
 
         # Initialize the different database objects
         self.static = DbsStatic(self)
@@ -138,20 +131,6 @@ class Database(IDatabase):
 
         # Delete any unfinished/crashed scenario output after initialization
         self.cleanup()
-
-    def check_binary_versions(self):
-        """Check that the versions of the binaries in the config match those expected."""
-        actual_sfincs_version = self._settings.get_sfincs_version()
-        if SFINCS_VERSION != actual_sfincs_version:
-            raise ValueError(
-                f"Sfincs version mismatch: expected {SFINCS_VERSION}, got {actual_sfincs_version}."
-            )
-
-        actual_fiat_version = self._settings.get_fiat_version()
-        if FIAT_VERSION != actual_fiat_version:
-            raise ValueError(
-                f"FIAT version mismatch: expected {FIAT_VERSION}, got {actual_fiat_version}."
-            )
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""

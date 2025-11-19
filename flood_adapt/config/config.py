@@ -15,6 +15,9 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from flood_adapt.config.fiat import FIAT_VERSION
+from flood_adapt.config.sfincs import SFINCS_VERSION
+
 
 class Settings(BaseSettings):
     """
@@ -126,6 +129,7 @@ class Settings(BaseSettings):
         if self.validate_binaries:
             self._validate_fiat_path()
             self._validate_sfincs_path()
+            self.check_binary_versions()
         self._update_environment_variables()
         return self
 
@@ -270,6 +274,20 @@ class Settings(BaseSettings):
         if not fiat_match:
             raise ValueError("Version not found in fiat executable output.")
         return fiat_match.group(1).strip()
+
+    def check_binary_versions(self):
+        """Check that the versions of the binaries in the config match those expected."""
+        actual_sfincs_version = self.get_sfincs_version()
+        if SFINCS_VERSION != actual_sfincs_version:
+            raise ValueError(
+                f"Sfincs version mismatch: expected {SFINCS_VERSION}, got {actual_sfincs_version}."
+            )
+
+        actual_fiat_version = self.get_fiat_version()
+        if FIAT_VERSION != actual_fiat_version:
+            raise ValueError(
+                f"FIAT version mismatch: expected {FIAT_VERSION}, got {actual_fiat_version}."
+            )
 
     @staticmethod
     def read(toml_path: Path) -> "Settings":
