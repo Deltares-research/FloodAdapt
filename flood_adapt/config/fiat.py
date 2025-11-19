@@ -14,6 +14,8 @@ from flood_adapt.config.impacts import (
     SVIModel,
 )
 
+FIAT_VERSION = "0.2.1"
+
 
 class FiatConfigModel(BaseModel):
     """Configuration settings for the FIAT model.

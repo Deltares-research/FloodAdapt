@@ -2018,7 +2018,7 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./
   name: flood-adapt
-  version: 1.1.2
+  version: 1.2.0
   sha256: 5c83fa4ce0988a9395d1be3778967634ac654bd9fdaa115944ecdfdb674be8c6
   requires_dist:
   - cht-cyclones>=1.0.3,<2.0
@@ -2069,7 +2069,7 @@ packages:
   editable: true
 - pypi: ./
   name: flood-adapt
-  version: 1.1.2
+  version: 1.2.0
   sha256: 5c83fa4ce0988a9395d1be3778967634ac654bd9fdaa115944ecdfdb674be8c6
   requires_dist:
   - cht-cyclones>=1.0.3,<2.0

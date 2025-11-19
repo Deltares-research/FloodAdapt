@@ -19,6 +19,8 @@ from flood_adapt.config.hazard import (
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.tide_gauge import TideGauge
 
+SFINCS_VERSION = "v2.2.1-alpha col d'Eze"
+
 
 class SfincsConfigModel(BaseModel):
     """The expected variables and data types of attributes of the SfincsConfig class.
@@ -44,7 +46,6 @@ class SfincsConfigModel(BaseModel):
 
     csname: str
     cstype: Cstype
-    version: Optional[str] = None
     offshore_model: Optional[FloodModel] = None
     overland_model: FloodModel
     floodmap_units: us.UnitTypesLength

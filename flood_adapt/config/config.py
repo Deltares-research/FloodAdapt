@@ -1,5 +1,8 @@
+import re
+import subprocess
 from os import environ, listdir
 from pathlib import Path
+from tempfile import gettempdir
 from typing import Optional
 
 import tomli
@@ -11,6 +14,9 @@ from pydantic import (
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from flood_adapt.config.fiat import FIAT_VERSION
+from flood_adapt.config.sfincs import SFINCS_VERSION
 
 
 class Settings(BaseSettings):
@@ -123,6 +129,7 @@ class Settings(BaseSettings):
         if self.validate_binaries:
             self._validate_fiat_path()
             self._validate_sfincs_path()
+            self.check_binary_versions()
         self._update_environment_variables()
         return self
 
@@ -194,6 +201,93 @@ class Settings(BaseSettings):
     @field_serializer("database_root", "database_path")
     def serialize_path(self, path: Path) -> str:
         return str(path)
+
+    def get_sfincs_version(self) -> str:
+        """
+        Get the version of the SFINCS binary.
+
+        Returns
+        -------
+        Optional[str]
+            The version of the SFINCS binary, or None if the path is not set.
+
+        Expected SFINCS output
+        ----------------------
+
+        ------------ Welcome to SFINCS ------------
+
+        LOGO
+
+        ------------------------------------------
+
+        Build-Revision: $Rev: v2.2.1-alpha col d'Eze
+        Build-Date: $Date: 2025-06-02
+
+        ------ Preparing model simulation --------
+        ...
+
+        """
+        if self.sfincs_bin_path is None:
+            raise ValueError("SFINCS binary path is not set.")
+
+        result = subprocess.run(
+            [self.sfincs_bin_path.as_posix()],
+            capture_output=True,
+            text=True,
+            cwd=gettempdir(),
+        )
+
+        # Capture everything after `$Rev:` until end of line
+        match = re.search(r"Build-Revision:\s*\$Rev:\s*(.+)", result.stdout)
+        if not match:
+            raise ValueError("Version not found in sfincs executable output.")
+
+        return match.group(1).strip()
+
+    def get_fiat_version(self) -> str:
+        """
+        Get the version of the FIAT binary.
+
+        Returns
+        -------
+        Optional[str]
+            The version of the FIAT binary, or None if the path is not set.
+
+        Expected FIAT output
+        --------------------
+
+        FIAT 0.2.1, build 2025-02-24T16:19:19 UTC+0100
+        ...
+
+        """
+        if self.fiat_bin_path is None:
+            raise ValueError("FIAT binary path is not set.")
+
+        result = subprocess.run(
+            [self.fiat_bin_path.as_posix(), "--version"],
+            capture_output=True,
+            text=True,
+            cwd=gettempdir(),
+        )
+        # Capture version number after 'FIAT' until the next whitespace
+        fiat_match = re.search(r"FIAT\s+([0-9]+\.[0-9]+\.[0-9]+)", result.stdout)
+        if not fiat_match:
+            raise ValueError("Version not found in fiat executable output.")
+        return fiat_match.group(1).strip()
+
+    def check_binary_versions(self):
+        """Check that the versions of the binaries in the config match those expected."""
+        actual_sfincs_version = self.get_sfincs_version()
+        if SFINCS_VERSION != actual_sfincs_version:
+            raise ValueError(
+                f"Sfincs version mismatch: expected {SFINCS_VERSION}, got {actual_sfincs_version}."
+            )
+
+        actual_fiat_version = self.get_fiat_version()
+        if FIAT_VERSION != actual_fiat_version:
+            raise ValueError(
+                f"FIAT version mismatch: expected {FIAT_VERSION}, got {actual_fiat_version}."
+            )
 
     @staticmethod
     def read(toml_path: Path) -> "Settings":
