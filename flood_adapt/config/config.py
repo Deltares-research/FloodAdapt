@@ -15,9 +15,6 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from flood_adapt.config.fiat import FiatVersion
-from flood_adapt.config.sfincs import SfincsVersion
-
 
 class Settings(BaseSettings):
     """
@@ -201,7 +198,7 @@ class Settings(BaseSettings):
     def serialize_path(self, path: Path) -> str:
         return str(path)
 
-    def get_sfincs_version(self) -> SfincsVersion:
+    def get_sfincs_version(self) -> str:
         """
         Get the version of the SFINCS binary.
 
@@ -241,9 +238,9 @@ class Settings(BaseSettings):
         if not match:
             raise ValueError("Version not found in sfincs executable output.")
 
-        return SfincsVersion(match.group(1).strip())
+        return match.group(1).strip()
 
-    def get_fiat_version(self) -> FiatVersion:
+    def get_fiat_version(self) -> str:
         """
         Get the version of the FIAT binary.
 
@@ -272,7 +269,7 @@ class Settings(BaseSettings):
         fiat_match = re.search(r"FIAT\s+([0-9]+\.[0-9]+\.[0-9]+)", result.stdout)
         if not fiat_match:
             raise ValueError("Version not found in fiat executable output.")
-        return FiatVersion(fiat_match.group(1).strip())
+        return fiat_match.group(1).strip()
 
     @staticmethod
     def read(toml_path: Path) -> "Settings":

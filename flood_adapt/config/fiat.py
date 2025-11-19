@@ -1,4 +1,3 @@
-from enum import StrEnum
 from pathlib import Path
 from typing import Optional
 
@@ -15,11 +14,7 @@ from flood_adapt.config.impacts import (
     SVIModel,
 )
 
-
-class FiatVersion(StrEnum):
-    """Enumeration of supported FIAT versions."""
-
-    v0_2_1 = "0.2.1"
+FIAT_VERSION = "0.2.1"
 
 
 class FiatConfigModel(BaseModel):
@@ -56,7 +51,6 @@ class FiatConfigModel(BaseModel):
         Configuration for objects with no footprints.
     """
 
-    version: FiatVersion = FiatVersion.v0_2_1
     exposure_crs: str
     bfe: Optional[BFEModel] = None
     aggregation: list[AggregationModel]

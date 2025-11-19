@@ -10,11 +10,13 @@ import pandas as pd
 import xarray as xr
 from geopandas import GeoDataFrame
 
-from flood_adapt import Settings
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.config import Settings
+from flood_adapt.config.fiat import FIAT_VERSION
 from flood_adapt.config.hazard import SlrScenariosModel
 from flood_adapt.config.impacts import FloodmapType
+from flood_adapt.config.sfincs import SFINCS_VERSION
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -139,18 +141,16 @@ class Database(IDatabase):
 
     def check_binary_versions(self):
         """Check that the versions of the binaries in the config match those expected."""
-        expected_sfincs_version = self.site.sfincs.config.version
         actual_sfincs_version = self._settings.get_sfincs_version()
-        if expected_sfincs_version != actual_sfincs_version:
+        if SFINCS_VERSION != actual_sfincs_version:
             raise ValueError(
-                f"Sfincs version mismatch: expected {expected_sfincs_version}, got {actual_sfincs_version}."
+                f"Sfincs version mismatch: expected {SFINCS_VERSION}, got {actual_sfincs_version}."
             )
 
-        expected_fiat_version = self.site.fiat.config.version
         actual_fiat_version = self._settings.get_fiat_version()
-        if expected_fiat_version != actual_fiat_version:
+        if FIAT_VERSION != actual_fiat_version:
             raise ValueError(
-                f"FIAT version mismatch: expected {expected_fiat_version}, got {actual_fiat_version}."
+                f"FIAT version mismatch: expected {FIAT_VERSION}, got {actual_fiat_version}."
             )
 
     def shutdown(self):
