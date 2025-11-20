@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -74,9 +74,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap-769930dfaaf8a5e8fa53cf8d4f3df975.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
@@ -344,10 +344,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
-    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
-      <a href="../../index.html" class="sidebar-logo-link">
-      </a>
-      </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
         <div id="quarto-search" class="" title="Search"></div>
@@ -941,7 +937,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#flood_adapt.database_builder.ConfigModel" id="toc-flood_adapt.database_builder.ConfigModel" class="nav-link active" data-scroll-target="#flood_adapt.database_builder.ConfigModel">ConfigModel</a>
   <ul class="collapse">
-  <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
+  <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
   <li><a href="#flood_adapt.database_builder.ConfigModel.read" id="toc-flood_adapt.database_builder.ConfigModel.read" class="nav-link" data-scroll-target="#flood_adapt.database_builder.ConfigModel.read">read</a></li>
@@ -960,137 +956,141 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="flood_adapt.database_builder.ConfigModel" class="level1">
 <h1>ConfigModel</h1>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>database_builder.ConfigModel()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Represents the configuration model for FloodAdapt.</p>
-<section id="attributes" class="level2 doc-section doc-section-attributes">
-<h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
+<p>Main configuration model for FloodAdapt database builder.</p>
+<section id="parameters" class="level2 doc-section doc-section-parameters">
+<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
 <dl>
 <dt><code><span class="parameter-name"><strong>name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
-<p>The name of the site.</p>
+<p>Name of the site (must be valid for folder names).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>description</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[str], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>description</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</span></code></dt>
 <dd>
-<p>The description of the site.</p>
+<p>Description of the site.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>database_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[str], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>database_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</span></code></dt>
 <dd>
-<p>The path to the database where all the sites are located.</p>
+<p>Path to the database root directory.</p>
 </dd>
 <dt><code><span class="parameter-name"><strong>unit_system</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="../..\3_api_docs/api_ref/UnitSystems.html#flood_adapt.database_builder.UnitSystems">UnitSystems</a></span></code></dt>
 <dd>
-<p>The unit system.</p>
+<p>Unit system for all calculations (imperial or metric).</p>
 </dd>
 <dt><code><span class="parameter-name"><strong>gui</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="../..\3_api_docs/api_ref/GuiConfigModel.html#flood_adapt.database_builder.GuiConfigModel">GuiConfigModel</a></span></code></dt>
 <dd>
-<p>The GUI model representing scaling values for the layers.</p>
+<p>GUI visualization scaling configuration.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>infographics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">bool, default True</span></code></dt>
+<dt><code><span class="parameter-name"><strong>infographics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
 <dd>
-<p>Indicates if infographics are enabled.</p>
+<p>Enable/disable infographics.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>event_infographics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[EventInfographicModel], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>event_infographics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<code>EventInfographicModel</code>]</span></code></dt>
 <dd>
-<p>Event infographic configuration.</p>
+<p>Configuration for event infographics.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>risk_infographics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[RiskInfographicModel], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>risk_infographics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<code>RiskInfographicModel</code>]</span></code></dt>
 <dd>
-<p>Risk infographic configuration.</p>
+<p>Configuration for risk infographics.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>event_additional_infometrics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[list[MetricModel]], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>event_additional_infometrics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<code>MetricModel</code>]]</span></code></dt>
 <dd>
 <p>Additional event infometrics.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>risk_additional_infometrics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[list[MetricModel]], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>risk_additional_infometrics</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<code>MetricModel</code>]]</span></code></dt>
 <dd>
 <p>Additional risk infometrics.</p>
 </dd>
 <dt><code><span class="parameter-name"><strong>fiat</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
 <dd>
-<p>The FIAT model path.</p>
+<p>Path to the FIAT model directory.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>aggregation_areas</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[list[SpatialJoinModel]], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>aggregation_areas</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a href="../..\3_api_docs/api_ref/SpatialJoinModel.html#flood_adapt.database_builder.SpatialJoinModel">SpatialJoinModel</a>]]</span></code></dt>
 <dd>
-<p>The list of aggregation area models.</p>
+<p>List of aggregation area spatial join models.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>building_footprints</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[SpatialJoinModel | FootprintsOptions], default FootprintsOptions.OSM</span></code></dt>
+<dt><code><span class="parameter-name"><strong>building_footprints</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="../..\3_api_docs/api_ref/SpatialJoinModel.html#flood_adapt.database_builder.SpatialJoinModel">SpatialJoinModel</a> | <a href="../..\3_api_docs/api_ref/FootprintsOptions.html#flood_adapt.database_builder.FootprintsOptions">FootprintsOptions</a>]</span></code></dt>
 <dd>
-<p>The building footprints model or OSM option.</p>
+<p>Building footprints source or spatial join model.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>fiat_buildings_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">str | list[str], default "buildings"</span></code></dt>
+<dt><code><span class="parameter-name"><strong>fiat_buildings_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</span></code></dt>
 <dd>
-<p>The name(s) of the buildings geometry in the FIAT model.</p>
+<p>Name(s) of buildings geometry in FIAT model.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>fiat_roads_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[str], default "roads"</span></code></dt>
+<dt><code><span class="parameter-name"><strong>fiat_roads_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</span></code></dt>
 <dd>
-<p>The name of the roads geometry in the FIAT model.</p>
+<p>Name of roads geometry in FIAT model.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>bfe</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[SpatialJoinModel], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>bfe</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="../..\3_api_docs/api_ref/SpatialJoinModel.html#flood_adapt.database_builder.SpatialJoinModel">SpatialJoinModel</a>]</span></code></dt>
 <dd>
-<p>The BFE model.</p>
+<p>Base Flood Elevation spatial join model.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>svi</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[SviConfigModel], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>svi</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="../..\3_api_docs/api_ref/SviConfigModel.html#flood_adapt.database_builder.SviConfigModel">SviConfigModel</a>]</span></code></dt>
 <dd>
-<p>The SVI model.</p>
+<p>Social Vulnerability Index spatial join model.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>road_width</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">us.UnitfulLength, default 5 meters</span></code></dt>
+<dt><code><span class="parameter-name"><strong>road_width</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>us</code>.<a href="../..\3_api_docs/api_ref/UnitfulLength.html#flood_adapt.unit_system.UnitfulLength">UnitfulLength</a></span></code></dt>
 <dd>
-<p>The road width.</p>
+<p>Road width (default 5 meters).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>return_periods</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[list[int]], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>return_periods</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a href="https://docs.python.org/3/library/functions.html#int">int</a>]]</span></code></dt>
 <dd>
-<p>The list of return periods for risk calculations.</p>
+<p>List of return periods for risk calculations.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>floodmap_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[FloodmapType], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>floodmap_type</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<code>FloodmapType</code>]</span></code></dt>
 <dd>
-<p>The type of floodmap to use.</p>
+<p>Type of floodmap to use.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>references</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[WaterlevelReferenceModel], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>references</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<code>WaterlevelReferenceModel</code>]</span></code></dt>
 <dd>
-<p>The water level reference model.</p>
+<p>Water level reference model.</p>
 </dd>
 <dt><code><span class="parameter-name"><strong>sfincs_overland</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><code>FloodModel</code></span></code></dt>
 <dd>
-<p>The overland SFINCS model.</p>
+<p>Overland SFINCS model configuration.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>sfincs_offshore</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[FloodModel], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>sfincs_offshore</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<code>FloodModel</code>]</span></code></dt>
 <dd>
-<p>The offshore SFINCS model.</p>
+<p>Offshore SFINCS model configuration.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>dem</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[DemModel], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>dem</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<code>DemModel</code>]</span></code></dt>
 <dd>
-<p>The DEM model.</p>
+<p>Digital Elevation Model configuration.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>excluded_datums</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">list[str], default []</span></code></dt>
+<dt><code><span class="parameter-name"><strong>river_names</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]]</span></code></dt>
+<dd>
+<p>List of river names (optional).</p>
+</dd>
+<dt><code><span class="parameter-name"><strong>excluded_datums</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</span></code></dt>
 <dd>
 <p>List of datums to exclude from plotting.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>slr_scenarios</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[SlrScenariosModel], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>slr_scenarios</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<code>SlrScenariosModel</code>]</span></code></dt>
 <dd>
-<p>The sea level rise scenarios model.</p>
+<p>Sea level rise scenarios configuration.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>scs</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[SCSModel], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>scs</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<code>SCSModel</code>]</span></code></dt>
 <dd>
-<p>The SCS model.</p>
+<p>SCS model configuration.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>tide_gauge</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[TideGaugeConfigModel], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>tide_gauge</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="../..\3_api_docs/api_ref/TideGaugeConfigModel.html#flood_adapt.database_builder.TideGaugeConfigModel">TideGaugeConfigModel</a>]</span></code></dt>
 <dd>
-<p>The tide gauge model.</p>
+<p>Tide gauge configuration.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>cyclones</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[bool], default True</span></code></dt>
+<dt><code><span class="parameter-name"><strong>cyclones</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/functions.html#bool">bool</a>]</span></code></dt>
 <dd>
-<p>Indicates if cyclones are enabled.</p>
+<p>Enable/disable cyclones.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>cyclone_basin</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[Basins], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>cyclone_basin</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="../..\3_api_docs/api_ref/Basins.html#flood_adapt.database_builder.Basins">Basins</a>]</span></code></dt>
 <dd>
-<p>The cyclone basin.</p>
+<p>Cyclone basin selection.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>obs_point</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[list[ObsPointModel]], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>obs_point</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<code>ObsPointModel</code>]]</span></code></dt>
 <dd>
-<p>The list of observation point models.</p>
+<p>List of observation point models.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>probabilistic_set</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">Optional[str], default None</span></code></dt>
+<dt><code><span class="parameter-name"><strong>probabilistic_set</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</span></code></dt>
 <dd>
-<p>The probabilistic set path.</p>
+<p>Path to probabilistic event set.</p>
 </dd>
 </dl>
 </section>
