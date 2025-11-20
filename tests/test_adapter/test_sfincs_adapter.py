@@ -13,6 +13,7 @@ import pytest
 import xarray as xr
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import (
     DatumModel,
     FloodModel,
@@ -149,13 +150,13 @@ class TestAddForcing:
 
         def test_add_forcing_wind_from_track_cyc(
             self,
-            test_data_dir,
+            cyclone_track_container: CycloneTrackContainer,
             test_db,
             tmp_path,
             default_sfincs_adapter: SfincsAdapter,
         ):
             # Arrange
-            track_file = test_data_dir / "IAN.cyc"
+            cyclone_track_container.data.include_rainfall = False
             default_sfincs_adapter._event = mock.Mock()
             default_sfincs_adapter._event.hurricane_translation = TranslationModel(
                 eastwest_translation=us.UnitfulLength(
@@ -166,13 +167,13 @@ class TestAddForcing:
                 ),
             )
 
-            forcing = WindTrack(track=CycloneTrackContainer(path=track_file))
+            forcing = WindTrack(track=cyclone_track_container)
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
 
             # Assert
-            spw_name = track_file.with_suffix(".spw").name
+            spw_name = cyclone_track_container.path.with_suffix(".spw").name
             assert default_sfincs_adapter.wind is None
             assert default_sfincs_adapter._model.config.get("spwfile") == spw_name
             assert (default_sfincs_adapter.get_model_root() / spw_name).exists()
@@ -180,19 +181,24 @@ class TestAddForcing:
         def test_add_forcing_wind_from_track_spw(
             self,
             test_db,
-            tmp_path,
+            cyclone_track_container: CycloneTrackContainer,
             default_sfincs_adapter: SfincsAdapter,
-            spw_file: Path,
         ):
             # Arrange
-            forcing = WindTrack(track=CycloneTrackContainer(path=spw_file))
+            forcing = WindTrack(track=cyclone_track_container)
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
 
             # Assert
-            assert default_sfincs_adapter._model.config.get("spwfile") == spw_file.name
-            assert (default_sfincs_adapter.get_model_root() / spw_file.name).exists()
+            assert (
+                default_sfincs_adapter._model.config.get("spwfile")
+                == cyclone_track_container.path.with_suffix(".spw").name
+            )
+            assert (
+                default_sfincs_adapter.get_model_root()
+                / cyclone_track_container.path.with_suffix(".spw").name
+            ).exists()
 
         def test_add_forcing_waterlevels_csv(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_wind: WindSynthetic
@@ -314,10 +320,12 @@ class TestAddForcing:
             assert adapter.rainfall is not None
 
         def test_add_forcing_rainfall_track_cyc(
-            self, test_data_dir, test_db, default_sfincs_adapter: SfincsAdapter
+            self,
+            cyclone_track_container: CycloneTrackContainer,
+            test_db,
+            default_sfincs_adapter: SfincsAdapter,
         ):
             # Arrange
-            track_file = test_data_dir / "IAN.cyc"
             default_sfincs_adapter._event = mock.Mock()
             default_sfincs_adapter._event.hurricane_translation = TranslationModel(
                 eastwest_translation=us.UnitfulLength(
@@ -328,13 +336,13 @@ class TestAddForcing:
                 ),
             )
 
-            forcing = RainfallTrack(track=CycloneTrackContainer(path=track_file))
+            forcing = RainfallTrack(track=cyclone_track_container)
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
 
             # Assert
-            spw_name = track_file.with_suffix(".spw").name
+            spw_name = cyclone_track_container.path.with_suffix(".spw").name
             assert default_sfincs_adapter._model.config.get("spwfile") == spw_name
             assert (default_sfincs_adapter.get_model_root() / spw_name).exists()
 
@@ -342,17 +350,24 @@ class TestAddForcing:
             self,
             test_db,
             default_sfincs_adapter: SfincsAdapter,
-            spw_file: Path,
+            cyclone_track_container: CycloneTrackContainer,
         ):
             # Arrange
-            forcing = RainfallTrack(track=CycloneTrackContainer(path=spw_file))
+            cyclone_track_container.data.include_rainfall = True
+            forcing = RainfallTrack(track=cyclone_track_container)
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
 
             # Assert
-            assert default_sfincs_adapter._model.config.get("spwfile") == spw_file.name
-            assert (default_sfincs_adapter.get_model_root() / spw_file.name).exists()
+            assert (
+                default_sfincs_adapter._model.config.get("spwfile")
+                == cyclone_track_container.path.with_suffix(".spw").name
+            )
+            assert (
+                default_sfincs_adapter.get_model_root()
+                / cyclone_track_container.path.with_suffix(".spw").name
+            ).exists()
 
         def test_add_forcing_rainfall_unsupported(
             self, sfincs_adapter_with_dummy_scn: SfincsAdapter
@@ -1005,7 +1020,7 @@ class TestAddProjection:
 
 
 class TestAddObsPoint:
-    def test_add_obs_points(self, test_db: IDatabase):
+    def test_add_obs_points(self, test_db: IDatabase, setup_settings: Settings):
         if test_db.site.sfincs.obs_point is None:
             test_db.site.sfincs.obs_point = [
                 ObsPointModel(
@@ -1025,7 +1040,11 @@ class TestAddObsPoint:
         )
 
         # Act
-        with SfincsAdapter(model_root=path_in) as model:
+        with SfincsAdapter(
+            model_root=path_in,
+            delete_crashed_runs=setup_settings.delete_crashed_runs,
+            exe_path=setup_settings.sfincs_bin_path,
+        ) as model:
             model.add_obs_points()
             # write sfincs model in output destination
             new_model_dir = (
@@ -1182,6 +1201,7 @@ class TestPostProcessing:
     @pytest.fixture(scope="class")
     def adapter_preprocess_process_scenario_class(
         self,
+        setup_settings: Settings,
         test_db_class: IDatabase,
         test_event_all_synthetic_class,
     ) -> Tuple[SfincsAdapter, Scenario]:
@@ -1217,7 +1237,11 @@ class TestPostProcessing:
         overland_path = (
             test_db_class.static.get_overland_sfincs_model().get_model_root()
         )
-        with SfincsAdapter(model_root=overland_path) as adapter:
+        with SfincsAdapter(
+            model_root=overland_path,
+            delete_crashed_runs=setup_settings.delete_crashed_runs,
+            exe_path=setup_settings.sfincs_bin_path,
+        ) as adapter:
             adapter._ensure_no_existing_forcings()
 
             adapter.preprocess(scn, event)

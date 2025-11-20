@@ -24,7 +24,6 @@ from numpy import matlib
 from shapely.affinity import translate
 
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
-from flood_adapt.config import get_settings
 from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import cd
@@ -105,7 +104,12 @@ class SfincsAdapter(IHazardAdapter):
     ###############
 
     ### HAZARD ADAPTER METHODS ###
-    def __init__(self, model_root: Path):
+    def __init__(
+        self,
+        model_root: Path,
+        delete_crashed_runs: bool = True,
+        exe_path: Optional[Path] = None,
+    ):
         """Load overland sfincs model based on a root directory.
 
         Parameters
@@ -126,6 +130,8 @@ class SfincsAdapter(IHazardAdapter):
         self._scenario: Optional[Scenario] = None
         self._event: Optional[Event] = None
         self._event_set: Optional[EventSet] = None
+        self._delete_crashed_runs = delete_crashed_runs
+        self._exe_path = exe_path
 
     def read(self, path: Path):
         """Read the sfincs model from the current model root."""
@@ -190,10 +196,13 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
+        if self._exe_path is None or not self._exe_path.exists():
+            raise FileNotFoundError(f"SFINCS executable not found: {self._exe_path}.")
+
         with cd(path):
             logger.info(f"Running SFINCS in {path}")
             process = subprocess.run(
-                str(get_settings().sfincs_bin_path),
+                self._exe_path.as_posix(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -204,7 +213,7 @@ class SfincsAdapter(IHazardAdapter):
         self._cleanup_simulation_folder(path)
 
         if process.returncode != 0:
-            if get_settings().delete_crashed_runs:
+            if self._delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
                 for subdir, dirs, files in os.walk(path, topdown=False):
                     for file in files:
@@ -253,7 +262,11 @@ class SfincsAdapter(IHazardAdapter):
             self.database.static.get_overland_sfincs_model().get_model_root()
         )
 
-        with SfincsAdapter(model_root=template_path) as model:
+        with SfincsAdapter(
+            model_root=template_path,
+            delete_crashed_runs=self._delete_crashed_runs,
+            exe_path=self._exe_path,
+        ) as model:
             model._load_scenario_objects(scenario, event, event_set=self._event_set)
             is_risk = "Probabilistic " if self._event_set is not None else ""
             logger.info(
@@ -544,7 +557,11 @@ class SfincsAdapter(IHazardAdapter):
         sim_path = sim_path or self._get_simulation_path(scenario)
         demfile = self.database.static_path / "dem" / self.settings.dem.filename
 
-        with SfincsAdapter(model_root=sim_path) as model:
+        with SfincsAdapter(
+            model_root=sim_path,
+            delete_crashed_runs=self._delete_crashed_runs,
+            exe_path=self._exe_path,
+        ) as model:
             zsmax = model._get_zsmax()
 
             dem = model._model.data_catalog.get_rasterdataset(demfile)
@@ -576,7 +593,11 @@ class SfincsAdapter(IHazardAdapter):
         results_path = self._get_result_path(scenario)
         sim_path = sim_path or self._get_simulation_path(scenario)
 
-        with SfincsAdapter(model_root=sim_path) as model:
+        with SfincsAdapter(
+            model_root=sim_path,
+            delete_crashed_runs=self._delete_crashed_runs,
+            exe_path=self._exe_path,
+        ) as model:
             zsmax = model._get_zsmax()
             zsmax.to_netcdf(results_path / "max_water_level_map.nc")
 
@@ -596,7 +617,11 @@ class SfincsAdapter(IHazardAdapter):
         sim_path = self._get_simulation_path(scenario)
 
         # read SFINCS model
-        with SfincsAdapter(model_root=sim_path) as model:
+        with SfincsAdapter(
+            model_root=sim_path,
+            delete_crashed_runs=self._delete_crashed_runs,
+            exe_path=self._exe_path,
+        ) as model:
             df, gdf = model._get_zs_points()
 
         gui_units = us.UnitTypesLength(
@@ -750,7 +775,11 @@ class SfincsAdapter(IHazardAdapter):
                 if event.template == Template.Hurricane:
                     frequencies[ii] = frequencies[ii] * (1 + storminess_increase)
 
-        with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
+        with SfincsAdapter(
+            model_root=sim_paths[0],
+            delete_crashed_runs=self._delete_crashed_runs,
+            exe_path=self._exe_path,
+        ) as dummymodel:
             # read mask and bed level
             mask = dummymodel.get_mask()
             zb = dummymodel.get_bedlevel()
@@ -758,7 +787,11 @@ class SfincsAdapter(IHazardAdapter):
         zs_maps = []
         for simulation_path in sim_paths:
             # read zsmax data from overland sfincs model
-            with SfincsAdapter(model_root=simulation_path) as sim:
+            with SfincsAdapter(
+                model_root=simulation_path,
+                delete_crashed_runs=self._delete_crashed_runs,
+                exe_path=self._exe_path,
+            ) as sim:
                 zsmax = sim._get_zsmax().load()
                 zs_maps.append(zsmax)
 
@@ -786,7 +819,11 @@ class SfincsAdapter(IHazardAdapter):
             demfile = self.database.static_path / "dem" / self.settings.dem.filename
 
             # writing the geotiff to the scenario results folder
-            with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
+            with SfincsAdapter(
+                model_root=sim_paths[0],
+                delete_crashed_runs=self._delete_crashed_runs,
+                exe_path=self._exe_path,
+            ) as dummymodel:
                 dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
                 zsmax = zs_rp_single.to_array().squeeze().transpose()
                 floodmap_fn = fn_rp.with_suffix(".tif")

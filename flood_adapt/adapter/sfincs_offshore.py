@@ -25,7 +25,12 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
     template_path: Path
 
     def __init__(
-        self, scenario: Scenario, event: Event, event_set: EventSet | None = None
+        self,
+        scenario: Scenario,
+        event: Event,
+        event_set: EventSet | None = None,
+        delete_crashed_runs: bool = True,
+        exe_path: Path | None = None,
     ) -> None:
         self.template_path = (
             self.database.static.get_offshore_sfincs_model().get_model_root()
@@ -37,6 +42,8 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             )
         self.event = event
         self.event_set = event_set
+        self._delete_crashed_runs = delete_crashed_runs
+        self._exe_path = exe_path
 
     def get_resulting_waterlevels(self) -> pd.DataFrame:
         """Get the water levels from the offshore model.
@@ -56,7 +63,11 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
         self.run_offshore()
 
-        with SfincsAdapter(model_root=path) as offshore_model:
+        with SfincsAdapter(
+            model_root=path,
+            delete_crashed_runs=self._delete_crashed_runs,
+            exe_path=self._exe_path,
+        ) as offshore_model:
             waterlevels = offshore_model.get_wl_df_from_offshore_his_results()
 
         return waterlevels
@@ -97,7 +108,11 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         if sim_path.exists():
             shutil.rmtree(sim_path, ignore_errors=True)
 
-        with SfincsAdapter(model_root=self.template_path) as _offshore_model:
+        with SfincsAdapter(
+            model_root=self.template_path,
+            delete_crashed_runs=self._delete_crashed_runs,
+            exe_path=self._exe_path,
+        ) as _offshore_model:
             # Load objects, set root & write template model
             _offshore_model._load_scenario_objects(
                 self.scenario, self.event, event_set=self.event_set
@@ -152,7 +167,11 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
     def _execute_sfincs_offshore(self, sim_path: Path):
         logger.info(f"Running offshore model in {sim_path}")
         sim_path = self._get_simulation_path()
-        with SfincsAdapter(model_root=sim_path) as _offshore_model:
+        with SfincsAdapter(
+            model_root=sim_path,
+            delete_crashed_runs=self._delete_crashed_runs,
+            exe_path=self._exe_path,
+        ) as _offshore_model:
             if _offshore_model.sfincs_completed(sim_path):
                 logger.info("Skip running offshore model as it has already been run.")
                 return

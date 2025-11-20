@@ -13,7 +13,6 @@ import tomli
 from shapely import Polygon
 
 from flood_adapt import unit_system as us
-from flood_adapt.config import get_settings
 from flood_adapt.config.hazard import (
     DatumModel,
     DemModel,
@@ -51,9 +50,9 @@ from flood_adapt.objects.forcing.tide_gauge import TideGaugeSource
 
 class TestDataBaseBuilder:
     @pytest.fixture(scope="function")
-    def mock_config(self):
+    def mock_config(self, setup_test_database):
         """Create a temporary database path and return a minimal mocked ConfigModel object."""
-        self.db_path = get_settings().database_path
+        self.db_path = setup_test_database
         self.static_path = self.db_path / "static"
         self.templates_path = self.db_path / "static" / "templates"
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:
@@ -1156,8 +1155,8 @@ class TestDataBaseBuilder:
             ), "Unexpected 'Finished' message found at this log level"
 
     @pytest.fixture(scope="function")
-    def full_config(self):
-        db_path = get_settings().database_path
+    def full_config(self, setup_test_database):
+        db_path = setup_test_database
         static_path = db_path / "static"
         templates_path = db_path / "static" / "templates"
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:

@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 from flood_adapt import unit_system as us
-from flood_adapt.config.config import get_settings
+from flood_adapt.config.config import Settings
 from flood_adapt.config.fiat import (
     FiatConfigModel,
     FiatModel,
@@ -61,6 +61,12 @@ def update_database_static(database_path: Path):
 
     Possibly update the static data in the database.
     """
+    settings = Settings(
+        DATABASE_ROOT=database_path.parent,
+        DATABASE_NAME=database_path.name,
+    )
+    print(f"Updating config data in database: {settings.database_path}")
+
     config_dir = database_path / "static" / "config"
     config_dir.mkdir(parents=True, exist_ok=True)
 
@@ -351,9 +357,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    settings = get_settings()
-    settings.database_root = Path(args.database_root).resolve()
-    settings.database_name = args.database_name
-
-    print(f"Updating database: {settings.database_path}")
-    update_database_static(settings.database_path)
+    path = args.database_root / args.database_name
+    update_database_static(path)

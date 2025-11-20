@@ -13,7 +13,7 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from dotenv import load_dotenv
 
 from flood_adapt import FloodAdapt, FloodAdaptLogging, __path__
-from flood_adapt.config.config import get_settings, initialize_settings
+from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import RiverModel
 from flood_adapt.objects import (
     Buyout,
@@ -57,28 +57,27 @@ src_dir = Path(
 clean = True
 
 
-def create_snapshot():
+def create_snapshot(database_path: Path):
     """Create a snapshot of the database directory."""
     if snapshot_dir.exists():
         shutil.rmtree(snapshot_dir)
-    shutil.copytree(get_settings().database_path, snapshot_dir)
+    shutil.copytree(database_path, snapshot_dir)
 
 
-def restore_db_from_snapshot():
+def restore_db_from_snapshot(database_path: Path):
     """Restore the database directory from the snapshot."""
     if not snapshot_dir.exists():
         raise FileNotFoundError(
             "Snapshot path does not exist. Create a snapshot first."
         )
     seen_files = set()
-    db_path = get_settings().database_path
 
     for root, _, files in os.walk(snapshot_dir):
         # Copy deleted/changed files from snapshot to database
         for file in files:
             snapshot_file = Path(root) / file
             relative_path = snapshot_file.relative_to(snapshot_dir)
-            database_file = db_path / relative_path
+            database_file = database_path / relative_path
             seen_files.add(database_file)
 
             if not database_file.exists():
@@ -87,7 +86,7 @@ def restore_db_from_snapshot():
             elif not filecmp.cmp(snapshot_file, database_file):
                 shutil.copy2(snapshot_file, database_file)
 
-    for root, dirs, files in os.walk(db_path, topdown=False):
+    for root, dirs, files in os.walk(database_path, topdown=False):
         # Remove created files from database
         for file in files:
             database_file = Path(root) / file
@@ -101,34 +100,44 @@ def restore_db_from_snapshot():
                 os.rmdir(dir_path)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def session_setup_teardown():
+@pytest.fixture(scope="session")
+def setup_settings():
     """Session-wide setup and teardown for creating the initial snapshot."""
     load_dotenv()
 
-    settings = initialize_settings(
+    settings = Settings(
         DATABASE_ROOT=src_dir.parents[1] / "Database",
         DATABASE_NAME="charleston_test",
         DELETE_CRASHED_RUNS=clean,
         VALIDATE_ALLOWED_FORCINGS=True,
         VALIDATE_BINARIES=True,
     )
+    yield settings
 
+
+@pytest.fixture(scope="session")
+def setup_logging():
+    """Session-wide setup and teardown for creating the initial snapshot."""
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     FloodAdaptLogging(
         file_path=log_path,
         level=logging.DEBUG,
         ignore_warnings=[DeprecationWarning],
     )
-
-    update_database_static(settings.database_path)
-    update_database_input(settings.database_path)
-    create_snapshot()
-
     yield
 
+
+@pytest.fixture(scope="session")
+def setup_test_database(setup_settings):
+    """Session-wide setup and teardown for creating the initial snapshot."""
+    update_database_static(setup_settings.database_path)
+    update_database_input(setup_settings.database_path)
+    create_snapshot(setup_settings.database_path)
+
+    yield setup_settings.database_path
+
     if clean:
-        restore_db_from_snapshot()
+        restore_db_from_snapshot(setup_settings.database_path)
     shutil.rmtree(snapshot_dir, ignore_errors=True)
 
 
@@ -150,7 +159,7 @@ def make_db_fixture(scope):
         raise ValueError(f"Invalid fixture scope: {scope}")
 
     @pytest.fixture(scope=scope)
-    def _db_fixture():
+    def _db_fixture(setup_test_database):
         """
         Fixture for setting up and tearing down the database once per scope.
 
@@ -175,7 +184,7 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        fa = FloodAdapt(get_settings().database_path)
+        fa = FloodAdapt(setup_test_database)
 
         # Perform tests
         yield fa.database
@@ -183,7 +192,7 @@ def make_db_fixture(scope):
         # Teardown
         fa.database.shutdown()
         if clean:
-            restore_db_from_snapshot()
+            restore_db_from_snapshot(setup_test_database)
 
     return _db_fixture
 
@@ -219,7 +228,7 @@ def make_fa_fixture(scope):
         raise ValueError(f"Invalid fixture scope: {scope}")
 
     @pytest.fixture(scope=scope)
-    def _db_fixture():
+    def _db_fixture(setup_test_database):
         """
         Fixture for setting up and tearing down the database once per scope.
 
@@ -244,7 +253,7 @@ def make_fa_fixture(scope):
                     assert ...
         """
         # Setup
-        fa = FloodAdapt(get_settings().database_path)
+        fa = FloodAdapt(setup_test_database)
 
         # Perform tests
         yield fa
@@ -252,7 +261,7 @@ def make_fa_fixture(scope):
         # Teardown
         fa.database.shutdown()
         if clean:
-            restore_db_from_snapshot()
+            restore_db_from_snapshot(setup_test_database)
 
     return _db_fixture
 
@@ -310,13 +319,29 @@ def _n_dim_dummy_timeseries_df(n_dims: int, time_model: TimeFrame) -> pd.DataFra
 
 
 @pytest.fixture(scope="session")
-def spw_file(test_data_dir) -> Path:
-    cyc_file = test_data_dir / "IAN.cyc"
-    spw_file = test_data_dir / "IAN.spw"
+def cyc_file(test_data_dir) -> Path:
+    return test_data_dir / "IAN.cyc"
+
+
+@pytest.fixture(scope="session")
+def spw_file_with_rain(cyc_file: Path) -> Path:
+    spw_file = cyc_file.with_suffix(".spw")
     if spw_file.exists():
         return spw_file
     tc = TropicalCyclone()
     tc.include_rainfall = True
+    tc.read_track(cyc_file, fmt="ddb_cyc")
+    tc.to_spiderweb(spw_file)
+    return spw_file
+
+
+@pytest.fixture(scope="session")
+def spw_file_no_rain(cyc_file: Path) -> Path:
+    spw_file = cyc_file.with_suffix(".spw")
+    if spw_file.exists():
+        return spw_file
+    tc = TropicalCyclone()
+    tc.include_rainfall = False
     tc.read_track(cyc_file, fmt="ddb_cyc")
     tc.to_spiderweb(spw_file)
     return spw_file

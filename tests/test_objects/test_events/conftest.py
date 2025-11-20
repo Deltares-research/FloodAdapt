@@ -203,18 +203,18 @@ def test_event_all_synthetic():
 
 
 @pytest.fixture()
-def setup_hurricane_event(test_data_dir) -> tuple[HurricaneEvent, Path]:
-    cyc_file = test_data_dir / "IAN.cyc"
+def setup_hurricane_event(
+    cyclone_track_container: CycloneTrackContainer,
+) -> tuple[HurricaneEvent, Path]:
+    cyclone_track_container.data.include_rainfall = True
     event = HurricaneEvent(
         name="hurricane",
         time=TimeFrame(),
         track_name="IAN",
         forcings={
             ForcingType.WATERLEVEL: [WaterlevelModel()],
-            ForcingType.WIND: [WindTrack(track=CycloneTrackContainer(path=cyc_file))],
-            ForcingType.RAINFALL: [
-                RainfallTrack(track=CycloneTrackContainer(path=cyc_file))
-            ],
+            ForcingType.WIND: [WindTrack(track=cyclone_track_container)],
+            ForcingType.RAINFALL: [RainfallTrack(track=cyclone_track_container)],
             ForcingType.DISCHARGE: [
                 DischargeConstant(
                     river=RiverModel(

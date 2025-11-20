@@ -1,11 +1,12 @@
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import geopandas as gpd
 import numpy as np
 
+from flood_adapt.config.config import Settings
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
@@ -29,7 +30,10 @@ class IDatabase(ABC):
 
     @abstractmethod
     def __init__(
-        self, database_path: Union[str, os.PathLike], site_name: str
+        self,
+        database_path: str | os.PathLike | None = None,
+        database_name: str | None = None,
+        settings: Settings | None = None,
     ) -> None: ...
 
     @abstractmethod

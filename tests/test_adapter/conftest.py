@@ -1,15 +1,14 @@
 from datetime import datetime, timedelta
 from functools import partial
-from pathlib import Path
 from unittest import mock
 
 import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
-from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import (
     RiverModel,
 )
@@ -38,9 +37,13 @@ from flood_adapt.objects.forcing.forcing import (
 
 
 @pytest.fixture()
-def default_sfincs_adapter(test_db) -> SfincsAdapter:
+def default_sfincs_adapter(test_db, setup_settings) -> SfincsAdapter:
     overland_path = test_db.static_path / "templates" / "overland"
-    with SfincsAdapter(model_root=overland_path) as adapter:
+    with SfincsAdapter(
+        model_root=overland_path,
+        delete_crashed_runs=setup_settings.delete_crashed_runs,
+        exe_path=setup_settings.sfincs_bin_path,
+    ) as adapter:
         start_time = datetime(2023, 1, 1, 0, 0, 0)
         duration = timedelta(hours=3)
 
@@ -70,7 +73,9 @@ def sfincs_adapter_with_dummy_scn(default_sfincs_adapter):
 
 
 @pytest.fixture()
-def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[SfincsAdapter, IDatabase]:
+def sfincs_adapter_2_rivers(
+    test_db: IDatabase, setup_settings: Settings
+) -> tuple[SfincsAdapter, IDatabase]:
     overland_2_rivers = test_db.static_path / "templates" / "overland_2_rivers"
 
     rivers = []
@@ -92,7 +97,11 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[SfincsAdapter, IDatabas
             )
     test_db.site.sfincs.river = rivers
 
-    with SfincsAdapter(model_root=(overland_2_rivers)) as adapter:
+    with SfincsAdapter(
+        model_root=(overland_2_rivers),
+        delete_crashed_runs=setup_settings.delete_crashed_runs,
+        exe_path=setup_settings.sfincs_bin_path,
+    ) as adapter:
         adapter.set_timing(TimeFrame())
         adapter._ensure_no_existing_forcings()
 
@@ -244,19 +253,6 @@ def mock_offshorehandler_get_resulting_waterlevels():
         )
         mock_get_data_wl_from_model.return_value = df
         yield df
-
-
-@pytest.fixture()
-def spw_file(test_data_dir) -> Path:
-    cyc_file = test_data_dir / "IAN.cyc"
-    spw_file = test_data_dir / "IAN.spw"
-    if spw_file.exists():
-        return spw_file
-    tc = TropicalCyclone()
-    tc.include_rainfall = True
-    tc.read_track(cyc_file, fmt="ddb_cyc")
-    tc.to_spiderweb(spw_file)
-    return spw_file
 
 
 def _unsupported_forcing_source(type: ForcingType):

@@ -1,4 +1,4 @@
-from flood_adapt.config.config import get_settings, initialize_settings
+from flood_adapt.config.config import Settings
 from flood_adapt.config.fiat import (
     FiatConfigModel,
     FiatModel,
@@ -68,8 +68,7 @@ __all__ = [
     "BenefitsModel",
     "AggregationModel",
     # Config
-    "initialize_settings",
-    "get_settings",
+    "Settings",
     # Sfincs
     "SfincsModel",
     "SfincsConfigModel",

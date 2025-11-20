@@ -4,7 +4,6 @@ from typing import Optional
 
 import tomli
 import tomli_w
-from dotenv import load_dotenv
 from pydantic import (
     Field,
     computed_field,
@@ -247,21 +246,3 @@ class Settings(BaseSettings):
                 ),
                 f,
             )
-
-
-load_dotenv()
-SETTINGS: Settings | None = None
-
-
-def initialize_settings(**kwargs) -> Settings:
-    global SETTINGS
-    SETTINGS = Settings(**kwargs)
-    return SETTINGS
-
-
-def get_settings() -> Settings:
-    if SETTINGS is None:
-        raise RuntimeError(
-            "SETTINGS is not initialized. Call `initialize_settings` first."
-        )
-    return SETTINGS

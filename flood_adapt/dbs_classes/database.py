@@ -30,6 +30,7 @@ from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.output.floodmap import FloodMap
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
+from tests.test_config.test_config import Settings
 
 logger = FloodAdaptLogging.getLogger("Database")
 
@@ -41,6 +42,7 @@ class Database(IDatabase):
     """
 
     _instance = None
+    _settings: Settings
 
     database_path: Union[str, os.PathLike]
     database_name: str
@@ -51,16 +53,16 @@ class Database(IDatabase):
     static_path: Path
     output_path: Path
 
-    _site: Site
+    site: Site
 
-    _events: DbsEvent
-    _scenarios: DbsScenario
-    _strategies: DbsStrategy
-    _measures: DbsMeasure
-    _projections: DbsProjection
-    _benefits: DbsBenefit
+    events: DbsEvent
+    scenarios: DbsScenario
+    strategies: DbsStrategy
+    measures: DbsMeasure
+    projections: DbsProjection
+    benefits: DbsBenefit
 
-    _static: DbsStatic
+    static: DbsStatic
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:  # Singleton pattern
@@ -71,6 +73,7 @@ class Database(IDatabase):
         self,
         database_path: Union[str, os.PathLike, None] = None,
         database_name: Optional[str] = None,
+        settings: Optional[Settings] = None,
     ) -> None:
         """
         Initialize the DatabaseController object.
@@ -98,6 +101,8 @@ class Database(IDatabase):
             and self.database_name == database_name
         ):
             return  # Skip re-initialization
+
+        self._settings = settings or Settings()
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
         re_option = "re-" if self._init_done else ""

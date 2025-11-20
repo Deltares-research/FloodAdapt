@@ -3,7 +3,7 @@ from pathlib import Path
 import shutil
 import sys
 from flood_adapt import FloodAdapt
-from flood_adapt.config.config import get_settings
+from flood_adapt.config.config import Settings
 
 def clean_database(database_dir: Path):
     EXCLUDES = [
@@ -29,9 +29,10 @@ def clean_database(database_dir: Path):
             print(f"Removed directory: {dir_path}")
 
     # Validate
-    settings = get_settings()
-    settings.database_root = database_dir.parent
-    settings.database_name = database_dir.name
+    Settings(
+        DATABASE_ROOT=database_dir.parent,
+        DATABASE_NAME=database_dir.name,
+    )
     FloodAdapt(database_dir)
 
 if __name__ == "__main__":

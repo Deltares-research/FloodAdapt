@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List
 
 from flood_adapt import unit_system as us
-from flood_adapt.config import get_settings
+from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import RiverModel
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.objects.benefits.benefits import (
@@ -15,6 +15,7 @@ from flood_adapt.objects.benefits.benefits import (
 from flood_adapt.objects.data_container import (
     CycloneTrackContainer,
     GeoDataFrameContainer,
+    TropicalCyclone,
 )
 from flood_adapt.objects.events.event_set import (
     EventSet,
@@ -30,13 +31,13 @@ from flood_adapt.objects.events.hurricane import (
 from flood_adapt.objects.events.synthetic import (
     SyntheticEvent,
 )
+from flood_adapt.objects.forcing import RainfallConstant
 from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
 )
 from flood_adapt.objects.forcing.forcing import ForcingType
 from flood_adapt.objects.forcing.rainfall import (
-    RainfallConstant,
     RainfallTrack,
 )
 from flood_adapt.objects.forcing.time_frame import TimeFrame
@@ -90,7 +91,11 @@ def update_database_input(database_path: Path):
         The path to the database directory. This is the directory that contains the `input`, `static` and `output` directories.
 
     """
-    database = Database(database_path.parent, database_path.name)
+    settings = Settings(
+        DATABASE_ROOT=database_path.parent, DATABASE_NAME=database_path.name
+    )
+    print(f"Updating input data in database: {settings.database_path}")
+    database = Database(database_path.parent, database_path.name, settings=settings)
     input_dir = database.input_path
     if input_dir.exists():
         shutil.rmtree(input_dir)
@@ -774,12 +779,25 @@ def _create_event_set(name: str) -> EventSet:
     return event_set
 
 
+def _create_cyclone_track_container() -> CycloneTrackContainer:
+    track = TropicalCyclone()
+    track.read_track(DATA_DIR / "IAN.cyc", fmt="ddb_cyc")
+    container = CycloneTrackContainer(name="IAN")
+    container.set_data(track)
+    return container
+
+
 def create_event_set_with_hurricanes():
     sub_event_models: List[SubEventModel] = []
     sub_events: List[Event] = []
 
     for i in range(1, 5):
-        sub_events.append(_create_hurricane_event(name=f"subevent_hurricane{i:04d}"))
+        sub_events.append(
+            _create_hurricane_event(
+                name=f"subevent_hurricane{i:04d}",
+                cyclone_track_container=_create_cyclone_track_container(),
+            )
+        )
         sub_event_models.append(
             SubEventModel(name=f"subevent_hurricane{i:04d}", frequency=i)
         )
@@ -858,18 +876,18 @@ def _create_synthetic_event(name: str) -> SyntheticEvent:
     )
 
 
-def _create_hurricane_event(name: str) -> HurricaneEvent:
-    cyc_file = DATA_DIR / "cyclones" / "IAN.cyc"
+def _create_hurricane_event(
+    name: str, cyclone_track_container: CycloneTrackContainer
+) -> HurricaneEvent:
+    cyclone_track_container.data.include_rainfall = True
     return HurricaneEvent(
         name=name,
         time=TimeFrame(),
-        track_name="IAN",
+        track_name=cyclone_track_container.name,
         forcings={
             ForcingType.WATERLEVEL: [WaterlevelModel()],
-            ForcingType.WIND: [WindTrack(track=CycloneTrackContainer(path=cyc_file))],
-            ForcingType.RAINFALL: [
-                RainfallTrack(track=CycloneTrackContainer(path=cyc_file))
-            ],
+            ForcingType.WIND: [WindTrack(track=cyclone_track_container)],
+            ForcingType.RAINFALL: [RainfallTrack(track=cyclone_track_container)],
             ForcingType.DISCHARGE: [
                 DischargeConstant(
                     river=RiverModel(
@@ -908,9 +926,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    settings = get_settings()
-    settings.database_root = args.database_root
-    settings.database_name = args.database_name
-
-    print(f"Updating database: {settings.database_path}")
-    update_database_input(settings.database_path)
+    path = args.database_root / args.database_name
+    update_database_input(path)

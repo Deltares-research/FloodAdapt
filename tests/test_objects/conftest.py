@@ -3,24 +3,28 @@ from pathlib import Path
 import geopandas as gpd
 import pytest
 
-from flood_adapt.objects.data_container import GeoDataFrameContainer
+from flood_adapt.objects.data_container import (
+    CycloneTrackContainer,
+    GeoDataFrameContainer,
+    TropicalCyclone,
+)
 
 # -------------------------- #
 # GeoDataFrames
 # -------------------------- #
 
 
-@pytest.fixture()
+@pytest.fixture
 def gdf_single_line(test_data_dir: Path) -> gpd.GeoDataFrame:
     return gpd.read_file(test_data_dir / "pump.geojson").to_crs(epsg=4326)
 
 
-@pytest.fixture()
+@pytest.fixture
 def gdf_polygon(test_data_dir: Path) -> gpd.GeoDataFrame:
     return gpd.read_file(test_data_dir / "polygon.geojson").to_crs(epsg=4326)
 
 
-@pytest.fixture()
+@pytest.fixture
 def gdf_polyline(test_data_dir: Path) -> gpd.GeoDataFrame:
     return gpd.read_file(test_data_dir / "polyline.geojson").to_crs(epsg=4326)
 
@@ -30,7 +34,7 @@ def gdf_polyline(test_data_dir: Path) -> gpd.GeoDataFrame:
 # -------------------------- #
 
 
-@pytest.fixture()
+@pytest.fixture
 def gdf_container_single_line(
     gdf_single_line: gpd.GeoDataFrame,
 ) -> GeoDataFrameContainer:
@@ -39,7 +43,7 @@ def gdf_container_single_line(
     return container
 
 
-@pytest.fixture()
+@pytest.fixture
 def gdf_container_polygon(
     gdf_polygon: gpd.GeoDataFrame,
 ) -> GeoDataFrameContainer:
@@ -48,10 +52,27 @@ def gdf_container_polygon(
     return container
 
 
-@pytest.fixture()
+@pytest.fixture
 def gdf_container_polyline(
     gdf_polyline: gpd.GeoDataFrame,
 ) -> GeoDataFrameContainer:
     container = GeoDataFrameContainer(name="polyline")
     container.set_data(gdf_polyline)
+    return container
+
+
+@pytest.fixture
+def tropical_cyclone(cyc_file: Path) -> TropicalCyclone:
+    tc = TropicalCyclone()
+    tc.read_track(cyc_file, fmt="ddb_cyc")
+    tc.include_rainfall = False
+    return tc
+
+
+@pytest.fixture
+def cyclone_track_container(
+    tropical_cyclone: TropicalCyclone,
+) -> CycloneTrackContainer:
+    container = CycloneTrackContainer(name="IAN")
+    container.set_data(tropical_cyclone)
     return container

@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Optional
 
-import geopandas as gpd
 import pytest
 import tomli
 from pydantic import ValidationError
@@ -50,14 +49,14 @@ def assert_validation_error(
 
 
 class TestMeasure:
-    def test_measure_model_correct_input(self):
+    def test_measure_model_correct_input(self, gdf_container_polygon):
         # Arrange
         measure = Measure(
             name="test_measure",
             description="test description",
             type=MeasureType.floodwall,
             selection_type=SelectionType.polyline,
-            gdf="test_polygon.geojson",
+            gdf=gdf_container_polygon,
         )
 
         # Assert
@@ -65,7 +64,7 @@ class TestMeasure:
         assert measure.description == "test description"
         assert measure.type == "floodwall"
         assert measure.selection_type == "polyline"
-        assert measure.gdf == "test_polygon.geojson"
+        assert measure.gdf == gdf_container_polygon
 
     @pytest.mark.parametrize(
         "missing_variable",
@@ -103,7 +102,7 @@ class TestMeasure:
         # Assert
         assert "Name must be at least one character long" in str(excinfo.value)
 
-    def test_measure_model_invalid_type(self):
+    def test_measure_model_invalid_type(self, gdf_container_polyline):
         # Arrange
         with pytest.raises(ValidationError) as excinfo:
             Measure(
@@ -111,7 +110,7 @@ class TestMeasure:
                 description="test description",
                 type="invalid_type",
                 selection_type=SelectionType.polyline,
-                gdf="test_polygon.geojson",
+                gdf=gdf_container_polyline,
             )
 
         # Assert
@@ -136,7 +135,7 @@ class TestMeasure:
         assert hazard_measure.name == "test_hazard_measure"
         assert hazard_measure.description == "test description"
         assert hazard_measure.type == "floodwall"
-        assert isinstance(hazard_measure.gdf, gpd.GeoDataFrame)
+        assert isinstance(hazard_measure.gdf, GeoDataFrameContainer)
         assert hazard_measure.selection_type == "polygon"
 
     def test_measure_polyline_correct_input(
@@ -155,7 +154,7 @@ class TestMeasure:
         assert hazard_measure.name == "test_hazard_measure"
         assert hazard_measure.description == "test description"
         assert hazard_measure.type == "floodwall"
-        assert isinstance(hazard_measure.gdf, gpd.GeoDataFrame)
+        assert isinstance(hazard_measure.gdf, GeoDataFrameContainer)
         assert hazard_measure.selection_type == "polyline"
 
     @pytest.mark.parametrize(
@@ -172,7 +171,6 @@ class TestMeasure:
                 name="test_hazard_measure",
                 description="test description",
                 type=MeasureType.floodwall,
-                gdf=None,
                 selection_type=selection_type,
             )
 
@@ -239,14 +237,14 @@ class TestMeasure:
             expected_type="value_error",
         )
 
-    def test_measure_model_invalid_selection_type(self):
+    def test_measure_model_invalid_selection_type(self, gdf_container_polygon):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
             Measure(
                 name="test_hazard_measure",
                 description="test description",
                 type=MeasureType.floodwall,
-                gdf="test_polygon",
+                gdf=gdf_container_polygon,
                 selection_type="invalid_selection_type",
             )
 
@@ -256,7 +254,6 @@ class TestMeasure:
     def test_save_and_load_with_gdf(
         self, gdf_container_polygon: GeoDataFrameContainer, tmp_path: Path
     ):
-        dst_toml = tmp_path / "test_measure_with_gdf.toml"
         saved = Measure(
             name="test_measure_with_gdf",
             type=MeasureType.floodwall,
@@ -264,31 +261,33 @@ class TestMeasure:
             gdf=gdf_container_polygon,
         )
 
+        dst_toml = tmp_path / "test_measure_with_gdf.toml"
         saved.save(dst_toml)
         assert dst_toml.is_file()
-        assert (dst_toml.parent / f"{saved.name}.geojson").is_file()
+        assert (dst_toml.parent / f"{saved.name}.toml").is_file()
 
-        loaded = Measure.load_file(dst_toml)
-        assert isinstance(loaded.gdf, gpd.GeoDataFrame)
+        expected_geojson = dst_toml.parent / f"{gdf_container_polygon.name}.geojson"
+        assert expected_geojson.is_file()
+
+        loaded = Measure.load_file(dst_toml, load_all=True)
+        assert isinstance(loaded.gdf, GeoDataFrameContainer)
         assert saved == loaded
 
     def test_save_additional_with_path(
-        self, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
+        self, tmp_path: Path, gdf_container_polygon: GeoDataFrameContainer
     ):
-        path = tmp_path / "measure.geojson"
-        gdf_polygon.to_file(path)
         measure = Measure(
             name="test_measure",
             description="test desc",
             type=MeasureType.floodwall,
             selection_type=SelectionType.polygon,
-            gdf=GeoDataFrameContainer(path=path),
+            gdf=gdf_container_polygon,
         )
         output_dir = tmp_path / "output"
         measure.save_additional(output_dir)
 
-        expected_path = output_dir / path.name
-        assert expected_path.exists()
+        expected_geojson = output_dir / f"{gdf_container_polygon.name}.geojson"
+        assert expected_geojson.exists()
 
     def test_save_additional_with_gdf(
         self, tmp_path: Path, gdf_container_polygon: GeoDataFrameContainer
@@ -303,26 +302,24 @@ class TestMeasure:
         output_dir = tmp_path / "output"
         measure.save_additional(output_dir)
 
-        expected_path = output_dir / f"{measure.name}.geojson"
-        assert expected_path.exists()
+        expected_geojson = output_dir / f"{gdf_container_polygon.name}.geojson"
+        assert expected_geojson.exists()
 
     def test_save_additional_with_str(
-        self, tmp_path: Path, gdf_polygon: gpd.GeoDataFrame
+        self, tmp_path: Path, gdf_container_polygon: GeoDataFrameContainer
     ):
-        path = tmp_path / "measure.geojson"
-        gdf_polygon.to_file(path)
         measure = Measure(
             name="test_measure",
             description="test desc",
             type=MeasureType.floodwall,
             selection_type=SelectionType.polygon,
-            gdf=path.as_posix(),
+            gdf=gdf_container_polygon,
         )
         output_dir = tmp_path / "output"
         measure.save_additional(output_dir)
 
-        expected_path = output_dir / path.name
-        assert expected_path.exists()
+        expected_geojson = output_dir / f"{gdf_container_polygon.name}.geojson"
+        assert expected_geojson.exists()
 
 
 class TestGreenInfrastructure:
@@ -376,7 +373,7 @@ class TestGreenInfrastructure:
         assert green_infrastructure.name == "test_green_infrastructure"
         assert green_infrastructure.description == "test description"
         assert green_infrastructure.type == "total_storage"
-        assert isinstance(green_infrastructure.gdf, gpd.GeoDataFrame)
+        assert isinstance(green_infrastructure.gdf, GeoDataFrameContainer)
         assert green_infrastructure.selection_type == "polygon"
         assert green_infrastructure.volume == us.UnitfulVolume(
             value=1, units=us.UnitTypesVolume.m3
@@ -400,17 +397,19 @@ class TestGreenInfrastructure:
         assert green_infrastructure.name == "test_green_infrastructure"
         assert green_infrastructure.description == "test description"
         assert green_infrastructure.type == "water_square"
-        assert isinstance(green_infrastructure.gdf, gpd.GeoDataFrame)
+        assert isinstance(green_infrastructure.gdf, GeoDataFrameContainer)
         assert green_infrastructure.selection_type == "polygon"
 
-    def test_green_infrastructure_model_no_aggregation_area_name(self):
+    def test_green_infrastructure_model_no_aggregation_area_name(
+        self, gdf_container_polygon: GeoDataFrameContainer
+    ):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
             GreenInfrastructure(
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.greening,
-                gdf="test_polygon.geojson",
+                gdf=gdf_container_polygon,
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_type="test_aggregation_area_type",
                 volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
@@ -432,7 +431,6 @@ class TestGreenInfrastructure:
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.greening,
-                gdf="test_polygon.geojson",
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_name="test_aggregation_area_name",
                 volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
@@ -447,14 +445,16 @@ class TestGreenInfrastructure:
             expected_msg="If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set.",
         )
 
-    def test_green_infrastructure_model_other_measure_type(self):
+    def test_green_infrastructure_model_other_measure_type(
+        self, gdf_container_polyline
+    ):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
             GreenInfrastructure(
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.floodwall,
-                gdf="test_polygon.geojson",
+                gdf=gdf_container_polyline,
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_name="test_aggregation_area_name",
                 aggregation_area_type="test_aggregation_area_type",
@@ -542,6 +542,7 @@ class TestGreenInfrastructure:
         error_message,
         error_loc,
         error_type,
+        gdf_container_polygon: GeoDataFrameContainer,
     ):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
@@ -549,7 +550,7 @@ class TestGreenInfrastructure:
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.greening,
-                gdf="test_polygon.geojson",
+                gdf=gdf_container_polygon,
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_name="test_aggregation_area_name",
                 aggregation_area_type="test_aggregation_area_type",
@@ -601,6 +602,7 @@ class TestGreenInfrastructure:
         height,
         percent_area,
         error_message,
+        gdf_container_polygon,
     ):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
@@ -608,7 +610,7 @@ class TestGreenInfrastructure:
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.total_storage,
-                gdf="test_polygon.geojson",
+                gdf=gdf_container_polygon,
                 selection_type=SelectionType.polygon,
                 volume=volume,
                 height=height,
@@ -653,6 +655,7 @@ class TestGreenInfrastructure:
         height,
         percent_area,
         error_message,
+        gdf_container_polygon,
     ):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
@@ -660,7 +663,7 @@ class TestGreenInfrastructure:
                 name="test_green_infrastructure",
                 description="test description",
                 type=MeasureType.water_square,
-                gdf="test_polygon.geojson",
+                gdf=gdf_container_polygon,
                 selection_type=SelectionType.polygon,
                 volume=volume,
                 height=height,
@@ -732,7 +735,7 @@ def test_elevate_aggr_area_save(test_elevate, tmp_path):
     test_elevate.name = "new_name"
     test_elevate.save(test_path)
 
-    loaded_elevate = Elevate.load_file(test_path)
+    loaded_elevate = Elevate.load_file(test_path, load_all=True)
 
     assert loaded_elevate == test_elevate
 
@@ -750,7 +753,7 @@ def test_elevate_polygon_read(test_elevate):
     assert test_elevate.elevation.units == us.UnitTypesLength.feet
     assert test_elevate.elevation.type == "floodmap"
     assert test_elevate.selection_type == "polygon"
-    assert isinstance(test_elevate.gdf, gpd.GeoDataFrame)
+    assert isinstance(test_elevate.gdf, GeoDataFrameContainer)
 
 
 def test_buyout_read(test_buyout):
@@ -771,7 +774,7 @@ def test_pump_read(test_pump):
     assert isinstance(test_pump.name, str)
     assert isinstance(test_pump.type, MeasureType)
     assert isinstance(test_pump.discharge, us.UnitfulDischarge)
-    assert isinstance(test_pump.gdf, gpd.GeoDataFrame)
+    assert isinstance(test_pump.gdf, GeoDataFrameContainer)
 
 
 def test_green_infra_read(test_green_infra):
@@ -781,13 +784,13 @@ def test_green_infra_read(test_green_infra):
     assert isinstance(test_green_infra.volume, us.UnitfulVolume)
     assert isinstance(test_green_infra.height, us.UnitfulLength)
     assert isinstance(test_green_infra.selection_type, SelectionType)
-    assert isinstance(test_green_infra.gdf, gpd.GeoDataFrame)
+    assert isinstance(test_green_infra.gdf, GeoDataFrameContainer)
 
 
 def test_pump_save_saves_geojson(test_pump, tmp_path):
     # Arrange
     output_path = tmp_path / "test_pump.toml"
-    expected_geojson = output_path.parent / f"{test_pump.name}.geojson"
+    expected_geojson = output_path.parent / f"{test_pump.gdf.name}.geojson"
 
     # Act
     test_pump.save(output_path)
@@ -797,13 +800,13 @@ def test_pump_save_saves_geojson(test_pump, tmp_path):
     assert expected_geojson.exists()
     with open(output_path, "rb") as f:
         data = tomli.load(f)
-        assert data["gdf"] == expected_geojson.name
+        assert data["gdf"] == {"path": expected_geojson.name}
 
 
 def test_elevate_save_saves_geojson(test_elevate, tmp_path):
     # Arrange
     output_path = tmp_path / "test_elevate.toml"
-    expected_geojson = output_path.parent / f"{test_elevate.name}.geojson"
+    expected_geojson = output_path.parent / f"{test_elevate.gdf.name}.geojson"
 
     # Act
     test_elevate.save(output_path)
@@ -813,13 +816,13 @@ def test_elevate_save_saves_geojson(test_elevate, tmp_path):
     assert expected_geojson.exists()
     with open(output_path, "rb") as f:
         data = tomli.load(f)
-        assert data["gdf"] == expected_geojson.name
+        assert data["gdf"] == {"path": expected_geojson.name}
 
 
 def test_buyout_save_saves_geojson(test_buyout, tmp_path):
     # Arrange
     output_path = tmp_path / "test_buyout.toml"
-    expected_geojson = output_path.parent / f"{test_buyout.name}.geojson"
+    expected_geojson = output_path.parent / f"{test_buyout.gdf.name}.geojson"
 
     # Act
     test_buyout.save(output_path)
@@ -829,13 +832,13 @@ def test_buyout_save_saves_geojson(test_buyout, tmp_path):
     assert expected_geojson.exists()
     with open(output_path, "rb") as f:
         data = tomli.load(f)
-        assert data["gdf"] == expected_geojson.name
+        assert data["gdf"] == {"path": expected_geojson.name}
 
 
 def test_floodproof_save_saves_geojson(test_floodproof, tmp_path):
     # Arrange
     output_path = tmp_path / "test_floodproof.toml"
-    expected_geojson = output_path.parent / f"{test_floodproof.name}.geojson"
+    expected_geojson = output_path.parent / f"{test_floodproof.gdf.name}.geojson"
 
     # Act
     test_floodproof.save(output_path)
@@ -845,13 +848,13 @@ def test_floodproof_save_saves_geojson(test_floodproof, tmp_path):
     assert expected_geojson.exists()
     with open(output_path, "rb") as f:
         data = tomli.load(f)
-        assert data["gdf"] == expected_geojson.name
+        assert data["gdf"] == {"path": expected_geojson.name}
 
 
 def test_green_infra_save_saves_geojson(test_green_infra, tmp_path):
     # Arrange
     output_path = tmp_path / "test_greeninfra.toml"
-    expected_geojson = output_path.parent / f"{test_green_infra.name}.geojson"
+    expected_geojson = output_path.parent / f"{test_green_infra.gdf.name}.geojson"
 
     # Act
     test_green_infra.save(output_path)
@@ -861,4 +864,4 @@ def test_green_infra_save_saves_geojson(test_green_infra, tmp_path):
     assert expected_geojson.exists()
     with open(output_path, "rb") as f:
         data = tomli.load(f)
-        assert data["gdf"] == expected_geojson.name
+        assert data["gdf"] == {"path": expected_geojson.name}

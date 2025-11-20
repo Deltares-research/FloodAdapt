@@ -44,8 +44,10 @@ class TestTimeseriesModel:
             "peak_time": {"value": 0, "units": us.UnitTypesTime.hours},
             "duration": {"value": 1, "units": us.UnitTypesTime.hours},
             "cumulative": {"value": 1, "units": us.UnitTypesLength.millimeters},
-            "curves": DataFrameContainer(path=test_data_dir / "scs_rainfall.csv"),
-            "scs_type": Scstype.type1.value,
+            "scs": {
+                "curves": DataFrameContainer(path=test_data_dir / "scs_rainfall.csv"),
+                "scs_type": Scstype.type1.value,
+            },
         }
 
         models = {
@@ -300,7 +302,9 @@ class TestSyntheticTimeseries:
         assert np.amax(data) == pytest.approx(ts.peak_value.value, rel=1e-2)
 
     @pytest.mark.parametrize("duration, peak_time, peak_value, cumulative", TEST_ATTRS)
-    def test_calculate_data_scs(self, duration, peak_time, peak_value, cumulative):
+    def test_calculate_data_scs(
+        self, duration, peak_time, peak_value, cumulative, test_data_dir
+    ):
         time = TimeFrame(
             start_time=REFERENCE_TIME,
             end_time=REFERENCE_TIME + timedelta(hours=duration),
@@ -311,6 +315,7 @@ class TestSyntheticTimeseries:
             cumulative=cumulative,
             duration=duration,
             peak_time=peak_time,
+            test_data_dir=test_data_dir,
         )
 
         data = ts.calculate_data(time.time_step)
@@ -368,7 +373,7 @@ class TestSyntheticTimeseries:
     @pytest.mark.parametrize("shape_type", SHAPE_TYPES)
     @pytest.mark.parametrize("duration, peak_time, peak_value, cumulative", TEST_ATTRS)
     def test_to_dataframe_timeseries_falls_inside_of_df(
-        self, shape_type, duration, peak_time, peak_value, cumulative
+        self, shape_type, duration, peak_time, peak_value, cumulative, test_data_dir
     ):
         ts = self.get_test_timeseries(
             duration=duration,
@@ -376,6 +381,7 @@ class TestSyntheticTimeseries:
             peak_value=peak_value,
             cumulative=cumulative,
             shape_type=shape_type,
+            test_data_dir=test_data_dir,
         )
         time_frame = TimeFrame(
             start_time=REFERENCE_TIME,
@@ -406,7 +412,7 @@ class TestSyntheticTimeseries:
     @pytest.mark.parametrize("shape_type", SHAPE_TYPES)
     @pytest.mark.parametrize("duration, peak_time, peak_value, cumulative", TEST_ATTRS)
     def test_to_dataframe_timeseries_falls_outside_of_df(
-        self, shape_type, duration, peak_time, peak_value, cumulative
+        self, shape_type, duration, peak_time, peak_value, cumulative, test_data_dir
     ):
         # Choose a start time that is way before the REFERENCE_TIME
         full_df_duration = timedelta(hours=4)
@@ -430,6 +436,7 @@ class TestSyntheticTimeseries:
             peak_value=peak_value,
             cumulative=cumulative,
             shape_type=shape_type,
+            test_data_dir=test_data_dir,
         )
 
         df = ts.to_dataframe(time_frame)
