@@ -75,6 +75,15 @@ from flood_adapt.config.site import (
     Site,
     StandardObjectModel,
 )
+from flood_adapt.database_builder.metrics_utils import (
+    BuildingsInfographicModel,
+    EventInfographicModel,
+    HomesInfographicModel,
+    MetricModel,
+    Metrics,
+    RiskInfographicModel,
+    RoadsInfographicModel,
+)
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.debug_timer import debug_timer
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -91,16 +100,6 @@ from flood_adapt.objects.projections.projections import (
     SocioEconomicChange,
 )
 from flood_adapt.objects.strategies.strategies import Strategy
-
-from .metrics_utils import (
-    BuildingsInfographicModel,
-    EventInfographicModel,
-    HomesInfographicModel,
-    MetricModel,
-    Metrics,
-    RiskInfographicModel,
-    RoadsInfographicModel,
-)
 
 logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 
@@ -1407,39 +1406,43 @@ class DatabaseBuilder:
         else:
             logger.info("Observation points were provided in the config file.")
             obs_points = self.config.obs_point
+
         if self.tide_gauge is not None:
-            # Check if the tide gauge point is within the SFINCS region
-            region = self.sfincs_overland_model.region
-            point = gpd.GeoSeries(
-                [gpd.points_from_xy([self.tide_gauge.lon], [self.tide_gauge.lat])[0]],
-                crs=4326,
+            logger.info(
+                "A tide gauge has been setup in the database. It will be used as an observation point as well."
             )
-            region_4326 = region.to_crs(4326)
-            if not point.within(region_4326.unary_union).item():
-                logger.warning(
-                    "The tide gauge location is outside the SFINCS region and will not be added as an observation point."
+            obs_points.append(
+                ObsPointModel(
+                    name=self.tide_gauge.name,
+                    description="Tide gauge observation point",
+                    ID=self.tide_gauge.ID,
+                    lon=self.tide_gauge.lon,
+                    lat=self.tide_gauge.lat,
                 )
-            else:
-                logger.info(
-                    "A tide gauge has been setup in the database. It will be used as an observation point as well."
-                )
-                obs_points.append(
-                    ObsPointModel(
-                        name=self.tide_gauge.name,
-                        description="Tide gauge observation point",
-                        ID=self.tide_gauge.ID,
-                        lon=self.tide_gauge.lon,
-                        lat=self.tide_gauge.lat,
-                    )
-                )
+            )
 
         if not obs_points:
             logger.warning(
                 "No observation points were provided in the config file or created from the tide gauge. No observation points will be available in FloodAdapt."
             )
             return None
-        else:
-            return obs_points
+
+        lon = [p.lon for p in obs_points]
+        lat = [p.lat for p in obs_points]
+        names = [p.name for p in obs_points]
+        coords = gpd.GeoDataFrame(
+            {"names": names},
+            geometry=gpd.points_from_xy(lon, lat),
+            crs="EPSG:4326",
+        )
+        coords = coords.to_crs(self.sfincs_overland_model.crs)
+        model_region = self.sfincs_overland_model.region.union_all()
+        valid_coords = coords.within(model_region)
+        if not valid_coords.all():
+            invalid = coords.loc[~valid_coords, "name"].tolist()
+            raise ValueError(f"Observation points outside model domain: {invalid}")
+
+        return obs_points
 
     @debug_timer
     def create_rivers(self) -> list[RiverModel]:
