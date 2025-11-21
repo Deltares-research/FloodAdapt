@@ -10,7 +10,7 @@ from flood_adapt.objects.data_container import GeoDataFrameContainer
 
 
 @pytest.fixture()
-def projection_full(test_data_dir):
+def projection_full(gdf_container_new_areas: GeoDataFrameContainer):
     return Projection(
         name="all_projections",
         physical_projection=PhysicalProjection(
@@ -28,7 +28,7 @@ def projection_full(test_data_dir):
                 units=us.UnitTypesLength.feet,
                 type=us.VerticalReference.floodmap,
             ),
-            gdf=GeoDataFrameContainer(path=test_data_dir / "new_areas.geojson"),
+            gdf=gdf_container_new_areas,
         ),
     )
 

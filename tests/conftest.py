@@ -273,7 +273,7 @@ test_fa_package = make_fa_fixture("package")
 test_fa_session = make_fa_fixture("session")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_data_dir():
     return Path(__file__).parent / "data"
 
@@ -347,14 +347,12 @@ def spw_file_no_rain(cyc_file: Path) -> Path:
     return spw_file
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def shapefile(test_data_dir: Path):
     return test_data_dir / "shapefiles" / "pop_growth_new_20.shp"
 
 
 ## Dummy fixtures
-
-
 @pytest.fixture()
 def dummy_buyout_measure():
     return Buyout(

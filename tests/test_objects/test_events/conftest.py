@@ -43,7 +43,10 @@ from flood_adapt.objects.forcing.time_frame import (
     REFERENCE_TIME,
     TimeFrame,
 )
-from tests.data.create_test_input import _create_hurricane_event
+from tests.data.create_test_input import (
+    _create_cyclone_track_container,
+    _create_hurricane_event,
+)
 from tests.test_objects.test_measures.conftest import (
     test_buyout,
     test_elevate,
@@ -429,7 +432,9 @@ def test_eventset(
     sub_event_models: list[SubEventModel] = []
     sub_events = []
 
-    hurricane = _create_hurricane_event("sub_hurricane")
+    hurricane = _create_hurricane_event(
+        "sub_hurricane", _create_cyclone_track_container()
+    )
     synthetic = test_sub_event
     historical_nearshore = setup_nearshore_event
     # historical_offshore = setup_offshore_meteo_event # uncomment when hydromt-sfincs 1.3.0 is released

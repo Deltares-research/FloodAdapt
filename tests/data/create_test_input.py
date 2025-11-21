@@ -766,7 +766,12 @@ def _create_event_set(name: str) -> EventSet:
     sub_events.append(_create_synthetic_event(name=f"subevent_{1:04d}"))
     sub_event_models.append(SubEventModel(name=f"subevent_{1:04d}", frequency=1))
 
-    sub_events.append(_create_hurricane_event(name=f"subevent_hurricane{78:04d}"))
+    sub_events.append(
+        _create_hurricane_event(
+            name=f"subevent_hurricane{78:04d}",
+            cyclone_track_container=_create_cyclone_track_container(),
+        )
+    )
     sub_event_models.append(
         SubEventModel(name=f"subevent_hurricane{78:04d}", frequency=78)
     )

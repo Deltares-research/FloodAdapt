@@ -70,16 +70,12 @@ class DataContainer(BaseModel, Generic[T]):
         return value
 
     @model_validator(mode="after")
-    def _validate_or_load(self) -> "DataContainer":
+    def _overwrite_default_name_from_path(self) -> "DataContainer":
         if (
             self.name == DataContainer.model_fields["name"].default
             and self.path is not None
         ):
             self.name = Path(self.path).stem
-        if self._read:
-            if self.path is None:
-                raise ValueError("`path` must be provided when `_read` is True.")
-            self.read()
         return self
 
     # --- Abstract methods ---
@@ -115,6 +111,16 @@ class DataContainer(BaseModel, Generic[T]):
             self.read()
         return self._data
 
+    @property
+    def _filename(self) -> str:
+        """Get the filename with extension for this data container."""
+        ext = (
+            self._extension
+            if self._extension.startswith(".")
+            else f".{self._extension}"
+        )
+        return f"{self.name}{ext}"
+
     def set_data(self, data: T) -> None:
         """Set the in-memory data object manually."""
         self._data = data
@@ -125,17 +131,22 @@ class DataContainer(BaseModel, Generic[T]):
 
     def resolved_path(self, directory: Path | None = None) -> Path:
         """Return an absolute resolved path, optionally relative to a given directory."""
-        if directory is not None:
-            ext = (
-                self._extension
-                if self._extension.startswith(".")
-                else f".{self._extension}"
-            )
-            path = directory / f"{self.name}{ext}"
-        elif self.path is not None:
-            path = Path(self.path)
+        if self.path is not None:
+            self.path = Path(self.path)
+            if self.path.is_absolute():
+                path = self.path
+            elif directory is not None:
+                path = directory / self.path
+            else:
+                raise ValueError(
+                    "Cannot resolve relative path without a base directory."
+                )
+        elif directory is not None:
+            path = directory / self._filename
+        elif self.path is None and directory is None:
+            path = Path(self._filename)
         else:
-            raise ValueError("No path or directory provided to resolve the file path.")
+            raise ValueError("Cannot resolve path without a base directory.")
         return path
 
     def __eq__(self, other: Any) -> bool:
@@ -152,25 +163,8 @@ class DataContainer(BaseModel, Generic[T]):
     @model_serializer()
     def serialize_model(self) -> dict[str, Any]:
         """Serialize DataContainer into a simple JSON-safe dict."""
-        dump = {}
-        # either _data or path is always set
-        if self._data is not None:
-            ext = (
-                self._extension
-                if self._extension.startswith(".")
-                else f".{self._extension}"
-            )
-            dump.update({"path": f"{self.name}{ext}"})
-        elif isinstance(self.path, Path):
-            dump.update({"path": self.path.as_posix()})
-        elif isinstance(self.path, str):
-            dump.update({"path": Path(self.path).as_posix()})
-        else:
-            raise TypeError(
-                f"Cannot serialize file reference for type: {type(self).__name__}"
-            )
-
-        return dump
+        # assume _data is always set, so we write the data to disk separately, and only store the path here
+        return {"path": self._filename}
 
 
 class GeoDataFrameContainer(DataContainer[gpd.GeoDataFrame]):

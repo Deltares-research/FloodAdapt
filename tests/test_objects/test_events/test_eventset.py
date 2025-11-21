@@ -15,7 +15,7 @@ from flood_adapt.workflows.scenario_runner import ScenarioRunner
 def test_save_reload_eventset(test_eventset: EventSet, tmp_path: Path):
     path = tmp_path / f"{test_eventset.name}.toml"
     test_eventset.save(path)
-    reloaded = EventSet.load_file(path)
+    reloaded = EventSet.load_file(path, load_all=True)
 
     assert reloaded == test_eventset
 

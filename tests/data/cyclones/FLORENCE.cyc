@@ -1,5 +1,5 @@
-# Tropical Cyclone Toolbox - Coastal Hazards Toolkit - 20230629 152208
-Name                   FLORENCE
+# Tropical Cyclone Toolbox - Coastal Hazards Toolkit - 20251121 164359
+Name                   "FLORENCE"
 WindProfile            holland2010
 WindPressureRelation   holland2008
 RMaxRelation           nederhoff2019
@@ -13,8 +13,8 @@ EPSG                   WGS 84
 UnitIntensity          knots
 UnitWindRadii          nm
 #
-##    Datetime               Lat        Lon         Vmax       Pc          Rmax         R35(NE)      R35(SE)     R35(SW)     R35(NW)     R50(NE)     R50(SE)    R50(SW)    R50(NW)     R65(NE)     R65(SE)     R65(SW)     R65(NW)    R100(NE)    R100(SE)    R100(SW)    R100(NE)
-     20180830 060000        12.8       -16.9        20.0      1008.0        50.0         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan      -999.0      -999.0      -999.0      -999.0
+#   Date   Time               Lat        Lon         Vmax       Pc          Rmax         R35(NE)      R35(SE)     R35(SW)     R35(NW)     R50(NE)     R50(SE)    R50(SW)    R50(NW)     R65(NE)     R65(SE)     R65(SW)     R65(NW)    R100(NE)    R100(SE)    R100(SW)    R100(NE)
+#
      20180830 090000       12.81      -17.39        22.0      1007.0        50.0         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan      -999.0      -999.0      -999.0      -999.0
      20180830 120000        12.8       -17.9        25.0      1007.0        50.0         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan      -999.0      -999.0      -999.0      -999.0
      20180830 150000       12.78      -18.44        25.0      1007.0        50.0         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan         nan      -999.0      -999.0      -999.0      -999.0

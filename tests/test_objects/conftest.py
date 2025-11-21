@@ -29,6 +29,11 @@ def gdf_polyline(test_data_dir: Path) -> gpd.GeoDataFrame:
     return gpd.read_file(test_data_dir / "polyline.geojson").to_crs(epsg=4326)
 
 
+@pytest.fixture
+def gdf_new_areas(test_data_dir: Path) -> gpd.GeoDataFrame:
+    return gpd.read_file(test_data_dir / "new_areas.geojson").to_crs(epsg=4326)
+
+
 # -------------------------- #
 # GeoDataFrameContainers
 # -------------------------- #
@@ -58,6 +63,15 @@ def gdf_container_polyline(
 ) -> GeoDataFrameContainer:
     container = GeoDataFrameContainer(name="polyline")
     container.set_data(gdf_polyline)
+    return container
+
+
+@pytest.fixture
+def gdf_container_new_areas(
+    gdf_new_areas: gpd.GeoDataFrame,
+) -> GeoDataFrameContainer:
+    container = GeoDataFrameContainer(name="new_areas")
+    container.set_data(gdf_new_areas)
     return container
 
 

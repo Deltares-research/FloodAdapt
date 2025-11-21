@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from flood_adapt.config import SCSModel
-from flood_adapt.config.hazard import DataFrameContainer, Scstype
+from flood_adapt.config.hazard import Scstype
 from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.rainfall import (
     RainfallConstant,
@@ -70,19 +70,14 @@ class TestRainfallSynthetic:
             2.0, rel=1e-2
         ), f"{rf_df.min()} != 2.0"
 
-    def test_rainfall_synthetic_scs_to_dataframe(self, test_data_dir):
+    def test_rainfall_synthetic_scs_to_dataframe(self, scs_curves):
         # Arrange
         timeseries = TimeseriesFactory.from_args(
             shape_type=ShapeType.scs,
             duration=us.UnitfulTime(value=4, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
             cumulative=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),
-            scs=SCSModel(
-                curves=DataFrameContainer(
-                    name="scs", path=test_data_dir / "scs_rainfall.csv"
-                ),
-                type=Scstype.type1,
-            ),
+            scs=SCSModel(curves=scs_curves, type=Scstype.type1),
         )
 
         # Act

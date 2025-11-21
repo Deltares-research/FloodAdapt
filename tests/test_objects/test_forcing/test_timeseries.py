@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
+from flood_adapt.config import SCSModel
 from flood_adapt.config.hazard import DataFrameContainer
 from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.time_frame import REFERENCE_TIME, TimeFrame
@@ -44,10 +45,10 @@ class TestTimeseriesModel:
             "peak_time": {"value": 0, "units": us.UnitTypesTime.hours},
             "duration": {"value": 1, "units": us.UnitTypesTime.hours},
             "cumulative": {"value": 1, "units": us.UnitTypesLength.millimeters},
-            "scs": {
-                "curves": DataFrameContainer(path=test_data_dir / "scs_rainfall.csv"),
-                "scs_type": Scstype.type1.value,
-            },
+            "scs": SCSModel(
+                curves=DataFrameContainer(path=test_data_dir / "scs_rainfall.csv"),
+                type=Scstype.type1,
+            ),
         }
 
         models = {

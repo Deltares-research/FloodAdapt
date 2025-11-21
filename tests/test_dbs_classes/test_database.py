@@ -137,14 +137,14 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase(setup_settings):
     assert dbs.input_path is not None
     assert dbs.static_path is not None
     assert dbs.output_path is not None
-    assert dbs._site is not None
-    assert dbs._static is not None
-    assert dbs._events is not None
-    assert dbs._scenarios is not None
-    assert dbs._strategies is not None
-    assert dbs._measures is not None
-    assert dbs._projections is not None
-    assert dbs._benefits is not None
+    assert dbs.site is not None
+    assert dbs.static is not None
+    assert dbs.events is not None
+    assert dbs.scenarios is not None
+    assert dbs.strategies is not None
+    assert dbs.measures is not None
+    assert dbs.projections is not None
+    assert dbs.benefits is not None
 
 
 def test_cannot_delete_standard_objects(test_db: Database):

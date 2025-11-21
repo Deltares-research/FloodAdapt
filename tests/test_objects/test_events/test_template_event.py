@@ -105,7 +105,7 @@ class TestHistoricalEvent:
         with open(path, "rb") as f:
             content = tomli.load(f)
 
-        loaded_event = HistoricalEvent.load_file(path)
+        loaded_event = HistoricalEvent.load_file(path, load_all=True)
         csv_forcings = [
             f for f in loaded_event.get_forcings() if f.source == ForcingSource.CSV
         ]
@@ -124,7 +124,7 @@ class TestHistoricalEvent:
         test_event.save(path)
         assert path.exists()
 
-        loaded_event = HistoricalEvent.load_file(path)
+        loaded_event = HistoricalEvent.load_file(path, load_all=True)
 
         csv_forcings = [
             f for f in loaded_event.get_forcings() if f.source == ForcingSource.CSV
