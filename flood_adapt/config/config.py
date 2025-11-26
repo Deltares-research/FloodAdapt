@@ -15,9 +15,6 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from flood_adapt.config.fiat import FIAT_VERSION
-from flood_adapt.config.sfincs import SFINCS_VERSION
-
 
 class Settings(BaseSettings):
     """
@@ -57,8 +54,12 @@ class Settings(BaseSettings):
         Whether to validate the existence of the paths to the SFINCS and FIAT binaries. Alias: `VALIDATE_BINARIES` (environment variable).
     sfincs_bin_path : Path
         The path to the SFINCS binary. Alias: `SFINCS_BIN_PATH` (environment variable).
+    sfincs_version : str
+        The expected version of the SFINCS binary. Alias: `SFINCS_VERSION` (environment variable).
     fiat_bin_path : Path
         The path to the FIAT binary. Alias: `FIAT_BIN_PATH` (environment variable).
+    fiat_version : str
+        The expected version of the FIAT binary. Alias: `FIAT_VERSION` (environment variable).
 
     Properties
     ----------
@@ -110,11 +111,23 @@ class Settings(BaseSettings):
         description="The path of the sfincs binary.",
         exclude=True,
     )
+    sfincs_version: Optional[str] = Field(
+        default="v2.2.1-alpha col d'Eze",
+        alias="SFINCS_VERSION",  # environment variable: SFINCS_VERSION
+        description="The expected version of the sfincs binary. If the version of the binary does not match this version, an error is raised.",
+        exclude=True,
+    )
 
     fiat_bin_path: Optional[Path] = Field(
         default=None,
         alias="FIAT_BIN_PATH",  # environment variable: FIAT_BIN_PATH
         description="The path of the fiat binary.",
+        exclude=True,
+    )
+    fiat_version: Optional[str] = Field(
+        default="0.2.1",
+        alias="FIAT_VERSION",  # environment variable: FIAT_VERSION
+        description="The expected version of the fiat binary. If the version of the binary does not match this version, an error is raised.",
         exclude=True,
     )
 
@@ -278,15 +291,15 @@ class Settings(BaseSettings):
     def check_binary_versions(self):
         """Check that the versions of the binaries in the config match those expected."""
         actual_sfincs_version = self.get_sfincs_version()
-        if SFINCS_VERSION != actual_sfincs_version:
+        if self.sfincs_version != actual_sfincs_version:
             raise ValueError(
-                f"Sfincs version mismatch: expected {SFINCS_VERSION}, got {actual_sfincs_version}."
+                f"Sfincs version mismatch: expected {self.sfincs_version}, got {actual_sfincs_version}."
             )
 
         actual_fiat_version = self.get_fiat_version()
-        if FIAT_VERSION != actual_fiat_version:
+        if self.fiat_version != actual_fiat_version:
             raise ValueError(
-                f"FIAT version mismatch: expected {FIAT_VERSION}, got {actual_fiat_version}."
+                f"FIAT version mismatch: expected {self.fiat_version}, got {actual_fiat_version}."
             )
 
     @staticmethod
