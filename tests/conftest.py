@@ -1,6 +1,7 @@
 import filecmp
 import logging
 import os
+import platform
 import shutil
 import tempfile
 from datetime import datetime
