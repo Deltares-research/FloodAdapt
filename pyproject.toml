@@ -114,7 +114,6 @@ flood-adapt = { path = "." }
 
 [tool.pixi.feature.editable.pypi-dependencies]
 flood-adapt = { path = ".", editable = true }
-hydromt-sfincs = { path = "../hydromt_sfincs", editable = true }
 
 [tool.pixi.environments]
 default = { features = ["dev", "docs", "editable"] }
