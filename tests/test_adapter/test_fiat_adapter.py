@@ -16,7 +16,7 @@ _FIAT_COLUMNS = get_fiat_columns()
 
 @pytest.mark.skipif(
     not IS_WINDOWS,
-    reason="Skipped on Linux due to broken sfincs binary",
+    reason="Only run on windows where we have a working sfincs binary",
 )
 class TestFiatAdapter:
     @pytest.fixture(scope="class")

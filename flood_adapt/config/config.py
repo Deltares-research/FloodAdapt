@@ -111,7 +111,7 @@ class Settings(BaseSettings):
         description="The path of the sfincs binary.",
         exclude=True,
     )
-    sfincs_version: Optional[str] = Field(
+    sfincs_version: str = Field(
         default="v2.2.1-alpha col d'Eze",
         alias="SFINCS_VERSION",  # environment variable: SFINCS_VERSION
         description="The expected version of the sfincs binary. If the version of the binary does not match this version, an error is raised.",
@@ -124,7 +124,7 @@ class Settings(BaseSettings):
         description="The path of the fiat binary.",
         exclude=True,
     )
-    fiat_version: Optional[str] = Field(
+    fiat_version: str = Field(
         default="0.2.1",
         alias="FIAT_VERSION",  # environment variable: FIAT_VERSION
         description="The expected version of the fiat binary. If the version of the binary does not match this version, an error is raised.",
@@ -221,8 +221,8 @@ class Settings(BaseSettings):
 
         Returns
         -------
-        Optional[str]
-            The version of the SFINCS binary, or None if the path is not set.
+        str
+            The version of the SFINCS binary
 
         Expected SFINCS output
         ----------------------
@@ -263,8 +263,8 @@ class Settings(BaseSettings):
 
         Returns
         -------
-        Optional[str]
-            The version of the FIAT binary, or None if the path is not set.
+        str
+            The version of the FIAT binary
 
         Expected FIAT output
         --------------------

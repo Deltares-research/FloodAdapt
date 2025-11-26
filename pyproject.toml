@@ -30,14 +30,12 @@ dependencies = [
     "cht-meteo          >=0.3.1,<1.0",
     "cht-observations   >=0.2.1,<1.0",
     "cht-tide           >=0.1.1,<1.0",
-    "dask               ==2024.11.2",   # not a dependency, but a we need to use this version
-    "numba_celltree     ==0.2.2",       # not a dependency, but a we need to use this version
     "fiat-toolbox       >=0.1.22,<0.2.0",
     "fiona              >=1.0,<2.0",
     "geojson            >=3.0,<4.0",
     "geopandas          >=1.0,<2.0",
     "hydromt-fiat       >=0.5.9,<1.0",
-    "hydromt-sfincs     >=1.2.0,<2.0",
+    "hydromt-sfincs     >=1.2.2,<2.0",
     "numpy              >=1.0,<2.0",
     "numpy-financial    >=1.0,<2.0",
     "pandas             >=2.0,<3.0",
@@ -116,6 +114,7 @@ flood-adapt = { path = "." }
 
 [tool.pixi.feature.editable.pypi-dependencies]
 flood-adapt = { path = ".", editable = true }
+hydromt-sfincs = { path = "../hydromt_sfincs", editable = true }
 
 [tool.pixi.environments]
 default = { features = ["dev", "docs", "editable"] }

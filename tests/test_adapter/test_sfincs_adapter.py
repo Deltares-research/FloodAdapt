@@ -1383,7 +1383,7 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
 
 @pytest.mark.skipif(
     not IS_WINDOWS,
-    reason="Skipped on Linux due to broken sfincs binary",
+    reason="Only run on windows where we have a working sfincs binary",
 )
 class TestPostProcessing:
     @pytest.fixture(scope="class")
