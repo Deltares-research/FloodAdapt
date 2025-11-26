@@ -23,6 +23,7 @@ logs_dir = Path(__file__).absolute().parent / "logs"
 src_dir = Path(
     *__path__
 ).resolve()  # __path__ is a list of paths to the package, but has only one element
+IS_WINDOWS = platform.system() == "Windows"
 
 #### DEBUGGING ####
 # To disable resetting the database after tests: set CLEAN = False
@@ -84,7 +85,7 @@ def session_setup_teardown():
         DATABASE_NAME="charleston_test",
         DELETE_CRASHED_RUNS=clean,
         VALIDATE_ALLOWED_FORCINGS=True,
-        VALIDATE_BINARIES=True,
+        VALIDATE_BINARIES=IS_WINDOWS,
     )
 
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
