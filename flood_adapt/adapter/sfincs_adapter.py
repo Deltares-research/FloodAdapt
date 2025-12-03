@@ -677,23 +677,20 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_obs_points(self):
         """Add observation points provided in the site toml to SFINCS model."""
-        if self.settings.obs_point is None:
-            return
-        logger.info("Adding observation points to the overland flood model")
-
         obs_points = self.settings.obs_point
-        names = []
-        lat = []
-        lon = []
-        for pt in obs_points:
-            names.append(pt.name)
-            lat.append(pt.lat)
-            lon.append(pt.lon)
+        if not obs_points:
+            return
 
-        # create GeoDataFrame from obs_points in site file
+        names = [pt.name for pt in obs_points]
+        lat = [pt.lat for pt in obs_points]
+        lon = [pt.lon for pt in obs_points]
+
+        logger.info("Adding observation points to the overland flood model")
         df = pd.DataFrame({"name": names})
         gdf = gpd.GeoDataFrame(
-            df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+            df,
+            geometry=gpd.points_from_xy(lon, lat),
+            crs="EPSG:4326",
         )
 
         # Add locations to SFINCS file
