@@ -93,12 +93,35 @@ class SfincsModel(BaseModel):
     river: Optional[list[RiverModel]] = None
     obs_point: Optional[list[ObsPointModel]] = None
 
+    @classmethod
+    def load_from_dict(cls, data: dict, base_dir: Path) -> "SfincsModel":
+        if "scs" in data:
+            data["scs"] = SCSModel.load_from_dict(data["scs"], base_dir.parent / "scs")
+        if "obs_points" in data:
+            data["obs_point"] = ObsPointModel.load_from_dict(
+                data["obs_points"], base_dir
+            )
+        if "dem" in data:
+            data["dem"] = DemModel.load_from_dict(data["dem"], base_dir.parent / "dem")
+        if "tide_gauge" in data:
+            data["tide_gauge"] = TideGauge.load_from_dict(data["tide_gauge"], base_dir)
+        if "cyclone_track_database" in data:
+            data["cyclone_track_database"] = CycloneTrackDatabaseModel.load_from_dict(
+                data["cyclone_track_database"],
+                base_dir.parent / "cyclone_track_database",
+            )
+        if "slr_scenarios" in data:
+            data["slr_scenarios"] = SlrScenariosModel.load_from_dict(
+                data["slr_scenarios"], base_dir.parent / "slr"
+            )
+
+        return SfincsModel(**data)
+
     @staticmethod
     def read_toml(path: Path) -> "SfincsModel":
         with open(path, mode="rb") as fp:
-            toml_contents = load_toml(fp)
-
-        return SfincsModel(**toml_contents)
+            data = load_toml(fp)
+        return SfincsModel.load_from_dict(data, path.parent)
 
     @model_validator(mode="after")
     def ensure_references_exist(self):

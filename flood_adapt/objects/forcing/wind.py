@@ -78,11 +78,11 @@ class WindTrack(IWind):
     source: ForcingSource = ForcingSource.TRACK
     track: CycloneTrackContainer
 
-    def save_additional(self, output_dir: Path) -> None:
-        self.track.write(output_dir)
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        self.track.write(output_dir=Path(output_dir))
 
-    def read(self, directory: Path | None = None) -> None:
-        self.track.read(directory)
+    def read(self, **kwargs) -> None:
+        self.track.read(**kwargs)
 
 
 class WindCSV(IWind):

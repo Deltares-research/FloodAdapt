@@ -117,11 +117,10 @@ class SocioEconomicChange(BaseModel):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.gdf is not None:
-            self.gdf.write(output_dir)
+            self.gdf.write(output_dir=Path(output_dir))
 
-    def read(self, directory: Path | None = None) -> None:
-        if self.gdf is not None:
-            self.gdf.read(directory)
+    def read(self, **kwargs) -> None:
+        self.gdf.read(**kwargs)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
@@ -159,10 +158,10 @@ class Projection(Object):
     socio_economic_change: SocioEconomicChange = SocioEconomicChange()
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        self.socio_economic_change.save_additional(output_dir)
+        self.socio_economic_change.save_additional(output_dir=output_dir)
 
-    def read(self, directory: Path | None = None) -> None:
-        self.socio_economic_change.read(directory)
+    def read(self, **kwargs) -> None:
+        self.socio_economic_change.read(**kwargs)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):

@@ -70,7 +70,7 @@ def update_database_static(database_path: Path):
     config_dir = database_path / "static" / "config"
     config_dir.mkdir(parents=True, exist_ok=True)
 
-    sfincs = create_sfincs_config()
+    sfincs = create_sfincs_config(database_path=database_path)
 
     site = create_site_config(database_path=database_path, sfincs=sfincs)
     site.save(config_dir / "site.toml")
@@ -186,7 +186,9 @@ def create_gui_config(database_path: Path) -> GuiModel:
         colors=["#FFFFFF", "#FEE9CE", "#FDBB84", "#FC844E", "#E03720", "#860000"],
         name="svi",
         long_name="Social Vulnerability Index",
-        path=str(database_path / "static" / "templates/fiat/svi/CDC_svi_2020.gpkg"),
+        path=(
+            database_path / "static" / "templates/fiat/svi/CDC_svi_2020.gpkg"
+        ).as_posix(),
         field_name="SVI",
         database_path=database_path,
     )
@@ -211,7 +213,7 @@ def create_gui_config(database_path: Path) -> GuiModel:
     return gui
 
 
-def create_sfincs_config() -> SfincsModel:
+def create_sfincs_config(database_path: Path) -> SfincsModel:
     waterlevel_reference = WaterlevelReferenceModel(
         reference="MLLW",
         datums=[
@@ -290,13 +292,27 @@ def create_sfincs_config() -> SfincsModel:
     sfincs = SfincsModel(
         config=config,
         water_level=waterlevel_reference,
-        slr_scenarios=SlrScenariosModel(relative_to_year=2020, file="slr/slr.csv"),
-        dem=DemModel(filename="charleston_14m.tif", units=us.UnitTypesLength.meters),
+        slr_scenarios=SlrScenariosModel(
+            relative_to_year=2020, file=(DATA_DIR / "slr.csv").as_posix()
+        ),
+        dem=DemModel(
+            filename=(
+                database_path / "static" / "dem" / "charleston_14m.tif"
+            ).as_posix(),
+            units=us.UnitTypesLength.meters,
+        ),
         scs=SCSModel(
             curves=DataFrameContainer(path=DATA_DIR / "scs_rainfall.csv"),
             type=Scstype.type3,
         ),
-        cyclone_track_database=CycloneTrackDatabaseModel(file="IBTrACS.NA.v04r00.nc"),
+        cyclone_track_database=CycloneTrackDatabaseModel(
+            file=(
+                database_path
+                / "static"
+                / "cyclone_track_database"
+                / "IBTrACS.NA.v04r00.nc"
+            ).as_posix()
+        ),
         tide_gauge=tide_gauge,
         river=rivers,
         obs_point=obs_points,
@@ -320,7 +336,7 @@ def create_site_config(
 ) -> Site:
     fiat = fiat or create_fiat_config()
     gui = gui or create_gui_config(database_path)
-    sfincs = sfincs or create_sfincs_config()
+    sfincs = sfincs or create_sfincs_config(database_path)
 
     config = Site(
         name="Charleston",

@@ -43,7 +43,7 @@ from flood_adapt.config.sfincs import (
     SfincsConfigModel,
     SfincsModel,
 )
-from flood_adapt.config.site import Site, SiteBuilder, StandardObjectModel
+from flood_adapt.config.site import Site, StandardObjectModel
 
 __all__ = [
     # GUI
@@ -87,6 +87,5 @@ __all__ = [
     "AsciiStr",
     # Site
     "Site",
-    "SiteBuilder",
     "StandardObjectModel",
 ]

@@ -207,11 +207,11 @@ class Measure(Object):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.gdf is not None:
-            self.gdf.write(Path(output_dir))
+            self.gdf.write(output_dir=Path(output_dir))
 
-    def read(self, directory: Path | None = None) -> None:
+    def read(self, **kwargs) -> None:
         if self.gdf is not None:
-            self.gdf.read(directory)
+            self.gdf.read(**kwargs)
 
     def __eq__(self, value):
         if not isinstance(value, self.__class__):

@@ -62,10 +62,10 @@ class RainfallTrack(IRainfall):
     track: CycloneTrackContainer
 
     def save_additional(self, output_dir: Path) -> None:
-        self.track.write(output_dir)
+        self.track.write(output_dir=Path(output_dir))
 
-    def read(self, directory: Path | None = None) -> None:
-        self.track.read(directory)
+    def read(self, **kwargs) -> None:
+        self.track.read(**kwargs)
 
 
 class RainfallCSV(IRainfall):

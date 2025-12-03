@@ -115,11 +115,9 @@ class Event(Object):
         for forcing in self.get_forcings():
             forcing.save_additional(output_dir)
 
-    def read(self, directory: Path | None = None) -> None:
-        if directory is None:
-            directory = Path.cwd()
+    def read(self, **kwargs) -> None:
         for forcing in self.get_forcings():
-            forcing.read(directory)
+            forcing.read(**kwargs)
 
     @staticmethod
     def _parse_forcing_from_dict(

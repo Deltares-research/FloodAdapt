@@ -7,6 +7,7 @@ import pandas as pd
 from noaa_coops.station import COOPSAPIError
 from pydantic import BaseModel, model_validator
 
+from flood_adapt.config.hazard import resolve_path
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.forcing.time_frame import TimeFrame
@@ -63,6 +64,12 @@ class TideGauge(BaseModel):
     )  # units of the water levels in the downloaded file
 
     _cached_data: ClassVar[dict[str, pd.DataFrame]] = {}
+
+    @classmethod
+    def load_from_dict(cls, data: dict, base_dir: Path) -> "TideGauge":
+        if "file" in data and data["file"] is not None:
+            data["file"] = resolve_path(data["file"], base_dir)
+        return cls(**data)
 
     @model_validator(mode="after")
     def validate_selection_type(self) -> "TideGauge":

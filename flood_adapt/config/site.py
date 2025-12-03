@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Literal, Union
+from typing import Union
 
 import tomli
 import tomli_w
@@ -96,7 +96,25 @@ class Site(BaseModel):
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> "Site":
         """Create Site from toml file."""
-        return SiteBuilder.load_file(Path(filepath))
+        with open(filepath, mode="rb") as fp:
+            toml_contents = tomli.load(fp)
+        toml_path = Path(filepath)
+
+        return Site(
+            name=toml_contents["name"],
+            description=toml_contents["description"],
+            lat=toml_contents["lat"],
+            lon=toml_contents["lon"],
+            sfincs=SfincsModel.read_toml(
+                toml_path.parent / toml_contents["components"]["sfincs"]
+            ),
+            fiat=FiatModel.read_toml(
+                toml_path.parent / toml_contents["components"]["fiat"]
+            ),
+            gui=GuiModel.read_toml(
+                toml_path.parent / toml_contents["components"]["gui"]
+            ),
+        )
 
     def add_river(self, river: RiverModel) -> None:
         """Add a river to the site sfincs model.
@@ -109,34 +127,3 @@ class Site(BaseModel):
         if self.sfincs.river is None:
             self.sfincs.river = []
         self.sfincs.river.append(river)
-
-
-class SiteBuilder(BaseModel):
-    """Pydantic model that reads the site configuration file and builds the site model.
-
-    Note that the components are not required, as the site may not have all of them.
-    Second, note that the components are assumed to be the file names of the component configs, located in the same directory as the site configuration file.
-    """
-
-    name: str
-    description: str = ""
-    lat: float
-    lon: float
-    components: dict[Literal["sfincs", "fiat", "gui"], str]
-
-    @staticmethod
-    def load_file(file_path: Path) -> "Site":
-        with open(file_path, "rb") as f:
-            model_dict = tomli.load(f)
-
-        toml_dir = file_path.parent
-        if (sfincs_config := model_dict["components"].get("sfincs")) is not None:
-            model_dict["sfincs"] = SfincsModel.read_toml(toml_dir / sfincs_config)
-
-        if (gui_config := model_dict["components"].get("gui")) is not None:
-            model_dict["gui"] = GuiModel.read_toml(toml_dir / gui_config)
-
-        if (fiat_config := model_dict["components"].get("fiat")) is not None:
-            model_dict["fiat"] = FiatModel.read_toml(toml_dir / fiat_config)
-
-        return Site(**model_dict)

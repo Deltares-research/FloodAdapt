@@ -22,6 +22,20 @@ def ensure_ascii(s: str):
 AsciiStr = Annotated[str, AfterValidator(ensure_ascii)]
 
 
+def resolve_path(raw: Union[str, Path], base: Path) -> str:
+    """Resolve a path that may be absolute or relative to `base`.
+
+    Return posix string if file exists, otherwise raise FileNotFoundError.
+    """
+    rawp = Path(raw)
+    if rawp.is_absolute() and rawp.exists():
+        return rawp.as_posix()
+    candidate = base / rawp
+    if candidate.exists():
+        return candidate.as_posix()
+    raise FileNotFoundError(f"File not found: {raw}")
+
+
 class Cstype(str, Enum):
     """The accepted input for the variable cstype in Site."""
 
@@ -51,6 +65,12 @@ class SCSModel(BaseModel):
 
     curves: DataFrameContainer
     type: Scstype
+
+    @classmethod
+    def load_from_dict(cls, data: dict, base_dir: Path) -> "SCSModel":
+        if "path" in data["curves"]:
+            data["curves"]["path"] = resolve_path(data["curves"]["path"], base_dir)
+        return cls(**data)
 
 
 class RiverModel(BaseModel):
@@ -103,6 +123,12 @@ class ObsPointModel(BaseModel):
     lat: float
     lon: float
 
+    @classmethod
+    def load_from_dict(cls, data: dict, base_dir: Path) -> "ObsPointModel":
+        if "file" in data:
+            data["file"] = resolve_path(data["file"], base_dir)
+        return cls(**data)
+
 
 class FloodFrequencyModel(BaseModel):
     """The accepted input for the variable flood_frequency in Site."""
@@ -123,6 +149,11 @@ class DemModel(BaseModel):
 
     filename: str
     units: us.UnitTypesLength
+
+    @classmethod
+    def load_from_dict(cls, data: dict, base_dir: Path) -> "DemModel":
+        data["filename"] = resolve_path(data["filename"], base_dir)
+        return cls(**data)
 
 
 class DatumModel(BaseModel):
@@ -196,6 +227,11 @@ class CycloneTrackDatabaseModel(BaseModel):
 
     file: str
 
+    @classmethod
+    def load_from_dict(cls, data: dict, base_dir: Path) -> "CycloneTrackDatabaseModel":
+        data["file"] = resolve_path(data["file"], base_dir)
+        return cls(**data)
+
 
 class SlrScenariosModel(BaseModel):
     """The accepted input for the variable slr_scenarios.
@@ -210,6 +246,11 @@ class SlrScenariosModel(BaseModel):
 
     file: str
     relative_to_year: int
+
+    @classmethod
+    def load_from_dict(cls, data: dict, base_dir: Path) -> "SlrScenariosModel":
+        data["file"] = resolve_path(data["file"], base_dir)
+        return cls(**data)
 
     def interp_slr(
         self,

@@ -36,7 +36,10 @@ class Object(BaseModel):
 
     @classmethod
     def load_file(
-        cls: type[T], file_path: Path | str | os.PathLike, load_all: bool = False
+        cls: type[T],
+        file_path: Path | str | os.PathLike,
+        load_all: bool = False,
+        **kwargs,
     ) -> T:
         """Load object from file.
 
@@ -50,18 +53,18 @@ class Object(BaseModel):
             toml = tomli.load(fp)
         obj = cls.model_validate(toml)
         if load_all:
-            obj.read(Path(file_path).parent)
+            obj.read(**kwargs)
         return obj
 
-    def read(self, directory: Path | None = None) -> None:
+    def read(self, **kwargs) -> None:
         """Read additional files from disk.
 
         If any attributes reference external files, read them from disk and update the attributes accordingly.
 
         Parameters
         ----------
-        directory : Path | None
-            Directory to read additional files from. If None, uses current working directory.
+        **kwargs : dict
+            Additional keyword arguments to pass to the read methods of any attributes that need to read from disk.
 
         This method should be overridden if the object has additional files.
         """

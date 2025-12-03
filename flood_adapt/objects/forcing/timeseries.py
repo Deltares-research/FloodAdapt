@@ -237,7 +237,7 @@ class ScsTimeseries(SyntheticTimeseries):
         _duration = self.duration.convert(us.UnitTypesTime.seconds)
         _start_time = self.start_time.convert(us.UnitTypesTime.seconds)
 
-        self.curves.read(open_kwargs={"index_col": 0})
+        self.curves.read(index_col=0)
         scs_df = self.curves.data[self.scs_type]
 
         tt = pd.date_range(
