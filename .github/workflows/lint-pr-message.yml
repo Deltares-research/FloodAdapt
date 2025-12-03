@@ -18,8 +18,8 @@ jobs:
           cargo install commitlint-rs
       - name: Lint message
         env:
-            PR_NUMBER: ${{ github.event.number }}
-            GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-            gh pr view $PR_NUMBER --json title,body --jq ".title,.body" > lint-message.txt
-            commitlint --edit lint-message.txt
+          gh pr view $PR_NUMBER --json title,body --jq ".title,.body" > lint-message.txt
+          commitlint --edit lint-message.txt
