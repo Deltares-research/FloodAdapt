@@ -1,4 +1,5 @@
 import os
+import subprocess
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -18,6 +19,37 @@ DEFAULT_EXE_PATHS: dict[str, dict[str, Path]] = {
         "fiat": Path("linux-64/fiat/fiat"),
     },
 }
+
+
+@pytest.fixture
+def mock_subprocess_run(monkeypatch):
+    expected_sfincs_output = (
+        "------------ Welcome to SFINCS ------------\n"
+        "\n"
+        "Build-Revision: $Rev: v2.2.1-alpha col d'Eze\n"
+        "Build-Date: $Date: 2025-06-02\n"
+    )
+    expected_fiat_output = "FIAT 0.2.1, build 2025-02-24T16:19:19 UTC+0100\n"
+
+    def _mocker(
+        sfincs_output: str = expected_sfincs_output,
+        fiat_output: str = expected_fiat_output,
+    ):
+        class FakeResult:
+            def __init__(self, out):
+                self.stdout = out
+
+        def fake_run(cmd, *args, **kwargs):
+            exe_name_no_suffix = Path(cmd[0]).stem
+            if exe_name_no_suffix == "sfincs":
+                return FakeResult(sfincs_output)
+            if exe_name_no_suffix == "fiat":
+                return FakeResult(fiat_output)
+            raise RuntimeError(f"Unexpected subprocess call: {cmd}")
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+
+    return _mocker
 
 
 class TestSettingsModel:
@@ -355,3 +387,150 @@ class TestSettingsModel:
             assert os.getenv("DELETE_CRASHED_RUNS")
             assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert os.getenv("VALIDATE_BINARIES")
+
+    @pytest.fixture
+    def fake_sfincs_exe(self, tmp_path: Path) -> Path:
+        exe_path = tmp_path / "sfincs.exe"
+        exe_path.touch()
+        return exe_path
+
+    @pytest.fixture
+    def fake_fiat_exe(self, tmp_path: Path) -> Path:
+        exe_path = tmp_path / "fiat.exe"
+        exe_path.touch()
+        return exe_path
+
+    def test_get_sfincs_version_success(
+        self,
+        create_dummy_db,
+        fake_sfincs_exe,
+        fake_fiat_exe,
+        mock_subprocess_run,
+    ):
+        # Arrange
+        db_root, name = create_dummy_db()
+        mock_subprocess_run()
+
+        settings = Settings(
+            DATABASE_ROOT=db_root,
+            DATABASE_NAME=name,
+            SFINCS_BIN_PATH=fake_sfincs_exe,
+            FIAT_BIN_PATH=fake_fiat_exe,
+            VALIDATE_BINARIES=True,
+            SFINCS_VERSION="v2.2.1-alpha col d'Eze",
+            FIAT_VERSION="0.2.1",
+        )
+
+        # Act
+        version = settings.get_sfincs_version()
+
+        # Assert
+        assert version == "v2.2.1-alpha col d'Eze"
+
+    def test_get_sfincs_version_no_match(
+        self,
+        create_dummy_db,
+        mock_subprocess_run,
+    ):
+        # Arrange
+        db_root, name = create_dummy_db()
+        mock_subprocess_run(
+            sfincs_output=("some unrelated output\nnothing to match here")
+        )
+
+        settings = Settings(
+            DATABASE_ROOT=db_root,
+            DATABASE_NAME=name,
+            VALIDATE_BINARIES=False,
+            SFINCS_VERSION="v2.2.1-alpha col d'Eze",
+        )
+        with pytest.raises(ValueError, match="Version not found"):
+            settings.get_sfincs_version()
+
+    def test_get_sfincs_version_no_path(self, create_dummy_db):
+        db_root, name = create_dummy_db()
+        settings = Settings(
+            DATABASE_ROOT=db_root,
+            DATABASE_NAME=name,
+            SFINCS_BIN_PATH=None,
+            VALIDATE_BINARIES=False,
+        )
+
+        with pytest.raises(ValueError, match="SFINCS binary path is not set"):
+            settings.get_sfincs_version()
+
+    def test_settings_init_raises_on_incorrect_version(
+        self,
+        create_dummy_db,
+        mock_subprocess_run,
+        fake_sfincs_exe,
+        fake_fiat_exe,
+    ):
+        root, name = create_dummy_db()
+        mock_subprocess_run()
+
+        with pytest.raises(
+            ValueError,
+            match="Sfincs version mismatch: expected v2.2.10-something, got v2.2.1-alpha col d'Eze.",
+        ):
+            Settings(
+                DATABASE_ROOT=root,
+                DATABASE_NAME=name,
+                FIAT_BIN_PATH=fake_fiat_exe,
+                SFINCS_BIN_PATH=fake_sfincs_exe,
+                VALIDATE_BINARIES=True,
+                FIAT_VERSION="0.1.1",
+                SFINCS_VERSION="v2.2.10-something",  # incorrect version
+            )
+
+    def test_get_fiat_version_success(
+        self,
+        create_dummy_db,
+        mock_subprocess_run,
+        fake_sfincs_exe,
+        fake_fiat_exe,
+    ):
+        root, name = create_dummy_db()
+        mock_subprocess_run()
+        settings = Settings(
+            DATABASE_ROOT=root,
+            DATABASE_NAME=name,
+            SFINCS_BIN_PATH=fake_sfincs_exe,
+            FIAT_BIN_PATH=fake_fiat_exe,
+            VALIDATE_BINARIES=True,
+            FIAT_VERSION="0.2.1",
+            SFINCS_VERSION="v2.2.1-alpha col d'Eze",
+        )
+        version = settings.get_fiat_version()
+        assert version == "0.2.1"
+
+    def test_get_fiat_version_no_pattern(
+        self,
+        fake_fiat_exe: Path,
+        create_dummy_db,
+        mock_subprocess_run,
+    ):
+        mock_subprocess_run(fiat_output="something else\nno version here")
+        db_root, name = create_dummy_db()
+        settings = Settings(
+            FIAT_BIN_PATH=fake_fiat_exe,
+            DATABASE_ROOT=db_root,
+            DATABASE_NAME=name,
+            VALIDATE_BINARIES=False,
+        )
+
+        with pytest.raises(ValueError, match="Version not found"):
+            settings.get_fiat_version()
+
+    def test_get_fiat_version_no_path(self, create_dummy_db):
+        db_root, name = create_dummy_db()
+
+        settings = Settings(
+            DATABASE_ROOT=db_root,
+            DATABASE_NAME=name,
+            FIAT_BIN_PATH=None,
+            VALIDATE_BINARIES=False,
+        )
+
+        with pytest.raises(ValueError, match="FIAT binary path is not set"):
+            settings.get_fiat_version()
