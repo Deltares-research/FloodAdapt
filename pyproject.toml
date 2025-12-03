@@ -36,7 +36,7 @@ dependencies = [
     "fiona              >=1.0,<2.0",
     "geojson            >=3.0,<4.0",
     "geopandas          >=1.0,<2.0",
-    "hydromt-fiat       >=0.5.5,<1.0",
+    "hydromt-fiat       >=0.5.9,<1.0",
     "hydromt-sfincs     >=1.2.0,<2.0",
     "numpy              >=1.0,<2.0",
     "numpy-financial    >=1.0,<2.0",
@@ -103,19 +103,13 @@ addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-
 testpaths = ["tests"]
 
 ### pixi ###
-[tool.pixi.project]
+[tool.pixi.workspace]
 name = "flood-adapt"
 channels = ["conda-forge"]
 platforms = ["win-64", "linux-64"]
 
-[tool.pixi.feature.py312.dependencies]
+[tool.pixi.dependencies]
 python = "3.12.*"
-
-[tool.pixi.feature.py311.dependencies]
-python = "3.11.*"
-
-[tool.pixi.feature.py310.dependencies]
-python = "3.10.*"
 
 [tool.pixi.feature.build.pypi-dependencies]
 flood-adapt = { path = "." }
@@ -124,12 +118,8 @@ flood-adapt = { path = "." }
 flood-adapt = { path = ".", editable = true }
 
 [tool.pixi.environments]
-default = { features = ["py312", "dev", "docs", "editable"], solve-group = "py312" }
-build = { features = ["py312", "build"] }
-
-dev-py310 = { features = ["py310", "dev", "editable"], solve-group = "py310" }
-dev-py311 = { features = ["py311", "dev", "editable"], solve-group = "py311" }
-dev-py312 = { features = ["py312", "dev", "editable"], solve-group = "py312" }
+default = { features = ["dev", "docs", "editable"] }
+build = { features = ["build"] }
 
 [tool.pixi.feature.dev.tasks]
 update-test-db-static = { cmd = "python tests/data/create_test_static.py" }

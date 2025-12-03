@@ -290,9 +290,9 @@ class DbsStatic(IDbsStatic):
             raise ConfigError(
                 "No cyclone track database defined in the site configuration."
             )
-        database_file = str(
+        database_file = (
             self._database.static_path
             / "cyclone_track_database"
             / self._database.site.sfincs.cyclone_track_database.file
-        )
+        ).as_posix()
         return CycloneTrackDatabase("ibtracs", file_name=database_file)

@@ -161,7 +161,7 @@ def plot_discharge(
     if output_loc.exists():
         output_loc.unlink()
     fig.write_html(output_loc)
-    return str(output_loc), None
+    return output_loc.as_posix(), None
 
 
 def plot_waterlevel(
@@ -278,7 +278,7 @@ def plot_waterlevel(
     if output_loc.exists():
         output_loc.unlink()
     fig.write_html(output_loc)
-    return str(output_loc), None
+    return output_loc.as_posix(), None
 
 
 def plot_rainfall(
@@ -351,7 +351,7 @@ def plot_rainfall(
     if output_loc.exists():
         output_loc.unlink()
     fig.write_html(output_loc)
-    return str(output_loc), None
+    return output_loc.as_posix(), None
 
 
 def plot_wind(
@@ -423,4 +423,4 @@ def plot_wind(
     if output_loc.exists():
         output_loc.unlink()
     fig.write_html(output_loc)
-    return str(output_loc), None
+    return output_loc.as_posix(), None

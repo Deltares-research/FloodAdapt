@@ -121,7 +121,7 @@ class SfincsAdapter(IHazardAdapter):
         self.settings = self.database.site.sfincs
         self.units = self.database.site.gui.units
         self._model = HydromtSfincsModel(
-            root=str(model_root.resolve()),
+            root=model_root.resolve().as_posix(),
             mode="r",
             logger=self._setup_sfincs_logger(model_root),
         )
@@ -130,7 +130,7 @@ class SfincsAdapter(IHazardAdapter):
     def read(self, path: Path):
         """Read the sfincs model from the current model root."""
         if Path(self._model.root).resolve() != Path(path).resolve():
-            self._model.set_root(root=str(path), mode="r")
+            self._model.set_root(root=path.as_posix(), mode="r")
         self._model.read()
 
     def write(self, path_out: Union[str, os.PathLike], overwrite: bool = True):
@@ -147,7 +147,7 @@ class SfincsAdapter(IHazardAdapter):
 
         write_mode = "w+" if overwrite else "w"
         with cd(path_out):
-            self._model.set_root(root=str(path_out), mode=write_mode)
+            self._model.set_root(root=path_out.as_posix(), mode=write_mode)
             self._model.write()
 
     def close_files(self):
@@ -190,10 +190,16 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
+        sfincs_bin = Settings().sfincs_bin_path
+        if not sfincs_bin or not sfincs_bin.exists():
+            raise FileNotFoundError(
+                f"SFINCS binary not found at {sfincs_bin}. Please check your settings."
+            )
+
         with cd(path):
             logger.info(f"Running SFINCS in {path}")
             process = subprocess.run(
-                str(Settings().sfincs_bin_path),
+                sfincs_bin.as_posix(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -563,7 +569,7 @@ class SfincsAdapter(IHazardAdapter):
                 zsmax=floodmap_conversion * zsmax,
                 dep=dem_conversion * dem,
                 hmin=0.01,
-                floodmap_fn=str(floodmap_fn),
+                floodmap_fn=floodmap_fn.as_posix(),
             )
 
     def write_water_level_map(
@@ -671,23 +677,20 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_obs_points(self):
         """Add observation points provided in the site toml to SFINCS model."""
-        if self.settings.obs_point is None:
-            return
-        logger.info("Adding observation points to the overland flood model")
-
         obs_points = self.settings.obs_point
-        names = []
-        lat = []
-        lon = []
-        for pt in obs_points:
-            names.append(pt.name)
-            lat.append(pt.lat)
-            lon.append(pt.lon)
+        if not obs_points:
+            return
 
-        # create GeoDataFrame from obs_points in site file
+        names = [pt.name for pt in obs_points]
+        lat = [pt.lat for pt in obs_points]
+        lon = [pt.lon for pt in obs_points]
+
+        logger.info("Adding observation points to the overland flood model")
         df = pd.DataFrame({"name": names})
         gdf = gpd.GeoDataFrame(
-            df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+            df,
+            geometry=gpd.points_from_xy(lon, lat),
+            crs="EPSG:4326",
         )
 
         # Add locations to SFINCS file
@@ -803,7 +806,7 @@ class SfincsAdapter(IHazardAdapter):
                     zsmax=floodmap_conversion * zsmax,
                     dep=dem_conversion * dem,
                     hmin=0.01,
-                    floodmap_fn=str(floodmap_fn),
+                    floodmap_fn=floodmap_fn.as_posix(),
                 )
 
     ######################################
@@ -1304,10 +1307,14 @@ class SfincsAdapter(IHazardAdapter):
             )
             return
 
-        logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
-
-        time_frame = self.get_model_time()
         model_rivers = self._read_river_locations()
+        if model_rivers.empty:
+            logger.warning(
+                "Cannot add discharge forcing: No rivers defined in the sfincs model."
+            )
+            return
+        logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
+        time_frame = self.get_model_time()
 
         # Check that the river is defined in the model and that the coordinates match
         river_loc = shapely.Point(
@@ -1626,7 +1633,7 @@ class SfincsAdapter(IHazardAdapter):
 
         # Initialize the tropical cyclone
         tc = TropicalCyclone()
-        tc.read_track(filename=str(track_forcing.path), fmt="ddb_cyc")
+        tc.read_track(filename=track_forcing.path.as_posix(), fmt="ddb_cyc")
 
         # Alter the track of the tc if necessary
         tc = self._translate_tc_track(
@@ -1705,17 +1712,22 @@ class SfincsAdapter(IHazardAdapter):
 
     def _read_river_locations(self) -> gpd.GeoDataFrame:
         path = self.get_model_root() / "sfincs.src"
-
-        with open(path) as f:
-            lines = f.readlines()
+        lines = []
+        if path.exists():
+            with open(path) as f:
+                lines = f.readlines()
         coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
         points = [shapely.Point(coord) for coord in coords]
 
         return gpd.GeoDataFrame({"geometry": points}, crs=self._model.crs)
 
     def _read_waterlevel_boundary_locations(self) -> gpd.GeoDataFrame:
-        with open(self.get_model_root() / "sfincs.bnd") as f:
-            lines = f.readlines()
+        path = self.get_model_root() / "sfincs.bnd"
+        lines = []
+        if path.exists():
+            with open(path) as f:
+                lines = f.readlines()
+
         coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
         points = [shapely.Point(coord) for coord in coords]
 
