@@ -7,6 +7,7 @@ from flood_adapt.database_builder.database_builder import (
     ConfigModel,
     FootprintsOptions,
     GuiConfigModel,
+    ObsPointModel,
     SpatialJoinModel,
     SviConfigModel,
     TideGaugeConfigModel,
@@ -45,4 +46,5 @@ __all__ = [
     "ImpactCategoriesModel",
     "FloodModel",
     "SlrScenariosModel",
+    "ObsPointModel",
 ]
