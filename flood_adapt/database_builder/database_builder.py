@@ -493,9 +493,10 @@ class ConfigModel(BaseModel):
         config_dict["sfincs_overland"]["name"] = make_relative(
             config_dict["sfincs_overland"]["name"], toml_path
         )
-        config_dict["dem"]["filename"] = make_relative(
-            config_dict["dem"]["filename"], toml_path
-        )
+        if self.dem:
+            config_dict["dem"]["filename"] = make_relative(
+                config_dict["dem"]["filename"], toml_path
+            )
         if config_dict.get("sfincs_offshore"):
             config_dict["sfincs_offshore"]["name"] = make_relative(
                 config_dict["sfincs_offshore"]["name"], toml_path
