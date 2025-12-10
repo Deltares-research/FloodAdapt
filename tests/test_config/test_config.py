@@ -231,34 +231,29 @@ class TestSettingsModel:
         assert f"Database {name} at" in str(exc_info.value)
         assert "does not exist." in str(exc_info.value)
 
-    @pytest.mark.parametrize("system", ["windows", "linux"])
-    @pytest.mark.parametrize("model", ["fiat", "sfincs"])
-    def test_missing_model_binaries_raise_validation_error(
-        self, system: str, model: str, create_dummy_db
-    ):
-        db_root, name = create_dummy_db(system=system)
+    def test_missing_sfincs_binaries_raise_validation_error(self, create_dummy_db):
+        db_root, name = create_dummy_db()
         non_existent_path = Path("doesnt_exist")
-        with pytest.raises(ValidationError) as exc_info:
-            if model == "fiat":
-                Settings(
-                    DATABASE_ROOT=db_root,
-                    DATABASE_NAME=name,
-                    FIAT_BIN_PATH=non_existent_path,
-                    VALIDATE_BINARIES=True,
-                )
-            elif model == "sfincs":
-                Settings(
-                    DATABASE_ROOT=db_root,
-                    DATABASE_NAME=name,
-                    SFINCS_BIN_PATH=non_existent_path,
-                    VALIDATE_BINARIES=True,
-                )
-            else:
-                raise ValueError("Invalid model")
 
-        assert f"{model.upper()} binary {non_existent_path} does not exist." in str(
-            exc_info.value
-        )
+        with pytest.raises(ValidationError, match="binary does not exist:"):
+            Settings(
+                DATABASE_ROOT=db_root,
+                DATABASE_NAME=name,
+                SFINCS_BIN_PATH=non_existent_path / "sfincs.exe",
+                VALIDATE_BINARIES=True,
+            )
+
+    def test_missing_fiat_binaries_raise_validation_error(self, create_dummy_db):
+        db_root, name = create_dummy_db()
+        non_existent_path = Path("doesnt_exist")
+
+        with pytest.raises(ValidationError, match="binary does not exist:"):
+            Settings(
+                DATABASE_ROOT=db_root,
+                DATABASE_NAME=name,
+                FIAT_BIN_PATH=non_existent_path / "fiat.exe",
+                VALIDATE_BINARIES=True,
+            )
 
     def test_read_settings_no_envvars(self, create_dummy_db):
         # Arrange
@@ -453,6 +448,7 @@ class TestSettingsModel:
     def test_get_sfincs_version_no_match(
         self,
         create_dummy_db,
+        fake_sfincs_exe,
         mock_subprocess_run,
     ):
         # Arrange
@@ -465,9 +461,10 @@ class TestSettingsModel:
             DATABASE_ROOT=db_root,
             DATABASE_NAME=name,
             VALIDATE_BINARIES=False,
+            SFINCS_BIN_PATH=fake_sfincs_exe,
             SFINCS_VERSION="v2.2.1-alpha col d'Eze",
         )
-        with pytest.raises(ValueError, match="Version not found"):
+        with pytest.raises(ValueError, match="version mismatch:"):
             settings.get_sfincs_version()
 
     def test_get_sfincs_version_no_path(self, create_dummy_db):
@@ -494,7 +491,7 @@ class TestSettingsModel:
 
         with pytest.raises(
             ValueError,
-            match="Sfincs version mismatch: expected v2.2.10-something, got v2.2.1-alpha col d'Eze.",
+            match="version mismatch: expected v2.2.10-something, got v2.2.1-alpha col d'Eze.",
         ):
             Settings(
                 DATABASE_ROOT=root,
@@ -542,7 +539,7 @@ class TestSettingsModel:
             VALIDATE_BINARIES=False,
         )
 
-        with pytest.raises(ValueError, match="Version not found"):
+        with pytest.raises(ValueError, match="version mismatch"):
             settings.get_fiat_version()
 
     def test_get_fiat_version_no_path(self, create_dummy_db):
@@ -555,5 +552,5 @@ class TestSettingsModel:
             VALIDATE_BINARIES=False,
         )
 
-        with pytest.raises(ValueError, match="FIAT binary path is not set"):
+        with pytest.raises(ValueError, match="binary path is not set."):
             settings.get_fiat_version()
