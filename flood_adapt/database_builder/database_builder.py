@@ -17,12 +17,14 @@ import numpy as np
 import pandas as pd
 import rioxarray as rxr
 import tomli
+import tomli_w
 import xarray as xr
 from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from pydantic import BaseModel, Field
 from shapely import MultiLineString, MultiPolygon, Polygon
+from shapely.ops import nearest_points
 
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.config.fiat import (
@@ -131,6 +133,31 @@ def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
         else:
             raise ValueError(f"Value '{path}' should be an absolute path.")
     return path.as_posix()
+
+
+def make_relative(str_path: str | Path, toml_path: Path) -> str:
+    """Make a path relative to the config file path.
+
+    Parameters
+    ----------
+    str_path : str | Path
+        The path to be made relative.
+    toml_path : Path
+        The path to the config file.
+
+    Returns
+    -------
+    str
+        The relative path as a string.
+    """
+    path = Path(str_path)
+    if not path.is_absolute():
+        return path.as_posix()
+    try:
+        relative_path = path.relative_to(toml_path.parent)
+        return relative_path.as_posix()
+    except ValueError:
+        return path.as_posix()
 
 
 class SpatialJoinModel(BaseModel):
@@ -421,6 +448,8 @@ class ConfigModel(BaseModel):
         config.database_path = path_check(config.database_path, toml_path)
         config.fiat = path_check(config.fiat, toml_path)
         config.sfincs_overland.name = path_check(config.sfincs_overland.name, toml_path)
+        if config.dem:
+            config.dem.filename = path_check(config.dem.filename, toml_path)
         if config.sfincs_offshore:
             config.sfincs_offshore.name = path_check(
                 config.sfincs_offshore.name, toml_path
@@ -444,6 +473,67 @@ class ConfigModel(BaseModel):
                 aggr.file = path_check(aggr.file, toml_path)
 
         return config
+
+    def write(self, toml_path: Path) -> None:
+        """
+        Write the configuration model to a TOML file.
+
+        Parameters
+        ----------
+        toml_path : Path
+            The path to the TOML file where the configuration will be saved.
+        """
+        config_dict = self.model_dump(exclude_none=True)
+
+        # Make paths relative to the config file
+        config_dict["database_path"] = make_relative(
+            config_dict["database_path"], toml_path
+        )
+        config_dict["fiat"] = make_relative(config_dict["fiat"], toml_path)
+        config_dict["sfincs_overland"]["name"] = make_relative(
+            config_dict["sfincs_overland"]["name"], toml_path
+        )
+        if self.dem:
+            config_dict["dem"]["filename"] = make_relative(
+                config_dict["dem"]["filename"], toml_path
+            )
+        if config_dict.get("sfincs_offshore"):
+            config_dict["sfincs_offshore"]["name"] = make_relative(
+                config_dict["sfincs_offshore"]["name"], toml_path
+            )
+        if isinstance(self.building_footprints, SpatialJoinModel):
+            config_dict["building_footprints"]["file"] = make_relative(
+                config_dict["building_footprints"]["file"], toml_path
+            )
+        if self.tide_gauge and self.tide_gauge.file:
+            config_dict["tide_gauge"]["file"] = make_relative(
+                config_dict["tide_gauge"]["file"], toml_path
+            )
+        if self.svi:
+            config_dict["svi"]["file"] = make_relative(
+                config_dict["svi"]["file"], toml_path
+            )
+        if self.bfe:
+            config_dict["bfe"]["file"] = make_relative(
+                config_dict["bfe"]["file"], toml_path
+            )
+        if self.slr_scenarios:
+            config_dict["slr_scenarios"]["file"] = make_relative(
+                config_dict["slr_scenarios"]["file"], toml_path
+            )
+
+        if config_dict.get("probabilistic_set"):
+            config_dict["probabilistic_set"] = make_relative(
+                config_dict["probabilistic_set"], toml_path
+            )
+
+        if config_dict.get("aggregation_areas"):
+            for ag in config_dict["aggregation_areas"]:
+                ag["file"] = make_relative(ag["file"], toml_path)
+
+        toml_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(toml_path, mode="wb") as fp:
+            tomli_w.dump(config_dict, fp)
 
 
 class DatabaseBuilder:
@@ -472,15 +562,16 @@ class DatabaseBuilder:
     @debug_timer
     def build(self, overwrite: bool = False) -> None:
         # Check if database already exists
-        if self.root.exists() and not overwrite:
-            raise ValueError(
-                f"There is already a Database folder in '{self.root.as_posix()}'."
-            )
-        if self.root.exists() and overwrite:
-            shutil.rmtree(self.root)
-            warnings.warn(
-                f"There is already a Database folder in '{self.root.as_posix()}, which will be overwritten'."
-            )
+        if self.root.exists():
+            if overwrite:
+                shutil.rmtree(self.root)
+                warnings.warn(
+                    f"There is already a Database folder in '{self.root.as_posix()}, which will be overwritten'."
+                )
+            else:
+                raise ValueError(
+                    f"There is already a Database folder in '{self.root.as_posix()}'."
+                )
         # Create database folder
         self.root.mkdir(parents=True)
 
@@ -823,7 +914,7 @@ class DatabaseBuilder:
         exposure[_FIAT_COLUMNS.ground_elevation] = exposure["elev"]
         del exposure["elev"]
 
-        self.fiat_model.exposure.exposure_db = exposure
+        self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(exposure)
 
     def read_damage_unit(self) -> str:
         if self.fiat_model.exposure.damage_unit is None:
@@ -1087,7 +1178,9 @@ class DatabaseBuilder:
                 exposure_csv = exposure_csv.merge(
                     gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
                 )
-                self.fiat_model.exposure.exposure_db = exposure_csv
+                self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                    exposure_csv
+                )
                 # Update spatial joins in FIAT model
                 if self.fiat_model.spatial_joins["aggregation_areas"] is None:
                     self.fiat_model.spatial_joins["aggregation_areas"] = []
@@ -1149,7 +1242,9 @@ class DatabaseBuilder:
             exposure_csv = exposure_csv.merge(
                 gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
-            self.fiat_model.exposure.exposure_db = exposure_csv
+            self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                exposure_csv
+            )
             logger.warning(
                 "No aggregation areas were available in the FIAT model and none were provided in the config file. The region file will be used as a mock aggregation area."
             )
@@ -1180,7 +1275,9 @@ class DatabaseBuilder:
             exposure_csv = exposure_csv.merge(
                 buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
-            self.fiat_model.exposure.exposure_db = exposure_csv
+            self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                exposure_csv
+            )
 
             # Save the spatial file for future use
             svi_path = self.static_path / "templates" / "fiat" / "svi" / "svi.gpkg"
@@ -1199,8 +1296,15 @@ class DatabaseBuilder:
                 "'SVI' column present in the FIAT exposure csv. Vulnerability type infometrics can be produced."
             )
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
+            if add_attrs is None:
+                logger.warning(
+                    "'SVI' column present in the FIAT exposure csv, but no spatial join found with the SVI map."
+                )
+                return None
+
             if "SVI" not in [attr["name"] for attr in add_attrs]:
                 logger.warning("No SVI map found to display in the FloodAdapt GUI!")
+                return None
 
             ind = [attr["name"] for attr in add_attrs].index("SVI")
             svi = add_attrs[ind]
@@ -1407,19 +1511,40 @@ class DatabaseBuilder:
             logger.info("Observation points were provided in the config file.")
             obs_points = self.config.obs_point
 
+        model_region = self.sfincs_overland_model.region.union_all()
+
         if self.tide_gauge is not None:
-            logger.info(
-                "A tide gauge has been setup in the database. It will be used as an observation point as well."
-            )
-            obs_points.append(
-                ObsPointModel(
-                    name=self.tide_gauge.name,
-                    description="Tide gauge observation point",
-                    ID=self.tide_gauge.ID,
-                    lon=self.tide_gauge.lon,
-                    lat=self.tide_gauge.lat,
+            # Check if tide gauge is within model domain
+            coord = (
+                gpd.GeoSeries(
+                    gpd.points_from_xy(
+                        x=[self.tide_gauge.lon], y=[self.tide_gauge.lat]
+                    ),
+                    crs="EPSG:4326",
                 )
+                .to_crs(self.sfincs_overland_model.crs)
+                .iloc[0]
             )
+            # Add tide gauge as obs point if within model region
+            if coord.within(model_region):
+                obs_points.append(
+                    ObsPointModel(
+                        name=self.tide_gauge.name,
+                        description="Tide gauge observation point",
+                        ID=self.tide_gauge.ID,
+                        lon=self.tide_gauge.lon,
+                        lat=self.tide_gauge.lat,
+                    )
+                )
+            else:
+                boundary = model_region.boundary
+                snapped = nearest_points(coord, boundary)[1]
+                distance = us.UnitfulLength(
+                    value=coord.distance(snapped), units=us.UnitTypesLength.meters
+                )
+                logger.warning(
+                    f"Tide gauge lies outside the model domain by {distance}. It will not be used as an observation point in FloodAdapt."
+                )
 
         if not obs_points:
             logger.warning(
@@ -1427,20 +1552,25 @@ class DatabaseBuilder:
             )
             return None
 
+        # Check if all obs points are within model domain
         lon = [p.lon for p in obs_points]
         lat = [p.lat for p in obs_points]
         names = [p.name for p in obs_points]
         coords = gpd.GeoDataFrame(
-            {"names": names},
+            {"name": names},
             geometry=gpd.points_from_xy(lon, lat),
             crs="EPSG:4326",
         )
         coords = coords.to_crs(self.sfincs_overland_model.crs)
-        model_region = self.sfincs_overland_model.region.union_all()
         valid_coords = coords.within(model_region)
         if not valid_coords.all():
             invalid = coords.loc[~valid_coords, "name"].tolist()
-            raise ValueError(f"Observation points outside model domain: {invalid}")
+            lat = coords.loc[~valid_coords].geometry.y.tolist()
+            lon = coords.loc[~valid_coords].geometry.x.tolist()
+            bounds = model_region.bounds
+            raise ValueError(
+                f"Observation points outside model domain: {invalid}, {lat=}, {lon=}, {bounds=}"
+            )
 
         return obs_points
 
@@ -1973,12 +2103,12 @@ class DatabaseBuilder:
 
         self.metrics = metrics
 
-    def _create_mandatory_metrics(self, metrics):
+    def _create_mandatory_metrics(self, metrics: Metrics):
         metrics.create_mandatory_metrics_event()
         if self._probabilistic_set_name is not None:
             metrics.create_mandatory_metrics_risk()
 
-    def _create_event_infographics(self, metrics):
+    def _create_event_infographics(self, metrics: Metrics):
         exposure_type = self._get_exposure_type()
         # If not specific infographic config is given, create a standard one
         if not self.config.event_infographics:
@@ -2010,7 +2140,7 @@ class DatabaseBuilder:
             )
         metrics.create_infographics_metrics_event(config=self.config.event_infographics)
 
-    def _create_risk_infographics(self, metrics):
+    def _create_risk_infographics(self, metrics: Metrics):
         exposure_type = self._get_exposure_type()
         # If not specific infographic config is given, create a standard one
         if not self.config.risk_infographics:
@@ -2027,17 +2157,17 @@ class DatabaseBuilder:
                 )
         metrics.create_infographics_metrics_risk(config=self.config.risk_infographics)
 
-    def _add_additional_event_metrics(self, metrics):
+    def _add_additional_event_metrics(self, metrics: Metrics):
         if self.config.event_additional_infometrics:
             for metric in self.config.event_additional_infometrics:
                 metrics.add_event_metric(metric)
 
-    def _add_additional_risk_metrics(self, metrics):
+    def _add_additional_risk_metrics(self, metrics: Metrics):
         if self.config.risk_additional_infometrics:
             for metric in self.config.risk_additional_infometrics:
                 metrics.add_risk_metric(metric)
 
-    def _write_infometrics(self, metrics, path_im, path_ig):
+    def _write_infometrics(self, metrics: Metrics, path_im: Path, path_ig: Path):
         if self._aggregation_areas is None:
             self._aggregation_areas = self.create_aggregation_areas()
         aggr_levels = [aggr.name for aggr in self._aggregation_areas]
@@ -2216,7 +2346,7 @@ class DatabaseBuilder:
 
         # Set model building footprints
         self.fiat_model.building_footprint = building_footprints
-        self.fiat_model.exposure.exposure_db = exposure_csv
+        self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(exposure_csv)
 
         # Save site attributes
         buildings_path = geo_path.relative_to(self.static_path)
@@ -2483,6 +2613,11 @@ class DatabaseBuilder:
         """
         # Make sure only csv objects have geometries
         for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
+            if _FIAT_COLUMNS.object_id not in geoms.columns:
+                logger.warning(
+                    f"Geometry '{self.fiat_model.exposure.geom_names[i]}' does not have an '{_FIAT_COLUMNS.object_id}' column and will be ignored."
+                )
+                continue
             keep = geoms[_FIAT_COLUMNS.object_id].isin(
                 self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.object_id]
             )
@@ -2522,6 +2657,35 @@ class DatabaseBuilder:
         ).reset_index(drop=True)
 
         return gdf
+
+    @staticmethod
+    def _clean_suffix_columns(df: pd.DataFrame) -> pd.DataFrame:
+        """Detect and resolves duplicate columns with _x/_y suffixes that appear after a pandas merge.
+
+        (e.g., 'Aggregation Label: Census Blockgroup_x' and 'Aggregation Label: Census Blockgroup_y').
+
+        Keeps the first non-null column of each pair and removes redundant ones.
+        """
+        cols = df.columns.tolist()
+        suffix_pairs = {}
+
+        for col in cols:
+            if col.endswith("_x"):
+                base = col[:-2]
+                if f"{base}_y" in df.columns:
+                    suffix_pairs[base] = (f"{base}_x", f"{base}_y")
+
+        for base, (col_x, col_y) in suffix_pairs.items():
+            # If both columns exist, prefer the one with more non-null values
+            x_notna = df[col_x].notna().sum()
+            y_notna = df[col_y].notna().sum()
+            keep_col = col_x if x_notna >= y_notna else col_y
+            df[base] = df[keep_col]
+
+            # Drop the old suffixed versions
+            df = df.drop(columns=[col_x, col_y])
+
+        return df
 
 
 def create_database(config: Union[str, Path, ConfigModel], overwrite=False) -> None:
