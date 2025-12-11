@@ -478,7 +478,7 @@ class TestValueUnitPair:
         vup = us.UnitfulLength(value=value, units=units)
         assert vup.value == float(value), f"Failed value: {vup}"
         assert vup.units == units, f"Failed units: {vup}"
-        assert str(vup) == f"{float(value)} {units.value}", f"Failed string: {vup}"
+        assert str(vup) == f"{float(value):.2f} {units.value}", f"Failed string: {vup}"
 
     TEST_EQUALITY_ENTRIES = [
         (1, us.UnitTypesLength.meters, 100, us.UnitTypesLength.centimeters, True),

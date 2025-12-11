@@ -1,11 +1,17 @@
+from flood_adapt.config import (
+    FloodModel,
+    SlrScenariosModel,
+)
 from flood_adapt.database_builder.database_builder import (
     Basins,
     ConfigModel,
     FootprintsOptions,
     GuiConfigModel,
+    ObsPointModel,
     SpatialJoinModel,
     SviConfigModel,
     TideGaugeConfigModel,
+    TideGaugeSource,
     UnitSystems,
     create_database,
 )
@@ -28,6 +34,7 @@ __all__ = [
     "SpatialJoinModel",
     "SviConfigModel",
     "TideGaugeConfigModel",
+    "TideGaugeSource",
     "UnitSystems",
     "create_database",
     "BuildingsInfographicModel",
@@ -37,4 +44,7 @@ __all__ = [
     "RiskInfographicModel",
     "RoadsInfographicModel",
     "ImpactCategoriesModel",
+    "FloodModel",
+    "SlrScenariosModel",
+    "ObsPointModel",
 ]

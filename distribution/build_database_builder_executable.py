@@ -71,6 +71,28 @@ def copy_shapely_libs():
                 shutil.copy2(src=file, dst=shapely_libs_dir)
 
 
+def get_tomli_binaries() -> list[tuple[str, str]]:
+    """
+    Python versions >3.10, this SHA256__mypyc.pyd file is not included by pyinstaller.
+
+    See https://github.com/hukkin/tomli/issues/255.
+
+    This doesnt solve it, but its a workaround to include the file in the hidden imports
+    """
+    import glob
+    import sysconfig
+
+    site_packages = sysconfig.get_paths()["purelib"]
+    pattern = os.path.join(site_packages, "*__mypyc.*")
+    files = [(f, ".") for f in glob.glob(pattern)]
+    if not files:
+        raise FileNotFoundError(
+            f"No __mypyc files found in site-packages at {site_packages}"
+        )
+    print(f"Found __mypyc files: {files}")
+    return files
+
+
 def run_pyinstaller() -> None:
     command = [
         str(ENTRY_POINT),
@@ -85,6 +107,9 @@ def run_pyinstaller() -> None:
     for dep in DEPENDENCIES:
         command.append(f"--collect-all={dep}")
         command.append(f"--recursive-copy-metadata={dep}")
+
+    for binary, dest in get_tomli_binaries():
+        command.append(f"--add-binary={binary}:{dest}")
 
     command.append(f"--paths={SITE_PACKAGES_PATH}")
     templates_path = ENTRY_POINT.parent / "templates"
