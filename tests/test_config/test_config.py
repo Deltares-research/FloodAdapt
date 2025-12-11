@@ -365,12 +365,20 @@ class TestSettingsModel:
             assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
             assert not os.getenv("VALIDATE_BINARIES")
 
-    def test_create_settings_with_persistent_booleans_true(self):
+    def test_create_settings_with_persistent_booleans_true(
+        self,
+        mock_subprocess_run: Callable[..., None],
+        fake_sfincs_exe: Path,
+        fake_fiat_exe: Path,
+    ):
         with modified_environ():
+            mock_subprocess_run()
             settings = Settings(
                 DELETE_CRASHED_RUNS=True,
                 VALIDATE_ALLOWED_FORCINGS=True,
                 VALIDATE_BINARIES=True,
+                SFINCS_BIN_PATH=fake_sfincs_exe,
+                FIAT_BIN_PATH=fake_fiat_exe,
             )
 
             assert settings.delete_crashed_runs
