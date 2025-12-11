@@ -140,8 +140,6 @@ class Settings(BaseSettings):
     def validate_settings(self):
         self._validate_database_path()
         if self.validate_binaries:
-            self._validate_fiat_path()
-            self._validate_sfincs_path()
             self.check_binary_versions()
         self._update_environment_variables()
         return self
@@ -201,14 +199,18 @@ class Settings(BaseSettings):
 
         return self
 
+    @model_validator(mode="after")
     def _validate_sfincs_path(self):
-        if not self.sfincs_bin_path.exists():
-            raise ValueError(f"SFINCS binary {self.sfincs_bin_path} does not exist.")
+        if self.sfincs_bin_path is not None and self.validate_binaries:
+            if not self.sfincs_bin_path.exists():
+                self._raise_exe_not_exists("sfincs", self.sfincs_bin_path)
         return self
 
+    @model_validator(mode="after")
     def _validate_fiat_path(self):
-        if not self.fiat_bin_path.exists():
-            raise ValueError(f"FIAT binary {self.fiat_bin_path} does not exist.")
+        if self.fiat_bin_path is not None and self.validate_binaries:
+            if not self.fiat_bin_path.exists():
+                self._raise_exe_not_exists("fiat", self.fiat_bin_path)
         return self
 
     @field_serializer("database_root", "database_path")
@@ -241,7 +243,7 @@ class Settings(BaseSettings):
 
         """
         if self.sfincs_bin_path is None:
-            raise ValueError("SFINCS binary path is not set.")
+            self._raise_exe_not_provided("sfincs")
 
         result = subprocess.run(
             [self.sfincs_bin_path.as_posix()],
@@ -253,7 +255,7 @@ class Settings(BaseSettings):
         # Capture everything after `$Rev:` until end of line
         match = re.search(r"Build-Revision:\s*\$Rev:\s*(.+)", result.stdout)
         if not match:
-            raise ValueError("Version not found in sfincs executable output.")
+            self._raise_version_mismatch("sfincs", self.sfincs_version, "unknown")
 
         return match.group(1).strip()
 
@@ -274,7 +276,7 @@ class Settings(BaseSettings):
 
         """
         if self.fiat_bin_path is None:
-            raise ValueError("FIAT binary path is not set.")
+            self._raise_exe_not_provided("fiat")
 
         result = subprocess.run(
             [self.fiat_bin_path.as_posix(), "--version"],
@@ -285,22 +287,28 @@ class Settings(BaseSettings):
         # Capture version number after 'FIAT' until the next whitespace
         fiat_match = re.search(r"FIAT\s+([0-9]+\.[0-9]+\.[0-9]+)", result.stdout)
         if not fiat_match:
-            raise ValueError("Version not found in fiat executable output.")
+            self._raise_version_mismatch("fiat", self.fiat_version, "unknown")
         return fiat_match.group(1).strip()
 
-    def check_binary_versions(self):
+    def check_binary_versions(self) -> None:
         """Check that the versions of the binaries in the config match those expected."""
-        actual_sfincs_version = self.get_sfincs_version()
-        if self.sfincs_version != actual_sfincs_version:
-            raise ValueError(
-                f"Sfincs version mismatch: expected {self.sfincs_version}, got {actual_sfincs_version}."
-            )
+        if self.sfincs_bin_path is not None:
+            if not self.sfincs_bin_path.exists():
+                self._raise_exe_not_exists("sfincs", self.sfincs_bin_path)
+            actual_sfincs_version = self.get_sfincs_version()
+            if self.sfincs_version != actual_sfincs_version:
+                self._raise_version_mismatch(
+                    "sfincs", self.sfincs_version, actual_sfincs_version
+                )
 
-        actual_fiat_version = self.get_fiat_version()
-        if self.fiat_version != actual_fiat_version:
-            raise ValueError(
-                f"FIAT version mismatch: expected {self.fiat_version}, got {actual_fiat_version}."
-            )
+        if self.fiat_bin_path is not None:
+            if not self.fiat_bin_path.exists():
+                self._raise_exe_not_exists("fiat", self.fiat_bin_path)
+            actual_fiat_version = self.get_fiat_version()
+            if self.fiat_version != actual_fiat_version:
+                self._raise_version_mismatch(
+                    "fiat", self.fiat_version, actual_fiat_version
+                )
 
     @staticmethod
     def read(toml_path: Path) -> "Settings":
@@ -353,3 +361,18 @@ class Settings(BaseSettings):
                 ),
                 f,
             )
+
+    # error helpers
+    @staticmethod
+    def _raise_exe_not_provided(model: str) -> str:
+        raise ValueError(f"{model.upper()} binary path is not set.")
+
+    @staticmethod
+    def _raise_exe_not_exists(model: str, path: Path) -> str:
+        raise ValueError(f"{model.upper()} binary does not exist: {path}.")
+
+    @staticmethod
+    def _raise_version_mismatch(model: str, expected: str, actual: str) -> str:
+        raise ValueError(
+            f"{model.upper()} version mismatch: expected {expected}, got {actual}."
+        )
