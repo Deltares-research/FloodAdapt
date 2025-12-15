@@ -52,7 +52,7 @@ SETTINGS = Settings(
 CAN_EXECUTE_SCENARIOS = SETTINGS.can_execute_scenarios()
 if not CAN_EXECUTE_SCENARIOS:
     raise RuntimeError(
-        "We expect to be able to execute scenarios in the test environment, "
+        "Expected to be able to execute scenarios in the test environment, "
         "either via Docker or local binaries, but cannot. Please check your configuration."
     )
 

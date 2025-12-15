@@ -195,7 +195,7 @@ class SfincsAdapter(IHazardAdapter):
 
         if HAS_DOCKER and settings.use_docker:
             success = SFINCS_CONTAINER.run(path)
-        elif settings.validate_binaries:
+        elif settings.sfincs_bin_path is not None and settings.validate_binaries:
             with cd(path):
                 logger.info(f"Running SFINCS in {path}")
                 process = subprocess.run(
@@ -225,10 +225,18 @@ class SfincsAdapter(IHazardAdapter):
                     if not os.listdir(subdir):
                         shutil.rmtree(subdir, ignore_errors=True)
 
+            msg = "SFINCS model failed to run."
+            sfincs_log = [
+                h
+                for h in self.sfincs_logger.handlers
+                if isinstance(h, logging.FileHandler)
+            ]
+            if sfincs_log:
+                sfincs_log = sfincs_log[0].baseFilename
+                msg += f" See {sfincs_log} for details."
+            logger.error(msg)
             if strict:
-                raise RuntimeError(f"SFINCS model failed to run in {path}.")
-            else:
-                logger.error(f"SFINCS model failed to run in {path}.")
+                raise RuntimeError(msg)
 
         return success
 

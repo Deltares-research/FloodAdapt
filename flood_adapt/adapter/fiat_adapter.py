@@ -346,7 +346,7 @@ class FiatAdapter(IImpactAdapter):
                         stderr=subprocess.PIPE,
                         text=True,
                     )
-                    logger.debug(process.stdout)
+                    logger.info(process.stdout)
                     success = process.returncode == 0
         else:
             raise RuntimeError(
@@ -369,10 +369,10 @@ class FiatAdapter(IImpactAdapter):
                     if not os.listdir(subdir):
                         shutil.rmtree(subdir, ignore_errors=True)
 
+            msg = f"FIAT model failed to run. See {fiat_log} for details."
+            logger.error(msg)
             if strict:
-                raise RuntimeError(f"FIAT model failed to run in {path}.")
-            else:
-                logger.error(f"FIAT model failed to run in {path}.")
+                raise RuntimeError(msg)
 
         if success:
             self.read_outputs()

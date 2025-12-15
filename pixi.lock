@@ -2057,10 +2057,9 @@ packages:
   - mapclassify>=2.8.0,<3.0 ; extra == 'docs'
   - contextily ; extra == 'docs'
   requires_python: '>=3.10,<3.13'
-  editable: true
 - pypi: ./
   name: flood-adapt
-  version: 1.1.4
+  version: 1.2.0
   sha256: d43af718331250c523cde148cdf5ccc72341f85318a7b7328330b927d2d75961
   requires_dist:
   - cht-cyclones>=1.0.3,<2.0
@@ -2106,6 +2105,7 @@ packages:
   - mapclassify>=2.8.0,<3.0 ; extra == 'docs'
   - contextily ; extra == 'docs'
   requires_python: '>=3.10,<3.13'
+  editable: true
 - pypi: https://files.pythonhosted.org/packages/b5/a8/5f764f333204db0390362a4356d03a43626997f26818a0e9396f1b3bd8c9/folium-0.20.0-py2.py3-none-any.whl
   name: folium
   version: 0.20.0
