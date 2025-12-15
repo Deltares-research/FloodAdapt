@@ -134,44 +134,29 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_settings(self):
         self._validate_database_path()
-        if self.validate_binaries:
-            self._validate_fiat_path()
-            self._validate_sfincs_path()
         self._update_environment_variables()
         return self
+
+    def _update_envvar(self, key: str, value: str | bool | Path | None):
+        if value:
+            if isinstance(value, Path):
+                environ[key] = value.as_posix()
+            else:
+                environ[key] = str(value)
+        else:
+            environ.pop(key, None)
 
     def _update_environment_variables(self):
         environ["DATABASE_ROOT"] = self.database_root.as_posix()
         environ["DATABASE_NAME"] = self.database_name
 
-        if self.delete_crashed_runs:
-            environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
-        else:
-            environ.pop("DELETE_CRASHED_RUNS", None)
-
-        if self.validate_allowed_forcings:
-            environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
-        else:
-            environ.pop("VALIDATE_ALLOWED_FORCINGS", None)
-
-        if self.manual_docker_containers:
-            environ["MANUAL_DOCKER_CONTAINERS"] = str(self.manual_docker_containers)
-        else:
-            environ.pop("MANUAL_DOCKER_CONTAINERS", None)
-
-        if self.validate_binaries:
-            environ["VALIDATE_BINARIES"] = str(self.validate_binaries)
-            if self.sfincs_bin_path is not None:
-                environ["SFINCS_BIN_PATH"] = self.sfincs_bin_path.as_posix()
-            if self.fiat_bin_path is not None:
-                environ["FIAT_BIN_PATH"] = self.fiat_bin_path.as_posix()
-        else:
-            environ.pop("VALIDATE_BINARIES", None)
-
-        if self.use_docker:
-            environ["USE_DOCKER"] = str(self.use_docker)
-        else:
-            environ.pop("USE_DOCKER", None)
+        self._update_envvar("DELETE_CRASHED_RUNS", self.delete_crashed_runs)
+        self._update_envvar("VALIDATE_ALLOWED_FORCINGS", self.validate_allowed_forcings)
+        self._update_envvar("VALIDATE_BINARIES", self.validate_binaries)
+        self._update_envvar("SFINCS_BIN_PATH", self.sfincs_bin_path)
+        self._update_envvar("FIAT_BIN_PATH", self.fiat_bin_path)
+        self._update_envvar("USE_DOCKER", self.use_docker)
+        self._update_envvar("MANUAL_DOCKER_CONTAINERS", self.manual_docker_containers)
 
         return self
 
@@ -207,18 +192,20 @@ class Settings(BaseSettings):
 
         return self
 
+    @model_validator(mode="after")
     def _validate_sfincs_path(self):
-        if self.sfincs_bin_path is None:
-            raise ValueError("SFINCS binary path is not set.")
-        if not self.sfincs_bin_path.exists():
-            raise ValueError(f"SFINCS binary {self.sfincs_bin_path} does not exist.")
+        if self.sfincs_bin_path is not None and self.validate_binaries:
+            if not self.sfincs_bin_path.exists():
+                raise ValueError(
+                    f"SFINCS binary {self.sfincs_bin_path} does not exist."
+                )
         return self
 
+    @model_validator(mode="after")
     def _validate_fiat_path(self):
-        if self.fiat_bin_path is None:
-            raise ValueError("FIAT binary path is not set.")
-        if not self.fiat_bin_path.exists():
-            raise ValueError(f"FIAT binary {self.fiat_bin_path} does not exist.")
+        if self.fiat_bin_path is not None and self.validate_binaries:
+            if not self.fiat_bin_path.exists():
+                raise ValueError(f"FIAT binary {self.fiat_bin_path} does not exist.")
         return self
 
     @field_serializer("database_root", "database_path")

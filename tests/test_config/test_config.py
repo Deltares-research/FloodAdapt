@@ -40,12 +40,12 @@ class TestSettingsModel:
         sfincs_rel = DEFAULT_EXE_PATHS[system.lower()]["sfincs"]
         sfincs_bin = db_root / "system" / sfincs_rel
         sfincs_bin.parent.mkdir(parents=True)
-        sfincs_bin.touch()
+        sfincs_bin.touch(mode=0o755)  # Make executable
 
         _fiat_rel = DEFAULT_EXE_PATHS[system.lower()]["fiat"]
         fiat_bin = db_root / "system" / _fiat_rel
         fiat_bin.parent.mkdir(parents=True)
-        fiat_bin.touch()
+        fiat_bin.touch(mode=0o755)  # Make executable
 
         (db_root / name / "input").mkdir(parents=True)
         (db_root / name / "static").mkdir(parents=True)
@@ -75,27 +75,14 @@ class TestSettingsModel:
             assert settings.fiat_bin_path == expected_fiat
             assert os.environ["FIAT_BIN_PATH"] == expected_fiat.as_posix()
 
-    @pytest.fixture(autouse=True, scope="class")
-    def protect_external_settings(self):
-        settings = Settings()
-
-        yield
-
-        Settings(
-            DATABASE_ROOT=settings.database_root,
-            DATABASE_NAME=settings.database_name,
-        )
-
     @pytest.fixture(autouse=True)
     def protect_envvars(self):
-        env_vars = {
-            "DATABASE_ROOT": os.getenv("DATABASE_ROOT", None),
-            "DATABASE_NAME": os.getenv("DATABASE_NAME", None),
-            "SFINCS_BIN_PATH": os.getenv("SFINCS_BIN_PATH", None),
-            "FIAT_BIN_PATH": os.getenv("FIAT_BIN_PATH", None),
-        }
-        with modified_environ(**{k: v for k, v in env_vars.items() if v is not None}):
+        original_env = os.environ.copy()
+        try:
             yield
+        finally:
+            os.environ.clear()
+            os.environ.update(original_env)
 
     @pytest.mark.skip(
         reason="TODO: Add sfincs & fiat binaries for Linux & Darwin to the system folder in the test database"
