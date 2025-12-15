@@ -240,6 +240,7 @@ class TestSettingsModel:
                 DATABASE_ROOT=db_root,
                 DATABASE_NAME=name,
                 SFINCS_BIN_PATH=non_existent_path / "sfincs.exe",
+                FIAT_BIN_PATH=None,
                 VALIDATE_BINARIES=True,
             )
 
@@ -252,6 +253,7 @@ class TestSettingsModel:
                 DATABASE_ROOT=db_root,
                 DATABASE_NAME=name,
                 FIAT_BIN_PATH=non_existent_path / "fiat.exe",
+                SFINCS_BIN_PATH=None,
                 VALIDATE_BINARIES=True,
             )
 
