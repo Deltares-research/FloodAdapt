@@ -4,6 +4,7 @@ from typing import ClassVar, Optional
 
 import cht_observations.observation_stations as cht_station
 import pandas as pd
+import requests
 from noaa_coops.station import COOPSAPIError
 from pydantic import BaseModel, model_validator
 
@@ -178,7 +179,7 @@ class TideGauge(BaseModel):
             series = series.reindex(index, method="nearest")
             df = pd.DataFrame(data=series, index=index)
 
-        except COOPSAPIError as e:
+        except (COOPSAPIError, requests.JSONDecodeError) as e:
             logger.error(
                 f"Could not download tide gauge data for station {self.ID}. {e}"
             )
