@@ -81,7 +81,7 @@ class IForcing(BaseModel, ABC):
         return value.name
 
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, IForcing):
+        if not isinstance(other, self.__class__):
             return False
         if not self.model_dump(exclude_none=True) == other.model_dump(
             exclude_none=True

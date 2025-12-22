@@ -69,8 +69,6 @@ class DischargeCSV(IDischarge):
     def __eq__(self, other: "DischargeCSV") -> bool:
         if not super().__eq__(other):
             return False
-        if not self.path == other.path:
-            return False
         if not equal_csv(self.path, other.path):
             return False
         return True
