@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -38,3 +40,12 @@ def validate_netcdf_forcing(
                 f"Order of dimensions for variable {var} must be {required_coords}"
             )
     return ds
+
+
+def equal_netcdf(left: Path, right: Path) -> bool:
+    with xr.open_dataset(left) as ds1, xr.open_dataset(right) as ds2:
+        try:
+            xr.testing.assert_equal(ds1, ds2)
+            return True
+        except AssertionError:
+            return False

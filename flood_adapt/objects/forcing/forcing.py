@@ -80,6 +80,15 @@ class IForcing(BaseModel, ABC):
         """Serialize filepath-like fields by saving only the filename. It is assumed that the file will be saved in the same directory."""
         return value.name
 
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, IForcing):
+            return False
+        if not self.model_dump(exclude_none=True) == other.model_dump(
+            exclude_none=True
+        ):
+            return False
+        return True
+
 
 class IDischarge(IForcing):
     type: ForcingType = ForcingType.DISCHARGE

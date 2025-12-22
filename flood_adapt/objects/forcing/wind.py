@@ -10,11 +10,13 @@ from flood_adapt.misc.utils import (
     validate_file_extension,
 )
 from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.forcing.csv import equal_csv
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     IWind,
 )
-from flood_adapt.objects.forcing.netcdf import validate_netcdf_forcing
+from flood_adapt.objects.forcing.hurricane_track import equal_track
+from flood_adapt.objects.forcing.netcdf import equal_netcdf, validate_netcdf_forcing
 from flood_adapt.objects.forcing.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
@@ -83,6 +85,13 @@ class WindTrack(IWind):
         if self.path:
             self.path = copy_file_to_output_dir(self.path, Path(output_dir))
 
+    def __eq__(self, other: "WindTrack") -> bool:
+        if not super().__eq__(other):
+            return False
+        if not equal_track(self.path, other.path):
+            return False
+        return True
+
 
 class WindCSV(IWind):
     source: ForcingSource = ForcingSource.CSV
@@ -101,6 +110,13 @@ class WindCSV(IWind):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+
+    def __eq__(self, other: "WindCSV") -> bool:
+        if not super().__eq__(other):
+            return False
+        if not equal_csv(self.path, other.path):
+            return False
+        return True
 
 
 class WindMeteo(IWind):
@@ -122,3 +138,10 @@ class WindNetCDF(IWind):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+
+    def __eq__(self, other: "WindNetCDF") -> bool:
+        if not super().__eq__(other):
+            return False
+        if not equal_netcdf(self.path, other.path):
+            return False
+        return True

@@ -66,3 +66,23 @@ def read_csv(csvpath: Path) -> pd.DataFrame:
     df = df[~df.index.isna()]
 
     return df
+
+
+def equal_csv(left: Path, right: Path) -> bool:
+    """Check if two CSV files are equal.
+
+    Parameters
+    ----------
+    left : Path
+        Path to the first CSV file.
+    right : Path
+        Path to the second CSV file.
+
+    Returns
+    -------
+    bool
+        True if the files are equal, False otherwise.
+    """
+    left_df = read_csv(left)
+    right_df = read_csv(right)
+    return left_df.equals(right_df)

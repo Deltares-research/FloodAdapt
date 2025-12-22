@@ -12,6 +12,7 @@ from flood_adapt.misc.utils import (
     validate_file_extension,
 )
 from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.forcing.csv import equal_csv
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     IWaterlevel,
@@ -98,6 +99,13 @@ class WaterlevelCSV(IWaterlevel):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+
+    def __eq__(self, other: "WaterlevelCSV") -> bool:
+        if not super().__eq__(other):
+            return False
+        if not equal_csv(self.path, other.path):
+            return False
+        return True
 
 
 class WaterlevelModel(IWaterlevel):
