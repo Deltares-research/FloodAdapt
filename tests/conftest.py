@@ -167,7 +167,7 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        fa = FloodAdapt(SETTINGS)
+        fa = FloodAdapt(SETTINGS.database_path)
 
         # Perform tests
         yield fa.database
@@ -223,7 +223,7 @@ def make_fa_fixture(scope):
                     assert ...
         """
         # Setup
-        fa = FloodAdapt(SETTINGS)
+        fa = FloodAdapt(SETTINGS.database_path)
 
         # Perform tests
         yield fa

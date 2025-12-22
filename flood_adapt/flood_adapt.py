@@ -48,7 +48,7 @@ logger = FloodAdaptLogging.getLogger()
 class FloodAdapt:
     database: Database
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, database_path: Path) -> None:
         """Initialize the FloodAdapt class with a database path.
 
         Parameters
@@ -56,14 +56,16 @@ class FloodAdapt:
         database_path : Path
             The path to the database file.
         """
-        self._settings = settings
-        self.database = Database(
-            database_root=settings.database_root,
-            database_name=settings.database_name,
-            settings=settings,
+        self._settings = Settings(
+            DATABASE_ROOT=database_path.parent,
+            DATABASE_NAME=database_path.name,
         )
-
-        if settings.use_docker:
+        self.database = Database(
+            database_root=database_path.parent,
+            database_name=database_path.name,
+            settings=self._settings,
+        )
+        if self._settings.use_docker:
             self._initialize_docker()
 
     # Measures

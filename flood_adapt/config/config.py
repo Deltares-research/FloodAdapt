@@ -138,13 +138,16 @@ class Settings(BaseSettings):
         return self
 
     def _update_envvar(self, key: str, value: str | bool | Path | None):
-        if value:
-            if isinstance(value, Path):
-                environ[key] = value.as_posix()
-            else:
-                environ[key] = str(value)
-        else:
+        if value is None:
             environ.pop(key, None)
+        elif isinstance(value, (bool, str)):
+            environ[key] = str(value)
+        elif isinstance(value, Path):
+            environ[key] = value.as_posix()
+        else:
+            raise ValueError(
+                f"Cannot set environment variable {key} with value {value}"
+            )
 
     def _update_environment_variables(self):
         environ["DATABASE_ROOT"] = self.database_root.as_posix()
