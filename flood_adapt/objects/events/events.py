@@ -238,6 +238,16 @@ class Event(Object):
     def __eq__(self, other: "Event") -> bool:
         if not super().__eq__(other):
             return False
+        if not self.time == other.time:
+            return False
+        if not self.template == other.template:
+            return False
+        if not self.mode == other.mode:
+            return False
+        if not self.rainfall_multiplier == other.rainfall_multiplier:
+            return False
+
+        # Compare forcings
         l_forcings = self.get_forcings()
         r_forcings = other.get_forcings()
 

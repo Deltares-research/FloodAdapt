@@ -83,6 +83,6 @@ def equal_csv(left: Path, right: Path) -> bool:
     bool
         True if the files are equal, False otherwise.
     """
-    left_df = read_csv(left)
-    right_df = read_csv(right)
+    left_df = pd.read_csv(left)
+    right_df = pd.read_csv(right)
     return left_df.equals(right_df)

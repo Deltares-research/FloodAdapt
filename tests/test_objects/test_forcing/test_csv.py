@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from flood_adapt.objects.forcing.csv import read_csv
+from flood_adapt.objects.forcing.csv import equal_csv, read_csv
 
 CSV_CONTENT_HEADER = """time,data_0
 2023-01-01,1.0
@@ -103,3 +103,34 @@ def test_read_csv_no_data_columns(temp_dir):
     # Act & Assert
     with pytest.raises(ValueError, match="CSV file must have at least one data column"):
         read_csv(csv_path)
+
+
+def test_equal_csv_identical(tmp_path):
+    left = tmp_path / "a.csv"
+    right = tmp_path / "b.csv"
+
+    df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})
+    df.to_csv(left)
+    df.to_csv(right)
+
+    assert equal_csv(left, right) is True
+
+
+def test_equal_csv_different_values(tmp_path):
+    left = tmp_path / "a.csv"
+    right = tmp_path / "b.csv"
+
+    pd.DataFrame({"x": [1, 2]}).to_csv(left)
+    pd.DataFrame({"x": [1, 3]}).to_csv(right)
+
+    assert equal_csv(left, right) is False
+
+
+def test_equal_csv_different_index(tmp_path):
+    left = tmp_path / "a.csv"
+    right = tmp_path / "b.csv"
+
+    pd.DataFrame({"x": [1, 2]}, index=[0, 1]).to_csv(left)
+    pd.DataFrame({"x": [1, 2]}, index=[1, 2]).to_csv(right)
+
+    assert equal_csv(left, right) is False

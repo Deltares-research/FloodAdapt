@@ -7,10 +7,11 @@ import pytest
 import tomli
 
 from flood_adapt.config.hazard import RiverModel
+from flood_adapt.objects.events.events import Event, Template
 from flood_adapt.objects.events.historical import HistoricalEvent
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.discharge import DischargeConstant
-from flood_adapt.objects.forcing.forcing import ForcingSource, ForcingType
+from flood_adapt.objects.forcing.forcing import ForcingSource, ForcingType, IForcing
 from flood_adapt.objects.forcing.rainfall import (
     RainfallCSV,
 )
@@ -144,3 +145,68 @@ class TestHistoricalEvent:
         loaded_event = HistoricalEvent.load_file(path)
 
         assert loaded_event == saved_event
+
+
+class DummyForcing(IForcing):
+    type: ForcingType = ForcingType.DISCHARGE
+    source: ForcingSource = ForcingSource.NONE
+    id: int
+
+
+def test_event_equal_forcings_order_independent():
+    f1 = DummyForcing(id=1)
+    f2 = DummyForcing(id=2)
+
+    e1 = Event(
+        name="test_event",
+        time=TimeFrame(),
+        template=Template.Synthetic,
+        forcings={ForcingType.DISCHARGE: [f1, f2]},
+    )
+    e2 = Event(
+        name="test_event",
+        time=TimeFrame(),
+        template=Template.Synthetic,
+        forcings={ForcingType.DISCHARGE: [f2, f1]},
+    )
+
+    assert e1 == e2
+
+
+def test_event_not_equal_missing_forcing():
+    f1 = DummyForcing(id=1)
+    f2 = DummyForcing(id=2)
+
+    e1 = Event(
+        name="test_event",
+        time=TimeFrame(),
+        template=Template.Synthetic,
+        forcings={ForcingType.DISCHARGE: [f1, f2]},
+    )
+    e2 = Event(
+        name="test_event",
+        time=TimeFrame(),
+        template=Template.Synthetic,
+        forcings={ForcingType.DISCHARGE: [f1]},
+    )
+
+    assert e1 != e2
+
+
+def test_event_not_equal_duplicate_forcing():
+    f1 = DummyForcing(id=1)
+
+    e1 = Event(
+        name="test_event",
+        time=TimeFrame(),
+        template=Template.Synthetic,
+        forcings={ForcingType.DISCHARGE: [f1]},
+    )
+    e2 = Event(
+        name="test_event",
+        time=TimeFrame(),
+        template=Template.Synthetic,
+        forcings={ForcingType.DISCHARGE: [f1, f1]},
+    )
+
+    assert e1 != e2

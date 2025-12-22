@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from flood_adapt.objects.forcing.netcdf import validate_netcdf_forcing
+from flood_adapt.objects.forcing.netcdf import equal_netcdf, validate_netcdf_forcing
 from flood_adapt.objects.forcing.time_frame import TimeFrame
 
 
@@ -146,3 +146,30 @@ def test_netcdf_incorrect_coord_order_raises(required_vars, required_coords):
     # Assert
     assert "Order of dimensions for variable" in str(e.value)
     assert f"must be {tuple(required_coords)}" in str(e.value)
+
+
+def test_equal_netcdf_identical(tmp_path):
+    left = tmp_path / "a.nc"
+    right = tmp_path / "b.nc"
+
+    ds = xr.Dataset(
+        data_vars={"a": (("x",), [1, 2, 3])},
+        coords={"x": [0, 1, 2]},
+    )
+    ds.to_netcdf(left)
+    ds.to_netcdf(right)
+
+    assert equal_netcdf(left, right) is True
+
+
+def test_equal_netcdf_different(tmp_path):
+    left = tmp_path / "a.nc"
+    right = tmp_path / "b.nc"
+
+    ds1 = xr.Dataset({"a": (("x",), [1, 2, 3])}, coords={"x": [0, 1, 2]})
+    ds2 = xr.Dataset({"a": (("x",), [1, 2, 4])}, coords={"x": [0, 1, 2]})
+
+    ds1.to_netcdf(left)
+    ds2.to_netcdf(right)
+
+    assert equal_netcdf(left, right) is False

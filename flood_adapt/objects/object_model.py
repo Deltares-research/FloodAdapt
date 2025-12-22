@@ -65,10 +65,9 @@ class Object(BaseModel):
         """
         pass
 
-    def __eq__(self, value):
-        if not isinstance(value, self.__class__):
-            # don't attempt to compare against unrelated types
+    def __eq__(self, other: "Object") -> bool:
+        if not isinstance(other, self.__class__):
             return False
-        _self = self.model_dump(exclude={"name", "description"}, exclude_none=True)
-        _other = value.model_dump(exclude={"name", "description"}, exclude_none=True)
-        return _self == _other
+        # No need to check attributes here, ``name`` and ``description`` dont count toward equality
+        # Subclasses should implement their own equality checks
+        return True
