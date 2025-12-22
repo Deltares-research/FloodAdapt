@@ -328,12 +328,12 @@ class FiatAdapter(IImpactAdapter):
         FiatAdapter._ensure_correct_hash_spacing_in_csv(path)
         FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
         exe = exe_path or self.exe_path
+        fiat_log = path / "fiat.log"
 
         if HAS_DOCKER and Settings().use_docker:
             success = FIAT_CONTAINER.run(path)
         elif exe is not None:
             with cd(path):
-                fiat_log = path / "fiat.log"
                 with FloodAdaptLogging.to_file(file_path=fiat_log):
                     logger.info(f"Running FIAT in {path}")
                     process = subprocess.run(
