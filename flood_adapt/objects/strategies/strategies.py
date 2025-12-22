@@ -87,3 +87,10 @@ class Strategy(Object):
         )
         hazard_strategy.initialize_measure_objects(hazard_measures)
         return hazard_strategy
+
+    def __eq__(self, other: "Strategy") -> bool:
+        if not isinstance(other, self.__class__) or (
+            set(self.measures) != set(other.measures)
+        ):
+            return False
+        return True

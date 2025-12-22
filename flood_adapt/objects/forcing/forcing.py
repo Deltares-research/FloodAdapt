@@ -81,11 +81,11 @@ class IForcing(BaseModel, ABC):
         return value.name
 
     def __eq__(self, other: "IForcing") -> bool:
-        if not isinstance(other, self.__class__):
-            return False
-        if not self.type == other.type:
-            return False
-        if not self.source == other.source:
+        if (
+            not isinstance(other, self.__class__)
+            or self.type != other.type
+            or self.source != other.source
+        ):
             return False
         return True
 

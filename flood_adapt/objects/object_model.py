@@ -64,10 +64,3 @@ class Object(BaseModel):
         This method should be overridden if the object has additional files.
         """
         pass
-
-    def __eq__(self, other: "Object") -> bool:
-        if not isinstance(other, self.__class__):
-            return False
-        # No need to check attributes here, ``name`` and ``description`` dont count toward equality
-        # Subclasses should implement their own equality checks
-        return True
