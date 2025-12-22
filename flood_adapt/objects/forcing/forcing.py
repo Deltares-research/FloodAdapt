@@ -1,3 +1,5 @@
+import hashlib
+import json
 import os
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -72,13 +74,52 @@ class IForcing(BaseModel, ABC):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         """Save additional data of the forcing."""
-        return
+        pass
 
     @field_serializer("path", check_fields=False)
     @classmethod
     def serialize_path(cls, value: Path) -> str:
         """Serialize filepath-like fields by saving only the filename. It is assumed that the file will be saved in the same directory."""
         return value.name
+
+    def content_fingerprint(self) -> str:
+        """Return a stable fingerprint of the forcing's underlying data.
+
+        - If a file-backed `path` attribute exists and the file exists, hash its bytes (SHA-256).
+        - Otherwise, hash a canonical JSON dump of the model (excluding volatile fields like `path`).
+
+        Returns
+        -------
+        str
+            A fingerprint string that changes when the forcing's effective data changes.
+        """
+        # Prefer hashing the actual file content when available
+        try:
+            p = getattr(self, "path", None)
+            if isinstance(p, Path) and p and p.exists():
+                sha = hashlib.sha256()
+                with p.open("rb") as f:
+                    for chunk in iter(lambda: f.read(8192), b""):
+                        sha.update(chunk)
+                # Include filename to disambiguate multi-forcing scenarios with identical content
+                return f"FILE:{p.name}:{sha.hexdigest()}"
+        except Exception:
+            # Fall through to attribute-based hashing if anything goes wrong
+            pass
+
+        # Fallback: hash the model attributes (excluding volatile fields like path)
+        data = self.model_dump(exclude_none=True)
+        # Remove potentially non-stable/absolute fields
+        data.pop("path", None)
+
+        # Ensure enums are serialized to their values for stable hashing
+        if isinstance(data.get("type"), Enum):
+            data["type"] = data["type"].value
+        if isinstance(data.get("source"), Enum):
+            data["source"] = data["source"].value
+
+        payload = json.dumps(data, sort_keys=True, default=str).encode("utf-8")
+        return f"ATTR:{hashlib.sha256(payload).hexdigest()}"
 
 
 class IDischarge(IForcing):
