@@ -1,4 +1,5 @@
 import logging
+import math
 from abc import abstractmethod
 from pathlib import Path
 from typing import Any, ClassVar, Generic, TypeVar
@@ -66,13 +67,12 @@ class DataContainer(BaseModel, Generic[T]):
             return Path(value)
         return value
 
-    @field_validator("path", mode="after")
-    @classmethod
-    def _absolute_path_if_provided(cls, value: Path | None) -> Path | None:
-        if value is not None:
-            if not value.is_absolute():
-                raise ValueError(f"Path must be absolute: {value}.")
-        return value
+    @model_validator(mode="after")
+    def _validate_abs_path_exists(self) -> "DataContainer":
+        if self.path is not None:
+            if self.path.is_absolute() and not self.path.exists():
+                raise FileNotFoundError(f"Path does not exist: {self.path}")
+        return self
 
     @model_validator(mode="after")
     def _overwrite_default_name_from_path(self) -> "DataContainer":
@@ -83,18 +83,42 @@ class DataContainer(BaseModel, Generic[T]):
             self.name = Path(self.path).stem
         return self
 
+    def read(self, directory: Path | None = None, **kwargs) -> None:
+        """Read the data from `path` into `_data`.
+
+        If `directory` is provided and `path` is relative, it is resolved against `directory`.
+        """
+        if not self.path.is_absolute() and directory is not None:
+            path = directory / self.path
+        else:
+            path = self.path
+        self._assert_path_exists(path)
+
+        self._data = self._deserialize(path, **kwargs)
+
+    def write(self, output_dir: Path | None = None, **kwargs) -> None:
+        """Write `_data` to the given directory or its original path."""
+        self._assert_has_data()
+        write_path = output_dir / self.file_name if output_dir else self.path
+        write_path.parent.mkdir(parents=True, exist_ok=True)
+
+        self._serialize(write_path, **kwargs)
+
+        if self.path is None:
+            self.path = write_path
+
     # --- Abstract methods ---
     @abstractmethod
-    def read(self, **kwargs) -> None:
-        """Read the data from `path` into `_data`.
+    def _serialize(self, path: Path, **kwargs) -> None:
+        """Write `_data` to the given path.
 
         Subclasses must implement this method.
         """
         ...
 
     @abstractmethod
-    def write(self, output_dir: Path | None = None, **kwargs) -> None:
-        """Write `_data` to the given directory or its original path.
+    def _deserialize(self, path: Path, **kwargs) -> T:
+        """Read data from the given path and return it.
 
         Subclasses must implement this method.
         """
@@ -124,16 +148,17 @@ class DataContainer(BaseModel, Generic[T]):
         """Check if data is currently loaded in memory."""
         return self._data is not None
 
-    def _assert_path_exists(self, error_msg: str | None = "") -> None:
+    @staticmethod
+    def _assert_path_exists(path: Path) -> None:
         """Check if the path exists on disk."""
-        if self.path is None:
+        if path is None:
             raise ValueError("Path is not defined.")
-        elif not self.path.exists():
-            raise FileNotFoundError(error_msg or f"Path does not exist: {self.path}")
+        elif not path.exists():
+            raise FileNotFoundError(f"Path does not exist: {path}")
 
     def _assert_has_data(self) -> None:
         """Check if data is loaded in memory."""
-        if self.data is None:
+        if self._data is None:
             raise ValueError("No data loaded to write.")
 
     def __eq__(self, other: Any) -> bool:
@@ -170,21 +195,19 @@ class GeoDataFrameContainer(DataContainer[gpd.GeoDataFrame]):
 
     _extension: ClassVar[str] = ".geojson"
 
-    def read(self, **kwargs) -> None:
-        self._assert_path_exists(f"GeoDataFrame file not found: {self.path}")
-        gdf = gpd.read_file(self.path, **kwargs)
+    def _deserialize(self, path: Path, **kwargs) -> None:
+        gdf = gpd.read_file(path, **kwargs)
+
         if gdf.crs is None:
             logger.warning(f"No CRS defined in {self.path}, assuming EPSG:4326")
             gdf = gdf.set_crs(epsg=4326)
         else:
             gdf = gdf.to_crs(epsg=4326)
-        self._data = gdf
 
-    def write(self, output_dir: Path | None = None, **kwargs) -> None:
-        self._assert_has_data()
-        write_path = output_dir / self.file_name if output_dir else self.path
-        write_path.parent.mkdir(parents=True, exist_ok=True)
-        self.data.to_file(write_path, **kwargs)
+        return gdf
+
+    def _serialize(self, path: Path, **kwargs) -> None:
+        self.data.to_file(path, **kwargs)
 
     def _compare_data(self, data_a: gpd.GeoDataFrame, data_b: gpd.GeoDataFrame) -> bool:
         return data_a.equals(data_b)
@@ -195,15 +218,11 @@ class NetCDFContainer(DataContainer[xr.Dataset]):
 
     _extension: ClassVar[str] = ".nc"
 
-    def read(self, **kwargs) -> None:
-        self._assert_path_exists(f"NetCDF file not found: {self.path}")
-        self._data = xr.load_dataset(self.path, **kwargs)
+    def _deserialize(self, path: Path, **kwargs) -> xr.Dataset:
+        return xr.load_dataset(path, **kwargs)
 
-    def write(self, output_dir: Path | None = None, **kwargs) -> None:
-        self._assert_has_data()
-        write_path = output_dir / self.file_name if output_dir else self.path
-        write_path.parent.mkdir(parents=True, exist_ok=True)
-        self.data.to_netcdf(write_path, **kwargs)
+    def _serialize(self, path: Path, **kwargs) -> None:
+        self.data.to_netcdf(path, **kwargs)
 
     def _compare_data(self, data_a: xr.Dataset, data_b: xr.Dataset) -> bool:
         return data_a.equals(data_b)
@@ -214,36 +233,29 @@ class DataFrameContainer(DataContainer[pd.DataFrame]):
 
     _extension: ClassVar[str] = ".csv"
 
-    def read(self, **kwargs) -> None:
-        self._assert_path_exists(f"DataFrame file not found: {self.path}")
-
-        # Determine file format from extension
-        suffix = self.path.suffix.lower()
-        if suffix == ".csv":
-            df = pd.read_csv(self.path, **kwargs)
-        elif suffix in (".parquet", ".pq"):
-            df = pd.read_parquet(self.path, **kwargs)
-        elif suffix in (".feather", ".ftr"):
-            df = pd.read_feather(self.path, **kwargs)
-        else:
-            raise ValueError(f"Unsupported DataFrame format: {suffix}")
-
-        self._data = df
-
-    def write(self, output_dir: Path | None = None, **kwargs) -> None:
-        self._assert_has_data()
-        write_path = output_dir / self.file_name if output_dir else self.path
-        write_path.parent.mkdir(parents=True, exist_ok=True)
-        suffix = write_path.suffix.lower()
+    def _serialize(self, path: Path, **kwargs) -> None:
+        suffix = path.suffix.lower()
 
         if suffix == ".csv":
-            self._data.to_csv(write_path, index=False, **kwargs)
+            self.data.to_csv(path, index=False, **kwargs)
         elif suffix in (".parquet", ".pq"):
-            self._data.to_parquet(write_path, **kwargs)
+            self.data.to_parquet(path, **kwargs)
         elif suffix in (".feather", ".ftr"):
-            self._data.to_feather(write_path, **kwargs)
+            self.data.to_feather(path, **kwargs)
         else:
             raise ValueError(f"Unsupported DataFrame format for writing: {suffix}")
+
+    def _deserialize(self, path: Path, **kwargs) -> pd.DataFrame:
+        suffix = path.suffix.lower()
+
+        if suffix == ".csv":
+            return pd.read_csv(path, **kwargs)
+        elif suffix in (".parquet", ".pq"):
+            return pd.read_parquet(path, **kwargs)
+        elif suffix in (".feather", ".ftr"):
+            return pd.read_feather(path, **kwargs)
+        else:
+            raise ValueError(f"Unsupported DataFrame format for reading: {suffix}")
 
     def _compare_data(self, data_a: pd.DataFrame, data_b: pd.DataFrame) -> bool:
         return data_a.equals(data_b)
@@ -263,16 +275,13 @@ class TranslationModel(BaseModel):
 class CycloneTrackContainer(DataContainer[TropicalCyclone]):
     _extension: ClassVar[str] = ".cyc"
 
-    def read(self, **kwargs) -> None:
-        self._assert_path_exists(f"Cyclone track file not found: {self.path}")
-        self._data = TropicalCyclone()
-        self._data.read_track(self.path, fmt="ddb_cyc", **kwargs)
+    def _deserialize(self, path: Path, **kwargs) -> TropicalCyclone:
+        cyclone = TropicalCyclone()
+        cyclone.read_track(path, fmt="ddb_cyc", **kwargs)
+        return cyclone
 
-    def write(self, output_dir: Path | None = None, **kwargs) -> None:
-        self._assert_has_data()
-        write_path = output_dir / self.file_name if output_dir else self.path
-        write_path.parent.mkdir(parents=True, exist_ok=True)
-        self.data.write_track(write_path, fmt="ddb_cyc", **kwargs)
+    def _serialize(self, path: Path, **kwargs) -> None:
+        self.data.write_track(path, fmt="ddb_cyc", **kwargs)
 
     def to_spw(
         self,
@@ -295,14 +304,13 @@ class CycloneTrackContainer(DataContainer[TropicalCyclone]):
         if self.data is None:
             raise ValueError("Cannot translate undefined track")
 
-        if (
-            translation.eastwest_translation == 0
-            and translation.northsouth_translation == 0
+        if math.isclose(translation.eastwest_translation.value, 0) and math.isclose(
+            translation.northsouth_translation.value, 0
         ):
             return
 
         logger.info(f"Translating the track of the tropical cyclone `{self.name}`")
-        cyclone = self._data.track.to_crs(epsg=4326)
+        cyclone = self.data.track.to_crs(epsg=4326)
 
         # Translate the track in the local coordinate system
         cyclone["geometry"] = cyclone["geometry"].apply(
@@ -316,7 +324,7 @@ class CycloneTrackContainer(DataContainer[TropicalCyclone]):
                 ),
             )
         )
-        self._data.track = cyclone
+        self.data.track = cyclone
 
     def _compare_data(self, data_a: TropicalCyclone, data_b: TropicalCyclone) -> bool:
         return data_a.track.equals(data_b.track)

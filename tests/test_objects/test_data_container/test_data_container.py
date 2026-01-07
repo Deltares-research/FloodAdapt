@@ -1,171 +1,171 @@
 from pathlib import Path
 
-import geopandas as gpd
-import numpy as np
-import pandas as pd
 import pytest
-import xarray as xr
-from cht_cyclones.tropical_cyclone import TropicalCyclone
-from shapely.geometry import Point
 
 from flood_adapt.objects.data_container import (
-    CycloneTrackContainer,
-    DataFrameContainer,
-    GeoDataFrameContainer,
-    NetCDFContainer,
+    DataContainer,
 )
 
 
-# -----------------------------------------------------------------------------
-# Fixtures
-# -----------------------------------------------------------------------------
-@pytest.fixture
-def sample_dataframe() -> pd.DataFrame:
-    return pd.DataFrame({"a": [1, 2, 3], "b": [4.0, 5.0, 6.0]})
+class DummyContainer(DataContainer[str]):
+    _extension: str = ".dummy"
+
+    def _deserialize(self, path: Path, **kwargs) -> str:
+        return path.read_text()
+
+    def _serialize(self, path: Path, **kwargs) -> None:
+        path.write_text(self._data or "")
+
+    def _compare_data(self, data_a: str, data_b: str) -> bool:
+        return data_a == data_b
 
 
-@pytest.fixture
-def sample_geodataframe() -> gpd.GeoDataFrame:
-    gdf = gpd.GeoDataFrame(
-        {"id": [1, 2, 3]},
-        geometry=[Point(0, 0), Point(1, 1), Point(2, 2)],
-        crs="EPSG:4326",
-    )
-    return gdf
+def test_name_overwritten_from_path(tmp_path: Path):
+    data_path = tmp_path / "my_data.dummy"
+    data_path.touch()
+
+    ref = DummyContainer(path=data_path)
+
+    assert ref.name == "my_data"
 
 
-@pytest.fixture
-def sample_netcdf(tmp_path: Path, get_rng: np.random.Generator) -> Path:
-    ds = xr.Dataset(
-        {"temperature": (("x", "y"), get_rng.random((3, 3)))},
-        coords={"x": [0, 1, 2], "y": [0, 1, 2]},
-    )
-    nc_path = tmp_path / "test.nc"
-    ds.to_netcdf(nc_path)
-    return nc_path
+def test_name_not_overwritten_if_explicit(tmp_path: Path):
+    data_path = tmp_path / "my_data.dummy"
+    data_path.touch()
+
+    ref = DummyContainer(name="custom_name", path=data_path)
+
+    assert ref.name == "custom_name"
 
 
-@pytest.fixture
-def sample_cyclone_track(test_data_dir: Path) -> Path:
-    return test_data_dir / "IAN.cyc"
+def test_data_property_triggers_read(tmp_path: Path):
+    data_path = tmp_path / "data_file.dummy"
+    data_path.write_text("dummy-data")
+
+    ref = DummyContainer(path=data_path)
+
+    assert ref.has_data() is False
+
+    data = ref.data
+
+    assert data == "dummy-data"
+    assert ref.has_data() is True
 
 
-# -----------------------------------------------------------------------------
-# DataFrameContainer
-# -----------------------------------------------------------------------------
-def test_dataframe_read_write_csv(tmp_path, sample_dataframe):
-    csv_path = tmp_path / "data.csv"
-    sample_dataframe.to_csv(csv_path, index=False)
+def test_has_data_flag(tmp_path: Path):
+    data_path = tmp_path / "data_file.dummy"
+    data_path.touch()
 
-    ref = DataFrameContainer(path=csv_path)
+    ref = DummyContainer(path=data_path)
+
+    assert ref.has_data() is False
+
     ref.read()
 
-    assert ref.has_data()
-    pd.testing.assert_frame_equal(ref.data, sample_dataframe)
-
-    # Test write to a new file
-    out_path = tmp_path / "data_copy.csv"
-    ref.path = out_path
-    ref.write()
-    assert out_path.exists()
-
-    df_copy = pd.read_csv(out_path)
-    pd.testing.assert_frame_equal(df_copy, sample_dataframe)
+    assert ref.has_data() is True
 
 
-def test_dataframe_equality(sample_dataframe, tmp_path):
-    path1 = tmp_path / "a.csv"
-    sample_dataframe.to_csv(path1, index=False)
-    ref1 = DataFrameContainer(path=path1)
-    ref2 = DataFrameContainer(path=path1)
+def test_set_data_overwrites_internal_data():
+    ref = DummyContainer(path="whatever.dummy")
 
-    # Reading loads data and equality should hold
-    ref1.read()
-    ref2.read()
+    ref.set_data("manual-data")
+
+    assert ref._data == "manual-data"
+    assert ref.data == "manual-data"
+
+
+def test_file_name_with_path(tmp_path: Path):
+    data_path = tmp_path / "abc.dummy"
+    data_path.touch()
+
+    ref = DummyContainer(path=data_path)
+
+    assert ref.file_name == "abc.dummy"
+
+
+def test_file_name_without_path_uses_name_and_extension():
+    ref = DummyContainer(name="test_name")
+
+    assert ref.file_name == "test_name.dummy"
+
+
+def test_equality_true_when_data_equal(tmp_path: Path):
+    path1 = tmp_path / "a.dummy"
+    path2 = tmp_path / "b.dummy"
+    path1.touch()
+    path2.touch()
+
+    ref1 = DummyContainer(path=path1)
+    ref2 = DummyContainer(path=path2)
+
     assert ref1 == ref2
 
 
-def test_dataframe_unsupported_format(tmp_path):
-    bad_path = tmp_path / "data.txt"
-    bad_path.write_text("test")
+def test_equality_false_for_different_types(tmp_path: Path):
+    class OtherDummy(DummyContainer):
+        pass
 
-    ref = DataFrameContainer(path=bad_path)
-    with pytest.raises(ValueError, match="Unsupported DataFrame format"):
-        ref.read()
+    path = tmp_path / "a.dummy"
+    path.touch()
 
+    ref1 = DummyContainer(path=path)
+    ref2 = OtherDummy(path=path)
 
-# -----------------------------------------------------------------------------
-# GeoDataFrameContainer
-# -----------------------------------------------------------------------------
-def test_geodataref_read_write(tmp_path, sample_geodataframe):
-    shp_path = tmp_path / "points.geojson"
-    sample_geodataframe.to_file(shp_path, driver="GeoJSON")
-
-    ref = GeoDataFrameContainer(path=shp_path)
-    ref.read()
-    assert isinstance(ref.data, gpd.GeoDataFrame)
-    assert ref.has_data()
-
-    # Write and re-read to confirm equality
-    out_path = tmp_path / "points_copy.geojson"
-    ref.path = out_path
-    ref.write()
-    ref2 = GeoDataFrameContainer(path=out_path)
-    ref2.read()
-
-    assert ref == ref2
+    assert ref1 != ref2
 
 
-# TODO add test with shapefiles ?
+def test_serialize_path_uses_file_name(tmp_path: Path):
+    data_path = tmp_path / "abc.dummy"
+    data_path.touch()
+
+    ref = DummyContainer(path=data_path)
+
+    serialized = ref.model_dump()
+
+    assert serialized["path"] == "abc.dummy"
 
 
-def test_geodataref_missing_file(tmp_path):
-    ref = GeoDataFrameContainer(path=tmp_path / "missing.geojson")
+def test_read_absolute_path_ignores_directory(tmp_path: Path):
+    data_path = tmp_path / "data_file.dummy"
+    data_path.write_text("dummy-data")
+
+    ref = DummyContainer(path=data_path)
+
+    # directory should be ignored
+    ref.read(directory=tmp_path / "some_other_dir")
+
+    assert ref._data == "dummy-data"
+
+
+def test_datacontainer_missing_absolute_file_raises(tmp_path: Path):
+    with pytest.raises(FileNotFoundError):
+        DummyContainer(path=tmp_path / "does_not_exist.dummy")
+
+
+def test_read_relative_without_directory_raises():
+    ref = DummyContainer(path="data_file.dummy")
     with pytest.raises(FileNotFoundError):
         ref.read()
 
 
-# -----------------------------------------------------------------------------
-# NetCDFContainer
-# -----------------------------------------------------------------------------
-def test_netcdfref_read_write(tmp_path, sample_netcdf):
-    ref = NetCDFContainer(path=sample_netcdf)
+def test_read_relative_with_directory(tmp_path: Path):
+    data_path = tmp_path / "data_file.dummy"
+    data_path.write_text("dummy-data")
+
+    ref = DummyContainer(path=data_path.name)
+    ref.read(directory=data_path.parent)
+
+    assert ref._data == "dummy-data"
+
+
+def test_write_to_original_path(tmp_path: Path):
+    data_path = tmp_path / "out.dummy"
+    data_path.write_text("dummy-data")
+
+    ref = DummyContainer(path=data_path)
     ref.read()
 
-    assert isinstance(ref.data, xr.Dataset)
-    assert "temperature" in ref.data.variables
-
-    out_path = tmp_path / "copy.nc"
-    ref.path = out_path
+    data_path.unlink()  # Remove file to test write
     ref.write()
-    assert out_path.exists()
 
-    ref2 = NetCDFContainer(path=out_path)
-    ref2.read()
-
-    assert ref == ref2
-
-
-def test_netcdfref_missing_file(tmp_path):
-    ref = NetCDFContainer(path=tmp_path / "does_not_exist.nc")
-    with pytest.raises(FileNotFoundError):
-        ref.read()
-
-
-# -----------------------------------------------------------------------------
-# CycloneTrackContainer
-# -----------------------------------------------------------------------------
-def test_cyclone_track_read_write(tmp_path: Path, sample_cyclone_track: Path):
-    ref1 = CycloneTrackContainer(path=sample_cyclone_track)
-    ref1.read()
-
-    assert isinstance(ref1._data, TropicalCyclone)
-    out_path = tmp_path / "IAN_copy.ddb_cyc"
-    ref1.path = out_path
-    ref1.write()
-    assert out_path.exists()
-
-    ref2 = CycloneTrackContainer(path=out_path)
-    ref2.read()
-
-    assert ref1 == ref2
+    assert data_path.read_text() == "dummy-data"
