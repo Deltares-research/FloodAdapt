@@ -143,7 +143,9 @@ def validate_file_extension(allowed_extensions: list[str]):
     >>>     csv_path: Annotated[Path, validate_file_extension([".csv"])]
     """
 
-    def _validator(value: Union[Path, str, os.PathLike]) -> Path:
+    def _validator(value: Union[Path, str, os.PathLike | None]) -> Path | None:
+        if value is None:
+            return value
         value = Path(value)
         if value.suffix not in allowed_extensions:
             raise ValueError(

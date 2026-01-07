@@ -17,6 +17,6 @@ class TestSyntheticEvent:
         saved_event.save(path)
         assert path.exists()
 
-        loaded_event = SyntheticEvent.load_file(path)
+        loaded_event = SyntheticEvent.load_file(path, load_all=True)
 
         assert loaded_event == saved_event

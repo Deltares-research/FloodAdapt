@@ -57,7 +57,10 @@ class FloodAdapt:
         database_path : Path
             The path to the database file.
         """
-        self.settings = Settings()
+        self.settings = Settings(
+            DATABASE_ROOT=database_path.parent,
+            DATABASE_NAME=database_path.name,
+        )
         self.database = Database(
             database_path=database_path.parent,
             database_name=database_path.name,

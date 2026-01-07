@@ -24,7 +24,7 @@ def test_create_benefit_scenarios(test_db):
 
     assert benefit_toml.is_file()
 
-    benefit = Benefit.load_file(benefit_toml)
+    benefit = Benefit.load_file(benefit_toml, load_all=True)
     runner = BenefitRunner(test_db, benefit)
     runner.create_benefit_scenarios()
 

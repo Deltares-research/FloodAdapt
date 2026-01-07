@@ -53,10 +53,10 @@ class Object(BaseModel):
             toml = tomli.load(fp)
         obj = cls.model_validate(toml)
         if load_all:
-            obj.read(**kwargs)
+            obj.read(directory=Path(file_path).parent, **kwargs)
         return obj
 
-    def read(self, **kwargs) -> None:
+    def read(self, directory: Path | None = None, **kwargs) -> None:
         """Read additional files from disk.
 
         If any attributes reference external files, read them from disk and update the attributes accordingly.

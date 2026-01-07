@@ -6,6 +6,7 @@ import pytest
 
 from flood_adapt.config.hazard import RiverModel
 from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -93,14 +94,16 @@ class TestDischargeCSV:
             start_time=dummy_1d_timeseries_df.index[1],
             end_time=dummy_1d_timeseries_df.index[-2],
         )
-
         expected_df = CSVTimeseries.load_file(
             path=path,
             units=us.UnitfulDischarge(value=0, units=us.UnitTypesDischarge.cms),
         ).to_dataframe(time_frame=time)
 
+        ts = DataFrameContainer(name=river.name)
+        ts.set_data(dummy_1d_timeseries_df)
+
         # Act
-        discharge_df = DischargeCSV(river=river, path=path).to_dataframe(
+        discharge_df = DischargeCSV(river=river, timeseries=ts).to_dataframe(
             time_frame=time
         )
 

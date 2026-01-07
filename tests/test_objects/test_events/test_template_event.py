@@ -1,15 +1,13 @@
-import tempfile
 from datetime import datetime
-from pathlib import Path
 
 import pandas as pd
 import pytest
-import tomli
 
 from flood_adapt.config.hazard import RiverModel
 from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.events.historical import HistoricalEvent
-from flood_adapt.objects.forcing.discharge import DischargeConstant
+from flood_adapt.objects.forcing.discharge import DischargeConstant, DischargeCSV
 from flood_adapt.objects.forcing.forcing import ForcingSource, ForcingType
 from flood_adapt.objects.forcing.rainfall import (
     RainfallCSV,
@@ -27,32 +25,23 @@ from flood_adapt.objects.forcing.wind import (
 
 @pytest.fixture()
 def _wind_csv(dummy_2d_timeseries_df: pd.DataFrame):
-    tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
-    dummy_2d_timeseries_df.to_csv(tmp_path)
-
-    return WindCSV(
-        path=tmp_path,
-    )
+    df = DataFrameContainer(name="wind")
+    df.set_data(dummy_2d_timeseries_df)
+    return WindCSV(timeseries=df)
 
 
 @pytest.fixture()
 def _rainfall_csv(dummy_1d_timeseries_df: pd.DataFrame):
-    tmp_path = Path(tempfile.gettempdir()) / "rainfall.csv"
-    dummy_1d_timeseries_df.to_csv(tmp_path)
-
-    return RainfallCSV(
-        path=tmp_path,
-    )
+    ts = DataFrameContainer(name="rainfall")
+    ts.set_data(dummy_1d_timeseries_df)
+    return RainfallCSV(timeseries=ts)
 
 
 @pytest.fixture()
 def _waterlevel_csv(dummy_1d_timeseries_df: pd.DataFrame):
-    tmp_path = Path(tempfile.gettempdir()) / "waterlevel.csv"
-    dummy_1d_timeseries_df.to_csv(tmp_path)
-
-    return WaterlevelCSV(
-        path=tmp_path,
-    )
+    ts = DataFrameContainer(name="waterlevel")
+    ts.set_data(dummy_1d_timeseries_df)
+    return WaterlevelCSV(timeseries=ts)
 
 
 @pytest.fixture()
@@ -64,12 +53,9 @@ def test_event_all_csv(_wind_csv, _rainfall_csv, _waterlevel_csv):
             end_time=datetime(2020, 1, 2),
         ),
         forcings={
-            ForcingType.WIND: [
-                _wind_csv,
-            ],
-            ForcingType.RAINFALL: [
-                _rainfall_csv,
-            ],
+            ForcingType.WIND: [_wind_csv],
+            ForcingType.RAINFALL: [_rainfall_csv],
+            ForcingType.WATERLEVEL: [_waterlevel_csv],
             ForcingType.DISCHARGE: [
                 DischargeConstant(
                     river=RiverModel(
@@ -86,9 +72,6 @@ def test_event_all_csv(_wind_csv, _rainfall_csv, _waterlevel_csv):
                     ),
                 )
             ],
-            ForcingType.WATERLEVEL: [
-                _waterlevel_csv,
-            ],
         },
     )
 
@@ -102,21 +85,14 @@ class TestHistoricalEvent:
         test_event.save(path)
         assert path.exists()
 
-        with open(path, "rb") as f:
-            content = tomli.load(f)
-
         loaded_event = HistoricalEvent.load_file(path, load_all=True)
-        csv_forcings = [
+        csv_forcings: list[DischargeCSV | RainfallCSV | WaterlevelCSV | WindCSV] = [
             f for f in loaded_event.get_forcings() if f.source == ForcingSource.CSV
         ]
         for forcing in csv_forcings:
-            assert forcing.path.exists()
             assert (
-                forcing.path == path.parent / forcing.path.name
-            ), "Expected forcing path to be updated to new location."
-            assert (
-                forcing.path.name == content["forcings"][forcing.type][0]["path"]
-            ), "Expected forcing path to be saved as just the file name in toml file."
+                forcing.timeseries.data is not None
+            ), "Expected timeseries data to be loaded."
 
     def test_load_event_toml_and_datafiles(self, test_event_all_csv, tmp_path):
         path = tmp_path / "test_event.toml"
@@ -126,14 +102,13 @@ class TestHistoricalEvent:
 
         loaded_event = HistoricalEvent.load_file(path, load_all=True)
 
-        csv_forcings = [
+        csv_forcings: list[DischargeCSV | RainfallCSV | WaterlevelCSV | WindCSV] = [
             f for f in loaded_event.get_forcings() if f.source == ForcingSource.CSV
         ]
         for forcing in csv_forcings:
-            assert forcing.path.exists()
             assert (
-                forcing.path == path.parent / forcing.path.name
-            ), "Expected forcing path to be absolute. Constructed from the filename saved in the toml, and the parent dir of the toml file."
+                forcing.timeseries.data is not None
+            ), "Expected timeseries data to be loaded."
 
     def test_load_file(self, test_event_all_csv, tmp_path):
         path = tmp_path / "test_event.toml"
@@ -141,6 +116,6 @@ class TestHistoricalEvent:
         saved_event.save(path)
         assert path.exists()
 
-        loaded_event = HistoricalEvent.load_file(path)
+        loaded_event = HistoricalEvent.load_file(path, load_all=True)
 
         assert loaded_event == saved_event

@@ -33,7 +33,7 @@ class TestHurricaneEvent:
         assert path.exists()
         assert cyc_file.exists()
 
-        loaded_event = HurricaneEvent.load_file(path)
+        loaded_event = HurricaneEvent.load_file(path, load_all=True)
 
         assert loaded_event == saved_event
 
@@ -54,10 +54,8 @@ class TestHurricaneEvent:
 
         cyc_file.unlink()
 
-        with pytest.raises(
-            FileNotFoundError, match=f"Failed to read Event. File {cyc_file.name}"
-        ):
-            HurricaneEvent.load_file(path)
+        with pytest.raises(FileNotFoundError, match="Path does not exist"):
+            HurricaneEvent.load_file(path, load_all=True)
 
     def test_save_additional_saves_cyc_file(
         self, setup_hurricane_event: HurricaneEvent

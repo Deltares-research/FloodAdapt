@@ -74,7 +74,7 @@ class IForcing(BaseModel, ABC):
         """Save additional data of the forcing."""
         return
 
-    def read(self, directory: Path | None = None):
+    def read(self, directory: Path | None = None, **kwargs) -> None:
         """Read additional data from a directory."""
         return
 

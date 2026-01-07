@@ -800,7 +800,7 @@ def test_pump_save_saves_geojson(test_pump, tmp_path):
     assert expected_geojson.exists()
     with open(output_path, "rb") as f:
         data = tomli.load(f)
-        assert data["gdf"] == {"path": expected_geojson.name}
+        assert data["gdf"]["path"] == expected_geojson.name
 
 
 def test_elevate_save_saves_geojson(test_elevate, tmp_path):
@@ -816,7 +816,7 @@ def test_elevate_save_saves_geojson(test_elevate, tmp_path):
     assert expected_geojson.exists()
     with open(output_path, "rb") as f:
         data = tomli.load(f)
-        assert data["gdf"] == {"path": expected_geojson.name}
+        assert data["gdf"]["path"] == expected_geojson.name
 
 
 def test_buyout_save_saves_geojson(test_buyout, tmp_path):
@@ -832,7 +832,7 @@ def test_buyout_save_saves_geojson(test_buyout, tmp_path):
     assert expected_geojson.exists()
     with open(output_path, "rb") as f:
         data = tomli.load(f)
-        assert data["gdf"] == {"path": expected_geojson.name}
+        assert data["gdf"]["path"] == expected_geojson.name
 
 
 def test_floodproof_save_saves_geojson(test_floodproof, tmp_path):
@@ -848,7 +848,7 @@ def test_floodproof_save_saves_geojson(test_floodproof, tmp_path):
     assert expected_geojson.exists()
     with open(output_path, "rb") as f:
         data = tomli.load(f)
-        assert data["gdf"] == {"path": expected_geojson.name}
+        assert data["gdf"]["path"] == expected_geojson.name
 
 
 def test_green_infra_save_saves_geojson(test_green_infra, tmp_path):
@@ -864,4 +864,4 @@ def test_green_infra_save_saves_geojson(test_green_infra, tmp_path):
     assert expected_geojson.exists()
     with open(output_path, "rb") as f:
         data = tomli.load(f)
-        assert data["gdf"] == {"path": expected_geojson.name}
+        assert data["gdf"]["path"] == expected_geojson.name

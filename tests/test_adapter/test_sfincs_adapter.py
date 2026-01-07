@@ -36,7 +36,9 @@ from flood_adapt.objects import (
 from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.data_container import (
     CycloneTrackContainer,
+    DataFrameContainer,
     GeoDataFrameContainer,
+    NetCDFContainer,
     TranslationModel,
 )
 from flood_adapt.objects.forcing import (
@@ -140,7 +142,8 @@ class TestAddForcing:
                 lon=int(test_db.site.lon),
             )
             ds.to_netcdf(path)
-            forcing = WindNetCDF(path=path)
+
+            forcing = WindNetCDF(timeseries=NetCDFContainer(path=path, name="wind"))
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
@@ -200,15 +203,14 @@ class TestAddForcing:
                 / cyclone_track_container.path.with_suffix(".spw").name
             ).exists()
 
-        def test_add_forcing_waterlevels_csv(
+        def test_add_forcing_wind_csv(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_wind: WindSynthetic
         ):
             # Arrange
-            tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
             time_frame = default_sfincs_adapter.get_model_time()
-            synthetic_wind.to_dataframe(time_frame).to_csv(tmp_path)
-
-            forcing = WindCSV(path=tmp_path)
+            df = DataFrameContainer(name="wind")
+            df.set_data(synthetic_wind.to_dataframe(time_frame))
+            forcing = WindCSV(timeseries=df)
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
@@ -257,12 +259,12 @@ class TestAddForcing:
         ):
             # Arrange
             adapter = sfincs_adapter_with_dummy_scn
-            tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
             time_frame = adapter.get_model_time()
-            synthetic_rainfall.to_dataframe(time_frame).to_csv(tmp_path)
+            ts = DataFrameContainer(name="rainfall")
+            ts.set_data(synthetic_rainfall.to_dataframe(time_frame))
 
             # Act
-            forcing = RainfallCSV(path=tmp_path)
+            forcing = RainfallCSV(timeseries=ts)
             adapter.add_forcing(forcing)
 
             # Assert
@@ -311,7 +313,8 @@ class TestAddForcing:
                 lon=int(test_db.site.lon),
             )
             ds.to_netcdf(path)
-            forcing = RainfallNetCDF(path=path)
+            ts = NetCDFContainer(path=path, name="rainfall")
+            forcing = RainfallNetCDF(timeseries=ts)
 
             # Act
             adapter.add_forcing(forcing)
@@ -405,11 +408,10 @@ class TestAddForcing:
             self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
         ):
             # Arrange
-            tmp_path = Path(tempfile.gettempdir()) / "discharge.csv"
             time_frame = default_sfincs_adapter.get_model_time()
-            synthetic_discharge.to_dataframe(time_frame).to_csv(tmp_path)
-
-            forcing = DischargeCSV(path=tmp_path, river=synthetic_discharge.river)
+            ts = DataFrameContainer(name=synthetic_discharge.river.name)
+            ts.set_data(synthetic_discharge.to_dataframe(time_frame))
+            forcing = DischargeCSV(timeseries=ts, river=synthetic_discharge.river)
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
@@ -562,10 +564,12 @@ class TestAddForcing:
             self, adapter_with_datum: SfincsAdapter, synthetic_waterlevels
         ):
             # Arrange
-            tmp_path = Path(tempfile.gettempdir()) / "waterlevels.csv"
             time_frame = adapter_with_datum.get_model_time()
-            synthetic_waterlevels.to_dataframe(time_frame).to_csv(tmp_path)
-            forcing = WaterlevelCSV(path=tmp_path, units=us.UnitTypesLength.feet)
+            timeseries = DataFrameContainer(name="waterlevel")
+            timeseries.set_data(synthetic_waterlevels.to_dataframe(time_frame))
+            forcing = WaterlevelCSV(
+                timeseries=timeseries, units=us.UnitTypesLength.feet
+            )
 
             conversion = us.UnitfulLength(value=1.0, units=forcing.units).convert(
                 us.UnitTypesLength.meters

@@ -22,7 +22,7 @@ class TestHistoricalEvent:
         event = setup_nearshore_event
         expected_csvs = [
             path.parent / "waterlevel.csv",
-            path.parent / "discharge.csv",
+            path.parent / "cooper.csv",
         ]
 
         # Act
@@ -37,6 +37,6 @@ class TestHistoricalEvent:
         saved_event.save(path)
         assert path.exists()
 
-        loaded_event = HistoricalEvent.load_file(path)
+        loaded_event = HistoricalEvent.load_file(path, load_all=True)
 
         assert loaded_event == saved_event

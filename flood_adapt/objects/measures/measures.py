@@ -209,9 +209,9 @@ class Measure(Object):
         if self.gdf is not None:
             self.gdf.write(output_dir=Path(output_dir))
 
-    def read(self, **kwargs) -> None:
+    def read(self, directory: Path | None = None, **kwargs) -> None:
         if self.gdf is not None:
-            self.gdf.read(**kwargs)
+            self.gdf.read(directory=directory, **kwargs)
 
     def __eq__(self, value):
         if not isinstance(value, self.__class__):

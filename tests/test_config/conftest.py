@@ -19,8 +19,8 @@ from tests.data.create_test_static import (
 
 
 @pytest.fixture
-def test_sfincs():
-    return create_sfincs_config()
+def test_sfincs(setup_test_database):
+    return create_sfincs_config(setup_test_database)
 
 
 @pytest.fixture

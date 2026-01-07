@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.forcing.time_frame import TimeFrame
 from flood_adapt.objects.forcing.wind import (
     WindConstant,
@@ -51,9 +52,10 @@ class TestWindCSV:
         path = _create_dummy_csv
         if not path.parent.exists():
             path.parent.mkdir(parents=True)
+        ts = DataFrameContainer(name="wind", path=path)
 
         # Act
-        wind_df = WindCSV(path=path).to_dataframe(time_frame=TimeFrame())
+        wind_df = WindCSV(timeseries=ts).to_dataframe(time_frame=TimeFrame())
 
         # Assert
         assert isinstance(wind_df, pd.DataFrame)
@@ -64,8 +66,9 @@ class TestWindCSV:
     ):
         # Arrange
         path = _create_dummy_csv
+        ts = DataFrameContainer(name="wind", path=path)
 
-        wind = WindCSV(path=path)
+        wind = WindCSV(timeseries=ts)
         expected_csv = tmp_path / "output" / "wind.csv"
 
         # Act

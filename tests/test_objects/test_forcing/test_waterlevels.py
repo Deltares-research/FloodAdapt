@@ -4,6 +4,7 @@ import pytest
 from flood_adapt.config.hazard import RiverModel
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.events.historical import (
     HistoricalEvent,
 )
@@ -164,11 +165,11 @@ class TestWaterlevelCSV:
         self, tmp_path, dummy_1d_timeseries_df: pd.DataFrame
     ):
         path = tmp_path / "test.csv"
-        dummy_1d_timeseries_df.to_csv(path)
         time = TimeFrame(
             start_time=dummy_1d_timeseries_df.index[0],
             end_time=dummy_1d_timeseries_df.index[-1],
         )
+        dummy_1d_timeseries_df.to_csv(path)
 
         expected_df = CSVTimeseries.load_file(
             path=path,
@@ -176,7 +177,9 @@ class TestWaterlevelCSV:
         ).to_dataframe(time_frame=time)
 
         # Act
-        wl_df = WaterlevelCSV(path=path).to_dataframe(time_frame=time)
+        wl_df = WaterlevelCSV(
+            timeseries=DataFrameContainer(path=path, name="waterlevel")
+        )
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)

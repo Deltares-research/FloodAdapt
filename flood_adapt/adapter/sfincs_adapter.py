@@ -126,6 +126,12 @@ class SfincsAdapter(IHazardAdapter):
         )
         self._model.read()
 
+        if self._model.region.crs is None:
+            # workaround for hydromt-sfincs problem where region has no crs
+            region = self._model.region
+            region.crs = self._model.crs
+            self._model.geoms.update(region=region)
+
         # State variables for scenario, event and eventset
         self._scenario: Optional[Scenario] = None
         self._event: Optional[Event] = None

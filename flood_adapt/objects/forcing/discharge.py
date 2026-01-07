@@ -3,12 +3,11 @@ from pathlib import Path
 from typing import Annotated
 
 import pandas as pd
+from pydantic import model_validator
 
-from flood_adapt.misc.utils import (
-    copy_file_to_output_dir,
-    validate_file_extension,
-)
+from flood_adapt.misc.utils import validate_file_extension
 from flood_adapt.objects import unit_system as us
+from flood_adapt.objects.data_container import DataFrameContainer
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     IDischarge,
@@ -53,23 +52,30 @@ class DischargeSynthetic(IDischarge):
 class DischargeCSV(IDischarge):
     source: ForcingSource = ForcingSource.CSV
 
-    path: Annotated[Path, validate_file_extension([".csv"])]
-    # TODO add DataFrameContainer
+    path: Annotated[Path | None, validate_file_extension([".csv"])] = None  # DEPRECATED
+    timeseries: DataFrameContainer
 
     units: us.UnitTypesDischarge = us.UnitTypesDischarge.cms
 
     def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
-        return CSVTimeseries.load_file(
-            path=self.path, units=us.UnitfulDischarge(value=0, units=self.units)
-        ).to_dataframe(time_frame=time_frame)
+        ts = CSVTimeseries(
+            path=self.timeseries.path,
+            units=us.UnitfulDischarge(value=0, units=self.units),
+            _data=self.timeseries.data,
+        )
+        return ts.to_dataframe(time_frame=time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+        self.timeseries.write(output_dir=output_dir)
 
-    def read(self, directory: Path | None = None) -> None:
-        if directory is None:
-            directory = Path.cwd()
-        path = directory / self.path
-        if not path.exists():
-            raise FileNotFoundError(f"Could not find file: {path}")
-        self.path = path
+    def read(self, directory: Path | None = None, **kwargs) -> None:
+        self.timeseries.read(directory=directory, **kwargs)
+
+    @model_validator(mode="after")
+    def convert_path_to_timeseries(self):
+        if self.path:
+            self.timeseries = DataFrameContainer(path=self.path, name=self.river.name)
+        return self
+
+    def model_dump(self, **kwargs):
+        return super().model_dump(exclude={"path"}, **kwargs)

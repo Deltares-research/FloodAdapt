@@ -33,7 +33,7 @@ def test_loadfile_fromtestbenefittoml_createbenefit(test_db):
         f"{name}.toml",
     )
 
-    benefit = Benefit.load_file(benefit_path)
+    benefit = Benefit.load_file(benefit_path, load_all=True)
 
     assert isinstance(benefit, Benefit)
 
@@ -47,7 +47,7 @@ def test_loadfile_fromtestbenefitnocoststoml_createbenefit(test_db):
         f"{name}.toml",
     )
 
-    benefit = Benefit.load_file(benefit_path)
+    benefit = Benefit.load_file(benefit_path, load_all=True)
 
     assert isinstance(benefit, Benefit)
 
@@ -62,7 +62,7 @@ def test_loadfile_nonexistingfile_filenotfounderror(test_db):
     )
 
     with pytest.raises(FileNotFoundError):
-        Benefit.load_file(benefit_path)
+        Benefit.load_file(benefit_path, load_all=True)
 
 
 # Create Benefit object using using a dictionary

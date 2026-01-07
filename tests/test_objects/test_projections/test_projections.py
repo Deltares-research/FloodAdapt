@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import geopandas as gpd
-
 from flood_adapt.objects import Projection
 from flood_adapt.objects.data_container import GeoDataFrameContainer
 
@@ -13,11 +11,13 @@ def test_projection_save_and_load_file(projection_full: Projection, tmp_path: Pa
 
     test_projection.save(file_path)
     assert file_path.is_file()
-
-    assert (file_path.parent / "new_developments.geojson").is_file()
+    assert test_projection.socio_economic_change.gdf is not None
+    assert (
+        file_path.parent / f"{test_projection.socio_economic_change.gdf.name}.geojson"
+    ).is_file()
     assert test_projection.socio_economic_change.new_development_shapefile is None
 
-    loaded_projection = Projection.load_file(file_path)
+    loaded_projection = Projection.load_file(file_path, load_all=True)
     assert loaded_projection == test_projection
 
 
@@ -27,7 +27,9 @@ def test_save_with_new_development_areas_shapefile_already_exists(
     # Arrange
     test_projection = projection_full
     toml_path = tmp_path / f"{test_projection.name}.toml"
-    expected_new_path = toml_path.parent / "new_developments.geojson"
+    expected_new_path = (
+        toml_path.parent / f"{test_projection.socio_economic_change.gdf.name}.geojson"
+    )
 
     # Act
     test_projection.save(toml_path)
@@ -37,7 +39,7 @@ def test_save_with_new_development_areas_shapefile_already_exists(
     assert toml_path.exists()
     assert expected_new_path.exists()
     assert test_projection.socio_economic_change.new_development_shapefile is None
-    assert isinstance(test_projection.socio_economic_change.gdf, gpd.GeoDataFrame)
+    assert test_projection.socio_economic_change.gdf is not None
 
 
 def test_save_additional(
@@ -62,5 +64,5 @@ def test_save_additional_with_shapefile(
     output_dir = tmp_path / "output"
     projection_full.save_additional(output_dir)
 
-    expected_path = output_dir / shapefile.with_suffix(".geojson").name
+    expected_path = output_dir / shapefile.name
     assert expected_path.exists()

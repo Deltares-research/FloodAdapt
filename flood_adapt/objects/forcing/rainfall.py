@@ -3,14 +3,17 @@ from pathlib import Path
 from typing import Annotated
 
 import pandas as pd
-import xarray as xr
+from pydantic import model_validator
 
 from flood_adapt.misc.utils import (
-    copy_file_to_output_dir,
     validate_file_extension,
 )
 from flood_adapt.objects import unit_system as us
-from flood_adapt.objects.data_container import CycloneTrackContainer
+from flood_adapt.objects.data_container import (
+    CycloneTrackContainer,
+    DataFrameContainer,
+    NetCDFContainer,
+)
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     IRainfall,
@@ -64,48 +67,66 @@ class RainfallTrack(IRainfall):
     def save_additional(self, output_dir: Path) -> None:
         self.track.write(output_dir=Path(output_dir))
 
-    def read(self, **kwargs) -> None:
-        self.track.read(**kwargs)
+    def read(self, directory: Path | None = None, **kwargs) -> None:
+        self.track.read(directory=directory, **kwargs)
 
 
 class RainfallCSV(IRainfall):
     source: ForcingSource = ForcingSource.CSV
 
-    path: Annotated[Path, validate_file_extension([".csv"])]
-    # TODO add DataFrameContainer
+    path: Annotated[Path | None, validate_file_extension([".csv"])] = None  # DEPRECATED
+    timeseries: DataFrameContainer
 
     units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
     def to_dataframe(self, time_frame: TimeFrame) -> pd.DataFrame:
-        return CSVTimeseries.load_file(
-            path=self.path, units=us.UnitfulIntensity(value=0, units=self.units)
-        ).to_dataframe(time_frame=time_frame)
+        ts = CSVTimeseries(
+            path=self.timeseries.path,
+            units=us.UnitfulIntensity(value=0, units=self.units),
+            _data=self.timeseries.data,
+        )
+        return ts.to_dataframe(time_frame=time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+        self.timeseries.write(output_dir=output_dir)
 
-    def read(self, directory: Path | None = None) -> None:
-        if directory is None:
-            directory = Path.cwd()
-        path = directory / self.path
-        if not path.exists():
-            raise FileNotFoundError(f"Could not find file: {path}")
-        self.path = path
+    def read(self, directory: Path | None = None, **kwargs) -> None:
+        self.timeseries.read(directory=directory, **kwargs)
+
+    @model_validator(mode="after")
+    def convert_path_to_timeseries(self):
+        if self.path:
+            self.timeseries = DataFrameContainer(path=self.path, name="rainfall")
+        return self
+
+    def model_dump(self, **kwargs):
+        return super().model_dump(exclude={"path"}, **kwargs)
 
 
 class RainfallNetCDF(IRainfall):
     source: ForcingSource = ForcingSource.NETCDF
     units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
-    path: Annotated[Path, validate_file_extension([".nc"])]
-    # TODO add NetCDFContainer
+    path: Annotated[Path | None, validate_file_extension([".nc"])] = None  # DEPRECATED
+    timeseries: NetCDFContainer
 
-    def read(self) -> xr.Dataset:
+    def read(self, directory: Path | None = None, **kwargs) -> None:
+        self.timeseries.read(directory=directory, **kwargs)
         required_vars = ("precip",)
         required_coords = ("time", "lat", "lon")
-        with xr.open_dataset(self.path) as ds:
-            validated_ds = validate_netcdf_forcing(ds, required_vars, required_coords)
-        return validated_ds
+        validated_ds = validate_netcdf_forcing(
+            self.timeseries.data, required_vars, required_coords
+        )
+        self.timeseries.set_data(validated_ds)
 
-    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+    def save_additional(self, output_dir: Path | None = None) -> None:
+        self.timeseries.write(output_dir=output_dir)
+
+    @model_validator(mode="after")
+    def convert_path_to_timeseries(self):
+        if self.path:
+            self.timeseries = NetCDFContainer(path=self.path, name="rainfall")
+        return self
+
+    def model_dump(self, **kwargs):
+        return super().model_dump(exclude={"path"}, **kwargs)

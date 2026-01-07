@@ -1,6 +1,4 @@
-import tempfile
 from datetime import datetime, timedelta
-from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -18,6 +16,7 @@ from flood_adapt.objects import (
 from flood_adapt.objects import unit_system as us
 from flood_adapt.objects.data_container import (
     CycloneTrackContainer,
+    DataFrameContainer,
 )
 from flood_adapt.objects.forcing import (
     DischargeConstant,
@@ -66,32 +65,23 @@ __all__ = [
 
 @pytest.fixture()
 def _wind_csv(dummy_2d_timeseries_df: pd.DataFrame):
-    tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
-    dummy_2d_timeseries_df.to_csv(tmp_path)
-
-    return WindCSV(
-        path=tmp_path,
-    )
+    timeseries = DataFrameContainer(name="wind")
+    timeseries.set_data(dummy_2d_timeseries_df)
+    return WindCSV(timeseries=timeseries)
 
 
 @pytest.fixture()
 def _rainfall_csv(dummy_1d_timeseries_df: pd.DataFrame):
-    tmp_path = Path(tempfile.gettempdir()) / "rainfall.csv"
-    dummy_1d_timeseries_df.to_csv(tmp_path)
-
-    return RainfallCSV(
-        path=tmp_path,
-    )
+    timeseries = DataFrameContainer(name="rainfall")
+    timeseries.set_data(dummy_1d_timeseries_df)
+    return RainfallCSV(timeseries=timeseries)
 
 
 @pytest.fixture()
 def _waterlevel_csv(dummy_1d_timeseries_df: pd.DataFrame):
-    tmp_path = Path(tempfile.gettempdir()) / "waterlevel.csv"
-    dummy_1d_timeseries_df.to_csv(tmp_path)
-
-    return WaterlevelCSV(
-        path=tmp_path,
-    )
+    timeseries = DataFrameContainer(name="waterlevel")
+    timeseries.set_data(dummy_1d_timeseries_df)
+    return WaterlevelCSV(timeseries=timeseries)
 
 
 @pytest.fixture()
@@ -208,7 +198,7 @@ def test_event_all_synthetic():
 @pytest.fixture()
 def setup_hurricane_event(
     cyclone_track_container: CycloneTrackContainer,
-) -> tuple[HurricaneEvent, Path]:
+) -> HurricaneEvent:
     cyclone_track_container.data.include_rainfall = True
     event = HurricaneEvent(
         name="hurricane",
@@ -257,22 +247,21 @@ def setup_hurricane_scenario(
 
 @pytest.fixture()
 def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
-    def _tmp_timeseries_csv(name: str):
-        tmp_csv = Path(tempfile.gettempdir()) / name
-        dummy_1d_timeseries_df.to_csv(tmp_csv)
-        return Path(tmp_csv)
-
     time = TimeFrame(
         start_time=REFERENCE_TIME, end_time=REFERENCE_TIME + timedelta(hours=2)
     )
+
+    waterlevels = DataFrameContainer(name="waterlevel")
+    waterlevels.set_data(dummy_1d_timeseries_df)
+
+    discharge = DataFrameContainer(name="cooper")
+    discharge.set_data(dummy_1d_timeseries_df)
 
     return HistoricalEvent(
         name="nearshore_gauged",
         time=time,
         forcings={
-            ForcingType.WATERLEVEL: [
-                WaterlevelCSV(path=_tmp_timeseries_csv("waterlevel.csv"))
-            ],
+            ForcingType.WATERLEVEL: [WaterlevelCSV(timeseries=waterlevels)],
             ForcingType.WIND: [
                 WindConstant(
                     speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
@@ -299,7 +288,7 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
                     ),
-                    path=_tmp_timeseries_csv("discharge.csv"),
+                    timeseries=discharge,
                 ),
             ],
         },

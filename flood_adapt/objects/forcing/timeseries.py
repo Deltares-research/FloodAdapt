@@ -398,9 +398,21 @@ class TriangleTimeseries(SyntheticTimeseries):
 class CSVTimeseries(BaseModel, Generic[TValueUnitPair]):
     path: Path
     units: TValueUnitPair
+    _data: Optional[pd.DataFrame] = None
+
+    @property
+    def data(self) -> pd.DataFrame:
+        if self._data is None:
+            self._data = read_csv(self.path)
+        return self._data
+
+    def set_data(self, data: pd.DataFrame):
+        self._data = data
 
     @model_validator(mode="after")
     def validate_csv(self):
+        if self.path is None and self._data is not None:
+            return self
         if not self.path.exists():
             raise ValueError(f"Path {self.path} does not exist.")
         if not self.path.is_file():
@@ -409,7 +421,7 @@ class CSVTimeseries(BaseModel, Generic[TValueUnitPair]):
             raise ValueError(f"Path {self.path} is not a csv file.")
 
         # Try loading the csv file, read_csv will raise an error if it cannot read the file
-        read_csv(self.path)
+        self._data = read_csv(self.path)
         return self
 
     @staticmethod
@@ -436,13 +448,12 @@ class CSVTimeseries(BaseModel, Generic[TValueUnitPair]):
         pd.DataFrame
             Interpolated timeseries with datetime index.
         """
-        file_data = read_csv(self.path)
+        data = self.data
 
         # Ensure requested time range is within available data
-        start_time = max(time_frame.start_time, file_data.index.min())
-        end_time = min(time_frame.end_time, file_data.index.max())
-
-        df = file_data.loc[start_time:end_time]
+        start_time = max(time_frame.start_time, data.index.min())
+        end_time = min(time_frame.end_time, data.index.max())
+        df = data.loc[start_time:end_time]
 
         # Generate the complete time range
         time_range = pd.date_range(
@@ -464,7 +475,7 @@ class CSVTimeseries(BaseModel, Generic[TValueUnitPair]):
         self,
         time_step: timedelta = TimeFrame().time_step,
     ) -> np.ndarray:
-        return read_csv(self.path).to_numpy()
+        return self.data.to_numpy()
 
     def read_time_frame(self) -> TimeFrame:
         """
@@ -475,10 +486,10 @@ class CSVTimeseries(BaseModel, Generic[TValueUnitPair]):
         TimeFrame
             Time frame of the data in the file.
         """
-        file_data = read_csv(self.path)
+        data = self.data
         return TimeFrame(
-            start_time=file_data.index.min(),
-            end_time=file_data.index.max(),
+            start_time=data.index.min(),
+            end_time=data.index.max(),
         )
 
 

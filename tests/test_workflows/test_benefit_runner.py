@@ -18,13 +18,7 @@ class TestBenefitScenariosNotCreated:
     def benefit_obj_and_runner(self, test_db_class):
         test_db = test_db_class
         name = "benefit_raise_properties_2050"
-        benefit_path = test_db.input_path.joinpath(
-            "benefits",
-            name,
-            f"{name}.toml",
-        )
-
-        benefit = Benefit.load_file(benefit_path)
+        benefit = test_db.benefits.get(name, load_all=True)
         runner = BenefitRunner(test_db, benefit)
 
         yield benefit, runner
@@ -118,15 +112,7 @@ class TestBenefitScenariosCreated:
     @pytest.fixture(scope="class", autouse=True)
     def benefit_obj_and_runner(self, test_db_class: IDatabase):
         test_db = test_db_class
-        name = "benefit_raise_properties_2050"
-        benefit_path = test_db.input_path.joinpath(
-            "benefits",
-            name,
-            f"{name}.toml",
-        )
-
-        benefit = Benefit.load_file(benefit_path)
-
+        benefit = test_db.benefits.get("benefit_raise_properties_2050", load_all=True)
         # Create missing scenarios
         runner = BenefitRunner(test_db, benefit)
         runner.create_benefit_scenarios()
@@ -187,13 +173,7 @@ class TestBenefitScenariosRun:
     def prepare_outputs(self, test_db_class: IDatabase, benefit_name: str):
         benefit_name = _TEST_NAMES[benefit_name]
         test_db = test_db_class
-        benefit_path = test_db.input_path.joinpath(
-            "benefits",
-            benefit_name,
-            f"{benefit_name}.toml",
-        )
-
-        benefit = Benefit.load_file(benefit_path)
+        benefit = test_db.benefits.get(benefit_name, load_all=True)
         runner = BenefitRunner(test_db, benefit)
         runner.create_benefit_scenarios()
 

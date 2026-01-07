@@ -15,7 +15,6 @@ from flood_adapt.objects.benefits.benefits import (
 from flood_adapt.objects.data_container import (
     CycloneTrackContainer,
     GeoDataFrameContainer,
-    TropicalCyclone,
 )
 from flood_adapt.objects.events.event_set import (
     EventSet,
@@ -674,19 +673,9 @@ def _create_single_events():
                 )
             ],
             ForcingType.WATERLEVEL: [WaterlevelModel()],
-            ForcingType.WIND: [
-                WindTrack(
-                    track=CycloneTrackContainer(
-                        path=DATA_DIR / "cyclones" / "FLORENCE.cyc"
-                    )
-                )
-            ],
+            ForcingType.WIND: [WindTrack(track=_create_cyclone_track_container())],
             ForcingType.RAINFALL: [
-                RainfallTrack(
-                    track=CycloneTrackContainer(
-                        path=DATA_DIR / "cyclones" / "FLORENCE.cyc"
-                    )
-                ),
+                RainfallTrack(track=_create_cyclone_track_container())
             ],
         },
     )
@@ -785,11 +774,7 @@ def _create_event_set(name: str) -> EventSet:
 
 
 def _create_cyclone_track_container() -> CycloneTrackContainer:
-    track = TropicalCyclone()
-    track.read_track(DATA_DIR / "IAN.cyc", fmt="ddb_cyc")
-    container = CycloneTrackContainer(name="IAN")
-    container.set_data(track)
-    return container
+    return CycloneTrackContainer(name="IAN", path=DATA_DIR / "IAN.cyc")
 
 
 def create_event_set_with_hurricanes():

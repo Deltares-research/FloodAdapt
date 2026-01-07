@@ -98,6 +98,7 @@ class DataContainer(BaseModel, Generic[T]):
 
     def write(self, output_dir: Path | None = None, **kwargs) -> None:
         """Write `_data` to the given directory or its original path."""
+        self.data  # attempt to load data if not already loaded
         self._assert_has_data()
         write_path = output_dir / self.file_name if output_dir else self.path
         write_path.parent.mkdir(parents=True, exist_ok=True)

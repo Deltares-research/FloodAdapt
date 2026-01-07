@@ -618,6 +618,9 @@ class DatabaseBuilder:
         shutil.copytree(user_provided, location_in_db)
         in_db = HydromtSfincsModel(root=str(location_in_db), mode="r+")
         in_db.read()
+        region = in_db.region
+        region.crs = in_db.crs
+        in_db.geoms.update(region=region)
         self.sfincs_overland_model = in_db
 
     @debug_timer
