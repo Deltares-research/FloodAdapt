@@ -1663,7 +1663,7 @@ class DatabaseBuilder:
             db_file_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(self.config.tide_gauge.file, db_file_path)
 
-            rel_db_path = Path(db_file_path.relative_to(self.static_path))
+            rel_db_path = Path(db_file_path.relative_to(self.static_path)).as_posix()
             logger.warning(
                 f"Tide gauge from file {rel_db_path} assumed to be in {self.unit_system.default_length_units}!"
             )
