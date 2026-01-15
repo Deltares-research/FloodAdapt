@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import rioxarray as rxr
 import tomli
+import tomli_w
 import xarray as xr
 from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
@@ -23,6 +24,7 @@ from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from hydromt_sfincs.workflows.downscaling import make_index_cog
 from pydantic import BaseModel, Field
 from shapely import MultiLineString, MultiPolygon, Polygon
+from shapely.ops import nearest_points
 
 from flood_adapt.adapter.fiat_adapter import _FIAT_COLUMNS
 from flood_adapt.config.fiat import (
@@ -32,10 +34,15 @@ from flood_adapt.config.fiat import (
 from flood_adapt.config.gui import (
     AggregationDmgLayer,
     BenefitsLayer,
+    FieldName,
+    FilterCondition,
+    FilterGroup,
     FloodMapLayer,
     FootprintsDmgLayer,
     GuiModel,
     GuiUnitModel,
+    LogicalOperator,
+    MetricLayer,
     OutputLayers,
     PlottingModel,
     SyntheticTideModel,
@@ -70,6 +77,15 @@ from flood_adapt.config.site import (
     Site,
     StandardObjectModel,
 )
+from flood_adapt.database_builder.metrics_utils import (
+    BuildingsInfographicModel,
+    EventInfographicModel,
+    HomesInfographicModel,
+    MetricModel,
+    Metrics,
+    RiskInfographicModel,
+    RoadsInfographicModel,
+)
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.debug_timer import debug_timer
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -86,16 +102,6 @@ from flood_adapt.objects.projections.projections import (
     SocioEconomicChange,
 )
 from flood_adapt.objects.strategies.strategies import Strategy
-
-from .metrics_utils import (
-    BuildingsInfographicModel,
-    EventInfographicModel,
-    HomesInfographicModel,
-    MetricModel,
-    Metrics,
-    RiskInfographicModel,
-    RoadsInfographicModel,
-)
 
 logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 
@@ -129,17 +135,43 @@ def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
     return path.as_posix()
 
 
-class SpatialJoinModel(BaseModel):
-    """Represents a spatial join model.
+def make_relative(str_path: str | Path, toml_path: Path) -> str:
+    """Make a path relative to the config file path.
 
-    Attributes
+    Parameters
     ----------
-    name : Optional[str], default None
-        The name of the model.
+    str_path : str | Path
+        The path to be made relative.
+    toml_path : Path
+        The path to the config file.
+
+    Returns
+    -------
+    str
+        The relative path as a string.
+    """
+    path = Path(str_path)
+    if not path.is_absolute():
+        return path.as_posix()
+    try:
+        relative_path = path.relative_to(toml_path.parent)
+        return relative_path.as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+class SpatialJoinModel(BaseModel):
+    """
+    Model for representing a spatial join between geometries and tabular data.
+
+    Parameters
+    ----------
+    name : Optional[str]
+        Name of the spatial join (optional).
     file : str
-        The file associated with the model.
+        Path to the file containing the spatial data to join.
     field_name : str
-        The field name used for the spatial join.
+        Name of the field used for joining.
     """
 
     name: Optional[str] = None
@@ -148,14 +180,13 @@ class SpatialJoinModel(BaseModel):
 
 
 class UnitSystems(str, Enum):
-    """Enumeration for accepted values for the unit_system field.
+    """
+    Enumeration for supported unit systems.
 
-    Attributes
-    ----------
-    imperial : str
-        Represents the imperial unit system.
-    metric : str
-        Represents the metric unit system.
+    Values
+    ------
+    imperial : Imperial units (feet, miles, etc.)
+    metric : Metric units (meters, kilometers, etc.)
     """
 
     imperial = "imperial"
@@ -163,36 +194,30 @@ class UnitSystems(str, Enum):
 
 
 class FootprintsOptions(str, Enum):
-    """Enumeration for accepted values for the building_footprints field.
+    """
+    Enumeration for building footprints data sources.
 
-    Attributes
-    ----------
-    OSM : str
-        Use OpenStreetMap for building footprints.
+    Values
+    ------
+    OSM : Use OpenStreetMap for building footprints.
     """
 
     OSM = "OSM"
 
 
 class Basins(str, Enum):
-    """Enumeration class representing different basins.
+    """
+    Enumeration of global cyclone basins.
 
-    Attributes
-    ----------
-    NA : str
-        North Atlantic
-    SA : str
-        South Atlantic
-    EP : str
-        Eastern North Pacific (which includes the Central Pacific region)
-    WP : str
-        Western North Pacific
-    SP : str
-        South Pacific
-    SI : str
-        South Indian
-    NI : str
-        North Indian
+    Values
+    ------
+    NA : North Atlantic
+    SA : South Atlantic
+    EP : Eastern North Pacific (includes Central Pacific)
+    WP : Western North Pacific
+    SP : South Pacific
+    SI : South Indian
+    NI : North Indian
     """
 
     NA = "NA"
@@ -205,59 +230,67 @@ class Basins(str, Enum):
 
 
 class GuiConfigModel(BaseModel):
-    """Represents a GUI model for FloodAdapt.
+    """
+    Configuration for FloodAdapt GUI visualization scaling.
 
-    Attributes
+    Parameters
     ----------
     max_flood_depth : float
-        The last visualization bin will be ">value".
+        Maximum flood depth for visualization bins (last bin is ">value").
     max_aggr_dmg : float
-        The last visualization bin will be ">value".
+        Maximum aggregated damage for visualization bins.
     max_footprint_dmg : float
-        The last visualization bin will be ">value".
+        Maximum footprint damage for visualization bins.
     max_benefits : float
-        The last visualization bin will be ">value".
+        Maximum benefits for visualization bins.
+    additional_aggregated_layers : Optional[list[MetricLayer]]
+        Additional metric layers for aggregation (optional).
     """
 
     max_flood_depth: float
     max_aggr_dmg: float
     max_footprint_dmg: float
     max_benefits: float
+    additional_aggregated_layers: Optional[list[MetricLayer]] = None
 
 
 class SviConfigModel(SpatialJoinModel):
-    """Represents a model for the Social Vulnerability Index (SVI).
+    """
+    Model for Social Vulnerability Index (SVI) spatial join.
 
-    Attributes
+    Inherits from SpatialJoinModel.
+
+    Parameters
     ----------
     threshold : float
-        The threshold value for the SVI model to specify vulnerability.
+        Threshold value to specify vulnerability.
     """
 
     threshold: float
 
 
 class TideGaugeConfigModel(BaseModel):
-    """Represents a tide gauge model.
+    """
+    Model for tide gauge configuration.
 
-    Attributes
+    Parameters
     ----------
     source : TideGaugeSource
-        The source of the tide gauge data.
-    description : str, default ""
+        Source of tide gauge data.
+    description : str
         Description of the tide gauge.
-    ref : Optional[str], default None
-        The reference name. Should be defined in the water level references.
-    id : Optional[int], default None
-        The station ID.
-    lon : Optional[float], default None
-        Longitude of the tide gauge.
-    lat : Optional[float], default None
-        Latitude of the tide gauge.
-    file : Optional[str], default None
-        The file associated with the tide gauge data.
-    max_distance : Optional[us.UnitfulLength], default None
-        The maximum distance.
+    ref : Optional[str]
+        Reference name (should match water level references).
+    id : Optional[int]
+        Station ID.
+    lon : Optional[float]
+        Longitude.
+    lat : Optional[float]
+        Latitude.
+    file : Optional[str]
+        Path to tide gauge data file.
+    max_distance : Optional[us.UnitfulLength]
+        Maximum distance for gauge association.
     """
 
     source: TideGaugeSource
@@ -272,74 +305,76 @@ class TideGaugeConfigModel(BaseModel):
 
 class ConfigModel(BaseModel):
     """
-    Represents the configuration model for FloodAdapt.
+    Main configuration model for FloodAdapt database builder.
 
-    Attributes
+    Parameters
     ----------
     name : str
-        The name of the site.
-    description : Optional[str], default None
-        The description of the site.
-    database_path : Optional[str], default None
-        The path to the database where all the sites are located.
+        Name of the site (must be valid for folder names).
+    description : Optional[str]
+        Description of the site.
+    database_path : Optional[str]
+        Path to the database root directory.
     unit_system : UnitSystems
-        The unit system.
+        Unit system for all calculations (imperial or metric).
     gui : GuiConfigModel
-        The GUI model representing scaling values for the layers.
-    infographics : bool, default True
-        Indicates if infographics are enabled.
-    event_infographics : Optional[EventInfographicModel], default None
-        Event infographic configuration.
-    risk_infographics : Optional[RiskInfographicModel], default None
-        Risk infographic configuration.
-    event_additional_infometrics : Optional[list[MetricModel]], default None
+        GUI visualization scaling configuration.
+    infographics : bool
+        Enable/disable infographics.
+    event_infographics : Optional[EventInfographicModel]
+        Configuration for event infographics.
+    risk_infographics : Optional[RiskInfographicModel]
+        Configuration for risk infographics.
+    event_additional_infometrics : Optional[list[MetricModel]]
         Additional event infometrics.
-    risk_additional_infometrics : Optional[list[MetricModel]], default None
+    risk_additional_infometrics : Optional[list[MetricModel]]
         Additional risk infometrics.
     fiat : str
-        The FIAT model path.
-    aggregation_areas : Optional[list[SpatialJoinModel]], default None
-        The list of aggregation area models.
-    building_footprints : Optional[SpatialJoinModel | FootprintsOptions], default FootprintsOptions.OSM
-        The building footprints model or OSM option.
-    fiat_buildings_name : str | list[str], default "buildings"
-        The name(s) of the buildings geometry in the FIAT model.
-    fiat_roads_name : Optional[str], default "roads"
-        The name of the roads geometry in the FIAT model.
-    bfe : Optional[SpatialJoinModel], default None
-        The BFE model.
-    svi : Optional[SviConfigModel], default None
-        The SVI model.
-    road_width : us.UnitfulLength, default 5 meters
-        The road width.
-    return_periods : Optional[list[int]], default None
-        The list of return periods for risk calculations.
-    floodmap_type : Optional[FloodmapType], default None
-        The type of floodmap to use.
-    references : Optional[WaterlevelReferenceModel], default None
-        The water level reference model.
+        Path to the FIAT model directory.
+    aggregation_areas : Optional[list[SpatialJoinModel]]
+        List of aggregation area spatial join models.
+    building_footprints : Optional[SpatialJoinModel | FootprintsOptions]
+        Building footprints source or spatial join model.
+    fiat_buildings_name : str | list[str]
+        Name(s) of buildings geometry in FIAT model.
+    fiat_roads_name : Optional[str]
+        Name of roads geometry in FIAT model.
+    bfe : Optional[SpatialJoinModel]
+        Base Flood Elevation spatial join model.
+    svi : Optional[SviConfigModel]
+        Social Vulnerability Index spatial join model.
+    road_width : us.UnitfulLength
+        Road width (default 5 meters).
+    return_periods : Optional[list[int]]
+        List of return periods for risk calculations.
+    floodmap_type : Optional[FloodmapType]
+        Type of floodmap to use.
+    references : Optional[WaterlevelReferenceModel]
+        Water level reference model.
     sfincs_overland : FloodModel
-        The overland SFINCS model.
-    sfincs_offshore : Optional[FloodModel], default None
-        The offshore SFINCS model.
-    dem : Optional[DemModel], default None
-        The DEM model.
-    excluded_datums : list[str], default []
+        Overland SFINCS model configuration.
+    sfincs_offshore : Optional[FloodModel]
+        Offshore SFINCS model configuration.
+    dem : Optional[DemModel]
+        Digital Elevation Model configuration.
+    river_names : Optional[list[str]]
+        List of river names (optional).
+    excluded_datums : list[str]
         List of datums to exclude from plotting.
-    slr_scenarios : Optional[SlrScenariosModel], default None
-        The sea level rise scenarios model.
-    scs : Optional[SCSModel], default None
-        The SCS model.
-    tide_gauge : Optional[TideGaugeConfigModel], default None
-        The tide gauge model.
-    cyclones : Optional[bool], default True
-        Indicates if cyclones are enabled.
-    cyclone_basin : Optional[Basins], default None
-        The cyclone basin.
-    obs_point : Optional[list[ObsPointModel]], default None
-        The list of observation point models.
-    probabilistic_set : Optional[str], default None
-        The probabilistic set path.
+    slr_scenarios : Optional[SlrScenariosModel]
+        Sea level rise scenarios configuration.
+    scs : Optional[SCSModel]
+        SCS model configuration.
+    tide_gauge : Optional[TideGaugeConfigModel]
+        Tide gauge configuration.
+    cyclones : Optional[bool]
+        Enable/disable cyclones.
+    cyclone_basin : Optional[Basins]
+        Cyclone basin selection.
+    obs_point : Optional[list[ObsPointModel]]
+        List of observation point models.
+    probabilistic_set : Optional[str]
+        Path to probabilistic event set.
     """
 
     # General
@@ -375,7 +410,7 @@ class ConfigModel(BaseModel):
     sfincs_overland: FloodModel
     sfincs_offshore: Optional[FloodModel] = None
     dem: Optional[DemModel] = None
-
+    river_names: Optional[list[str]] = None
     excluded_datums: list[str] = Field(default_factory=list)
 
     slr_scenarios: Optional[SlrScenariosModel] = None
@@ -413,6 +448,8 @@ class ConfigModel(BaseModel):
         config.database_path = path_check(config.database_path, toml_path)
         config.fiat = path_check(config.fiat, toml_path)
         config.sfincs_overland.name = path_check(config.sfincs_overland.name, toml_path)
+        if config.dem:
+            config.dem.filename = path_check(config.dem.filename, toml_path)
         if config.sfincs_offshore:
             config.sfincs_offshore.name = path_check(
                 config.sfincs_offshore.name, toml_path
@@ -436,6 +473,67 @@ class ConfigModel(BaseModel):
                 aggr.file = path_check(aggr.file, toml_path)
 
         return config
+
+    def write(self, toml_path: Path) -> None:
+        """
+        Write the configuration model to a TOML file.
+
+        Parameters
+        ----------
+        toml_path : Path
+            The path to the TOML file where the configuration will be saved.
+        """
+        config_dict = self.model_dump(exclude_none=True)
+
+        # Make paths relative to the config file
+        config_dict["database_path"] = make_relative(
+            config_dict["database_path"], toml_path
+        )
+        config_dict["fiat"] = make_relative(config_dict["fiat"], toml_path)
+        config_dict["sfincs_overland"]["name"] = make_relative(
+            config_dict["sfincs_overland"]["name"], toml_path
+        )
+        if self.dem:
+            config_dict["dem"]["filename"] = make_relative(
+                config_dict["dem"]["filename"], toml_path
+            )
+        if config_dict.get("sfincs_offshore"):
+            config_dict["sfincs_offshore"]["name"] = make_relative(
+                config_dict["sfincs_offshore"]["name"], toml_path
+            )
+        if isinstance(self.building_footprints, SpatialJoinModel):
+            config_dict["building_footprints"]["file"] = make_relative(
+                config_dict["building_footprints"]["file"], toml_path
+            )
+        if self.tide_gauge and self.tide_gauge.file:
+            config_dict["tide_gauge"]["file"] = make_relative(
+                config_dict["tide_gauge"]["file"], toml_path
+            )
+        if self.svi:
+            config_dict["svi"]["file"] = make_relative(
+                config_dict["svi"]["file"], toml_path
+            )
+        if self.bfe:
+            config_dict["bfe"]["file"] = make_relative(
+                config_dict["bfe"]["file"], toml_path
+            )
+        if self.slr_scenarios:
+            config_dict["slr_scenarios"]["file"] = make_relative(
+                config_dict["slr_scenarios"]["file"], toml_path
+            )
+
+        if config_dict.get("probabilistic_set"):
+            config_dict["probabilistic_set"] = make_relative(
+                config_dict["probabilistic_set"], toml_path
+            )
+
+        if config_dict.get("aggregation_areas"):
+            for ag in config_dict["aggregation_areas"]:
+                ag["file"] = make_relative(ag["file"], toml_path)
+
+        toml_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(toml_path, mode="wb") as fp:
+            tomli_w.dump(config_dict, fp)
 
 
 class DatabaseBuilder:
@@ -464,15 +562,16 @@ class DatabaseBuilder:
     @debug_timer
     def build(self, overwrite: bool = False) -> None:
         # Check if database already exists
-        if self.root.exists() and not overwrite:
-            raise ValueError(
-                f"There is already a Database folder in '{self.root.as_posix()}'."
-            )
-        if self.root.exists() and overwrite:
-            shutil.rmtree(self.root)
-            warnings.warn(
-                f"There is already a Database folder in '{self.root.as_posix()}, which will be overwritten'."
-            )
+        if self.root.exists():
+            if overwrite:
+                shutil.rmtree(self.root)
+                warnings.warn(
+                    f"There is already a Database folder in '{self.root.as_posix()}, which will be overwritten'."
+                )
+            else:
+                raise ValueError(
+                    f"There is already a Database folder in '{self.root.as_posix()}'."
+                )
         # Create database folder
         self.root.mkdir(parents=True)
 
@@ -815,7 +914,7 @@ class DatabaseBuilder:
         exposure[_FIAT_COLUMNS.ground_elevation] = exposure["elev"]
         del exposure["elev"]
 
-        self.fiat_model.exposure.exposure_db = exposure
+        self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(exposure)
 
     def read_damage_unit(self) -> str:
         if self.fiat_model.exposure.damage_unit is None:
@@ -1079,7 +1178,9 @@ class DatabaseBuilder:
                 exposure_csv = exposure_csv.merge(
                     gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
                 )
-                self.fiat_model.exposure.exposure_db = exposure_csv
+                self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                    exposure_csv
+                )
                 # Update spatial joins in FIAT model
                 if self.fiat_model.spatial_joins["aggregation_areas"] is None:
                     self.fiat_model.spatial_joins["aggregation_areas"] = []
@@ -1141,7 +1242,9 @@ class DatabaseBuilder:
             exposure_csv = exposure_csv.merge(
                 gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
-            self.fiat_model.exposure.exposure_db = exposure_csv
+            self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                exposure_csv
+            )
             logger.warning(
                 "No aggregation areas were available in the FIAT model and none were provided in the config file. The region file will be used as a mock aggregation area."
             )
@@ -1172,7 +1275,9 @@ class DatabaseBuilder:
             exposure_csv = exposure_csv.merge(
                 buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
             )
-            self.fiat_model.exposure.exposure_db = exposure_csv
+            self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
+                exposure_csv
+            )
 
             # Save the spatial file for future use
             svi_path = self.static_path / "templates" / "fiat" / "svi" / "svi.gpkg"
@@ -1191,8 +1296,15 @@ class DatabaseBuilder:
                 "'SVI' column present in the FIAT exposure csv. Vulnerability type infometrics can be produced."
             )
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
+            if add_attrs is None:
+                logger.warning(
+                    "'SVI' column present in the FIAT exposure csv, but no spatial join found with the SVI map."
+                )
+                return None
+
             if "SVI" not in [attr["name"] for attr in add_attrs]:
                 logger.warning("No SVI map found to display in the FloodAdapt GUI!")
+                return None
 
             ind = [attr["name"] for attr in add_attrs].index("SVI")
             svi = add_attrs[ind]
@@ -1343,7 +1455,12 @@ class DatabaseBuilder:
         # Remove the original subgrid folder if it exists
         gc.collect()
         if subgrid_sfincs_folder_exist:
-            shutil.rmtree(subgrid_sfincs_folder)
+            try:
+                shutil.rmtree(subgrid_sfincs_folder)
+            except Exception:
+                logger.warning(
+                    f"Could not delete temporary SFINCS subgrid folder at {subgrid_sfincs_folder.as_posix()}."
+                )
 
         # Dem file always assumed to be in /static/dem
         return DemModel(
@@ -1392,22 +1509,23 @@ class DatabaseBuilder:
         else:
             logger.info("Observation points were provided in the config file.")
             obs_points = self.config.obs_point
+
+        model_region = self.sfincs_overland_model.region.union_all()
+
         if self.tide_gauge is not None:
-            # Check if the tide gauge point is within the SFINCS region
-            region = self.sfincs_overland_model.region
-            point = gpd.GeoSeries(
-                [gpd.points_from_xy([self.tide_gauge.lon], [self.tide_gauge.lat])[0]],
-                crs=4326,
+            # Check if tide gauge is within model domain
+            coord = (
+                gpd.GeoSeries(
+                    gpd.points_from_xy(
+                        x=[self.tide_gauge.lon], y=[self.tide_gauge.lat]
+                    ),
+                    crs="EPSG:4326",
+                )
+                .to_crs(self.sfincs_overland_model.crs)
+                .iloc[0]
             )
-            region_4326 = region.to_crs(4326)
-            if not point.within(region_4326.unary_union).item():
-                logger.warning(
-                    "The tide gauge location is outside the SFINCS region and will not be added as an observation point."
-                )
-            else:
-                logger.info(
-                    "A tide gauge has been setup in the database. It will be used as an observation point as well."
-                )
+            # Add tide gauge as obs point if within model region
+            if coord.within(model_region):
                 obs_points.append(
                     ObsPointModel(
                         name=self.tide_gauge.name,
@@ -1417,14 +1535,43 @@ class DatabaseBuilder:
                         lat=self.tide_gauge.lat,
                     )
                 )
+            else:
+                boundary = model_region.boundary
+                snapped = nearest_points(coord, boundary)[1]
+                distance = us.UnitfulLength(
+                    value=coord.distance(snapped), units=us.UnitTypesLength.meters
+                )
+                logger.warning(
+                    f"Tide gauge lies outside the model domain by {distance}. It will not be used as an observation point in FloodAdapt."
+                )
 
         if not obs_points:
             logger.warning(
                 "No observation points were provided in the config file or created from the tide gauge. No observation points will be available in FloodAdapt."
             )
             return None
-        else:
-            return obs_points
+
+        # Check if all obs points are within model domain
+        lon = [p.lon for p in obs_points]
+        lat = [p.lat for p in obs_points]
+        names = [p.name for p in obs_points]
+        coords = gpd.GeoDataFrame(
+            {"name": names},
+            geometry=gpd.points_from_xy(lon, lat),
+            crs="EPSG:4326",
+        )
+        coords = coords.to_crs(self.sfincs_overland_model.crs)
+        valid_coords = coords.within(model_region)
+        if not valid_coords.all():
+            invalid = coords.loc[~valid_coords, "name"].tolist()
+            lat = coords.loc[~valid_coords].geometry.y.tolist()
+            lon = coords.loc[~valid_coords].geometry.x.tolist()
+            bounds = model_region.bounds
+            raise ValueError(
+                f"Observation points outside model domain: {invalid}, {lat=}, {lon=}, {bounds=}"
+            )
+
+        return obs_points
 
     @debug_timer
     def create_rivers(self) -> list[RiverModel]:
@@ -1439,6 +1586,17 @@ class DatabaseBuilder:
             geometry=gpd.points_from_xy(df.x, df.y),
             crs=self.sfincs_overland_model.crs,
         )
+
+        if self.config.river_names:
+            if len(self.config.river_names) != len(river_locs):
+                msg = "The number of river names provided does not match the number of rivers found in the SFINCS model."
+                logger.error(msg)
+                raise ValueError(msg)
+            else:
+                river_locs["name"] = self.config.river_names
+        else:
+            river_locs["name"] = [f"river_{idx}" for idx in range(len(river_locs))]
+
         rivers = []
         for idx, row in river_locs.iterrows():
             if "dis" in self.sfincs_overland_model.forcing:
@@ -1455,7 +1613,7 @@ class DatabaseBuilder:
                 )
 
             river = RiverModel(
-                name=f"river_{idx}",
+                name=row["name"],
                 x_coordinate=row.x,
                 y_coordinate=row.y,
                 mean_discharge=us.UnitfulDischarge(
@@ -1781,6 +1939,69 @@ class DatabaseBuilder:
                 ],
                 threshold=0.0,
             )
+        red_colors_6 = [
+            "#FFFFFF",
+            "#FEE9CE",
+            "#FDBB84",
+            "#FC844E",
+            "#E03720",
+            "#860000",
+        ]
+
+        aggregated_metrics = []
+
+        building_count = MetricLayer(
+            type="building_count",
+            bins=[1, 10, 50, 200, 500],  # TODO provide max values
+            colors=red_colors_6,
+            filters=FilterGroup(
+                conditions=[
+                    FilterCondition(
+                        field_name=FieldName.NAME,
+                        values=["Count"],
+                    ),
+                    FilterCondition(
+                        field_name=FieldName.LONG_NAME,
+                        values=["(#)"],
+                    ),
+                ],
+                operator=LogicalOperator.OR,
+            ),
+        )
+        aggregated_metrics.append(building_count)
+
+        if self.config.gui.additional_aggregated_layers:
+            aggregated_metrics.extend(self.config.gui.additional_aggregated_layers)
+
+        if self._has_roads:
+            bins = [0.0001, 1, 5, 10, 20]  # in kms
+            if self.unit_system == GuiUnitModel.imperial():
+                # convert to miles
+                bins = [
+                    us.UnitfulLength(value=b * 1000, units=us.UnitTypesLength.meters)
+                    .transform(us.UnitTypesLength.miles)
+                    .value
+                    for b in bins
+                ]
+            roads_length = MetricLayer(
+                type="road_length",
+                bins=bins,  # TODO provide max values
+                colors=red_colors_6,
+                filters=FilterGroup(
+                    conditions=[
+                        FilterCondition(
+                            field_name=FieldName.NAME,
+                            values=["RoadsLength"],
+                        ),
+                        FilterCondition(
+                            field_name=FieldName.LONG_NAME,
+                            values=["roads"],
+                        ),
+                    ],
+                    operator=LogicalOperator.AND,
+                ),
+            )
+            aggregated_metrics.append(roads_length)
 
         output_layers = OutputLayers(
             floodmap=FloodMapLayer(
@@ -1791,25 +2012,12 @@ class DatabaseBuilder:
             ),
             aggregation_dmg=AggregationDmgLayer(
                 bins=[0.00001, 0.1 * ad_max, 0.25 * ad_max, 0.5 * ad_max, ad_max],
-                colors=[
-                    "#FFFFFF",
-                    "#FEE9CE",
-                    "#FDBB84",
-                    "#FC844E",
-                    "#E03720",
-                    "#860000",
-                ],
+                colors=red_colors_6,
             ),
+            aggregated_metrics=aggregated_metrics,
             footprints_dmg=FootprintsDmgLayer(
                 bins=[0.00001, 0.06 * ftd_max, 0.2 * ftd_max, 0.4 * ftd_max, ftd_max],
-                colors=[
-                    "#FFFFFF",
-                    "#FEE9CE",
-                    "#FDBB84",
-                    "#FC844E",
-                    "#E03720",
-                    "#860000",
-                ],
+                colors=red_colors_6,
             ),
             benefits=benefits_layer,
         )
@@ -1892,12 +2100,14 @@ class DatabaseBuilder:
         # Write the metrics config files
         self._write_infometrics(metrics, path_im, path_ig)
 
-    def _create_mandatory_metrics(self, metrics):
+        self.metrics = metrics
+
+    def _create_mandatory_metrics(self, metrics: Metrics):
         metrics.create_mandatory_metrics_event()
         if self._probabilistic_set_name is not None:
             metrics.create_mandatory_metrics_risk()
 
-    def _create_event_infographics(self, metrics):
+    def _create_event_infographics(self, metrics: Metrics):
         exposure_type = self._get_exposure_type()
         # If not specific infographic config is given, create a standard one
         if not self.config.event_infographics:
@@ -1929,7 +2139,7 @@ class DatabaseBuilder:
             )
         metrics.create_infographics_metrics_event(config=self.config.event_infographics)
 
-    def _create_risk_infographics(self, metrics):
+    def _create_risk_infographics(self, metrics: Metrics):
         exposure_type = self._get_exposure_type()
         # If not specific infographic config is given, create a standard one
         if not self.config.risk_infographics:
@@ -1946,17 +2156,17 @@ class DatabaseBuilder:
                 )
         metrics.create_infographics_metrics_risk(config=self.config.risk_infographics)
 
-    def _add_additional_event_metrics(self, metrics):
+    def _add_additional_event_metrics(self, metrics: Metrics):
         if self.config.event_additional_infometrics:
             for metric in self.config.event_additional_infometrics:
                 metrics.add_event_metric(metric)
 
-    def _add_additional_risk_metrics(self, metrics):
+    def _add_additional_risk_metrics(self, metrics: Metrics):
         if self.config.risk_additional_infometrics:
             for metric in self.config.risk_additional_infometrics:
                 metrics.add_risk_metric(metric)
 
-    def _write_infometrics(self, metrics, path_im, path_ig):
+    def _write_infometrics(self, metrics: Metrics, path_im: Path, path_ig: Path):
         if self._aggregation_areas is None:
             self._aggregation_areas = self.create_aggregation_areas()
         aggr_levels = [aggr.name for aggr in self._aggregation_areas]
@@ -2135,7 +2345,7 @@ class DatabaseBuilder:
 
         # Set model building footprints
         self.fiat_model.building_footprint = building_footprints
-        self.fiat_model.exposure.exposure_db = exposure_csv
+        self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(exposure_csv)
 
         # Save site attributes
         buildings_path = geo_path.relative_to(self.static_path)
@@ -2402,6 +2612,11 @@ class DatabaseBuilder:
         """
         # Make sure only csv objects have geometries
         for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
+            if _FIAT_COLUMNS.object_id not in geoms.columns:
+                logger.warning(
+                    f"Geometry '{self.fiat_model.exposure.geom_names[i]}' does not have an '{_FIAT_COLUMNS.object_id}' column and will be ignored."
+                )
+                continue
             keep = geoms[_FIAT_COLUMNS.object_id].isin(
                 self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.object_id]
             )
@@ -2441,6 +2656,35 @@ class DatabaseBuilder:
         ).reset_index(drop=True)
 
         return gdf
+
+    @staticmethod
+    def _clean_suffix_columns(df: pd.DataFrame) -> pd.DataFrame:
+        """Detect and resolves duplicate columns with _x/_y suffixes that appear after a pandas merge.
+
+        (e.g., 'Aggregation Label: Census Blockgroup_x' and 'Aggregation Label: Census Blockgroup_y').
+
+        Keeps the first non-null column of each pair and removes redundant ones.
+        """
+        cols = df.columns.tolist()
+        suffix_pairs = {}
+
+        for col in cols:
+            if col.endswith("_x"):
+                base = col[:-2]
+                if f"{base}_y" in df.columns:
+                    suffix_pairs[base] = (f"{base}_x", f"{base}_y")
+
+        for base, (col_x, col_y) in suffix_pairs.items():
+            # If both columns exist, prefer the one with more non-null values
+            x_notna = df[col_x].notna().sum()
+            y_notna = df[col_y].notna().sum()
+            keep_col = col_x if x_notna >= y_notna else col_y
+            df[base] = df[keep_col]
+
+            # Drop the old suffixed versions
+            df = df.drop(columns=[col_x, col_y])
+
+        return df
 
 
 def create_database(config: Union[str, Path, ConfigModel], overwrite=False) -> None:

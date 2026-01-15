@@ -704,23 +704,20 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_obs_points(self):
         """Add observation points provided in the site toml to SFINCS model."""
-        if self.settings.obs_point is None:
-            return
-        logger.info("Adding observation points to the overland flood model")
-
         obs_points = self.settings.obs_point
-        names = []
-        lat = []
-        lon = []
-        for pt in obs_points:
-            names.append(pt.name)
-            lat.append(pt.lat)
-            lon.append(pt.lon)
+        if not obs_points:
+            return
 
-        # create GeoDataFrame from obs_points in site file
+        names = [pt.name for pt in obs_points]
+        lat = [pt.lat for pt in obs_points]
+        lon = [pt.lon for pt in obs_points]
+
+        logger.info("Adding observation points to the overland flood model")
         df = pd.DataFrame({"name": names})
         gdf = gpd.GeoDataFrame(
-            df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+            df,
+            geometry=gpd.points_from_xy(lon, lat),
+            crs="EPSG:4326",
         )
 
         # Add locations to SFINCS file
@@ -1371,10 +1368,14 @@ class SfincsAdapter(IHazardAdapter):
             )
             return
 
-        logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
-
-        time_frame = self.get_model_time()
         model_rivers = self._read_river_locations()
+        if model_rivers.empty:
+            logger.warning(
+                "Cannot add discharge forcing: No rivers defined in the sfincs model."
+            )
+            return
+        logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
+        time_frame = self.get_model_time()
 
         # Check that the river is defined in the model and that the coordinates match
         river_loc = shapely.Point(
@@ -1794,17 +1795,22 @@ class SfincsAdapter(IHazardAdapter):
 
     def _read_river_locations(self) -> gpd.GeoDataFrame:
         path = self.get_model_root() / "sfincs.src"
-
-        with open(path) as f:
-            lines = f.readlines()
+        lines = []
+        if path.exists():
+            with open(path) as f:
+                lines = f.readlines()
         coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
         points = [shapely.Point(coord) for coord in coords]
 
         return gpd.GeoDataFrame({"geometry": points}, crs=self._model.crs)
 
     def _read_waterlevel_boundary_locations(self) -> gpd.GeoDataFrame:
-        with open(self.get_model_root() / "sfincs.bnd") as f:
-            lines = f.readlines()
+        path = self.get_model_root() / "sfincs.bnd"
+        lines = []
+        if path.exists():
+            with open(path) as f:
+                lines = f.readlines()
+
         coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
         points = [shapely.Point(coord) for coord in coords]
 

@@ -110,10 +110,12 @@ class ValueUnitPair(ABC, BaseModel, Generic[TUnit]):
         raise ValueError(f"Unsupported or unknown unit: {str_unit}")
 
     def __str__(self) -> str:
-        return f"{self.value} {self.units.value}"
+        return f"{self.value:.2f} {self.units.value}"
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(value={self.value}, units={self.units})"
+        return (
+            f"{type(self).__name__}(value={self.value:.2f}, units={self.units.value})"
+        )
 
     def __sub__(self: TClass, other: TClass) -> TClass:
         if not isinstance(other, type(self)):
