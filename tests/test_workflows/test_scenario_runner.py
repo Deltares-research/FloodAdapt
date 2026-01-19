@@ -1,4 +1,5 @@
 import platform
+from pathlib import Path
 
 import pytest
 
@@ -91,3 +92,37 @@ def test_run_on_all_scn(test_db, scn_name):
     runner = ScenarioRunner(test_db, scenario=scn)
     runner.run()
     assert runner.has_run_check()
+
+
+@pytest.fixture
+def test_db_with_postprocessing_hook(test_db: IDatabase) -> tuple[IDatabase, str]:
+    HOOK_CODE = """\
+def postprocess(database, scenario, results_path):
+    path = results_path / "postprocess_ran.txt"
+    path.write_text(f"postprocessed {scenario.name}")
+"""
+    rel_in_db = Path("postprocessing", "postprocess_hook.py")
+    abs_in_db = test_db.base_path / rel_in_db
+    abs_in_db.parent.mkdir(parents=True, exist_ok=True)
+    abs_in_db.write_text(HOOK_CODE)
+    test_db.config.post_processing_hook = rel_in_db.as_posix()
+    return test_db, "postprocess_ran.txt"
+
+
+def test_postprocessing_hook_execution(
+    test_db_with_postprocessing_hook: tuple[IDatabase, str],
+):
+    test_db, marker_filename = test_db_with_postprocessing_hook
+    # Run the post-processing hook directly
+    scn = Scenario(
+        name="test_scenario",
+        event="event",
+        projection="current",
+        strategy="no_measures",
+    )
+    runner = ScenarioRunner(test_db, scenario=scn)
+    runner.results_path.mkdir(parents=True, exist_ok=True)  # Ensure results path exists
+    runner._run_postprocessing_hook()
+
+    # Check that the post-processing hook created the expected file
+    assert (runner.results_path / marker_filename).exists()
