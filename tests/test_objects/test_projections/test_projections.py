@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import tomli
 
-from flood_adapt import unit_system as us
+from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.projections.projections import (
     PhysicalProjection,
     Projection,
