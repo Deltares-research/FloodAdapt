@@ -6,10 +6,10 @@ from typing import Any, Literal, Optional, Union
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import tomli
 from pydantic import BaseModel, Field, model_validator
 
 from flood_adapt.config.impacts import DamageType
+from flood_adapt.misc.io import read_toml
 from flood_adapt.objects.forcing import unit_system as us
 
 
@@ -503,7 +503,5 @@ class GuiModel(BaseModel):
 
     @staticmethod
     def read_toml(path: Path) -> "GuiModel":
-        with open(path, mode="rb") as fp:
-            toml_contents = tomli.load(fp)
-
-        return GuiModel(**toml_contents)
+        data = read_toml(path)
+        return GuiModel(**data)

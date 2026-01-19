@@ -4,10 +4,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, List, Type
 
-import tomli
 from pydantic import BaseModel, field_serializer
 
 from flood_adapt.config.hazard import RiverModel
+from flood_adapt.misc.io import read_toml
 
 
 ### ENUMS ###
@@ -56,9 +56,8 @@ class IForcing(BaseModel, ABC):
 
     @classmethod
     def load_file(cls, path: Path):
-        with open(path, mode="rb") as fp:
-            toml_data = tomli.load(fp)
-        return cls.load_dict(toml_data)
+        data = read_toml(path)
+        return cls.load_dict(data)
 
     @classmethod
     def load_dict(cls, attrs):

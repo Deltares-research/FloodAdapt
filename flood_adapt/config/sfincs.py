@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel, model_validator
-from tomli import load as load_toml
 
 from flood_adapt.config.hazard import (
     Cstype,
@@ -16,6 +15,7 @@ from flood_adapt.config.hazard import (
     SlrScenariosModel,
     WaterlevelReferenceModel,
 )
+from flood_adapt.misc.io import read_toml
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.tide_gauge import TideGauge
 
@@ -95,10 +95,8 @@ class SfincsModel(BaseModel):
 
     @staticmethod
     def read_toml(path: Path) -> "SfincsModel":
-        with open(path, mode="rb") as fp:
-            toml_contents = load_toml(fp)
-
-        return SfincsModel(**toml_contents)
+        data = read_toml(path)
+        return SfincsModel(**data)
 
     @model_validator(mode="after")
     def ensure_references_exist(self):

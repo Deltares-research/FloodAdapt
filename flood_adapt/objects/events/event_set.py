@@ -2,9 +2,9 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-import tomli
 from pydantic import BaseModel
 
+from flood_adapt.misc.io import read_toml
 from flood_adapt.objects.events.events import Event, Mode
 from flood_adapt.objects.object_model import Object
 
@@ -73,15 +73,16 @@ class EventSet(Object):
         cls, file_path: Path | str | os.PathLike, load_all: bool = False
     ) -> "EventSet":
         """Load object from file."""
-        with open(file_path, mode="rb") as fp:
-            event_set = tomli.load(fp)
-        event_set = EventSet(**event_set)
+        data = read_toml(file_path)
+        event_set = EventSet(**data)
         if load_all:
             # Load all sub events from the file path
             event_set.load_sub_events(file_path=file_path)
         return event_set
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self._events is None:
+            return
         for sub_event in self._events:
             sub_dir = Path(output_dir) / sub_event.name
             sub_dir.mkdir(parents=True, exist_ok=True)

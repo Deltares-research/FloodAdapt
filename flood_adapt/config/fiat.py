@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel
-from tomli import load as load_toml
 
 from flood_adapt.config.impacts import (
     AggregationModel,
@@ -13,6 +12,7 @@ from flood_adapt.config.impacts import (
     RiskModel,
     SVIModel,
 )
+from flood_adapt.misc.io import read_toml
 
 
 class FiatConfigModel(BaseModel):
@@ -65,10 +65,8 @@ class FiatConfigModel(BaseModel):
 
     @staticmethod
     def read_toml(path: Path) -> "FiatConfigModel":
-        with open(path, mode="rb") as fp:
-            toml_contents = load_toml(fp)
-
-        return FiatConfigModel(**toml_contents)
+        data = read_toml(path)
+        return FiatConfigModel(**data)
 
 
 class FiatModel(BaseModel):
@@ -91,7 +89,5 @@ class FiatModel(BaseModel):
 
     @staticmethod
     def read_toml(path: Path) -> "FiatModel":
-        with open(path, mode="rb") as fp:
-            toml_contents = load_toml(fp)
-
-        return FiatModel(**toml_contents)
+        data = read_toml(path)
+        return FiatModel(**data)

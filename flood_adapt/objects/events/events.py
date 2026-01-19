@@ -3,7 +3,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, ClassVar, List, Optional, Protocol, runtime_checkable
 
-import tomli
 from pydantic import (
     Field,
     field_serializer,
@@ -12,6 +11,7 @@ from pydantic import (
 )
 
 from flood_adapt.config.config import Settings
+from flood_adapt.misc.io import read_toml
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,
@@ -127,9 +127,7 @@ class Event(Object):
             Path to the file to load.
 
         """
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
-
+        toml = read_toml(file_path)
         event = cls.model_validate(toml)
 
         # Update all forcings with paths to absolute paths

@@ -5,10 +5,10 @@ from typing import Any, Optional, Type, TypeVar
 
 import geopandas as gpd
 import pyproj
-import tomli
 from pydantic import Field, field_serializer, field_validator, model_validator
 
 from flood_adapt.config.site import Site
+from flood_adapt.misc.io import read_toml
 from flood_adapt.misc.utils import resolve_filepath, save_file_to_database
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.object_model import Object
@@ -193,9 +193,8 @@ class Measure(Object):
         Measure
             The loaded measure object.
         """
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
-        measure = cls.model_validate(toml)
+        data = read_toml(file_path)
+        measure = cls.model_validate(data)
 
         if measure.polygon_file:
             measure.polygon_file = (

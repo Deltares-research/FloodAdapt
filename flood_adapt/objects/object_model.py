@@ -2,9 +2,9 @@ import os
 import re
 from pathlib import Path
 
-import tomli
-import tomli_w
 from pydantic import BaseModel, Field, field_validator
+
+from flood_adapt.misc.io import read_toml, write_toml
 
 
 class Object(BaseModel):
@@ -41,8 +41,7 @@ class Object(BaseModel):
             Path to the file to load.
 
         """
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
+        toml = read_toml(file_path)
         return cls.model_validate(toml)
 
     def save(self, toml_path: Path | str | os.PathLike) -> None:
@@ -55,8 +54,7 @@ class Object(BaseModel):
 
         """
         self.save_additional(output_dir=Path(toml_path).parent)
-        with open(toml_path, "wb") as f:
-            tomli_w.dump(self.model_dump(exclude_none=True), f)
+        write_toml(self.model_dump(exclude_none=True), toml_path)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         """Save additional files to database if the object has any and update attrs to reflect the change in file location.
