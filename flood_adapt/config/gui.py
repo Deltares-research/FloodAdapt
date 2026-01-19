@@ -334,6 +334,8 @@ class VisualizationLayers(BaseModel):
     """
 
     buildings_min_zoom_level: int = 13
+    topography_cmin: float = -10.0
+    topography_cmax: float = 10.0
     layers: list[VisualizationLayer] = Field(default_factory=list)
 
     def add_layer(
