@@ -57,7 +57,9 @@ class IForcing(BaseModel, ABC):
     @classmethod
     def load_file(cls, path: Path):
         data = read_toml(path)
-        return cls.load_dict(data)
+        instance = cls.model_validate(data)
+        instance._post_load(file_path=path)
+        return instance
 
     @classmethod
     def load_dict(cls, attrs):
