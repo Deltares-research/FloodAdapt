@@ -1,14 +1,13 @@
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional, Type, TypeVar
+from typing import Any, Optional, TypeVar
 
 import geopandas as gpd
 import pyproj
 from pydantic import Field, field_serializer, field_validator, model_validator
 
 from flood_adapt.config.site import Site
-from flood_adapt.misc.io import read_toml
 from flood_adapt.misc.utils import resolve_filepath, save_file_to_database
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.object_model import Object
@@ -179,29 +178,13 @@ class Measure(Object):
             return None
         return Path(value).name
 
-    @classmethod
-    def load_file(cls: Type[T], file_path: Path | str | os.PathLike) -> T:
-        """Load the measure from a file.
-
-        Parameters
-        ----------
-        file_path : Path | str | os.PathLike
-            Path to the file to load the measure from.
-
-        Returns
-        -------
-        Measure
-            The loaded measure object.
-        """
-        data = read_toml(file_path)
-        measure = cls.model_validate(data)
-
-        if measure.polygon_file:
-            measure.polygon_file = (
-                Path(file_path).parent / measure.polygon_file
-            ).as_posix()
-
-        return measure
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
+        if self.polygon_file:
+            if not Path(self.polygon_file).is_absolute():
+                self.polygon_file = (
+                    Path(file_path).parent / self.polygon_file
+                ).as_posix()
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.polygon_file:

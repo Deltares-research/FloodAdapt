@@ -4,7 +4,6 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from flood_adapt.misc.io import read_toml
 from flood_adapt.objects.events.events import Event, Mode
 from flood_adapt.objects.object_model import Object
 
@@ -68,17 +67,17 @@ class EventSet(Object):
         else:
             raise ValueError("Either `sub_events` or `file_path` must be provided.")
 
-    @classmethod
-    def load_file(
-        cls, file_path: Path | str | os.PathLike, load_all: bool = False
-    ) -> "EventSet":
-        """Load object from file."""
-        data = read_toml(file_path)
-        event_set = EventSet(**data)
+    def _post_load(
+        self,
+        file_path: Path | str | os.PathLike,
+        *,
+        load_all: bool = False,
+        sub_events: List[Event] | None = None,
+        **kwargs,
+    ) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
         if load_all:
-            # Load all sub events from the file path
-            event_set.load_sub_events(file_path=file_path)
-        return event_set
+            self.load_sub_events(sub_events=sub_events, file_path=file_path)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self._events is None:

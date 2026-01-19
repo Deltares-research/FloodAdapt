@@ -11,7 +11,6 @@ from pydantic import (
 )
 
 from flood_adapt.config.config import Settings
-from flood_adapt.misc.io import read_toml
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,
@@ -117,38 +116,10 @@ class Event(Object):
         for forcing in self.get_forcings():
             forcing.save_additional(output_dir)
 
-    @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "Event":
-        """Load object from file.
-
-        Parameters
-        ----------
-        file_path : Path | str | os.PathLike
-            Path to the file to load.
-
-        """
-        toml = read_toml(file_path)
-        event = cls.model_validate(toml)
-
-        # Update all forcings with paths to absolute paths
-        for forcing in event.get_forcings():
-            if isinstance(forcing, PathBasedForcing):
-                if forcing.path.exists():
-                    continue
-                elif forcing.path == Path(forcing.path.name):
-                    # convert relative path to absolute path
-                    in_dir = Path(file_path).parent / forcing.path.name
-                    if not in_dir.exists():
-                        raise FileNotFoundError(
-                            f"Failed to load Event. File {forcing.path} does not exist in {in_dir.parent}."
-                        )
-                    forcing.path = in_dir
-                else:
-                    raise FileNotFoundError(
-                        f"Failed to load Event. File {forcing.path} does not exist."
-                    )
-
-        return event
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
+        for forcing in self.get_forcings():
+            forcing._post_load(file_path, **kwargs)
 
     @staticmethod
     def _parse_forcing_from_dict(

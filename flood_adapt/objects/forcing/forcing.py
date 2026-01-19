@@ -2,7 +2,7 @@ import os
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import Any, List, Type
+from typing import Any
 
 from pydantic import BaseModel, field_serializer
 
@@ -79,6 +79,10 @@ class IForcing(BaseModel, ABC):
         """Serialize filepath-like fields by saving only the filename. It is assumed that the file will be saved in the same directory."""
         return value.name
 
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
+        return
+
 
 class IDischarge(IForcing):
     type: ForcingType = ForcingType.DISCHARGE
@@ -115,7 +119,7 @@ class IForcingFactory:
     def read_forcing(
         cls,
         filepath: Path,
-    ) -> tuple[Type[IForcing], ForcingType, ForcingSource]:
+    ) -> tuple[type[IForcing], ForcingType, ForcingSource]:
         """Extract forcing class, type and source from a TOML file."""
         ...
 
@@ -123,24 +127,24 @@ class IForcingFactory:
     @abstractmethod
     def get_forcing_class(
         cls, type: ForcingType, source: ForcingSource
-    ) -> Type[IForcing]:
+    ) -> type[IForcing]:
         """Get the forcing class corresponding to the type and source."""
         ...
 
     @classmethod
     @abstractmethod
-    def list_forcing_types(cls) -> List[ForcingType]:
+    def list_forcing_types(cls) -> list[ForcingType]:
         """List all available forcing types."""
         ...
 
     @classmethod
     @abstractmethod
-    def list_forcing_classes(cls) -> List[Type[IForcing]]:
+    def list_forcing_classes(cls) -> list[type[IForcing]]:
         """List all available forcing classes."""
         ...
 
     @classmethod
     @abstractmethod
-    def list_forcing_types_and_sources(cls) -> List[tuple[ForcingType, ForcingSource]]:
+    def list_forcing_types_and_sources(cls) -> list[tuple[ForcingType, ForcingSource]]:
         """List all available combinations of forcing types and sources."""
         ...

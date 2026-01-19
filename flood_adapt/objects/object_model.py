@@ -1,10 +1,13 @@
 import os
 import re
 from pathlib import Path
+from typing import TypeVar
 
 from pydantic import BaseModel, Field, field_validator
 
 from flood_adapt.misc.io import read_toml, write_toml
+
+T = TypeVar("T", bound="Object")
 
 
 class Object(BaseModel):
@@ -32,7 +35,7 @@ class Object(BaseModel):
         return value
 
     @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "Object":
+    def load_file(cls: type[T], file_path: Path | str | os.PathLike, **kwargs) -> T:
         """Load object from file.
 
         Parameters
@@ -42,7 +45,16 @@ class Object(BaseModel):
 
         """
         toml = read_toml(file_path)
-        return cls.model_validate(toml)
+        model = cls.model_validate(toml)
+        model._post_load(file_path=file_path, **kwargs)
+        return model
+
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file.
+
+        Should be overridden by subclasses.
+        """
+        pass
 
     def save(self, toml_path: Path | str | os.PathLike) -> None:
         """Save object to disk.
