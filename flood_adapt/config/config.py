@@ -3,7 +3,7 @@ import subprocess
 from os import environ, listdir
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Optional
+from typing import ClassVar, Optional
 
 import tomli
 import tomli_w
@@ -130,6 +130,8 @@ class Settings(BaseSettings):
         description="The expected version of the fiat binary. If the version of the binary does not match this version, an error is raised.",
         exclude=True,
     )
+
+    _binaries_validated: ClassVar[bool] = False
 
     @computed_field
     @property
@@ -292,6 +294,9 @@ class Settings(BaseSettings):
 
     def check_binary_versions(self) -> None:
         """Check that the versions of the binaries in the config match those expected."""
+        if Settings._binaries_validated:
+            return  # already validated
+
         if self.sfincs_bin_path is not None:
             if not self.sfincs_bin_path.exists():
                 self._raise_exe_not_exists("sfincs", self.sfincs_bin_path)
@@ -309,6 +314,8 @@ class Settings(BaseSettings):
                 self._raise_version_mismatch(
                     "fiat", self.fiat_version, actual_fiat_version
                 )
+
+        Settings._binaries_validated = True
 
     @staticmethod
     def read(toml_path: Path) -> "Settings":
