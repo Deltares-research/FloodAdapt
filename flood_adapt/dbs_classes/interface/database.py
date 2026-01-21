@@ -17,37 +17,14 @@ class IDatabase(ABC):
     output_path: Path
     static_path: Path
 
-    @property
-    @abstractmethod
-    def site(self) -> Site: ...
-
-    @property
-    @abstractmethod
-    def static(self) -> IDbsStatic: ...
-
-    @property
-    @abstractmethod
-    def events(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def scenarios(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def strategies(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def measures(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def projections(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def benefits(self) -> AbstractDatabaseElement: ...
+    site: Site
+    static: IDbsStatic
+    events: AbstractDatabaseElement
+    scenarios: AbstractDatabaseElement
+    strategies: AbstractDatabaseElement
+    measures: AbstractDatabaseElement
+    projections: AbstractDatabaseElement
+    benefits: AbstractDatabaseElement
 
     @abstractmethod
     def __init__(

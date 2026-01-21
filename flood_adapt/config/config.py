@@ -1,6 +1,9 @@
+import re
+import subprocess
 from os import environ, listdir
 from pathlib import Path
-from typing import Optional
+from tempfile import gettempdir
+from typing import ClassVar, Optional
 
 import tomli
 import tomli_w
@@ -51,8 +54,12 @@ class Settings(BaseSettings):
         Whether to validate the existence of the paths to the SFINCS and FIAT binaries. Alias: `VALIDATE_BINARIES` (environment variable).
     sfincs_bin_path : Path
         The path to the SFINCS binary. Alias: `SFINCS_BIN_PATH` (environment variable).
+    sfincs_version : str
+        The expected version of the SFINCS binary. Alias: `SFINCS_VERSION` (environment variable).
     fiat_bin_path : Path
         The path to the FIAT binary. Alias: `FIAT_BIN_PATH` (environment variable).
+    fiat_version : str
+        The expected version of the FIAT binary. Alias: `FIAT_VERSION` (environment variable).
 
     Properties
     ----------
@@ -104,6 +111,12 @@ class Settings(BaseSettings):
         description="The path of the sfincs binary.",
         exclude=True,
     )
+    sfincs_version: str = Field(
+        default="v2.2.1-alpha col d'Eze",
+        alias="SFINCS_VERSION",  # environment variable: SFINCS_VERSION
+        description="The expected version of the sfincs binary. If the version of the binary does not match this version, an error is raised.",
+        exclude=True,
+    )
 
     fiat_bin_path: Optional[Path] = Field(
         default=None,
@@ -111,6 +124,14 @@ class Settings(BaseSettings):
         description="The path of the fiat binary.",
         exclude=True,
     )
+    fiat_version: str = Field(
+        default="0.2.1",
+        alias="FIAT_VERSION",  # environment variable: FIAT_VERSION
+        description="The expected version of the fiat binary. If the version of the binary does not match this version, an error is raised.",
+        exclude=True,
+    )
+
+    _binaries_validated: ClassVar[bool] = False
 
     @computed_field
     @property
@@ -121,8 +142,7 @@ class Settings(BaseSettings):
     def validate_settings(self):
         self._validate_database_path()
         if self.validate_binaries:
-            self._validate_fiat_path()
-            self._validate_sfincs_path()
+            self.check_binary_versions()
         self._update_environment_variables()
         return self
 
@@ -181,19 +201,121 @@ class Settings(BaseSettings):
 
         return self
 
+    @model_validator(mode="after")
     def _validate_sfincs_path(self):
-        if not self.sfincs_bin_path.exists():
-            raise ValueError(f"SFINCS binary {self.sfincs_bin_path} does not exist.")
+        if self.sfincs_bin_path is not None and self.validate_binaries:
+            if not self.sfincs_bin_path.exists():
+                self._raise_exe_not_exists("sfincs", self.sfincs_bin_path)
         return self
 
+    @model_validator(mode="after")
     def _validate_fiat_path(self):
-        if not self.fiat_bin_path.exists():
-            raise ValueError(f"FIAT binary {self.fiat_bin_path} does not exist.")
+        if self.fiat_bin_path is not None and self.validate_binaries:
+            if not self.fiat_bin_path.exists():
+                self._raise_exe_not_exists("fiat", self.fiat_bin_path)
         return self
 
     @field_serializer("database_root", "database_path")
     def serialize_path(self, path: Path) -> str:
         return str(path)
+
+    def get_sfincs_version(self) -> str:
+        """
+        Get the version of the SFINCS binary.
+
+        Returns
+        -------
+        str
+            The version of the SFINCS binary
+
+        Expected SFINCS output
+        ----------------------
+
+        ------------ Welcome to SFINCS ------------
+
+        LOGO
+
+        ------------------------------------------
+
+        Build-Revision: $Rev: v2.2.1-alpha col d'Eze
+        Build-Date: $Date: 2025-06-02
+
+        ------ Preparing model simulation --------
+        ...
+
+        """
+        if self.sfincs_bin_path is None:
+            self._raise_exe_not_provided("sfincs")
+
+        result = subprocess.run(
+            [self.sfincs_bin_path.as_posix()],
+            capture_output=True,
+            text=True,
+            cwd=gettempdir(),
+        )
+
+        # Capture everything after `$Rev:` until end of line
+        match = re.search(r"Build-Revision:\s*\$Rev:\s*(.+)", result.stdout)
+        if not match:
+            self._raise_version_mismatch("sfincs", self.sfincs_version, "unknown")
+
+        return match.group(1).strip()
+
+    def get_fiat_version(self) -> str:
+        """
+        Get the version of the FIAT binary.
+
+        Returns
+        -------
+        str
+            The version of the FIAT binary
+
+        Expected FIAT output
+        --------------------
+
+        FIAT 0.2.1, build 2025-02-24T16:19:19 UTC+0100
+        ...
+
+        """
+        if self.fiat_bin_path is None:
+            self._raise_exe_not_provided("fiat")
+
+        result = subprocess.run(
+            [self.fiat_bin_path.as_posix(), "--version"],
+            capture_output=True,
+            text=True,
+            cwd=gettempdir(),
+        )
+        # Capture version number after 'FIAT' until the next whitespace
+        fiat_match = re.search(r"FIAT\s+([0-9]+\.[0-9]+\.[0-9]+)", result.stdout)
+        if not fiat_match:
+            self._raise_version_mismatch("fiat", self.fiat_version, "unknown")
+        return fiat_match.group(1).strip()
+
+    def check_binary_versions(self) -> None:
+        """Check that the versions of the binaries in the config match those expected."""
+        if Settings._binaries_validated:
+            return  # already validated
+
+        if self.sfincs_bin_path is not None:
+            if not self.sfincs_bin_path.exists():
+                self._raise_exe_not_exists("sfincs", self.sfincs_bin_path)
+            actual_sfincs_version = self.get_sfincs_version()
+            if self.sfincs_version != actual_sfincs_version:
+                self._raise_version_mismatch(
+                    "sfincs", self.sfincs_version, actual_sfincs_version
+                )
+
+        if self.fiat_bin_path is not None:
+            if not self.fiat_bin_path.exists():
+                self._raise_exe_not_exists("fiat", self.fiat_bin_path)
+            actual_fiat_version = self.get_fiat_version()
+            if self.fiat_version != actual_fiat_version:
+                self._raise_version_mismatch(
+                    "fiat", self.fiat_version, actual_fiat_version
+                )
+
+        Settings._binaries_validated = True
 
     @staticmethod
     def read(toml_path: Path) -> "Settings":
@@ -246,3 +368,18 @@ class Settings(BaseSettings):
                 ),
                 f,
             )
+
+    # error helpers
+    @staticmethod
+    def _raise_exe_not_provided(model: str) -> str:
+        raise ValueError(f"{model.upper()} binary path is not set.")
+
+    @staticmethod
+    def _raise_exe_not_exists(model: str, path: Path) -> str:
+        raise ValueError(f"{model.upper()} binary does not exist: {path}.")
+
+    @staticmethod
+    def _raise_version_mismatch(model: str, expected: str, actual: str) -> str:
+        raise ValueError(
+            f"{model.upper()} version mismatch: expected {expected}, got {actual}."
+        )
