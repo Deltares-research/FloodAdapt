@@ -76,13 +76,26 @@ class TestSettingsModel:
             assert os.environ["FIAT_BIN_PATH"] == expected_fiat.as_posix()
 
     @pytest.fixture(autouse=True)
-    def protect_envvars(self):
-        original_env = os.environ.copy()
+    def protect_and_clear_envvars(self):
+        """Create a copy of the environment variables before each test and restore them after.
+
+        After creating the copy, all FA-related environment variables are cleared to ensure tests run in a clean state.
+        """
+        FA_ENV_VARS = {
+            v.alias: os.getenv(v.alias)
+            for v in Settings.model_fields.values()
+            if v.alias is not None
+        }
         try:
+            for var in FA_ENV_VARS:
+                os.environ.pop(var, None)
             yield
         finally:
-            os.environ.clear()
-            os.environ.update(original_env)
+            for k, v in FA_ENV_VARS.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.putenv(k, v)
 
     @pytest.mark.skip(
         reason="TODO: Add sfincs & fiat binaries for Linux & Darwin to the system folder in the test database"
@@ -296,11 +309,11 @@ class TestSettingsModel:
             assert not settings.validate_binaries
             assert not settings.manual_docker_containers
             assert not settings.use_docker
-            assert not os.getenv("DELETE_CRASHED_RUNS")
-            assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert not os.getenv("VALIDATE_BINARIES")
-            assert not os.getenv("MANUAL_DOCKER_CONTAINERS")
-            assert not os.getenv("USE_DOCKER")
+            assert os.getenv("DELETE_CRASHED_RUNS") == "False"
+            assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "False"
+            assert os.getenv("VALIDATE_BINARIES") == "False"
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS") == "False"
+            assert os.getenv("USE_DOCKER") == "False"
 
             settings2 = Settings()
             assert not settings2.delete_crashed_runs
@@ -308,11 +321,11 @@ class TestSettingsModel:
             assert not settings2.validate_binaries
             assert not settings2.manual_docker_containers
             assert not settings2.use_docker
-            assert not os.getenv("DELETE_CRASHED_RUNS")
-            assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert not os.getenv("VALIDATE_BINARIES")
-            assert not os.getenv("MANUAL_DOCKER_CONTAINERS")
-            assert not os.getenv("USE_DOCKER")
+            assert os.getenv("DELETE_CRASHED_RUNS") == "False"
+            assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "False"
+            assert os.getenv("VALIDATE_BINARIES") == "False"
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS") == "False"
+            assert os.getenv("USE_DOCKER") == "False"
 
     def test_create_settings_with_persistent_booleans_true(self):
         with modified_environ():
@@ -327,17 +340,17 @@ class TestSettingsModel:
             assert settings.validate_allowed_forcings
             assert settings.manual_docker_containers
             assert settings.use_docker
-            assert os.getenv("DELETE_CRASHED_RUNS")
-            assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert os.getenv("MANUAL_DOCKER_CONTAINERS")
-            assert os.getenv("USE_DOCKER")
+            assert os.getenv("DELETE_CRASHED_RUNS") == "True"
+            assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "True"
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS") == "True"
+            assert os.getenv("USE_DOCKER") == "True"
 
             settings2 = Settings()
             assert settings2.delete_crashed_runs
             assert settings2.validate_allowed_forcings
             assert settings2.manual_docker_containers
             assert settings2.use_docker
-            assert os.getenv("DELETE_CRASHED_RUNS")
-            assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert os.getenv("MANUAL_DOCKER_CONTAINERS")
-            assert os.getenv("USE_DOCKER")
+            assert os.getenv("DELETE_CRASHED_RUNS") == "True"
+            assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "True"
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS") == "True"
+            assert os.getenv("USE_DOCKER") == "True"
