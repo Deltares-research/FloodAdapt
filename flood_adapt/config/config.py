@@ -182,12 +182,20 @@ class Settings(BaseSettings):
         return self
 
     def _validate_sfincs_path(self):
-        if not self.sfincs_bin_path.exists():
+        if (
+            self.validate_binaries
+            and self.sfincs_bin_path is not None
+            and not self.sfincs_bin_path.exists()
+        ):
             raise ValueError(f"SFINCS binary {self.sfincs_bin_path} does not exist.")
         return self
 
     def _validate_fiat_path(self):
-        if not self.fiat_bin_path.exists():
+        if (
+            self.validate_binaries
+            and self.fiat_bin_path is not None
+            and not self.fiat_bin_path.exists()
+        ):
             raise ValueError(f"FIAT binary {self.fiat_bin_path} does not exist.")
         return self
 

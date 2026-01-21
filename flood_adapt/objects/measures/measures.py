@@ -212,6 +212,25 @@ class Measure(Object):
             # Update the shapefile path in the object so it is saved in the toml file as well
             self.polygon_file = path.name
 
+    def __eq__(self, other: "Measure") -> bool:
+        if (
+            not isinstance(other, self.__class__)
+            or self.type != other.type
+            or self.selection_type != other.selection_type
+            or self.aggregation_area_name != other.aggregation_area_name
+            or self.aggregation_area_type != other.aggregation_area_type
+        ):
+            return False
+
+        # Check polygon_file equality
+        polygon_files = [self.polygon_file, other.polygon_file]
+        if polygon_files.count(None) == 0:
+            if not equal_gdf(self.polygon_file, other.polygon_file):
+                return False
+        elif polygon_files.count(None) == 1:
+            return False
+        return True
+
 
 class HazardMeasure(Measure):
     """The expected variables and data types of attributes common to all hazard measures.
@@ -269,6 +288,11 @@ class ImpactMeasure(Measure):
             raise ValueError(f"Invalid impact type: {value}")
         return value
 
+    def __eq__(self, other: "ImpactMeasure") -> bool:
+        if not super().__eq__(other) or self.property_type != other.property_type:
+            return False
+        return True
+
 
 class Elevate(ImpactMeasure):
     """The expected variables and data types of the "elevate" impact measure.
@@ -297,6 +321,11 @@ class Elevate(ImpactMeasure):
 
     type: MeasureType = MeasureType.elevate_properties
     elevation: us.UnitfulLengthRefValue
+
+    def __eq__(self, other: "Elevate") -> bool:
+        if not super().__eq__(other) or self.elevation != other.elevation:
+            return False
+        return True
 
 
 class Buyout(ImpactMeasure):
@@ -357,6 +386,11 @@ class FloodProof(ImpactMeasure):
     type: MeasureType = MeasureType.floodproof_properties
     elevation: us.UnitfulLength
 
+    def __eq__(self, other: "FloodProof") -> bool:
+        if not super().__eq__(other) or self.elevation != other.elevation:
+            return False
+        return True
+
 
 class FloodWall(HazardMeasure):
     """
@@ -384,6 +418,11 @@ class FloodWall(HazardMeasure):
     elevation: us.UnitfulLength
     absolute_elevation: Optional[bool] = False
 
+    def __eq__(self, other: "FloodWall") -> bool:
+        if not super().__eq__(other) or self.elevation != other.elevation:
+            return False
+        return True
+
 
 class Pump(HazardMeasure):
     """
@@ -409,6 +448,11 @@ class Pump(HazardMeasure):
 
     type: MeasureType = MeasureType.pump
     discharge: us.UnitfulDischarge
+
+    def __eq__(self, other: "Pump") -> bool:
+        if not super().__eq__(other) or self.discharge != other.discharge:
+            return False
+        return True
 
 
 class GreenInfrastructure(HazardMeasure):
@@ -551,3 +595,33 @@ class GreenInfrastructure(HazardMeasure):
         # Calculate the area of all polygons
         area = polygon.area.sum()
         return area
+
+    def __eq__(self, other: "GreenInfrastructure") -> bool:
+        if (
+            not super().__eq__(other)
+            or self.volume != other.volume
+            or self.height != other.height
+            or self.percent_area != other.percent_area
+        ):
+            return False
+        return True
+
+
+def equal_gdf(left: Path, right: Path) -> bool:
+    """Check if two geodataframes are equal.
+
+    Parameters
+    ----------
+    left : Path
+        Path to the first geodataframe file.
+    right : Path
+        Path to the second geodataframe file.
+
+    Returns
+    -------
+    bool
+        True if the geodataframes are equal, False otherwise.
+    """
+    gdf_left = gpd.read_file(left)
+    gdf_right = gpd.read_file(right)
+    return gdf_left.equals(gdf_right)

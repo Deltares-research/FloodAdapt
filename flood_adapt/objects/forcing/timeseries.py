@@ -14,7 +14,7 @@ from pydantic import BaseModel, model_validator
 
 from flood_adapt.misc.path_builder import TopLevelDir, db_path
 from flood_adapt.objects.forcing import unit_system as us
-from flood_adapt.objects.forcing.csv import read_csv
+from flood_adapt.objects.forcing.csv import equal_csv, read_csv
 from flood_adapt.objects.forcing.time_frame import REFERENCE_TIME, TimeFrame
 
 TValueUnitPair = TypeVar("TValueUnitPair", bound=us.ValueUnitPair)
@@ -216,9 +216,9 @@ class SyntheticTimeseries(BaseModel):
         )
         return fig
 
-    def __eq__(self, other) -> bool:
-        if not isinstance(other, SyntheticTimeseries):
-            raise NotImplementedError(f"Cannot compare Timeseries to {type(other)}")
+    def __eq__(self, other: "SyntheticTimeseries") -> bool:
+        if not isinstance(other, self.__class__):
+            return False
 
         # If the following equation is element-wise True, then allclose returns True.:
         # absolute(a - b) <= (atol + rtol * absolute(b))
@@ -486,6 +486,13 @@ class CSVTimeseries(BaseModel, Generic[TValueUnitPair]):
             start_time=file_data.index.min(),
             end_time=file_data.index.max(),
         )
+
+    def __eq__(self, other: "CSVTimeseries") -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        if not equal_csv(self.path, other.path):
+            return False
+        return True
 
 
 class TimeseriesFactory:

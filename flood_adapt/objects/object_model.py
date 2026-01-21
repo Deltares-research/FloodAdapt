@@ -64,11 +64,3 @@ class Object(BaseModel):
         This method should be overridden if the object has additional files.
         """
         pass
-
-    def __eq__(self, value):
-        if not isinstance(value, self.__class__):
-            # don't attempt to compare against unrelated types
-            return False
-        _self = self.model_dump(exclude={"name", "description"}, exclude_none=True)
-        _other = value.model_dump(exclude={"name", "description"}, exclude_none=True)
-        return _self == _other

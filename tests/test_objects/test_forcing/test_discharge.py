@@ -107,3 +107,27 @@ class TestDischargeCSV:
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)
         pd.testing.assert_frame_equal(discharge_df, expected_df)
+
+    def test_discharge_csv_equal_same_content_different_files(self, tmp_path, river):
+        csv1 = tmp_path / "a.csv"
+        csv2 = tmp_path / "b.csv"
+        df = pd.DataFrame({"q": [1.0, 2.0]})
+        df.to_csv(csv1)
+        df.to_csv(csv2)
+
+        d1 = DischargeCSV(path=csv1, river=river)
+        d2 = DischargeCSV(path=csv2, river=river)
+
+        assert d1 == d2
+
+    def test_discharge_csv_not_equal_different_content(self, tmp_path, river):
+        csv1 = tmp_path / "a.csv"
+        csv2 = tmp_path / "b.csv"
+
+        pd.DataFrame({"q": [1.0, 2.0]}).to_csv(csv1)
+        pd.DataFrame({"q": [1.0, 3.0]}).to_csv(csv2)
+
+        d1 = DischargeCSV(path=csv1, river=river)
+        d2 = DischargeCSV(path=csv2, river=river)
+
+        assert d1 != d2

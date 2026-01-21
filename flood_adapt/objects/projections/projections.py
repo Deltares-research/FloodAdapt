@@ -101,3 +101,12 @@ class Projection(Object):
 
             # Update the shapefile path in the object so it is saved in the toml file as well
             self.socio_economic_change.new_development_shapefile = path.name
+
+    def __eq__(self, other: "Projection") -> bool:
+        if (
+            not isinstance(other, self.__class__)
+            or self.physical_projection != other.physical_projection
+            or self.socio_economic_change != other.socio_economic_change
+        ):
+            return False
+        return True

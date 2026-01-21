@@ -234,3 +234,31 @@ class Event(Object):
                 forcing.model_dump(exclude_none=True) for forcing in forcing_list
             ]
         return dct
+
+    def __eq__(self, other: "Event") -> bool:
+        if (
+            not isinstance(other, self.__class__)
+            or self.time != other.time
+            or self.template != other.template
+            or self.mode != other.mode
+            or self.rainfall_multiplier != other.rainfall_multiplier
+        ):
+            return False
+
+        # Compare forcings
+        l_forcings = self.get_forcings()
+        r_forcings = other.get_forcings()
+
+        if len(l_forcings) != len(r_forcings):
+            return False
+
+        for l_forcing in l_forcings:
+            matched = False
+            for r_forcing in r_forcings:
+                if l_forcing == r_forcing:
+                    matched = True
+                    break
+            if not matched:
+                return False
+
+        return True
