@@ -8,6 +8,7 @@ import requests
 from noaa_coops.station import COOPSAPIError
 from pydantic import BaseModel, model_validator
 
+from flood_adapt.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.time_frame import TimeFrame
@@ -56,7 +57,7 @@ class TideGauge(BaseModel):
     source: TideGaugeSource
     reference: str
     ID: Optional[int] = None  # Attribute used to download from correct gauge
-    file: Optional[Path] = None  # for locally stored data
+    file: Optional[str] = None  # for locally stored data
     lat: Optional[float] = None
     lon: Optional[float] = None
     units: us.UnitTypesLength = (
@@ -104,7 +105,8 @@ class TideGauge(BaseModel):
         """
         logger.info(f"Retrieving waterlevels for tide gauge {self.ID} for {time}")
         if self.file:
-            gauge_data = self._read_imported_waterlevels(time=time, path=self.file)
+            abs_path = Settings().database_path / "static" / self.file
+            gauge_data = self._read_imported_waterlevels(time=time, path=abs_path)
         else:
             gauge_data = self._download_tide_gauge_data(time=time)
 
