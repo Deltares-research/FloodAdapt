@@ -7,6 +7,7 @@ import xarray as xr
 
 from flood_adapt.misc.utils import (
     copy_file_to_output_dir,
+    path_exists_and_absolute,
     validate_file_extension,
 )
 from flood_adapt.objects.forcing import unit_system as us
@@ -66,9 +67,7 @@ class RainfallTrack(IRainfall):
 
     def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
-        if self.path.is_absolute():
-            return
-        self.path = Path(file_path).parent.joinpath(self.path)
+        self.path = path_exists_and_absolute(self.path, file_path)
 
 
 class RainfallCSV(IRainfall):
@@ -88,9 +87,7 @@ class RainfallCSV(IRainfall):
 
     def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
-        if self.path.is_absolute():
-            return
-        self.path = Path(file_path).parent.joinpath(self.path)
+        self.path = path_exists_and_absolute(self.path, file_path)
 
 
 class RainfallNetCDF(IRainfall):
@@ -111,6 +108,4 @@ class RainfallNetCDF(IRainfall):
 
     def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
-        if self.path.is_absolute():
-            return
-        self.path = Path(file_path).parent.joinpath(self.path)
+        self.path = path_exists_and_absolute(self.path, file_path)

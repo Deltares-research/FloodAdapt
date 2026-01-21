@@ -1,7 +1,7 @@
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, List, Optional, Protocol, runtime_checkable
+from typing import Any, ClassVar, List, Optional
 
 from pydantic import (
     Field,
@@ -61,16 +61,6 @@ class Template(str, Enum):
                 return "Build a custom event by specifying wind, water levels, rainfall, and discharge."
             case _:
                 raise ValueError(f"Invalid event template: {self}")
-
-
-@runtime_checkable
-class PathBasedForcing(Protocol):
-    """Protocol for forcing classes that have a path attribute.
-
-    Performing an isinstance check on this class will return True if the class has a path attribute (even if it is None).
-    """
-
-    path: Path
 
 
 class Event(Object):

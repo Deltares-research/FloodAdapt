@@ -8,7 +8,11 @@ import pyproj
 from pydantic import Field, field_serializer, field_validator, model_validator
 
 from flood_adapt.config.site import Site
-from flood_adapt.misc.utils import resolve_filepath, save_file_to_database
+from flood_adapt.misc.utils import (
+    path_exists_and_absolute,
+    resolve_filepath,
+    save_file_to_database,
+)
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.object_model import Object
 
@@ -181,10 +185,9 @@ class Measure(Object):
     def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
         if self.polygon_file:
-            if not Path(self.polygon_file).is_absolute():
-                self.polygon_file = (
-                    Path(file_path).parent / self.polygon_file
-                ).as_posix()
+            self.polygon_file = path_exists_and_absolute(
+                self.polygon_file, file_path
+            ).as_posix()
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.polygon_file:
