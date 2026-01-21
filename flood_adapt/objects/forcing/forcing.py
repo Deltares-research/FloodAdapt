@@ -2,7 +2,7 @@ import os
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Type, TypeVar
 
 from pydantic import BaseModel, field_serializer
 
@@ -45,6 +45,9 @@ class ForcingSource(str, Enum):
     NONE = "NONE"  # no forcing data
 
 
+T = TypeVar("T", bound="IForcing")
+
+
 class IForcing(BaseModel, ABC):
     """BaseModel describing the expected variables and data types for forcing parameters of hazard model."""
 
@@ -55,14 +58,14 @@ class IForcing(BaseModel, ABC):
     source: ForcingSource
 
     @classmethod
-    def load_file(cls, path: Path):
+    def load_file(cls: Type[T], path: Path, **kwargs) -> T:
         data = read_toml(path)
         instance = cls.model_validate(data)
-        instance._post_load(file_path=path)
+        instance._post_load(file_path=path, **kwargs)
         return instance
 
     @classmethod
-    def load_dict(cls, attrs):
+    def load_dict(cls: Type[T], attrs: dict) -> T:
         return cls.model_validate(attrs)
 
     def model_dump(self, **kwargs: Any) -> dict[str, Any]:
@@ -106,7 +109,7 @@ class IWaterlevel(IForcing):
 class IForcingFactory:
     @classmethod
     @abstractmethod
-    def load_file(cls, toml_file: Path) -> IForcing:
+    def load_file(cls, toml_file: Path, **kwargs) -> IForcing:
         """Create a forcing object from a TOML file."""
         ...
 

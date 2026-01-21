@@ -136,10 +136,12 @@ class ForcingFactory(IForcingFactory):
         return forcing_cls
 
     @classmethod
-    def load_file(cls, toml_file: Path) -> IForcing:
+    def load_file(cls, toml_file: Path, **kwargs) -> IForcing:
         """Create a forcing object from a TOML file."""
         data = read_toml(toml_file)
-        return cls.load_dict(data)
+        instance = cls.load_dict(data)
+        instance._post_load(file_path=toml_file, **kwargs)
+        return instance
 
     @classmethod
     def load_dict(cls, attrs: dict[str, Any] | IForcing) -> IForcing:
