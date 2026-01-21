@@ -89,7 +89,7 @@ class RainfallNetCDF(IRainfall):
 
     def read(self) -> xr.Dataset:
         required_vars = ("precip",)
-        required_coords = ("time", "lat", "lon")
+        required_coords = ("time", "y", "x")
         with xr.open_dataset(self.path) as ds:
             validated_ds = validate_netcdf_forcing(ds, required_vars, required_coords)
         return validated_ds
