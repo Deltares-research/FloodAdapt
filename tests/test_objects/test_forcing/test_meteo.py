@@ -88,8 +88,7 @@ class TestMeteoHandler:
         # Assert
         assert handler.dir.exists()
         nc_files = list(handler.dir.glob("*.nc"))
-        if len(nc_files) == 0:
-            pytest.xfail("No NetCDF files were downloaded due to an API error.")
+        assert len(nc_files) > 0, "No NetCDF files were downloaded"
 
         # Read the NetCDF file and assert its contents
         for nc_file in nc_files:

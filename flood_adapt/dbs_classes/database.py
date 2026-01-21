@@ -83,6 +83,8 @@ class Database(IDatabase):
             The path to the database root
         database_name : str
             The name of the database.
+        settings : Settings, optional
+            Settings object to configure behavior, by default None
 
         -----
         """
