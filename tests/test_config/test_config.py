@@ -124,25 +124,28 @@ class TestSettingsModel:
 
     @pytest.fixture(autouse=True)
     def protect_envvars(self):
-        original = {
-            "DATABASE_ROOT": os.getenv("DATABASE_ROOT", None),
-            "DATABASE_NAME": os.getenv("DATABASE_NAME", None),
-            "SFINCS_BIN_PATH": os.getenv("SFINCS_BIN_PATH", None),
-            "FIAT_BIN_PATH": os.getenv("FIAT_BIN_PATH", None),
-            "DELETE_CRASHED_RUNS": os.getenv("DELETE_CRASHED_RUNS", None),
-            "VALIDATE_ALLOWED_FORCINGS": os.getenv("VALIDATE_ALLOWED_FORCINGS", None),
-            "VALIDATE_BINARIES": os.getenv("VALIDATE_BINARIES", None),
-            "FIAT_VERSION": os.getenv("FIAT_VERSION", None),
-            "SFINCS_VERSION": os.getenv("SFINCS_VERSION", None),
+        # Preserve env vars
+        FA_ENV_VARS = {
+            v.alias: os.getenv(v.alias, None)
+            for v in Settings.model_fields.values()
+            if v.alias is not None
         }
+        for k in FA_ENV_VARS.keys():
+            os.unsetenv(k)
+        # Preserve binary validation classvar
+        validated = False
+        if Settings._binaries_validated:
+            validated = True
+        Settings._binaries_validated = False
         try:
             yield
         finally:
-            for k, v in original.items():
+            for k, v in FA_ENV_VARS.items():
                 if v is None:
-                    os.environ.pop(k, None)  # remove if it wasn't present originally
+                    os.unsetenv(k)
                 else:
-                    os.environ[k] = v
+                    os.putenv(k, v)
+            Settings._binaries_validated = validated
 
     @pytest.mark.skip(
         reason="TODO: Add sfincs & fiat binaries for Linux & Darwin to the system folder in the test database"
