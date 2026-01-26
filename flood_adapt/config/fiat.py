@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel
@@ -12,7 +11,6 @@ from flood_adapt.config.impacts import (
     RiskModel,
     SVIModel,
 )
-from flood_adapt.misc.io import read_toml
 
 
 class FiatConfigModel(BaseModel):
@@ -63,11 +61,6 @@ class FiatConfigModel(BaseModel):
     infographics: Optional[bool] = False
     no_footprints: Optional[NoFootprintsModel] = NoFootprintsModel()
 
-    @staticmethod
-    def read_toml(path: Path) -> "FiatConfigModel":
-        data = read_toml(path)
-        return FiatConfigModel(**data)
-
 
 class FiatModel(BaseModel):
     """The expected variables and data types of attributes of the Fiat class.
@@ -86,8 +79,3 @@ class FiatModel(BaseModel):
 
     benefits: Optional[BenefitsModel] = None
     risk: RiskModel = RiskModel()
-
-    @staticmethod
-    def read_toml(path: Path) -> "FiatModel":
-        data = read_toml(path)
-        return FiatModel(**data)
