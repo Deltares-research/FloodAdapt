@@ -1,9 +1,8 @@
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, List, Optional, Protocol, runtime_checkable
+from typing import Any, ClassVar, List, Optional
 
-import tomli
 from pydantic import (
     Field,
     field_serializer,
@@ -64,16 +63,6 @@ class Template(str, Enum):
                 raise ValueError(f"Invalid event template: {self}")
 
 
-@runtime_checkable
-class PathBasedForcing(Protocol):
-    """Protocol for forcing classes that have a path attribute.
-
-    Performing an isinstance check on this class will return True if the class has a path attribute (even if it is None).
-    """
-
-    path: Path
-
-
 class Event(Object):
     """The accepted input for an event in FloodAdapt.
 
@@ -117,40 +106,10 @@ class Event(Object):
         for forcing in self.get_forcings():
             forcing.save_additional(output_dir)
 
-    @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "Event":
-        """Load object from file.
-
-        Parameters
-        ----------
-        file_path : Path | str | os.PathLike
-            Path to the file to load.
-
-        """
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
-
-        event = cls.model_validate(toml)
-
-        # Update all forcings with paths to absolute paths
-        for forcing in event.get_forcings():
-            if isinstance(forcing, PathBasedForcing):
-                if forcing.path.exists():
-                    continue
-                elif forcing.path == Path(forcing.path.name):
-                    # convert relative path to absolute path
-                    in_dir = Path(file_path).parent / forcing.path.name
-                    if not in_dir.exists():
-                        raise FileNotFoundError(
-                            f"Failed to load Event. File {forcing.path} does not exist in {in_dir.parent}."
-                        )
-                    forcing.path = in_dir
-                else:
-                    raise FileNotFoundError(
-                        f"Failed to load Event. File {forcing.path} does not exist."
-                    )
-
-        return event
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
+        for forcing in self.get_forcings():
+            forcing._post_load(file_path, **kwargs)
 
     @staticmethod
     def _parse_forcing_from_dict(

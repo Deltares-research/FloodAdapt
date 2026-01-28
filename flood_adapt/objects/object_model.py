@@ -1,10 +1,13 @@
 import os
 import re
 from pathlib import Path
+from typing import TypeVar
 
-import tomli
-import tomli_w
 from pydantic import BaseModel, Field, field_validator
+
+from flood_adapt.misc.io import read_toml, write_toml
+
+T = TypeVar("T", bound="Object")
 
 
 class Object(BaseModel):
@@ -32,7 +35,7 @@ class Object(BaseModel):
         return value
 
     @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "Object":
+    def load_file(cls: type[T], file_path: Path | str | os.PathLike, **kwargs) -> T:
         """Load object from file.
 
         Parameters
@@ -41,9 +44,17 @@ class Object(BaseModel):
             Path to the file to load.
 
         """
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
-        return cls.model_validate(toml)
+        toml = read_toml(file_path)
+        model = cls.model_validate(toml)
+        model._post_load(file_path=file_path, **kwargs)
+        return model
+
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file.
+
+        Should be overridden by subclasses.
+        """
+        pass
 
     def save(self, toml_path: Path | str | os.PathLike) -> None:
         """Save object to disk.
@@ -55,8 +66,7 @@ class Object(BaseModel):
 
         """
         self.save_additional(output_dir=Path(toml_path).parent)
-        with open(toml_path, "wb") as f:
-            tomli_w.dump(self.model_dump(exclude_none=True), f)
+        write_toml(self.model_dump(exclude_none=True), toml_path)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         """Save additional files to database if the object has any and update attrs to reflect the change in file location.

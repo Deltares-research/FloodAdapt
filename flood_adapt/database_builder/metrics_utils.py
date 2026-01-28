@@ -2,10 +2,10 @@ from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Union
 
-import tomli_w
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from flood_adapt.adapter.fiat_adapter import _IMPACT_COLUMNS
+from flood_adapt.misc.io import write_toml
 
 
 def combine_filters(*filters):
@@ -897,8 +897,7 @@ class Metrics:
         attrs["queries"] = [metric.model_dump() for metric in metrics]
 
         # Save metrics configuration
-        with open(path, "wb") as f:
-            tomli_w.dump(attrs, f)
+        write_toml(attrs, path)
 
     def write(
         self,
@@ -982,8 +981,10 @@ class Metrics:
 
         # Save additional risk configurations if available
         if hasattr(self, "additional_risk_configs") and self.additional_risk_configs:
-            with open(path_im / "metrics_additional_risk_configs.toml", "wb") as f:
-                tomli_w.dump(self.additional_risk_configs, f)
+            write_toml(
+                self.additional_risk_configs,
+                path_im / "metrics_additional_risk_configs.toml",
+            )
 
         # Save infographics configuration if available
         if self.infographics_config:
@@ -994,17 +995,25 @@ class Metrics:
             infographics_path = Path(infographics_path)
             infographics_path.mkdir(parents=True, exist_ok=True)
             if "buildings" in self.infographics_config:
-                with open(infographics_path / "config_charts.toml", "wb") as f:
-                    tomli_w.dump(self.infographics_config["buildings"], f)
+                write_toml(
+                    self.infographics_config["buildings"],
+                    infographics_path / "config_charts.toml",
+                )
             if "svi" in self.infographics_config:
-                with open(infographics_path / "config_people.toml", "wb") as f:
-                    tomli_w.dump(self.infographics_config["svi"], f)
+                write_toml(
+                    self.infographics_config["svi"],
+                    infographics_path / "config_people.toml",
+                )
             if "roads" in self.infographics_config:
-                with open(infographics_path / "config_roads.toml", "wb") as f:
-                    tomli_w.dump(self.infographics_config["roads"], f)
+                write_toml(
+                    self.infographics_config["roads"],
+                    infographics_path / "config_roads.toml",
+                )
             if "risk" in self.infographics_config:
-                with open(infographics_path / "config_risk_charts.toml", "wb") as f:
-                    tomli_w.dump(self.infographics_config["risk"], f)
+                write_toml(
+                    self.infographics_config["risk"],
+                    infographics_path / "config_risk_charts.toml",
+                )
 
     def create_mandatory_metrics_event(self) -> list[MetricModel]:
         """

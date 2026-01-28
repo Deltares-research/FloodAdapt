@@ -202,3 +202,20 @@ def validate_file_extension(allowed_extensions: list[str]):
         return value
 
     return BeforeValidator(_validator)
+
+
+def path_exists_and_absolute(
+    obj_path: Path | str | os.PathLike, argument_path: Path | str | os.PathLike
+) -> Path:
+    """Take a path which can be absolute or relative, and return an absolute path.
+
+    When the obj_path is relative, it is made absolute relative to the argument_path.
+    """
+    obj_path = Path(obj_path)
+    if obj_path.is_absolute():
+        _path = obj_path
+    else:
+        _path = Path(argument_path).parent.joinpath(obj_path)
+    if not _path.exists():
+        raise FileNotFoundError(f"File {_path} does not exist.")
+    return _path

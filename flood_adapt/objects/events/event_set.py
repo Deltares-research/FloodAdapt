@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-import tomli
 from pydantic import BaseModel
 
 from flood_adapt.objects.events.events import Event, Mode
@@ -68,20 +67,21 @@ class EventSet(Object):
         else:
             raise ValueError("Either `sub_events` or `file_path` must be provided.")
 
-    @classmethod
-    def load_file(
-        cls, file_path: Path | str | os.PathLike, load_all: bool = False
-    ) -> "EventSet":
-        """Load object from file."""
-        with open(file_path, mode="rb") as fp:
-            event_set = tomli.load(fp)
-        event_set = EventSet(**event_set)
+    def _post_load(
+        self,
+        file_path: Path | str | os.PathLike,
+        *,
+        load_all: bool = False,
+        sub_events: List[Event] | None = None,
+        **kwargs,
+    ) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
         if load_all:
-            # Load all sub events from the file path
-            event_set.load_sub_events(file_path=file_path)
-        return event_set
+            self.load_sub_events(sub_events=sub_events, file_path=file_path)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self._events is None:
+            return
         for sub_event in self._events:
             sub_dir = Path(output_dir) / sub_event.name
             sub_dir.mkdir(parents=True, exist_ok=True)

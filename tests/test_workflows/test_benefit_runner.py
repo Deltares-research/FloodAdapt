@@ -4,9 +4,9 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
-import tomli
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.misc.io import read_toml
 from flood_adapt.workflows.benefit_runner import Benefit, BenefitRunner
 from tests.test_objects.test_benefits.test_benefit import _RAND, _TEST_NAMES
 
@@ -334,8 +334,7 @@ class TestBenefitScenariosRun:
         )
 
         # assert if results.toml has correct values
-        with open(results_path, mode="rb") as fp:
-            results = tomli.load(fp)
+        results = read_toml(results_path)
 
         # assert if time-series and totals are consistent
         assert results["benefits"] == time_series["benefits_discounted"].sum()
@@ -408,8 +407,7 @@ class TestBenefitScenariosRun:
 
         # get results
         results_path = runner.results_path.joinpath("results.toml")
-        with open(results_path, mode="rb") as fp:
-            results = tomli.load(fp)
+        results = read_toml(results_path)
         # get aggregation
         for aggr_type in runner.site_info.fiat.config.aggregation:
             csv_agg_results = pd.read_csv(
