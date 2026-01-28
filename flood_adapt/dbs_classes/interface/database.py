@@ -6,48 +6,12 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import numpy as np
 
-from flood_adapt.config.site import Site
-from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
-from flood_adapt.dbs_classes.interface.static import IDbsStatic
-
 
 class IDatabase(ABC):
     base_path: Path
     input_path: Path
     output_path: Path
     static_path: Path
-
-    @property
-    @abstractmethod
-    def site(self) -> Site: ...
-
-    @property
-    @abstractmethod
-    def static(self) -> IDbsStatic: ...
-
-    @property
-    @abstractmethod
-    def events(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def scenarios(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def strategies(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def measures(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def projections(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def benefits(self) -> AbstractDatabaseElement: ...
 
     @abstractmethod
     def __init__(

@@ -38,7 +38,7 @@ class DbsStatic(IDbsStatic):
     _cached_data: dict[str, Any] = {}
     _database: IDatabase
 
-    def __init__(self, database: IDatabase):
+    def __init__(self, database: IDatabase) -> None:
         """Initialize any necessary attributes."""
         self._database = database
 
@@ -160,6 +160,8 @@ class DbsStatic(IDbsStatic):
         list
             List of scenario names
         """
+        if self._database.site.sfincs.slr_scenarios is None:
+            raise ConfigError("No sea level rise scenarios defined in the site config.")
         input_file = self._database.static_path.joinpath(
             self._database.site.sfincs.slr_scenarios.file
         )

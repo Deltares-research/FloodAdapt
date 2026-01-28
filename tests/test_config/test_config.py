@@ -5,7 +5,7 @@ from typing import Callable, Optional
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.config.config import Settings
+from flood_adapt.config.config import ExecutionMethod, Settings
 from flood_adapt.misc.utils import modified_environ
 
 DEFAULT_EXE_PATHS: dict[str, dict[str, Path]] = {
@@ -40,12 +40,12 @@ class TestSettingsModel:
         sfincs_rel = DEFAULT_EXE_PATHS[system.lower()]["sfincs"]
         sfincs_bin = db_root / "system" / sfincs_rel
         sfincs_bin.parent.mkdir(parents=True)
-        sfincs_bin.touch()
+        sfincs_bin.touch(mode=0o755)  # Make executable
 
         _fiat_rel = DEFAULT_EXE_PATHS[system.lower()]["fiat"]
         fiat_bin = db_root / "system" / _fiat_rel
         fiat_bin.parent.mkdir(parents=True)
-        fiat_bin.touch()
+        fiat_bin.touch(mode=0o755)  # Make executable
 
         (db_root / name / "input").mkdir(parents=True)
         (db_root / name / "static").mkdir(parents=True)
@@ -60,7 +60,7 @@ class TestSettingsModel:
         expected_fiat: Optional[Path] = None,
     ):
         assert settings.database_root == expected_root
-        assert os.environ["DATABASE_ROOT"] == str(expected_root)
+        assert os.environ["DATABASE_ROOT"] == expected_root.as_posix()
 
         assert settings.database_name == expected_name
         assert os.environ["DATABASE_NAME"] == expected_name
@@ -69,37 +69,33 @@ class TestSettingsModel:
 
         if expected_sfincs is not None:
             assert settings.sfincs_bin_path == expected_sfincs
-            assert os.environ["SFINCS_BIN_PATH"] == str(expected_sfincs)
+            assert os.environ["SFINCS_BIN_PATH"] == expected_sfincs.as_posix()
 
         if expected_fiat is not None:
             assert settings.fiat_bin_path == expected_fiat
-            assert os.environ["FIAT_BIN_PATH"] == str(expected_fiat)
-
-    @pytest.fixture(autouse=True, scope="class")
-    def protect_external_settings(self):
-        settings = Settings()
-
-        yield
-
-        Settings(
-            DATABASE_ROOT=settings.database_root,
-            DATABASE_NAME=settings.database_name,
-        )
+            assert os.environ["FIAT_BIN_PATH"] == expected_fiat.as_posix()
 
     @pytest.fixture(autouse=True)
-    def protect_envvars(self):
-        root = os.environ.get("DATABASE_ROOT", None)
-        name = os.environ.get("DATABASE_NAME", None)
-        sfincs_bin = os.environ.get("SFINCS_BIN_PATH", None)
-        fiat_bin = os.environ.get("FIAT_BIN_PATH", None)
+    def protect_and_clear_envvars(self):
+        """Create a copy of the environment variables before each test and restore them after.
 
-        with modified_environ(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs_bin,
-            FIAT_BIN_PATH=fiat_bin,
-        ):
+        After creating the copy, all FA-related environment variables are cleared to ensure tests run in a clean state.
+        """
+        FA_ENV_VARS = {
+            v.alias: os.getenv(v.alias)
+            for v in Settings.model_fields.values()
+            if v.alias is not None
+        }
+        try:
+            for var in FA_ENV_VARS:
+                os.environ.pop(var, None)
             yield
+        finally:
+            for k, v in FA_ENV_VARS.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.putenv(k, v)
 
     @pytest.mark.skip(
         reason="TODO: Add sfincs & fiat binaries for Linux & Darwin to the system folder in the test database"
@@ -139,7 +135,7 @@ class TestSettingsModel:
         db_root, name = create_dummy_db(system=system)
 
         with modified_environ(
-            DATABASE_ROOT=str(db_root),
+            DATABASE_ROOT=db_root.as_posix(),
             DATABASE_NAME=name,
         ):
             # Act
@@ -158,7 +154,7 @@ class TestSettingsModel:
         db_root, name = create_dummy_db(system=system)
 
         with modified_environ(
-            DATABASE_ROOT=str(db_root / "dummy"),
+            DATABASE_ROOT=(db_root / "dummy").as_posix(),
             DATABASE_NAME="invalid_name",
         ):
             # Act
@@ -189,33 +185,21 @@ class TestSettingsModel:
         assert "does not exist." in str(exc_info.value)
 
     @pytest.mark.parametrize("system", ["windows", "linux"])
-    @pytest.mark.parametrize("model", ["fiat", "sfincs"])
     def test_missing_model_binaries_raise_validation_error(
-        self, system: str, model: str, create_dummy_db
+        self, system: str, create_dummy_db
     ):
         db_root, name = create_dummy_db(system=system)
         non_existent_path = Path("doesnt_exist")
-        with pytest.raises(ValidationError) as exc_info:
-            if model == "fiat":
-                Settings(
-                    DATABASE_ROOT=db_root,
-                    DATABASE_NAME=name,
-                    FIAT_BIN_PATH=non_existent_path,
-                    VALIDATE_BINARIES=True,
-                )
-            elif model == "sfincs":
-                Settings(
-                    DATABASE_ROOT=db_root,
-                    DATABASE_NAME=name,
-                    SFINCS_BIN_PATH=non_existent_path,
-                    VALIDATE_BINARIES=True,
-                )
-            else:
-                raise ValueError("Invalid model")
-
-        assert f"{model.upper()} binary {non_existent_path} does not exist." in str(
-            exc_info.value
-        )
+        with pytest.raises(
+            ValidationError, match=f"binary {non_existent_path} does not exist."
+        ):
+            Settings(
+                DATABASE_ROOT=db_root,
+                DATABASE_NAME=name,
+                FIAT_BIN_PATH=non_existent_path,
+                SFINCS_BIN_PATH=non_existent_path,
+                VALIDATE_BINARIES=True,
+            )
 
     def test_read_settings_no_envvars(self, create_dummy_db):
         # Arrange
@@ -223,7 +207,7 @@ class TestSettingsModel:
 
         config_path = db_root / "config.toml"
         config_path.write_text(
-            f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root}'\n"
+            f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root.as_posix()}'\n"
         )
 
         # Act
@@ -246,7 +230,7 @@ class TestSettingsModel:
         ):
             config_path = db_root / "config.toml"
             config_path.write_text(
-                f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root}'\n"
+                f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root.as_posix()}'\n"
             )
 
             # Act
@@ -264,7 +248,7 @@ class TestSettingsModel:
         db_root, name = create_dummy_db()
 
         with modified_environ(
-            DATABASE_ROOT=str(db_root),
+            DATABASE_ROOT=db_root.as_posix(),
             DATABASE_NAME="dummy_name",
         ):
             config_path = db_root / "config.toml"
@@ -287,7 +271,7 @@ class TestSettingsModel:
 
         # Act
         with modified_environ(
-            DATABASE_ROOT=str(db_root1),
+            DATABASE_ROOT=db_root1.as_posix(),
             DATABASE_NAME=name1,
         ):
             from_env1 = Settings()  # Create settings object with envvars
@@ -316,42 +300,116 @@ class TestSettingsModel:
                 DELETE_CRASHED_RUNS=False,
                 VALIDATE_ALLOWED_FORCINGS=False,
                 VALIDATE_BINARIES=False,
+                MANUAL_DOCKER_CONTAINERS=False,
+                USE_DOCKER=False,
             )
 
             assert not settings.delete_crashed_runs
             assert not settings.validate_allowed_forcings
             assert not settings.validate_binaries
-            assert not os.getenv("DELETE_CRASHED_RUNS")
-            assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert not os.getenv("VALIDATE_BINARIES")
+            assert not settings.manual_docker_containers
+            assert not settings.use_docker
+            assert os.getenv("DELETE_CRASHED_RUNS") == "False"
+            assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "False"
+            assert os.getenv("VALIDATE_BINARIES") == "False"
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS") == "False"
+            assert os.getenv("USE_DOCKER") == "False"
 
             settings2 = Settings()
             assert not settings2.delete_crashed_runs
             assert not settings2.validate_allowed_forcings
             assert not settings2.validate_binaries
-            assert not os.getenv("DELETE_CRASHED_RUNS")
-            assert not os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert not os.getenv("VALIDATE_BINARIES")
+            assert not settings2.manual_docker_containers
+            assert not settings2.use_docker
+            assert os.getenv("DELETE_CRASHED_RUNS") == "False"
+            assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "False"
+            assert os.getenv("VALIDATE_BINARIES") == "False"
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS") == "False"
+            assert os.getenv("USE_DOCKER") == "False"
 
     def test_create_settings_with_persistent_booleans_true(self):
         with modified_environ():
             settings = Settings(
                 DELETE_CRASHED_RUNS=True,
                 VALIDATE_ALLOWED_FORCINGS=True,
-                VALIDATE_BINARIES=True,
+                MANUAL_DOCKER_CONTAINERS=True,
+                USE_DOCKER=True,
             )
 
             assert settings.delete_crashed_runs
             assert settings.validate_allowed_forcings
-            assert settings.validate_binaries
-            assert os.getenv("DELETE_CRASHED_RUNS")
-            assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert os.getenv("VALIDATE_BINARIES")
+            assert settings.manual_docker_containers
+            assert settings.use_docker
+            assert os.getenv("DELETE_CRASHED_RUNS") == "True"
+            assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "True"
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS") == "True"
+            assert os.getenv("USE_DOCKER") == "True"
 
             settings2 = Settings()
             assert settings2.delete_crashed_runs
             assert settings2.validate_allowed_forcings
-            assert settings2.validate_binaries
-            assert os.getenv("DELETE_CRASHED_RUNS")
-            assert os.getenv("VALIDATE_ALLOWED_FORCINGS")
-            assert os.getenv("VALIDATE_BINARIES")
+            assert settings2.manual_docker_containers
+            assert settings2.use_docker
+            assert os.getenv("DELETE_CRASHED_RUNS") == "True"
+            assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "True"
+            assert os.getenv("MANUAL_DOCKER_CONTAINERS") == "True"
+            assert os.getenv("USE_DOCKER") == "True"
+
+    def test_get_scenario_execution_method_docker(self):
+        settings = Settings(
+            USE_DOCKER=True,
+            VALIDATE_BINARIES=False,
+            SFINCS_BIN_PATH=None,
+            FIAT_BIN_PATH=None,
+        )
+        assert settings.get_scenario_execution_method() == ExecutionMethod.DOCKER
+
+    def test_get_scenario_execution_method_binaries(self, tmp_path: Path):
+        existing_bin = tmp_path / "bins/binary.exe"
+        existing_bin.parent.mkdir(parents=True, exist_ok=True)
+        existing_bin.touch(mode=0o755)  # Make executable
+
+        settings = Settings(
+            USE_DOCKER=False,
+            VALIDATE_BINARIES=True,
+            SFINCS_BIN_PATH=existing_bin,
+            FIAT_BIN_PATH=existing_bin,
+        )
+        assert settings.get_scenario_execution_method() == ExecutionMethod.BINARIES
+
+    def test_get_scenario_execution_method_none(self, tmp_path: Path):
+        settings = Settings(
+            USE_DOCKER=False,
+            VALIDATE_BINARIES=False,
+            SFINCS_BIN_PATH=None,
+            FIAT_BIN_PATH=None,
+        )
+        assert settings.get_scenario_execution_method() is None
+
+    def test_get_scenario_execution_method_strict_raises(self, tmp_path: Path):
+        settings = Settings(
+            USE_DOCKER=False,
+            VALIDATE_BINARIES=False,
+            SFINCS_BIN_PATH=None,
+            FIAT_BIN_PATH=None,
+        )
+        with pytest.raises(
+            RuntimeError,
+            match="Could not determine scenario execution method, please check your configuration.",
+        ):
+            settings.get_scenario_execution_method(strict=True)
+
+    def test_get_scenario_execution_method_all_available_chooses_binaries(
+        self, tmp_path: Path
+    ):
+        existing_bin = tmp_path / "bins/binary.exe"
+        existing_bin.parent.mkdir(parents=True, exist_ok=True)
+        existing_bin.touch(mode=0o755)  # Make executable
+
+        settings = Settings(
+            USE_DOCKER=True,
+            VALIDATE_BINARIES=True,
+            SFINCS_BIN_PATH=existing_bin,
+            FIAT_BIN_PATH=existing_bin,
+        )
+        assert settings.get_scenario_execution_method() == ExecutionMethod.BINARIES

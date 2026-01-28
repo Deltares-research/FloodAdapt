@@ -1,16 +1,22 @@
+import logging
+from enum import Enum, auto
 from os import environ, listdir
 from pathlib import Path
 from typing import Optional
 
 import tomli
 import tomli_w
-from pydantic import (
-    Field,
-    computed_field,
-    field_serializer,
-    model_validator,
-)
+from pydantic import Field, computed_field, field_serializer, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from flood_adapt.adapter.docker import HAS_DOCKER
+
+logger = logging.getLogger(__name__)
+
+
+class ExecutionMethod(Enum):
+    DOCKER = auto()
+    BINARIES = auto()
 
 
 class Settings(BaseSettings):
@@ -111,6 +117,18 @@ class Settings(BaseSettings):
         description="The path of the fiat binary.",
         exclude=True,
     )
+    manual_docker_containers: bool = Field(
+        default=False,
+        alias="MANUAL_DOCKER_CONTAINERS",  # environment variable: MANUAL_DOCKER_CONTAINERS
+        description="Whether to manually start and stop Docker containers for SFINCS and FIAT when initializing/destroying FloodAdapt. Useful to prevent unnecessary re-initialization during testing.",
+        exclude=True,
+    )
+    use_docker: bool = Field(
+        alias="USE_DOCKER",  # environment variable: USE_DOCKER
+        default=False,
+        description="Whether to use Docker containers for SFINCS and FIAT execution. If True, Docker must be installed and running. If False, local binaries will be used.",
+        exclude=True,
+    )
 
     @computed_field
     @property
@@ -120,32 +138,32 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_settings(self):
         self._validate_database_path()
-        if self.validate_binaries:
-            self._validate_fiat_path()
-            self._validate_sfincs_path()
         self._update_environment_variables()
         return self
 
+    def _update_envvar(self, key: str, value: str | bool | Path | None):
+        if value is None:
+            environ.pop(key, None)
+        elif isinstance(value, (bool, str)):
+            environ[key] = str(value)
+        elif isinstance(value, Path):
+            environ[key] = value.as_posix()
+        else:
+            raise ValueError(
+                f"Cannot set environment variable {key} with value {value}"
+            )
+
     def _update_environment_variables(self):
-        environ["DATABASE_ROOT"] = str(self.database_root)
+        environ["DATABASE_ROOT"] = self.database_root.as_posix()
         environ["DATABASE_NAME"] = self.database_name
 
-        if self.delete_crashed_runs:
-            environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
-        else:
-            environ.pop("DELETE_CRASHED_RUNS", None)
-
-        if self.validate_allowed_forcings:
-            environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
-        else:
-            environ.pop("VALIDATE_ALLOWED_FORCINGS", None)
-
-        if self.validate_binaries:
-            environ["VALIDATE_BINARIES"] = str(self.validate_binaries)
-            environ["SFINCS_BIN_PATH"] = str(self.sfincs_bin_path)
-            environ["FIAT_BIN_PATH"] = str(self.fiat_bin_path)
-        else:
-            environ.pop("VALIDATE_BINARIES", None)
+        self._update_envvar("DELETE_CRASHED_RUNS", self.delete_crashed_runs)
+        self._update_envvar("VALIDATE_ALLOWED_FORCINGS", self.validate_allowed_forcings)
+        self._update_envvar("VALIDATE_BINARIES", self.validate_binaries)
+        self._update_envvar("SFINCS_BIN_PATH", self.sfincs_bin_path)
+        self._update_envvar("FIAT_BIN_PATH", self.fiat_bin_path)
+        self._update_envvar("USE_DOCKER", self.use_docker)
+        self._update_envvar("MANUAL_DOCKER_CONTAINERS", self.manual_docker_containers)
 
         return self
 
@@ -181,19 +199,25 @@ class Settings(BaseSettings):
 
         return self
 
+    @model_validator(mode="after")
     def _validate_sfincs_path(self):
-        if not self.sfincs_bin_path.exists():
-            raise ValueError(f"SFINCS binary {self.sfincs_bin_path} does not exist.")
+        if self.sfincs_bin_path is not None and self.validate_binaries:
+            if not self.sfincs_bin_path.exists():
+                raise ValueError(
+                    f"SFINCS binary {self.sfincs_bin_path} does not exist."
+                )
         return self
 
+    @model_validator(mode="after")
     def _validate_fiat_path(self):
-        if not self.fiat_bin_path.exists():
-            raise ValueError(f"FIAT binary {self.fiat_bin_path} does not exist.")
+        if self.fiat_bin_path is not None and self.validate_binaries:
+            if not self.fiat_bin_path.exists():
+                raise ValueError(f"FIAT binary {self.fiat_bin_path} does not exist.")
         return self
 
     @field_serializer("database_root", "database_path")
     def serialize_path(self, path: Path) -> str:
-        return str(path)
+        return path.as_posix()
 
     @staticmethod
     def read(toml_path: Path) -> "Settings":
@@ -246,3 +270,25 @@ class Settings(BaseSettings):
                 ),
                 f,
             )
+
+    def get_scenario_execution_method(
+        self, strict: bool = False
+    ) -> ExecutionMethod | None:
+        if (
+            self.validate_binaries
+            and self.sfincs_bin_path is not None
+            and self.sfincs_bin_path.exists()
+            and self.fiat_bin_path is not None
+            and self.fiat_bin_path.exists()
+        ):
+            return ExecutionMethod.BINARIES
+
+        if HAS_DOCKER and self.use_docker:
+            return ExecutionMethod.DOCKER
+
+        msg = "Could not determine scenario execution method, please check your configuration."
+        if strict:
+            raise RuntimeError(msg)
+        else:
+            logger.warning(msg)
+            return None

@@ -9,6 +9,8 @@ from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
+from flood_adapt.adapter.docker import FIAT_CONTAINER, SFINCS_CONTAINER
+from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.benefits.benefits import Benefit
@@ -54,9 +56,17 @@ class FloodAdapt:
         database_path : Path
             The path to the database file.
         """
-        self.database = Database(
-            database_path=database_path.parent, database_name=database_path.name
+        self._settings = Settings(
+            DATABASE_ROOT=database_path.parent,
+            DATABASE_NAME=database_path.name,
         )
+        self.database = Database(
+            database_root=database_path.parent,
+            database_name=database_path.name,
+            settings=self._settings,
+        )
+        if self._settings.use_docker:
+            self._initialize_docker()
 
     # Measures
     def get_measures(self) -> dict[str, Any]:
@@ -1282,3 +1292,17 @@ class FloodAdapt:
             The aggregation benefits for the benefit assessment.
         """
         return self.database.get_aggregation_benefits(name)
+
+    ## DOCKER
+    def cleanup(self):
+        if not self._settings.manual_docker_containers:
+            SFINCS_CONTAINER.stop()
+            FIAT_CONTAINER.stop()
+
+    def __del__(self):
+        self.cleanup()
+
+    def _initialize_docker(self) -> None:
+        if not self._settings.manual_docker_containers:
+            SFINCS_CONTAINER.start(self.database.base_path)
+            FIAT_CONTAINER.start(self.database.base_path)
