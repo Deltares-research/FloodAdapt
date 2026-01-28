@@ -50,7 +50,7 @@ def setup_file_based_tide_gauge(
         ID=8665530,
         lat=32.78,
         lon=-79.9233,
-        file=csv_path,
+        file=csv_path.as_posix(),
     )
 
     expected_df = CSVTimeseries.load_file(
