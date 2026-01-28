@@ -48,12 +48,11 @@ SETTINGS = Settings(
     VALIDATE_BINARIES=IS_WINDOWS,
 )
 
-# We should always be able to execute scenarios in the test environment, either via Docker or local binaries
-CAN_EXECUTE_SCENARIOS = SETTINGS.can_execute_scenarios()
-if not CAN_EXECUTE_SCENARIOS:
+execution_method = SETTINGS.get_scenario_execution_method(strict=False)
+CAN_EXECUTE_SCENARIOS = execution_method is not None
+if IS_WINDOWS and not CAN_EXECUTE_SCENARIOS:
     raise RuntimeError(
-        "Expected to be able to execute scenarios in the test environment, "
-        "either via Docker or local binaries, but cannot. Please check your configuration."
+        "FloodAdapt must always be able to execute scenarios on Windows in the test environment"
     )
 
 

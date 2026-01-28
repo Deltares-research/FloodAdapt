@@ -23,9 +23,9 @@ from fiat_toolbox.spatial_output.footprints import Footprints
 from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.adapter.docker import FIAT_CONTAINER, HAS_DOCKER
+from flood_adapt.adapter.docker import FIAT_CONTAINER
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
-from flood_adapt.config.config import Settings
+from flood_adapt.config.config import ExecutionMethod, Settings
 from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -329,30 +329,31 @@ class FiatAdapter(IImpactAdapter):
         FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
         exe = exe_path or self.exe_path
         fiat_log = path / "fiat.log"
-
-        if HAS_DOCKER and Settings().use_docker:
-            success = FIAT_CONTAINER.run(path)
-        elif exe is not None:
-            with cd(path):
-                with FloodAdaptLogging.to_file(file_path=fiat_log):
-                    logger.info(f"Running FIAT in {path}")
-                    process = subprocess.run(
-                        args=[
-                            Path(exe).resolve().as_posix(),
-                            "run",
-                            "settings.toml",
-                        ],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                    )
-                    logger.info(process.stdout)
-                    success = process.returncode == 0
-        else:
-            raise RuntimeError(
-                "FIAT execution method not configured properly. Choose to validate binaries or use Docker. See ``Settings``."
-                f"'exe_path': `{exe}` needs to be provided either when calling FiatAdapter.execute() or during initialization of the FiatAdapter object."
-            )
+        settings = Settings()
+        match settings.get_scenario_execution_method():
+            case ExecutionMethod.DOCKER:
+                success = FIAT_CONTAINER.run(path)
+            case ExecutionMethod.BINARIES:
+                with cd(path):
+                    with FloodAdaptLogging.to_file(file_path=fiat_log):
+                        logger.info(f"Running FIAT in {path}")
+                        process = subprocess.run(
+                            args=[
+                                Path(exe).resolve().as_posix(),
+                                "run",
+                                "settings.toml",
+                            ],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True,
+                        )
+                        logger.info(process.stdout)
+                        success = process.returncode == 0
+            case _:
+                raise RuntimeError(
+                    "FIAT execution method not configured properly. Choose to validate binaries or use Docker. See ``Settings``."
+                    f"'exe_path': `{exe}` needs to be provided either when calling FiatAdapter.execute() or during initialization of the FiatAdapter object."
+                )
 
         # cleanup
         if delete_crashed_runs is None:

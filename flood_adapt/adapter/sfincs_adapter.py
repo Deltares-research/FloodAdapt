@@ -23,9 +23,9 @@ from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
 from shapely.affinity import translate
 
-from flood_adapt.adapter.docker import HAS_DOCKER, SFINCS_CONTAINER
+from flood_adapt.adapter.docker import SFINCS_CONTAINER
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
-from flood_adapt.config.config import Settings
+from flood_adapt.config.config import ExecutionMethod, Settings
 from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
@@ -193,24 +193,25 @@ class SfincsAdapter(IHazardAdapter):
         """
         settings = Settings()
 
-        if HAS_DOCKER and settings.use_docker:
-            success = SFINCS_CONTAINER.run(path)
-        elif settings.sfincs_bin_path is not None and settings.validate_binaries:
-            with cd(path):
-                logger.info(f"Running SFINCS in {path}")
-                process = subprocess.run(
-                    settings.sfincs_bin_path.as_posix(),
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
+        match settings.get_scenario_execution_method():
+            case ExecutionMethod.DOCKER:
+                success = SFINCS_CONTAINER.run(path)
+            case ExecutionMethod.BINARIES:
+                with cd(path):
+                    logger.info(f"Running SFINCS in {path}")
+                    process = subprocess.run(
+                        settings.sfincs_bin_path.as_posix(),
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                    )
+                    self.sfincs_logger.info(process.stdout)
+                    logger.debug(process.stdout)
+                    success = process.returncode == 0
+            case _:
+                raise RuntimeError(
+                    "SFINCS execution method not configured properly. Choose to validate binaries or use Docker. See ``Settings``."
                 )
-                self.sfincs_logger.info(process.stdout)
-                logger.debug(process.stdout)
-                success = process.returncode == 0
-        else:
-            raise RuntimeError(
-                "SFINCS execution method not configured properly. Choose to validate binaries or use Docker. See ``Settings``."
-            )
 
         self._cleanup_simulation_folder(path)
 

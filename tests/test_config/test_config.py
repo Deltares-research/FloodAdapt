@@ -5,7 +5,7 @@ from typing import Callable, Optional
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.config.config import Settings
+from flood_adapt.config.config import ExecutionMethod, Settings
 from flood_adapt.misc.utils import modified_environ
 
 DEFAULT_EXE_PATHS: dict[str, dict[str, Path]] = {
@@ -354,3 +354,62 @@ class TestSettingsModel:
             assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "True"
             assert os.getenv("MANUAL_DOCKER_CONTAINERS") == "True"
             assert os.getenv("USE_DOCKER") == "True"
+
+    def test_get_scenario_execution_method_docker(self):
+        settings = Settings(
+            USE_DOCKER=True,
+            VALIDATE_BINARIES=False,
+            SFINCS_BIN_PATH=None,
+            FIAT_BIN_PATH=None,
+        )
+        assert settings.get_scenario_execution_method() == ExecutionMethod.DOCKER
+
+    def test_get_scenario_execution_method_binaries(self, tmp_path: Path):
+        existing_bin = tmp_path / "bins/binary.exe"
+        existing_bin.parent.mkdir(parents=True, exist_ok=True)
+        existing_bin.touch(mode=0o755)  # Make executable
+
+        settings = Settings(
+            USE_DOCKER=False,
+            VALIDATE_BINARIES=True,
+            SFINCS_BIN_PATH=existing_bin,
+            FIAT_BIN_PATH=existing_bin,
+        )
+        assert settings.get_scenario_execution_method() == ExecutionMethod.BINARIES
+
+    def test_get_scenario_execution_method_none(self, tmp_path: Path):
+        settings = Settings(
+            USE_DOCKER=False,
+            VALIDATE_BINARIES=False,
+            SFINCS_BIN_PATH=None,
+            FIAT_BIN_PATH=None,
+        )
+        assert settings.get_scenario_execution_method() is None
+
+    def test_get_scenario_execution_method_strict_raises(self, tmp_path: Path):
+        settings = Settings(
+            USE_DOCKER=False,
+            VALIDATE_BINARIES=False,
+            SFINCS_BIN_PATH=None,
+            FIAT_BIN_PATH=None,
+        )
+        with pytest.raises(
+            RuntimeError,
+            match="Could not determine scenario execution method, please check your configuration.",
+        ):
+            settings.get_scenario_execution_method(strict=True)
+
+    def test_get_scenario_execution_method_all_available_chooses_binaries(
+        self, tmp_path: Path
+    ):
+        existing_bin = tmp_path / "bins/binary.exe"
+        existing_bin.parent.mkdir(parents=True, exist_ok=True)
+        existing_bin.touch(mode=0o755)  # Make executable
+
+        settings = Settings(
+            USE_DOCKER=True,
+            VALIDATE_BINARIES=True,
+            SFINCS_BIN_PATH=existing_bin,
+            FIAT_BIN_PATH=existing_bin,
+        )
+        assert settings.get_scenario_execution_method() == ExecutionMethod.BINARIES

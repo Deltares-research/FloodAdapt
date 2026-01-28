@@ -1,18 +1,22 @@
+import logging
+from enum import Enum, auto
 from os import environ, listdir
 from pathlib import Path
 from typing import Optional
 
 import tomli
 import tomli_w
-from pydantic import (
-    Field,
-    computed_field,
-    field_serializer,
-    model_validator,
-)
+from pydantic import Field, computed_field, field_serializer, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from flood_adapt.adapter.docker import HAS_DOCKER
+
+logger = logging.getLogger(__name__)
+
+
+class ExecutionMethod(Enum):
+    DOCKER = auto()
+    BINARIES = auto()
 
 
 class Settings(BaseSettings):
@@ -267,10 +271,9 @@ class Settings(BaseSettings):
                 f,
             )
 
-    def can_execute_scenarios(self) -> bool:
-        if HAS_DOCKER and self.use_docker:
-            return True
-
+    def get_scenario_execution_method(
+        self, strict: bool = False
+    ) -> ExecutionMethod | None:
         if (
             self.validate_binaries
             and self.sfincs_bin_path is not None
@@ -278,6 +281,14 @@ class Settings(BaseSettings):
             and self.fiat_bin_path is not None
             and self.fiat_bin_path.exists()
         ):
-            return True
+            return ExecutionMethod.BINARIES
 
-        return False
+        if HAS_DOCKER and self.use_docker:
+            return ExecutionMethod.DOCKER
+
+        msg = "Could not determine scenario execution method, please check your configuration."
+        if strict:
+            raise RuntimeError(msg)
+        else:
+            logger.warning(msg)
+            return None
