@@ -186,3 +186,4 @@ docs/objects.txt
 docs/_data
 *.html
 docs/site_libs/
+temp/

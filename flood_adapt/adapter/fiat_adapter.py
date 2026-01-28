@@ -258,7 +258,7 @@ class FiatAdapter(IImpactAdapter):
             map_type=floodmap.map_type,
             var=var,
             is_risk=is_risk,
-            units=us.UnitTypesLength.meters,
+            units=self.database.site.sfincs.config.floodmap_units,
         )
 
         # Save any changes made to disk as well
@@ -489,7 +489,10 @@ class FiatAdapter(IImpactAdapter):
         fiat_results_path = impacts_output_path.joinpath(
             f"Impacts_detailed_{scenario.name}.csv"
         )
-        self.outputs["table"].to_csv(fiat_results_path, index=False)
+        try:
+            self.outputs["table"].to_csv(fiat_results_path, index=False)
+        except Exception as e:
+            logger.error(f"Error while saving detailed impacts file csv: {e}")
 
         # Add exceedance probabilities if needed (only for risk)
         if mode == Mode.risk:
@@ -500,13 +503,16 @@ class FiatAdapter(IImpactAdapter):
             )
             with open(config_path, mode="rb") as fp:
                 config = tomli.load(fp)["flood_exceedance"]
-            self.add_exceedance_probability(
-                column=config[
-                    "column"
-                ],  # TODO check how to the correct version of column
-                threshold=config["threshold"],
-                period=config["period"],
-            )
+            try:
+                self.add_exceedance_probability(
+                    column=config[
+                        "column"
+                    ],  # TODO check how to the correct version of column
+                    threshold=config["threshold"],
+                    period=config["period"],
+                )
+            except Exception as e:
+                logger.error(f"Error while adding exceedance probabilities: {e}")
 
         # Create the infometrics files
         if mode == Mode.risk:
@@ -531,7 +537,10 @@ class FiatAdapter(IImpactAdapter):
         metrics_outputs_path = impacts_output_path.parent.joinpath(
             f"Infometrics_{scenario.name}.csv"
         )
-        self.create_infometrics(metric_config_paths, metrics_outputs_path)
+        try:
+            self.create_infometrics(metric_config_paths, metrics_outputs_path)
+        except Exception as e:
+            logger.error(f"Error while creating infometrics: {e}")
 
         # Get paths of created aggregated infometrics
         aggr_metrics_paths = list(
@@ -543,20 +552,28 @@ class FiatAdapter(IImpactAdapter):
             config_base_path = self.database.static_path.joinpath(
                 "templates", "Infographics"
             )
-            self.create_infographics(
-                name=scenario.name,
-                output_base_path=impacts_output_path.parent,
-                config_base_path=config_base_path,
-                metrics_path=metrics_outputs_path,
-                mode=mode,
-            )
+            try:
+                self.create_infographics(
+                    name=scenario.name,
+                    output_base_path=impacts_output_path.parent,
+                    config_base_path=config_base_path,
+                    metrics_path=metrics_outputs_path,
+                    mode=mode,
+                )
+            except Exception as e:
+                logger.error(f"Error while creating infographics: {e}")
 
         # Calculate equity based damages
         if mode == Mode.risk:
             for file in aggr_metrics_paths:
                 # Load metrics
                 aggr_label = file.stem.split(f"{metrics_outputs_path.stem}_")[-1]
-                self.add_equity(aggr_label=aggr_label, metrics_path=file)
+                try:
+                    self.add_equity(aggr_label=aggr_label, metrics_path=file)
+                except Exception as e:
+                    logger.error(
+                        f"Error while calculating equity metrics for {aggr_label}: {e}"
+                    )
 
         # Save aggregated metrics to shapefiles
         for file in aggr_metrics_paths:
@@ -564,24 +581,35 @@ class FiatAdapter(IImpactAdapter):
             output_path = impacts_output_path.joinpath(
                 f"Impacts_aggregated_{scenario.name}_{aggr_label}.gpkg"
             )
-            self.save_aggregation_spatial(
-                aggr_label=aggr_label, metrics_path=file, output_path=output_path
-            )
+            try:
+                self.save_aggregation_spatial(
+                    aggr_label=aggr_label, metrics_path=file, output_path=output_path
+                )
+            except Exception as e:
+                logger.error(
+                    f"Error while saving aggregation spatial for {aggr_label}: {e}"
+                )
 
         # Merge points data to building footprints
-        self.save_building_footprints(
-            output_path=impacts_output_path.joinpath(
-                f"Impacts_building_footprints_{scenario.name}.gpkg"
+        try:
+            self.save_building_footprints(
+                output_path=impacts_output_path.joinpath(
+                    f"Impacts_building_footprints_{scenario.name}.gpkg"
+                )
             )
-        )
+        except Exception as e:
+            logger.error(f"Error while saving building footprints: {e}")
 
         # Create a roads spatial file
         if self.config.roads_file_name:
-            self.save_roads(
-                output_path=impacts_output_path.joinpath(
-                    f"Impacts_roads_{scenario.name}.gpkg"
+            try:
+                self.save_roads(
+                    output_path=impacts_output_path.joinpath(
+                        f"Impacts_roads_{scenario.name}.gpkg"
+                    )
                 )
-            )
+            except Exception as e:
+                logger.error(f"Error while saving roads spatial file: {e}")
 
         logger.info("Delft-FIAT post-processing complete!")
 

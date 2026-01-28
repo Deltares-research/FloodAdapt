@@ -26,25 +26,25 @@ requires-python = ">=3.10,<3.13"
 # Any package below will be taken from pypi.
 # These are ignored if any packages is also defined in the section: [tool.pixi.dependencies]
 dependencies = [
-    "cht-cyclones       >=1.0.3,<2.0",
-    "cht-meteo          >=0.3.1,<1.0",
-    "cht-observations   >=0.2.1,<1.0",
-    "cht-tide           >=0.1.1,<1.0",
-    "fiat-toolbox       >=0.1.22,<0.2.0",
-    "fiona              >=1.0,<2.0",
-    "geojson            >=3.0,<4.0",
-    "geopandas          >=1.0,<2.0",
-    "hydromt-fiat       >=0.5.9,<1.0",
-    "hydromt-sfincs     >=1.2.2,<2.0",
-    "numpy              >=1.0,<2.0",
-    "numpy-financial    >=1.0,<2.0",
-    "pandas             >=2.0,<3.0",
-    "plotly             >=6.0,<6.3",    # 6.3 breaks with guitares when showing plots in its gui
-    "pydantic           >=2.0,<3.0",
-    "pydantic-settings  >=2.0,<3.0",
-    "pyogrio            <1.0",
-    "tomli              >=2.0,<3.0",
-    "tomli-w            >=1.0,<2.0",
+    "cht-cyclones               >=1.0.3,<2.0",
+    "cht-meteo                  >=0.3.1,<1.0",
+    "cht-observations           >=0.2.1,<1.0",
+    "cht-tide                   >=0.1.1,<1.0",
+    "fiat-toolbox               >=0.1.22,<0.2.0",
+    "fiona                      >=1.0,<2.0",
+    "geojson                    >=3.0,<4.0",
+    "geopandas                  >=1.0,<2.0",
+    "hydromt-fiat               >=0.5.9,<1.0",
+    "hydromt-sfincs[quadtree]   >=1.2.2,<2.0",
+    "numpy                      >=1.0,<2.0",
+    "numpy-financial            >=1.0,<2.0",
+    "pandas                     >=2.0,<3.0",
+    "plotly                     >=6.0,<6.3",    # 6.3 breaks with guitares when showing plots in its gui
+    "pydantic                   >=2.0,<3.0",
+    "pydantic-settings          >=2.0,<3.0",
+    "pyogrio                    <1.0",
+    "tomli                      >=2.0,<3.0",
+    "tomli-w                    >=1.0,<2.0",
     "typing_extensions"
 ]
 dynamic = ["version"]
