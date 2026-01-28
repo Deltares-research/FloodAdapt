@@ -1,6 +1,7 @@
 import gc
 import os
 import shutil
+from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from typing import Any, Literal, Optional, Union
 
@@ -12,6 +13,7 @@ from geopandas import GeoDataFrame
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.database import DatabaseConfig
 from flood_adapt.config.hazard import SlrScenariosModel
 from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.config.site import Site
@@ -22,8 +24,9 @@ from flood_adapt.dbs_classes.dbs_projection import DbsProjection
 from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
-from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.dbs_classes.interface.database import IDatabase, PostProcessingFunction
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
+from flood_adapt.misc.io import read_toml
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     TopLevelDir,
@@ -54,6 +57,8 @@ class Database(IDatabase):
     input_path: Path
     static_path: Path
     output_path: Path
+
+    config: DatabaseConfig
 
     _site: Site
 
@@ -112,12 +117,18 @@ class Database(IDatabase):
         self.database_name = database_name
 
         # Set the paths
-
         self.base_path = Path(database_path) / database_name
         self.input_path = db_path(TopLevelDir.input)
         self.static_path = db_path(TopLevelDir.static)
         self.output_path = db_path(TopLevelDir.output)
 
+        # Load the configuration files
+        db_config_path = self.static_path / "config" / "database.toml"
+        if db_config_path.exists():
+            cfg = read_toml(db_config_path)
+            self.config = DatabaseConfig(**cfg)
+        else:
+            self.config = DatabaseConfig()
         self._site = Site.load_file(self.static_path / "config" / "site.toml")
 
         # Initialize the different database objects
@@ -594,6 +605,39 @@ class Database(IDatabase):
             # If the scenario is finished, delete the simulation folders depending on `save_simulation`
             elif finished_file_exists(_dir):
                 self._delete_simulations(_dir.name, overland, fiat, offshore)
+
+    def get_postprocessing_hook(
+        self, reload: bool = False
+    ) -> PostProcessingFunction | None:
+        """Get the post-processing hook function if configured.
+
+        Returns
+        -------
+        Callable | None
+            The post-processing hook function, or None if not configured.
+        """
+        if not reload and hasattr(self, "_postprocessing_hook"):
+            return self._postprocessing_hook
+        if not self.config.post_processing_hook:
+            return None
+
+        hook_path = self.base_path / self.config.post_processing_hook
+        if not hook_path.exists():
+            raise FileNotFoundError(f"Post-processing hook not found: {hook_path}")
+
+        spec = spec_from_file_location("fa_postprocess_hook", hook_path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Could not load post-processing hook from {hook_path}")
+
+        module = module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        if not hasattr(module, "postprocess"):
+            raise AttributeError(
+                f"Post-processing hook {hook_path} does not define `postprocess()`"
+            )
+        self._postprocessing_hook = module.postprocess
+        return module.postprocess
 
     def _delete_simulations(
         self,

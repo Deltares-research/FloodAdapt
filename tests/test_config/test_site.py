@@ -16,7 +16,7 @@ from flood_adapt.config.site import (
     SfincsModel,
     Site,
 )
-from flood_adapt.objects.forcing import TideGauge
+from flood_adapt.objects.forcing.tide_gauge import TideGauge
 from tests.data.create_test_static import create_site_config
 
 

@@ -61,6 +61,7 @@ class ScenarioRunner:
             logger.info(f"Started evaluation of `{self._scenario.name}`")
             self._run_hazards()
             self._run_impacts()
+            self._run_postprocessing_hook()
             logger.info(f"Finished evaluation of `{self._scenario.name}`")
 
         # write finished file to indicate that the scenario has been run
@@ -107,3 +108,19 @@ class ScenarioRunner:
             _description_
         """
         return all(model.has_run(self._scenario) for model in self.impact_models)
+
+    def _run_postprocessing_hook(self) -> None:
+        """Run the post-processing hook if configured."""
+        hook = self._database.get_postprocessing_hook()
+        if hook is None:
+            return
+
+        logger.info("Running post-processing hook...")
+        try:
+            hook(self._database, self._scenario, self.results_path)
+        except Exception as e:
+            logger.error(f"Post-processing hook failed: {e}")
+            if self._database.config.ignore_postprocess_errors:
+                logger.warning("Continuing despite post-processing hook error.")
+            else:
+                raise
