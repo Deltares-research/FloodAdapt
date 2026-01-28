@@ -55,16 +55,16 @@ class Database(IDatabase):
     static_path: Path
     output_path: Path
 
-    _site: Site
+    site: Site
 
-    _events: DbsEvent
-    _scenarios: DbsScenario
-    _strategies: DbsStrategy
-    _measures: DbsMeasure
-    _projections: DbsProjection
-    _benefits: DbsBenefit
+    events: DbsEvent
+    scenarios: DbsScenario
+    strategies: DbsStrategy
+    measures: DbsMeasure
+    projections: DbsProjection
+    benefits: DbsBenefit
 
-    _static: DbsStatic
+    static: DbsStatic
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:  # Singleton pattern
@@ -112,32 +112,39 @@ class Database(IDatabase):
         self.database_name = database_name
 
         # Set the paths
-
         self.base_path = Path(database_path) / database_name
         self.input_path = db_path(TopLevelDir.input)
         self.static_path = db_path(TopLevelDir.static)
         self.output_path = db_path(TopLevelDir.output)
 
-        self._site = Site.load_file(self.static_path / "config" / "site.toml")
-
-        # Initialize the different database objects
-        self._static = DbsStatic(self)
-        self._events = DbsEvent(
-            self, standard_objects=self.site.standard_objects.events
-        )
-        self._scenarios = DbsScenario(self)
-        self._strategies = DbsStrategy(
-            self, standard_objects=self.site.standard_objects.strategies
-        )
-        self._measures = DbsMeasure(self)
-        self._projections = DbsProjection(
-            self, standard_objects=self.site.standard_objects.projections
-        )
-        self._benefits = DbsBenefit(self)
-        self._init_done = True
+        # Read site configuration
+        self.read_site()
 
         # Delete any unfinished/crashed scenario output after initialization
+        self._init_done = True
         self.cleanup()
+
+    def read_site(self, site_name: str = "site") -> None:
+        """Read the site configuration from the static config folder and update database attributes."""
+        site_path = self.static_path / "config" / f"{site_name}.toml"
+        if not site_path.exists():
+            raise ConfigError(
+                f"Site configuration file '{site_path}' does not exist in the database."
+            )
+        self.site = Site.load_file(site_path)
+
+        # Initialize the different database objects
+        self.static = DbsStatic(self)
+        self.events = DbsEvent(self, standard_objects=self.site.standard_objects.events)
+        self.scenarios = DbsScenario(self)
+        self.strategies = DbsStrategy(
+            self, standard_objects=self.site.standard_objects.strategies
+        )
+        self.measures = DbsMeasure(self)
+        self.projections = DbsProjection(
+            self, standard_objects=self.site.standard_objects.projections
+        )
+        self.benefits = DbsBenefit(self)
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
@@ -147,39 +154,6 @@ class Database(IDatabase):
         self.__class__._instance = None
         self.__dict__.clear()
         gc.collect()
-
-    # Property methods
-    @property
-    def site(self) -> Site:
-        return self._site
-
-    @property
-    def static(self) -> DbsStatic:
-        return self._static
-
-    @property
-    def events(self) -> DbsEvent:
-        return self._events
-
-    @property
-    def scenarios(self) -> DbsScenario:
-        return self._scenarios
-
-    @property
-    def strategies(self) -> DbsStrategy:
-        return self._strategies
-
-    @property
-    def measures(self) -> DbsMeasure:
-        return self._measures
-
-    @property
-    def projections(self) -> DbsProjection:
-        return self._projections
-
-    @property
-    def benefits(self) -> DbsBenefit:
-        return self._benefits
 
     def get_slr_scenarios(self) -> SlrScenariosModel:
         """Get the path to the SLR scenarios file.
@@ -203,7 +177,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'path', 'last_modification_date' and "finished" info
         """
-        all_scenarios = pd.DataFrame(self._scenarios.summarize_objects())
+        all_scenarios = pd.DataFrame(self.scenarios.summarize_objects())
         if len(all_scenarios) > 0:
             df = all_scenarios[all_scenarios["finished"]]
         else:

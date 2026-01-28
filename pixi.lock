@@ -2013,7 +2013,7 @@ packages:
 - pypi: ./
   name: flood-adapt
   version: 1.1.4
-  sha256: d43af718331250c523cde148cdf5ccc72341f85318a7b7328330b927d2d75961
+  sha256: 4b85fba9a459222bb01f0eec36ad75bc11dce60b7eb3b985f381d3aaafcb0f36
   requires_dist:
   - cht-cyclones>=1.0.3,<2.0
   - cht-meteo>=0.3.1,<1.0
@@ -2024,56 +2024,7 @@ packages:
   - geojson>=3.0,<4.0
   - geopandas>=1.0,<2.0
   - hydromt-fiat>=0.5.9,<1.0
-  - hydromt-sfincs>=1.2.2,<2.0
-  - numpy>=1.0,<2.0
-  - numpy-financial>=1.0,<2.0
-  - pandas>=2.0,<3.0
-  - plotly>=6.0,<6.3
-  - pydantic>=2.0,<3.0
-  - pydantic-settings>=2.0,<3.0
-  - pyogrio<1.0
-  - tomli>=2.0,<3.0
-  - tomli-w>=1.0,<2.0
-  - typing-extensions
-  - pytest>=8.0,<9.0 ; extra == 'dev'
-  - pytest-cov>=6.0,<7.0 ; extra == 'dev'
-  - pre-commit==3.8.0 ; extra == 'dev'
-  - ruff==0.5.5 ; extra == 'dev'
-  - typos==1.23.6 ; extra == 'dev'
-  - build>=1.2,<2.0 ; extra == 'build'
-  - twine>=6.0,<7.0 ; extra == 'build'
-  - pyinstaller==6.13.0 ; extra == 'build'
-  - pefile<2024.8.26 ; extra == 'build'
-  - jupyter>=1.0,<2.0 ; extra == 'docs'
-  - jupyter-cache>=1.0,<2.0 ; extra == 'docs'
-  - nbstripout>=0.8.0,<0.9 ; extra == 'docs'
-  - matplotlib>=3.0,<4.0 ; extra == 'docs'
-  - quartodoc>=0.9.0,<1.0 ; extra == 'docs'
-  - sphinx>=8.0,<9.0 ; extra == 'docs'
-  - sphinx-rtd-theme>=3.0,<4.0 ; extra == 'docs'
-  - regex>=2024.11,<2025.0 ; extra == 'docs'
-  - minio>=7.2.15,<8 ; extra == 'docs'
-  - python-dotenv>=1.0,<2.0 ; extra == 'docs'
-  - folium>=0.19.0,<1.0 ; extra == 'docs'
-  - mapclassify>=2.8.0,<3.0 ; extra == 'docs'
-  - contextily ; extra == 'docs'
-  requires_python: '>=3.10,<3.13'
-  editable: true
-- pypi: ./
-  name: flood-adapt
-  version: 1.1.4
-  sha256: d43af718331250c523cde148cdf5ccc72341f85318a7b7328330b927d2d75961
-  requires_dist:
-  - cht-cyclones>=1.0.3,<2.0
-  - cht-meteo>=0.3.1,<1.0
-  - cht-observations>=0.2.1,<1.0
-  - cht-tide>=0.1.1,<1.0
-  - fiat-toolbox>=0.1.22,<0.2.0
-  - fiona>=1.0,<2.0
-  - geojson>=3.0,<4.0
-  - geopandas>=1.0,<2.0
-  - hydromt-fiat>=0.5.9,<1.0
-  - hydromt-sfincs>=1.2.2,<2.0
+  - hydromt-sfincs[quadtree]>=1.2.2,<2.0
   - numpy>=1.0,<2.0
   - numpy-financial>=1.0,<2.0
   - pandas>=2.0,<3.0
