@@ -46,7 +46,7 @@ class FieldMapping(BaseModel):
     """
     Represents a mapping of a database field to a list of allowed values.
 
-    Parameters
+    Attributes
     ----------
     field_name : str
         The name of the database field/column
@@ -79,7 +79,7 @@ class TypeMapping(BaseModel):
     """
     Container for multiple field mappings that define object type filtering.
 
-    Parameters
+    Attributes
     ----------
     mappings : List[FieldMapping]
         List of field mappings that together define the type criteria
@@ -126,7 +126,7 @@ class MetricModel(BaseModel):
     """
     Represents a metric configuration for infometric analysis.
 
-    Parameters
+    Attributes
     ----------
     name : str
         The short name of the metric.
@@ -265,7 +265,7 @@ class BuildingsInfographicModel(BaseModel):
     """
     Model for building infographic configuration.
 
-    Parameters
+    Attributes
     ----------
     types : list[str]
         List of building types.
@@ -436,7 +436,7 @@ class SviModel(BaseModel):
     """
     Model for Social Vulnerability Index (SVI) configuration.
 
-    Parameters
+    Attributes
     ----------
     classes : list[str], default=["Low", "High"]
         List of vulnerability class names.
@@ -520,7 +520,7 @@ class HomesInfographicModel(BaseModel):
     """
     Model for Homes and SVI (Social Vulnerability Index) infographic configuration.
 
-    Parameters
+    Attributes
     ----------
     svi : SviModel
         SVI classification configuration.
@@ -606,7 +606,7 @@ class RoadsInfographicModel(BaseModel):
     """
     Model for roads infographic configuration.
 
-    Parameters
+    Attributes
     ----------
     categories : list[str], default=["Slight", "Minor", "Major", "Severe"]
         List of road impact category names.
@@ -714,7 +714,7 @@ class EventInfographicModel(BaseModel):
     """
     Model for event-based infographic configuration.
 
-    Parameters
+    Attributes
     ----------
     buildings : Optional[BuildingsInfographicModel], default=None
         Buildings infographic configuration.
@@ -755,7 +755,7 @@ class RiskInfographicModel(BaseModel):
     """
     Model for risk-based infographic configuration.
 
-    Parameters
+    Attributes
     ----------
     homes : HomesInfographicModel
         Homes infographic configuration.

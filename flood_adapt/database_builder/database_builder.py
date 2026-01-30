@@ -164,7 +164,7 @@ class SpatialJoinModel(BaseModel):
     """
     Model for representing a spatial join between geometries and tabular data.
 
-    Parameters
+    Attributes
     ----------
     name : Optional[str]
         Name of the spatial join (optional).
@@ -233,7 +233,7 @@ class GuiConfigModel(BaseModel):
     """
     Configuration for FloodAdapt GUI visualization scaling.
 
-    Parameters
+    Attributes
     ----------
     max_flood_depth : float
         Maximum flood depth for visualization bins (last bin is ">value").
@@ -260,7 +260,7 @@ class SviConfigModel(SpatialJoinModel):
 
     Inherits from SpatialJoinModel.
 
-    Parameters
+    Attributes
     ----------
     threshold : float
         Threshold value to specify vulnerability.
@@ -273,7 +273,7 @@ class TideGaugeConfigModel(BaseModel):
     """
     Model for tide gauge configuration.
 
-    Parameters
+    Attributes
     ----------
     source : TideGaugeSource
         Source of tide gauge data.
@@ -307,7 +307,7 @@ class ConfigModel(BaseModel):
     """
     Main configuration model for FloodAdapt database builder.
 
-    Parameters
+    Attributes
     ----------
     name : str
         Name of the site (must be valid for folder names).
