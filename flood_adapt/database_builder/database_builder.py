@@ -1670,7 +1670,7 @@ class DatabaseBuilder:
                 reference=self.config.tide_gauge.ref,
                 description="Observations from file stored in database",
                 source=TideGaugeSource.file,
-                file=rel_db_path.as_posix(),
+                file=rel_db_path,
                 lon=self.config.tide_gauge.lon,
                 lat=self.config.tide_gauge.lat,
                 units=self.unit_system.default_length_units,
