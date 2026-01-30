@@ -106,6 +106,63 @@ class Event(Object):
         for forcing in self.get_forcings():
             forcing.save_additional(output_dir)
 
+    def data_equivalent(self, other: "Event") -> bool:
+        """Deep-compare two events, including forcing data contents.
+
+        Compares core attributes (time, template, mode, rainfall_multiplier) and then
+        verifies that each forcing (by type) has the same data fingerprint. For
+        path-based forcings, the fingerprint hashes the file bytes; for others,
+        a canonical attribute-based hash is used.
+
+        Parameters
+        ----------
+        other : Event
+            The event to compare against.
+
+        Returns
+        -------
+        bool
+            True when events are equivalent in terms of their hazard inputs.
+        """
+        if not isinstance(other, Event):
+            return False
+
+        # Compare high-level attributes first
+        if (
+            self.template != other.template
+            or self.mode != other.mode
+            or self.rainfall_multiplier != other.rainfall_multiplier
+            or self.time != other.time
+        ):
+            return False
+
+        # Compare allowed forcing types present in each event
+        if set(self.forcings.keys()) != set(other.forcings.keys()):
+            return False
+
+        # Build comparable, sorted fingerprint lists per forcing type
+        def fingerprints(evt: "Event") -> dict[ForcingType, list[tuple[str, str]]]:
+            d: dict[ForcingType, list[tuple[str, str]]] = {}
+            for ftype, flist in evt.forcings.items():
+                fps: list[tuple[str, str]] = []
+                for f in flist:
+                    # Include source and the fingerprint to guard against collisions across different sources
+                    src = f.source.value if hasattr(f, "source") else ""
+                    fp = f.content_fingerprint()  # type: ignore[attr-defined]
+                    fps.append((src, fp))
+                # Sort for order-insensitive comparison
+                d[ftype] = sorted(fps, key=lambda t: (t[0], t[1]))
+            return d
+
+        left_fp = fingerprints(self)
+        right_fp = fingerprints(other)
+
+        for ftype in left_fp.keys():
+            if left_fp[ftype] != right_fp[ftype]:
+                return False
+
+        return True
+
     def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
         for forcing in self.get_forcings():
