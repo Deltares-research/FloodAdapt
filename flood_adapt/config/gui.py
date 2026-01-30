@@ -326,13 +326,19 @@ class VisualizationLayers(BaseModel):
 
     Attributes
     ----------
-    default : Layer
-        The default layer settings the visualization layers.
+    buildings_min_zoom_level : int
+        The minimum zoom level before building footprints become visible in the map.
+    topography_cmin : float
+        Default minimum for DEM color scaling.
+    topography_cmax : float
+        Default maximum for DEM color scaling.
     layers : list[VisualizationLayer]
-        The layers to visualize.
+        The extra layers to visualize.
     """
 
     buildings_min_zoom_level: int = 13
+    topography_cmin: float = -10.0
+    topography_cmax: float = 10.0
     layers: list[VisualizationLayer] = Field(default_factory=list)
 
     def add_layer(
