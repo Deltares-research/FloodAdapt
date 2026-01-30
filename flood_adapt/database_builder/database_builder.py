@@ -244,6 +244,9 @@ class GuiConfigModel(BaseModel):
         Maximum benefits for visualization bins.
     additional_aggregated_layers : Optional[list[MetricLayer]]
         Additional metric layers for aggregation (optional).
+    topobathy_min_max : Union[tuple[float, float], Literal["dem"]]
+        Min/max values for DEM color scaling; set to "dem" to derive from the
+        elevation raster or provide explicit bounds in GUI units.
     """
 
     max_flood_depth: float
@@ -251,6 +254,7 @@ class GuiConfigModel(BaseModel):
     max_footprint_dmg: float
     max_benefits: float
     additional_aggregated_layers: Optional[list[MetricLayer]] = None
+    topobathy_min_max: Union[tuple[float, float], Literal["dem"]] = "dem"
 
 
 class SviConfigModel(SpatialJoinModel):
@@ -1448,6 +1452,20 @@ class DatabaseBuilder:
 
         self._dem_path = fa_subgrid_path
 
+        # Get min max values
+        if self.config.gui.topobathy_min_max == "dem":
+            dem: xr.DataArray = rxr.open_rasterio(fa_subgrid_path)
+            conversion_factor = us.UnitfulLength(
+                value=1.0, units=us.UnitTypesLength.meters
+            ).convert(self.unit_system.default_length_units)
+
+            cmin = float(dem.min().compute().item()) * conversion_factor
+            cmax = float(dem.max().compute().item()) * conversion_factor
+            cmin = round(cmin, 0)
+            cmax = round(cmax, 0)
+            self.topobathy_min_max = (cmin, cmax)
+        else:
+            self.topobathy_min_max = self.config.gui.topobathy_min_max
         # Remove the original subgrid folder if it exists
         gc.collect()
         if subgrid_sfincs_folder_exist:
@@ -1897,7 +1915,10 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_visualization_layers(self) -> VisualizationLayers:
-        visualization_layers = VisualizationLayers()
+        visualization_layers = VisualizationLayers(
+            topography_cmin=self.topobathy_min_max[0],
+            topography_cmax=self.topobathy_min_max[1],
+        )
         if self._svi is not None:
             visualization_layers.add_layer(
                 name="svi",
