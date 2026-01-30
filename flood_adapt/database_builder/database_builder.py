@@ -1795,26 +1795,22 @@ class DatabaseBuilder:
         if self.sfincs_offshore_model is None:
             return None
         # Connect boundary points of overland to output points of offshore
+        # First read in the boundary locations from the overland model
         fn = Path(self.sfincs_overland_model.root) / "sfincs.bnd"
-        bnd = pd.read_csv(fn, sep=" ", lineterminator="\n", header=None)
-        bnd = bnd.rename(columns={0: "x", 1: "y"})
-        bnd_geo = gpd.GeoDataFrame(
-            bnd,
-            geometry=gpd.points_from_xy(bnd.x, bnd.y),
+        lines = []
+        if fn.exists():
+            with open(fn) as f:
+                lines = f.readlines()
+        coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
+        x, y = zip(*coords)
+        bnd = gpd.GeoDataFrame(
+            geometry=gpd.points_from_xy(x, y),
             crs=self.sfincs_overland_model.config["epsg"],
         )
-        obs_geo = bnd_geo.to_crs(4326)
-        obs_geo["x"] = obs_geo.geometry.x
-        obs_geo["y"] = obs_geo.geometry.y
-        del obs_geo["geometry"]
-        obs_geo["name"] = [f"bnd_pt{num:02d}" for num in range(1, len(obs_geo) + 1)]
-        fn_off = Path(self.sfincs_offshore_model.root) / "sfincs.obs"
-        obs_geo.to_csv(
-            fn_off,
-            sep="\t",
-            index=False,
-            header=False,
-        )
+        # Then transform points to offshore crs and save them as observation points
+        obs_geo = bnd.to_crs(self.sfincs_offshore_model.config["epsg"])
+        self.sfincs_offshore_model.setup_observation_points(obs_geo)
+        self.sfincs_offshore_model.write()
         logger.info(
             "Output points of the offshore SFINCS model were reconfigured to the boundary points of the overland SFINCS model."
         )
