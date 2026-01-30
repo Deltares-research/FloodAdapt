@@ -103,24 +103,27 @@ def update_database_input(database_path: Path):
         (input_dir / obj_dir).mkdir()
 
     for event in create_events():
-        database.events.save(event)
+        database.events.add(event)
 
     for projection in create_projections():
-        database.projections.save(projection)
+        database.projections.add(projection)
 
     for measure in create_measures():
-        database.measures.save(measure)
+        database.measures.add(measure)
 
     for strategy in create_strategies():
-        database.strategies.save(strategy)
+        database.strategies.add(strategy)
 
     for scenario in create_scenarios():
-        database.scenarios.save(scenario)
+        database.scenarios.add(scenario)
 
     for benefit in create_benefits():
         runner = BenefitRunner(database, benefit)
         runner.create_benefit_scenarios()
-        database.benefits.save(benefit)
+        database.benefits.add(benefit)
+
+    # write to disk
+    database.flush()
 
     # Cleanup singleton
     database.shutdown()

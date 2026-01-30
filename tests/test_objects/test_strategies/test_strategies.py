@@ -179,7 +179,7 @@ def setup_strategy_with_overlapping_measures(test_db, test_data_dir):
         test_buyout = Buyout(**attrs)
 
         measures.append(test_buyout.name)
-        test_db.measures.save(test_buyout)
+        test_db.measures.add(test_buyout)
 
     strategy_model = {
         "name": "test_strategy",

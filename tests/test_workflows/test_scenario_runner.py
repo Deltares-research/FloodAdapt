@@ -56,8 +56,8 @@ class Test_scenario_run:
             projection="current",
             strategy="no_measures",
         )
-        test_db.events.save(event)
-        test_db.scenarios.save(scn)
+        test_db.events.add(event)
+        test_db.scenarios.add(scn)
         return test_db, scn, event
 
     def test_run_hurricane_scenario(
