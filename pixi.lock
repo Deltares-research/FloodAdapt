@@ -100,6 +100,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/aa/85/4890a7c14b4fa54400945cb52ac3cd88545bbdb973c440f98ca41591cdc5/llvmlite-0.46.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/83e112abc66cd466c6b83f99118035867cecd41802f8d044638aa78a106e/locket-1.0.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c6/d1/232b3309a02d60f11e71857778bfcd4acbdb86c07db8260caf7d008b08f8/lxml-6.0.2-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/e7/68/59a514811da76c3c801207bd6d7094ea5ba75648c2e7f15d4cb98b08216f/mapbox_earcut-1.0.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/94/54/e7d793b573f298e1c9013b8c4dade17d481164aa517d1d7148619c2cedbf/markdown_it_py-4.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3e/f3/c5195b1ae57ef85339fd7285dfb603b22c8b4e79114bae5f4f0fcf688677/matplotlib-3.10.8-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl
@@ -285,6 +286,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/6b/d139535d7590a1bba1ceb68751bef22fadaa5b815bbdf0e858e3875726b2/llvmlite-0.46.0-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/83e112abc66cd466c6b83f99118035867cecd41802f8d044638aa78a106e/locket-1.0.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f7/d7/0cdfb6c3e30893463fb3d1e52bc5f5f99684a03c29a0b6b605cfae879cd5/lxml-6.0.2-cp312-cp312-win_amd64.whl
+      - pypi: https://files.pythonhosted.org/packages/7a/59/674a67f92772563d5a943ce2c4ed834ed341e3a0fd77b8eb4b79057f5193/mapbox_earcut-1.0.3-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/94/54/e7d793b573f298e1c9013b8c4dade17d481164aa517d1d7148619c2cedbf/markdown_it_py-4.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/30/4e/c10f171b6e2f44d9e3a2b96efa38b1677439d79c99357600a62cc1e9594e/matplotlib-3.10.8-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl
@@ -537,6 +539,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/aa/85/4890a7c14b4fa54400945cb52ac3cd88545bbdb973c440f98ca41591cdc5/llvmlite-0.46.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/83e112abc66cd466c6b83f99118035867cecd41802f8d044638aa78a106e/locket-1.0.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c6/d1/232b3309a02d60f11e71857778bfcd4acbdb86c07db8260caf7d008b08f8/lxml-6.0.2-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/e7/68/59a514811da76c3c801207bd6d7094ea5ba75648c2e7f15d4cb98b08216f/mapbox_earcut-1.0.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/a7/5e/19fb53bd69379498c47bc234ca4d2851cfbca333d6d6929b10251916da25/mapclassify-2.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/94/54/e7d793b573f298e1c9013b8c4dade17d481164aa517d1d7148619c2cedbf/markdown_it_py-4.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3c/2e/8d0c2ab90a8c1d9a24f0399058ab8519a3279d1bd4289511d74e909f060e/markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
@@ -831,6 +834,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/6b/d139535d7590a1bba1ceb68751bef22fadaa5b815bbdf0e858e3875726b2/llvmlite-0.46.0-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/83e112abc66cd466c6b83f99118035867cecd41802f8d044638aa78a106e/locket-1.0.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f7/d7/0cdfb6c3e30893463fb3d1e52bc5f5f99684a03c29a0b6b605cfae879cd5/lxml-6.0.2-cp312-cp312-win_amd64.whl
+      - pypi: https://files.pythonhosted.org/packages/7a/59/674a67f92772563d5a943ce2c4ed834ed341e3a0fd77b8eb4b79057f5193/mapbox_earcut-1.0.3-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/a7/5e/19fb53bd69379498c47bc234ca4d2851cfbca333d6d6929b10251916da25/mapclassify-2.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/94/54/e7d793b573f298e1c9013b8c4dade17d481164aa517d1d7148619c2cedbf/markdown_it_py-4.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/aa/5b/bec5aa9bbbb2c946ca2733ef9c4ca91c91b6a24580193e891b5f7dbe8e1e/markupsafe-3.0.3-cp312-cp312-win_amd64.whl
@@ -2009,7 +2013,7 @@ packages:
 - pypi: ./
   name: flood-adapt
   version: 1.1.4
-  sha256: d43af718331250c523cde148cdf5ccc72341f85318a7b7328330b927d2d75961
+  sha256: 4b85fba9a459222bb01f0eec36ad75bc11dce60b7eb3b985f381d3aaafcb0f36
   requires_dist:
   - cht-cyclones>=1.0.3,<2.0
   - cht-meteo>=0.3.1,<1.0
@@ -2020,56 +2024,7 @@ packages:
   - geojson>=3.0,<4.0
   - geopandas>=1.0,<2.0
   - hydromt-fiat>=0.5.9,<1.0
-  - hydromt-sfincs>=1.2.2,<2.0
-  - numpy>=1.0,<2.0
-  - numpy-financial>=1.0,<2.0
-  - pandas>=2.0,<3.0
-  - plotly>=6.0,<6.3
-  - pydantic>=2.0,<3.0
-  - pydantic-settings>=2.0,<3.0
-  - pyogrio<1.0
-  - tomli>=2.0,<3.0
-  - tomli-w>=1.0,<2.0
-  - typing-extensions
-  - pytest>=8.0,<9.0 ; extra == 'dev'
-  - pytest-cov>=6.0,<7.0 ; extra == 'dev'
-  - pre-commit==3.8.0 ; extra == 'dev'
-  - ruff==0.5.5 ; extra == 'dev'
-  - typos==1.23.6 ; extra == 'dev'
-  - build>=1.2,<2.0 ; extra == 'build'
-  - twine>=6.0,<7.0 ; extra == 'build'
-  - pyinstaller==6.13.0 ; extra == 'build'
-  - pefile<2024.8.26 ; extra == 'build'
-  - jupyter>=1.0,<2.0 ; extra == 'docs'
-  - jupyter-cache>=1.0,<2.0 ; extra == 'docs'
-  - nbstripout>=0.8.0,<0.9 ; extra == 'docs'
-  - matplotlib>=3.0,<4.0 ; extra == 'docs'
-  - quartodoc>=0.9.0,<1.0 ; extra == 'docs'
-  - sphinx>=8.0,<9.0 ; extra == 'docs'
-  - sphinx-rtd-theme>=3.0,<4.0 ; extra == 'docs'
-  - regex>=2024.11,<2025.0 ; extra == 'docs'
-  - minio>=7.2.15,<8 ; extra == 'docs'
-  - python-dotenv>=1.0,<2.0 ; extra == 'docs'
-  - folium>=0.19.0,<1.0 ; extra == 'docs'
-  - mapclassify>=2.8.0,<3.0 ; extra == 'docs'
-  - contextily ; extra == 'docs'
-  requires_python: '>=3.10,<3.13'
-  editable: true
-- pypi: ./
-  name: flood-adapt
-  version: 1.1.4
-  sha256: d43af718331250c523cde148cdf5ccc72341f85318a7b7328330b927d2d75961
-  requires_dist:
-  - cht-cyclones>=1.0.3,<2.0
-  - cht-meteo>=0.3.1,<1.0
-  - cht-observations>=0.2.1,<1.0
-  - cht-tide>=0.1.1,<1.0
-  - fiat-toolbox>=0.1.22,<0.2.0
-  - fiona>=1.0,<2.0
-  - geojson>=3.0,<4.0
-  - geopandas>=1.0,<2.0
-  - hydromt-fiat>=0.5.9,<1.0
-  - hydromt-sfincs>=1.2.2,<2.0
+  - hydromt-sfincs[quadtree]>=1.2.2,<2.0
   - numpy>=1.0,<2.0
   - numpy-financial>=1.0,<2.0
   - pandas>=2.0,<3.0
@@ -3614,6 +3569,20 @@ packages:
   - beautifulsoup4 ; extra == 'htmlsoup'
   - lxml-html-clean ; extra == 'html-clean'
   requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/7a/59/674a67f92772563d5a943ce2c4ed834ed341e3a0fd77b8eb4b79057f5193/mapbox_earcut-1.0.3-cp312-cp312-win_amd64.whl
+  name: mapbox-earcut
+  version: 1.0.3
+  sha256: cc1bbf35be0d9853dd448374330684ddbd0112497dee7d21b7417b0ab6236ac7
+  requires_dist:
+  - numpy
+  requires_python: '>=3.9'
+- pypi: https://files.pythonhosted.org/packages/e7/68/59a514811da76c3c801207bd6d7094ea5ba75648c2e7f15d4cb98b08216f/mapbox_earcut-1.0.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  name: mapbox-earcut
+  version: 1.0.3
+  sha256: 73b9f06f2f8a795d835342aa80e021cfceda78fdca7bc07dc1a0b4aca90239f3
+  requires_dist:
+  - numpy
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/a7/5e/19fb53bd69379498c47bc234ca4d2851cfbca333d6d6929b10251916da25/mapclassify-2.10.0-py3-none-any.whl
   name: mapclassify
   version: 2.10.0

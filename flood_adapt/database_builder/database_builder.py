@@ -2,7 +2,6 @@ import datetime
 import gc
 import logging
 import math
-import os
 import re
 import shutil
 import warnings
@@ -22,6 +21,7 @@ import xarray as xr
 from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_sfincs import SfincsModel as HydromtSfincsModel
+from hydromt_sfincs.workflows.downscaling import make_index_cog
 from pydantic import BaseModel, Field
 from shapely import MultiLineString, MultiPolygon, Polygon
 from shapely.ops import nearest_points
@@ -1414,61 +1414,60 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_dem_model(self) -> DemModel:
+        subgrid_sfincs_folder = Path(self.sfincs_overland_model.root) / "subgrid"
+        subgrid_sfincs_folder_exist = subgrid_sfincs_folder.is_dir()
         if self.config.dem:
             subgrid_sfincs = Path(self.config.dem.filename)
-            delete_sfincs_folder = False
         else:
             logger.warning(
                 "No subgrid depth geotiff file provided in the config file. Using the one from the SFINCS model."
             )
-            subgrid_sfincs_folder = Path(self.sfincs_overland_model.root) / "subgrid"
-            subgrid_sfincs = subgrid_sfincs_folder / "dep_subgrid.tif"
-            delete_sfincs_folder = True
-
-        dem_file = self._check_exists_and_absolute(subgrid_sfincs)
+            if not subgrid_sfincs_folder_exist:
+                raise FileNotFoundError(
+                    f"Subgrid folder {subgrid_sfincs_folder} does not exist in the SFINCS model."
+                )
+            if self.sfincs_overland_model.grid_type == "quadtree":
+                # If SFINCS is quadtree use the 0 level
+                subgrid_sfincs = subgrid_sfincs_folder / "dep_subgrid_lev0.tif"
+            else:
+                subgrid_sfincs = subgrid_sfincs_folder / "dep_subgrid.tif"
+        # Check that file exists and get absolute path
+        dem_file = self._check_exists_and_absolute(str(subgrid_sfincs))
+        # Define where it will be stored in the database
         fa_subgrid_path = self.static_path / "dem" / dem_file.name
         fa_subgrid_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Check tiles
-        tiles_sfincs = Path(self.sfincs_overland_model.root) / "tiles"
-        fa_tiles_path = self.static_path / "dem" / "tiles"
-        if tiles_sfincs.exists():
-            shutil.move(tiles_sfincs, fa_tiles_path)
-            if (fa_tiles_path / "index").exists():
-                os.rename(fa_tiles_path / "index", fa_tiles_path / "indices")
-            logger.info(
-                "Tiles were already available in the SFINCS model and will directly be used in FloodAdapt."
-            )
-        else:
-            # Make tiles
-            fa_tiles_path.mkdir(parents=True)
-            self.sfincs_overland_model.setup_tiles(
-                path=fa_tiles_path,
-                datasets_dep=[{"elevtn": dem_file}],
-                zoom_range=[0, 13],
-                fmt="png",
-            )
-            logger.info(
-                f"Tiles were created using the {subgrid_sfincs.as_posix()} as the elevation map."
-            )
-
         shutil.copy2(dem_file, fa_subgrid_path)
+
+        fa_index_path = self.static_path / "dem" / "index.tif"
+        # Make index cog
+        make_index_cog(
+            model=self.sfincs_overland_model,
+            indices_fn=fa_index_path,
+            topobathy_fn=fa_subgrid_path,
+        )
+        logger.info(
+            f"An index file was created using the {subgrid_sfincs.as_posix()} as the elevation map, and save at {fa_index_path.as_posix()}."
+        )
+
         self._dem_path = fa_subgrid_path
 
         # Remove the original subgrid folder if it exists
-        if delete_sfincs_folder:
-            gc.collect()
-            if subgrid_sfincs_folder.exists() and subgrid_sfincs_folder.is_dir():
-                try:
-                    shutil.rmtree(subgrid_sfincs_folder)
-                except Exception:
-                    logger.warning(
-                        f"Could not delete temporary SFINCS subgrid folder at {subgrid_sfincs_folder.as_posix()}."
-                    )
+        gc.collect()
+        if subgrid_sfincs_folder_exist:
+            try:
+                shutil.rmtree(subgrid_sfincs_folder)
+            except Exception:
+                logger.warning(
+                    f"Could not delete temporary SFINCS subgrid folder at {subgrid_sfincs_folder.as_posix()}."
+                )
 
+        # Dem file always assumed to be in /static/dem
         return DemModel(
-            filename=fa_subgrid_path.name, units=us.UnitTypesLength.meters
-        )  # always in meters
+            filename=fa_subgrid_path.name,
+            units=us.UnitTypesLength.meters,  # SINFCS always in meters
+            index_filename=fa_index_path.name,
+        )
 
     @debug_timer
     def create_sfincs_model_config(self) -> SfincsConfigModel:

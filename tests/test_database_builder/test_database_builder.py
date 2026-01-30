@@ -1,5 +1,4 @@
 import logging
-import shutil
 import tempfile
 from datetime import datetime
 from pathlib import Path
@@ -637,7 +636,7 @@ class TestDataBaseBuilder:
         assert scs is None
         assert not (builder.static_path / "scs").exists()
 
-    def test_create_dem_model_tiles_created(self, mock_config: ConfigModel):
+    def test_create_dem_index_created(self, mock_config: ConfigModel):
         # Arrange
         mock_config.dem = DemModel(
             filename=str(self.static_path / "dem/charleston_14m.tif"),
@@ -645,9 +644,6 @@ class TestDataBaseBuilder:
         )
         builder = DatabaseBuilder(mock_config)
         builder.setup()
-        root = Path(builder.sfincs_overland_model.root)
-        assert not (root / "tiles/indices").exists()
-        assert not (root / "tiles/topobathy").exists()
 
         # Act
         dem = builder.create_dem_model()
@@ -658,58 +654,13 @@ class TestDataBaseBuilder:
             filename=expected_tif.name,
             units=mock_config.dem.units,
         )
-        expected_tiles = builder.static_path / "dem" / "tiles"
-        expected_indices = expected_tiles / "indices"
-        expected_topo = expected_tiles / "topobathy"
+        expected_indices = builder.static_path / "dem" / "index.tif"
 
         assert dem == expected_dem
 
         for file in [
             expected_tif,
-            expected_tiles,
             expected_indices,
-            expected_topo,
-        ]:
-            assert file.exists()
-
-    def test_create_dem_model_tiles_moved(self, mock_config: ConfigModel):
-        # Arrange
-        mock_config.dem = DemModel(
-            filename=str(self.static_path / "dem/charleston_14m.tif"),
-            units=us.UnitTypesLength.meters,
-        )
-        tiles_path = self.static_path / "dem/tiles"
-        indices_path = tiles_path / "indices"
-        topo_path = tiles_path / "topobathy"
-        for file in [tiles_path, indices_path, topo_path]:
-            assert file.exists()
-
-        builder = DatabaseBuilder(mock_config)
-        builder.setup()
-        builder.sfincs_overland_model.setup_tiles = Mock()
-        shutil.copytree(tiles_path, Path(builder.sfincs_overland_model.root) / "tiles")
-
-        # Act
-        dem = builder.create_dem_model()
-
-        # Assert
-        builder.sfincs_overland_model.setup_tiles.assert_not_called()
-        expected_tif = builder.static_path / "dem" / Path(mock_config.dem.filename).name
-        expected_dem = DemModel(
-            filename=expected_tif.name,
-            units=mock_config.dem.units,
-        )
-        expected_tiles = builder.static_path / "dem" / "tiles"
-        expected_indices = expected_tiles / "indices"
-        expected_topo = expected_tiles / "topobathy"
-
-        assert dem == expected_dem
-
-        for file in [
-            expected_tif,
-            expected_tiles,
-            expected_indices,
-            expected_topo,
         ]:
             assert file.exists()
 
