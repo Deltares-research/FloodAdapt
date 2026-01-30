@@ -8,7 +8,6 @@ from typing import Any, Optional, Union
 
 import geopandas as gpd
 import pandas as pd
-import tomli
 from fiat_toolbox import FiatColumns, get_fiat_columns
 from fiat_toolbox.equity.equity import Equity
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
@@ -24,6 +23,7 @@ from hydromt_fiat.fiat import FiatModel
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
+from flood_adapt.misc.io import read_toml
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     ObjectDir,
@@ -501,8 +501,7 @@ class FiatAdapter(IImpactAdapter):
             config_path = self.database.static_path.joinpath(
                 "templates", "infometrics", "metrics_additional_risk_configs.toml"
             )
-            with open(config_path, mode="rb") as fp:
-                config = tomli.load(fp)["flood_exceedance"]
+            config = read_toml(config_path)["flood_exceedance"]
             try:
                 self.add_exceedance_probability(
                     column=config[

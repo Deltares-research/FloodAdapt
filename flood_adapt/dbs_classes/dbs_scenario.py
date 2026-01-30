@@ -70,7 +70,8 @@ class DbsScenario(DbsTemplate[Scenario]):
         """
         event_left = self._database.events.get(left.event)
         event_right = self._database.events.get(right.event)
-        equal_events = event_left == event_right
+        # Deep-compare events including forcing data contents
+        equal_events = event_left.data_equivalent(event_right)
 
         left_projection = self._database.projections.get(left.projection)
         right_projection = self._database.projections.get(right.projection)
