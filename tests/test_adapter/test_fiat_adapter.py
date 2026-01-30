@@ -1,5 +1,3 @@
-import platform
-
 import pandas as pd
 import pytest
 from fiat_toolbox import get_fiat_columns
@@ -11,13 +9,14 @@ from flood_adapt.misc.path_builder import (
     db_path,
 )
 from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
+from tests.conftest import CAN_EXECUTE_SCENARIOS
 
 _FIAT_COLUMNS = get_fiat_columns()
 
 
 @pytest.mark.skipif(
-    platform.system() == "Linux",
-    reason="Skipped on Linux due to broken sfincs binary",
+    not CAN_EXECUTE_SCENARIOS,
+    reason="Skipping scenario tests since binaries or docker are not available.",
 )
 class TestFiatAdapter:
     @pytest.fixture(scope="class")
