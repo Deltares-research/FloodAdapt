@@ -1,10 +1,8 @@
+import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional, TypeVar
-
-import tomli
-import tomli_w
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
@@ -18,6 +16,7 @@ from flood_adapt.misc.exceptions import (
 from flood_adapt.objects.object_model import Object
 
 T_OBJECTMODEL = TypeVar("T_OBJECTMODEL", bound=Object)
+logger = logging.getLogger(__name__)
 
 
 class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
@@ -30,49 +29,107 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         self, database: IDatabase, standard_objects: Optional[list[str]] = None
     ):
         """Initialize any necessary attributes."""
+        self._objects: dict[str, T_OBJECTMODEL] = {}
+        self._mutated: set[str] = set()
+        self._deleted: set[str] = set()
+        self._last_modified: dict[str, str] = {}
+
         self._database = database
         self.input_path = database.input_path / self.dir_name
         self.output_path = database.output_path / self.dir_name
         self.standard_objects = standard_objects
 
-    def get(self, name: str) -> T_OBJECTMODEL:
-        """Return an object of the type of the database with the given name.
+    ## IO
+    def load(self, names: list[str] | None = None):
+        """Read all objects from self.input_path and add them to the in-memory database."""
+        if not self.input_path.exists():
+            return
 
-        Parameters
-        ----------
-        name : str
-            name of the object to be returned
+        for obj_dir in self.input_path.iterdir():
+            path = obj_dir / f"{obj_dir.name}.toml"
 
-        Returns
-        -------
-        Object
-            object of the type of the specified object model
+            if names is not None and path.stem not in names:
+                continue
 
-        Raises
-        ------
-        DoesNotExistError
-            Raise error if the object does not exist.
-        """
-        # Make the full path to the object
-        full_path = self.input_path / name / f"{name}.toml"
+            try:
+                obj = self._read_object(path)
+            except Exception as e:
+                logger.warning(f"Failed to load {path} due to {e}, skipping...")
+                continue
 
-        # Check if the object exists
-        if not Path(full_path).is_file():
-            raise DoesNotExistError(name, self.display_name)
+            self._last_modified[path.stem] = datetime.fromtimestamp(
+                path.stat().st_mtime
+            )
+            self.add(obj, overwrite=True)
 
-        # Load and return the object
-        return self._object_class.load_file(full_path)
+        # Loading should not mark mutations
+        self._mutated.clear()
+        self._deleted.clear()
 
-    def summarize_objects(self) -> dict[str, list[Any]]:
-        """Return a dictionary with info on the objects that currently exist in the database.
+    def flush(self):
+        """Write all staged changes to disk."""
+        self.input_path.mkdir(parents=True, exist_ok=True)
 
-        Returns
-        -------
-        dict[str, list[Any]]
-            A dictionary that contains the keys: `name`, `description`, `path`  and `last_modification_date`.
-            Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
-        """
-        return self._get_object_summary()
+        for name in self._mutated:
+            obj = self._objects[name]
+            path = self._object_path(self.input_path, name)
+
+            try:
+                if path.parent.exists():
+                    shutil.rmtree(path.parent)
+            except OSError as e:
+                raise DatabaseError(
+                    f"Failed to delete input for `{name}` due to: {e}"
+                ) from e
+
+            try:
+                if (self.output_path / name).exists():
+                    shutil.rmtree(self.output_path / name)
+            except OSError as e:
+                raise DatabaseError(
+                    f"Failed to delete output for `{name}` due to: {e}"
+                ) from e
+
+            self._write_object(obj, path)
+            self._last_modified[name] = datetime.now()
+
+        # remove deleted
+        for name in self._deleted:
+            try:
+                if (self.input_path / name).exists():
+                    shutil.rmtree(self.input_path / name)
+            except OSError as e:
+                raise DatabaseError(
+                    f"Failed to delete input for `{name}` due to: {e}"
+                ) from e
+
+            try:
+                if (self.output_path / name).exists():
+                    shutil.rmtree(self.output_path / name)
+            except OSError as e:
+                raise DatabaseError(
+                    f"Failed to delete output for `{name}` due to: {e}"
+                ) from e
+
+            self._last_modified.pop(name, None)
+
+        self._mutated.clear()
+        self._deleted.clear()
+
+    def _read_object(self, path: Path) -> T_OBJECTMODEL:
+        """Read object from disk, overwritable function that is called in `flush`."""
+        return self._object_class.load_file(path)
+
+    def _write_object(self, obj: T_OBJECTMODEL, path: Path) -> None:
+        """Write object to disk, overwritable function that is called in `flush`."""
+        path.parent.mkdir(parents=True, exist_ok=True)
+        obj.save(path)
+
+    ## In memory mutation
+    def add(self, obj: T_OBJECTMODEL, overwrite: bool = False):
+        self._assert_can_be_added(obj, overwrite=overwrite)
+        self._objects[obj.name] = obj
+        self._mutated.add(obj.name)
 
     def copy(self, old_name: str, new_name: str, new_description: str):
         """Copy (duplicate) an existing object, and give it a new name.
@@ -95,84 +152,20 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         DatabaseError
             Raise error if the saving of the object fails.
         """
-        copy_object = self.get(old_name)
-        copy_object.name = new_name
-        copy_object.description = new_description
+        source = self.get(old_name).model_copy(deep=True)
+        source.name = new_name
+        source.description = new_description
+        source.model_validate(source)
 
-        # After changing the name and description, re-trigger the validators
-        copy_object.model_validate(copy_object)
-
-        # Checking whether the new name is already in use
-        self._validate_to_save(copy_object, overwrite=False)
-
-        # Write only the toml file
-        toml_path = self.input_path / new_name / f"{new_name}.toml"
-        toml_path.parent.mkdir(parents=True)
-        with open(toml_path, "wb") as f:
-            tomli_w.dump(copy_object.model_dump(exclude_none=True), f)
-
-        # Then copy all the accompanied files
-        src = self.input_path / old_name
-        dest = self.input_path / new_name
-
-        EXCLUDE = [".spw", ".toml"]
-        for file in src.glob("*"):
-            if file.suffix in EXCLUDE:
-                continue
-            if file.is_dir():
-                shutil.copytree(file, dest / file.name, dirs_exist_ok=True)
-            else:
-                shutil.copy2(file, dest / file.name)
-
-    def save(
-        self,
-        object_model: T_OBJECTMODEL,
-        overwrite: bool = False,
-    ):
-        """Save an object in the database and all associated files.
-
-        This saves the toml file and any additional files attached to the object.
-
-        Parameters
-        ----------
-        object_model : Object
-            object to be saved in the database
-        overwrite : bool, optional
-            whether to overwrite the object if it already exists in the
-            database, by default False
-
-        Raises
-        ------
-        AlreadyExistsError
-            Raise error if object to be saved already exists.
-        IsStandardObjectError
-            Raise error if object to be overwritten is a standard object.
-        IsUsedInError
-            Raise error if object to be overwritten is already in use.
-        DatabaseError
-            Raise error if the overwriting of the object fails.
-        """
-        self._validate_to_save(object_model, overwrite=overwrite)
-
-        # If the folder doesnt exist yet, make the folder and save the object
-        if not (self.input_path / object_model.name).exists():
-            (self.input_path / object_model.name).mkdir()
-
-        # Save the object and any additional files
-        object_model.save(
-            self.input_path / object_model.name / f"{object_model.name}.toml",
-        )
+        self.add(source)
 
     def delete(self, name: str, toml_only: bool = False):
-        """Delete an already existing object as well as its outputs from the database.
+        """Delete an already existing object from the in-memory database and mark it for deletion during the next flush.
 
         Parameters
         ----------
         name : str
             name of the object to be deleted
-        toml_only : bool, optional
-            whether to only delete the toml file or the entire folder. If the folder is empty after deleting the toml,
-            it will always be deleted. By default False
 
         Raises
         ------
@@ -185,43 +178,72 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         DatabaseError
             Raise error if the deletion of the object fails.
         """
-        # Check if the object is a standard object. If it is, raise an error
-        if self._check_standard_objects(name):
-            raise IsStandardObjectError(name, self.display_name)
-
-        # Check if object is used in a higher level object. If it is, raise an error
-        if used_in := self.check_higher_level_usage(name):
-            raise IsUsedInError(
-                name, self.display_name, self._higher_lvl_object, used_in
-            )
-
-        # Check if the object exists
-        toml_path = self.input_path / name / f"{name}.toml"
-        if not toml_path.exists():
-            raise DoesNotExistError(name, self.display_name)
+        self._assert_can_be_deleted(name)
 
         # Once all checks are passed, delete the object
-        toml_path.unlink(missing_ok=True)
+        del self._objects[name]
+        self._deleted.add(name)
+        self._mutated.discard(name)
 
-        # Delete the entire folder
-        if not list(toml_path.parent.iterdir()):
-            shutil.rmtree(toml_path.parent)
-        elif not toml_only:
-            try:
-                shutil.rmtree(toml_path.parent)
-            except OSError as e:
-                raise DatabaseError(f"Failed to delete `{name}` due to: {e}") from e
+    def get(self, name: str) -> T_OBJECTMODEL:
+        """Return an object of the type of the database with the given name.
 
-        # Delete output
-        if (self.output_path / name).exists():
-            try:
-                shutil.rmtree(self.output_path / name)
-            except OSError as e:
-                raise DatabaseError(
-                    f"Failed to delete output of `{name}` due to: {e}"
-                ) from e
+        Parameters
+        ----------
+        name : str
+            name of the object to be returned
 
-    def _check_standard_objects(self, name: str) -> bool:
+        Returns
+        -------
+        Object
+            object of the type of the specified object model
+
+        Raises
+        ------
+        DoesNotExistError
+            Raise error if the object does not exist.
+        """
+        self._assert_has_object(name)
+        return self._objects[name].model_copy(deep=True)
+
+    ## Query / Info methods
+    def summarize_objects(self) -> dict[str, list[Any]]:
+        """Return a dictionary with info on the objects that currently exist in the database.
+
+        Returns
+        -------
+        dict[str, list[Any]]
+            A dictionary that contains the keys: `name`, `description`, `path`  and `last_modification_date`.
+            Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
+        """
+        return self._get_object_summary()
+
+    def _get_object_summary(self) -> dict[str, list[Any]]:
+        """Get a dictionary with all the toml paths and last modification dates that exist in the database of the given object_type.
+
+        Returns
+        -------
+        dict[str, Any]
+            A dictionary that contains the keys: `name`, `description`, `path`  and `last_modification_date`.
+            Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
+        """
+        names = list(self._objects)
+        paths = [self._object_path(self.input_path, name) for name in names]
+        descriptions = [obj.description for obj in self._objects.values()]
+        last_modification_date = [self._last_modified.get(name) for name in names]
+        objects = {
+            "name": names,
+            "description": descriptions,
+            "path": paths,
+            "last_modification_date": last_modification_date,
+        }
+        return objects
+
+    # Helpers
+    def _object_path(self, base: Path, name: str):
+        return base / name / f"{name}.toml"
+
+    def _is_standard_object(self, name: str) -> bool:
         """Check if an object is a standard object.
 
         Parameters
@@ -238,7 +260,10 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             return name in self.standard_objects
         return False
 
-    def check_higher_level_usage(self, name: str) -> list[str]:
+    def _has_object(self, name: str) -> bool:
+        return name in self._objects
+
+    def used_by_higher_level(self, name: str) -> list[str]:
         """Check if an object is used in a higher level object.
 
         Parameters
@@ -255,49 +280,14 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         # level object. By default, return an empty list
         return []
 
-    def _get_object_summary(self) -> dict[str, list[Any]]:
-        """Get a dictionary with all the toml paths and last modification dates that exist in the database of the given object_type.
+    def list_all(self) -> list[T_OBJECTMODEL]:
+        return list(self._objects.values())
 
-        Returns
-        -------
-        dict[str, Any]
-            A dictionary that contains the keys: `name`, `description`, `path`  and `last_modification_date`.
-            Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
-        """
-        # If the toml doesnt exist, we might be in the middle of saving a new object or could be a broken object.
-        # In any case, we should not list it in the database
-        directories = [
-            dir
-            for dir in self.input_path.iterdir()
-            if (dir / f"{dir.name}.toml").is_file()
-        ]
-        paths = [Path(dir / f"{dir.name}.toml") for dir in directories]
-
-        names = [self._read_variable_in_toml("name", path) for path in paths]
-        descriptions = [
-            self._read_variable_in_toml("description", path) for path in paths
-        ]
-
-        last_modification_date = [
-            datetime.fromtimestamp(file.stat().st_mtime) for file in paths
-        ]
-
-        objects = {
-            "name": names,
-            "description": descriptions,
-            "path": paths,
-            "last_modification_date": last_modification_date,
-        }
-        return objects
-
-    @staticmethod
-    def _read_variable_in_toml(variable_name: str, toml_path: Path) -> str:
-        with open(toml_path, "rb") as f:
-            data = tomli.load(f)
-        return data.get(variable_name, "")
-
-    def _validate_to_save(self, object_model: T_OBJECTMODEL, overwrite: bool) -> None:
-        """Validate if the object can be saved.
+    # Validation
+    def _assert_can_be_added(
+        self, object_model: T_OBJECTMODEL, overwrite: bool
+    ) -> None:
+        """Validate if the object can be added to the database.
 
         Parameters
         ----------
@@ -306,15 +296,42 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         Raises
         ------
-        DatabaseError
+        AlreadyExistsError
             Raise error if name is already in use.
+        IsStandardObjectError
+            Raise error if object to be deleted is a standard object.
+        IsUsedInError
+            Raise error if object to be deleted is already in use.
+        DoesNotExistError
+            Raise error if object to be deleted does not exist.
+        DatabaseError
+            Raise error if the deletion of the object fails.
         """
-        # Check if the object exists
-        object_exists = object_model.name in self.summarize_objects()["name"]
+        if self._has_object(object_model.name):
+            if overwrite:
+                self._assert_can_be_deleted(object_model.name)
+            else:
+                raise AlreadyExistsError(object_model.name, self.display_name)
 
-        # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
-        # don't want to overwrite, raise an error.
-        if overwrite and object_exists:
-            self.delete(object_model.name, toml_only=True)
-        elif not overwrite and object_exists:
-            raise AlreadyExistsError(object_model.name, self.display_name)
+    def _assert_can_be_deleted(self, name: str) -> None:
+        # Check if the object is a standard object. If it is, raise an error
+        if self._is_standard_object(name):
+            raise IsStandardObjectError(name, self.display_name)
+
+        # Check if object is used in a higher level object. If it is, raise an error
+        if used_in := self.used_by_higher_level(name):
+            raise IsUsedInError(
+                name, self.display_name, self._higher_lvl_object, used_in
+            )
+
+        # Check if the object exists
+        if name not in self._objects:
+            raise DoesNotExistError(name, self.display_name)
+
+    def _assert_has_object(self, name: str) -> None:
+        if not self._has_object(name):
+            raise DoesNotExistError(name, self.display_name)
+
+    def __del__(self):
+        if self._mutated or self._deleted:
+            logger.warning("Database object destroyed with unflushed changes.")

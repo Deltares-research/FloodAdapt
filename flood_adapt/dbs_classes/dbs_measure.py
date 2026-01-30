@@ -4,7 +4,7 @@ from typing import Any
 import geopandas as gpd
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.misc.exceptions import DatabaseError, DoesNotExistError
+from flood_adapt.misc.exceptions import DatabaseError
 from flood_adapt.misc.utils import resolve_filepath
 from flood_adapt.objects.measures.measure_factory import MeasureFactory
 from flood_adapt.objects.measures.measures import Measure
@@ -16,28 +16,8 @@ class DbsMeasure(DbsTemplate[Measure]):
     _object_class = Measure
     _higher_lvl_object = "Strategy"
 
-    def get(self, name: str) -> Measure:
-        """Return a measure object.
-
-        Parameters
-        ----------
-        name : str
-            name of the measure to be returned
-
-        Returns
-        -------
-        Measure
-            measure object
-        """
-        # Make the full path to the object
-        full_path = self.input_path / name / f"{name}.toml"
-
-        # Check if the object exists
-        if not Path(full_path).is_file():
-            raise DoesNotExistError(name, self.display_name)
-
-        # Load and return the object
-        return MeasureFactory.get_measure_object(full_path)
+    def _read_object(self, path: Path):
+        return MeasureFactory.get_measure_object(path)
 
     def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the measures that currently exist in the database.
@@ -48,9 +28,10 @@ class DbsMeasure(DbsTemplate[Measure]):
             Includes 'name', 'description', 'path' and 'last_modification_date' and 'geometry' info
         """
         measures = self._get_object_summary()
-        objects = [self.get(name) for name in measures["name"]]
+        objects = self.list_all()
 
         geometries = []
+        # TODO move reading geo data to Measure.load_file or obj.read() and use that data here.
         for obj in objects:
             # If polygon is used read the polygon file
             if hasattr(obj, "polygon_file") and obj.polygon_file:
@@ -84,7 +65,7 @@ class DbsMeasure(DbsTemplate[Measure]):
         measures["geometry"] = geometries
         return measures
 
-    def check_higher_level_usage(self, name: str) -> list[str]:
+    def used_by_higher_level(self, name: str) -> list[str]:
         """Check if a measure is used in a strategy.
 
         Parameters
@@ -98,10 +79,7 @@ class DbsMeasure(DbsTemplate[Measure]):
             list of strategies that use the measure
         """
         # Get all the strategies
-        strategies = [
-            self._database.strategies.get(strategy)
-            for strategy in self._database.strategies.summarize_objects()["name"]
-        ]
+        strategies = self._database.strategies.list_all()
 
         # Check if measure is used in a strategy
         used_in_strategy = [
