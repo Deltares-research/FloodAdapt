@@ -339,6 +339,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
+  <li><a href="#flood_adapt.objects.Event.data_equivalent" id="toc-flood_adapt.objects.Event.data_equivalent" class="nav-link" data-scroll-target="#flood_adapt.objects.Event.data_equivalent">data_equivalent</a></li>
   <li><a href="#flood_adapt.objects.Event.get_forcings" id="toc-flood_adapt.objects.Event.get_forcings" class="nav-link" data-scroll-target="#flood_adapt.objects.Event.get_forcings">get_forcings</a></li>
   <li><a href="#flood_adapt.objects.Event.save_additional" id="toc-flood_adapt.objects.Event.save_additional" class="nav-link" data-scroll-target="#flood_adapt.objects.Event.save_additional">save_additional</a></li>
   </ul></li>
@@ -401,23 +402,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
+<td><a href="#flood_adapt.objects.Event.data_equivalent">data_equivalent</a></td>
+<td>Deep-compare two events, including forcing data contents.</td>
+</tr>
+<tr class="even">
 <td><a href="#flood_adapt.objects.Event.get_forcings">get_forcings</a></td>
 <td>Return a list of all forcings in the event.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.objects.Event.save_additional">save_additional</a></td>
 <td>Save any additional files associated with the event.</td>
 </tr>
 </tbody>
 </table>
+<section id="flood_adapt.objects.Event.data_equivalent" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.Event.data_equivalent">data_equivalent</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.Event.data_equivalent(other: Event)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Deep-compare two events, including forcing data contents.</p>
+<p>Compares core attributes (time, template, mode, rainfall_multiplier) and then verifies that each forcing (by type) has the same data fingerprint. For path-based forcings, the fingerprint hashes the file bytes; for others, a canonical attribute-based hash is used.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<dl>
+<dt><code><span class="parameter-name"><strong>other</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="../..\3_api_docs/api_ref/Event.html#flood_adapt.objects.Event">Event</a></span></code></dt>
+<dd>
+<p>The event to compare against.</p>
+</dd>
+</dl>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
+<dd>
+<p>True when events are equivalent in terms of their hazard inputs.</p>
+</dd>
+</dl>
+</section>
+</section>
 <section id="flood_adapt.objects.Event.get_forcings" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.objects.Event.get_forcings">get_forcings</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.Event.get_forcings()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>objects.Event.get_forcings()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Return a list of all forcings in the event.</p>
 </section>
 <section id="flood_adapt.objects.Event.save_additional" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.objects.Event.save_additional">save_additional</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>objects.Event.save_additional(output_dir: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>objects.Event.save_additional(output_dir: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Save any additional files associated with the event.</p>
 
 

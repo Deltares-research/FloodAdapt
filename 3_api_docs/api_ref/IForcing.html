@@ -338,6 +338,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
+  <li><a href="#flood_adapt.objects.IForcing.content_fingerprint" id="toc-flood_adapt.objects.IForcing.content_fingerprint" class="nav-link" data-scroll-target="#flood_adapt.objects.IForcing.content_fingerprint">content_fingerprint</a></li>
   <li><a href="#flood_adapt.objects.IForcing.model_dump" id="toc-flood_adapt.objects.IForcing.model_dump" class="nav-link" data-scroll-target="#flood_adapt.objects.IForcing.model_dump">model_dump</a></li>
   <li><a href="#flood_adapt.objects.IForcing.save_additional" id="toc-flood_adapt.objects.IForcing.save_additional" class="nav-link" data-scroll-target="#flood_adapt.objects.IForcing.save_additional">save_additional</a></li>
   <li><a href="#flood_adapt.objects.IForcing.serialize_path" id="toc-flood_adapt.objects.IForcing.serialize_path" class="nav-link" data-scroll-target="#flood_adapt.objects.IForcing.serialize_path">serialize_path</a></li>
@@ -368,32 +369,54 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
+<td><a href="#flood_adapt.objects.IForcing.content_fingerprint">content_fingerprint</a></td>
+<td>Return a stable fingerprint of the forcing’s underlying data.</td>
+</tr>
+<tr class="even">
 <td><a href="#flood_adapt.objects.IForcing.model_dump">model_dump</a></td>
 <td>Override the default model_dump to include class variables <code>type</code> and <code>source</code>.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.objects.IForcing.save_additional">save_additional</a></td>
 <td>Save additional data of the forcing.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.objects.IForcing.serialize_path">serialize_path</a></td>
 <td>Serialize filepath-like fields by saving only the filename. It is assumed that the file will be saved in the same directory.</td>
 </tr>
 </tbody>
 </table>
+<section id="flood_adapt.objects.IForcing.content_fingerprint" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.objects.IForcing.content_fingerprint">content_fingerprint</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing.content_fingerprint()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Return a stable fingerprint of the forcing’s underlying data.</p>
+<ul>
+<li>If a file-backed <code>path</code> attribute exists and the file exists, hash its bytes (SHA-256).</li>
+<li>Otherwise, hash a canonical JSON dump of the model (excluding volatile fields like <code>path</code>).</li>
+</ul>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<dl>
+<dt><code><span class="parameter-name"></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
+<dd>
+<p>A fingerprint string that changes when the forcing’s effective data changes.</p>
+</dd>
+</dl>
+</section>
+</section>
 <section id="flood_adapt.objects.IForcing.model_dump" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.objects.IForcing.model_dump">model_dump</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing.model_dump(<span class="op">**</span>kwargs: Any)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing.model_dump(<span class="op">**</span>kwargs: Any)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Override the default model_dump to include class variables <code>type</code> and <code>source</code>.</p>
 </section>
 <section id="flood_adapt.objects.IForcing.save_additional" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.objects.IForcing.save_additional">save_additional</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing.save_additional(output_dir: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing.save_additional(output_dir: Path <span class="op">|</span> <span class="bu">str</span> <span class="op">|</span> os.PathLike)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Save additional data of the forcing.</p>
 </section>
 <section id="flood_adapt.objects.IForcing.serialize_path" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.objects.IForcing.serialize_path">serialize_path</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing.serialize_path(value: Path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>objects.IForcing.serialize_path(value: Path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Serialize filepath-like fields by saving only the filename. It is assumed that the file will be saved in the same directory.</p>
 
 
