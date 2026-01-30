@@ -8,11 +8,9 @@ import geopandas as gpd
 import pandas as pd
 import pytest
 import shapely
-import tomli
 from shapely import Polygon
 
-from flood_adapt import FloodAdaptLogging, Settings
-from flood_adapt import unit_system as us
+from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import (
     DatumModel,
     DemModel,
@@ -42,6 +40,9 @@ from flood_adapt.database_builder.database_builder import (
     UnitSystems,
 )
 from flood_adapt.dbs_classes.database import Database
+from flood_adapt.misc.io import read_toml
+from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.tide_gauge import TideGaugeSource
 from flood_adapt.objects.forcing.timeseries import Scstype
 
@@ -842,22 +843,18 @@ class TestDataBaseBuilder:
 
         # Check risk metrics
         file_path = path_im / "mandatory_metrics_config_risk.toml"
-        with open(file_path, "rb") as f:
-            attrs = tomli.load(f)
-            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-            assert any(
-                query["name"] == "ExpectedAnnualDamages" for query in attrs["queries"]
-            )
-            assert any("TotalDamageRP" in query["name"] for query in attrs["queries"])
+        attrs = read_toml(file_path)
+        assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+        assert any(
+            query["name"] == "ExpectedAnnualDamages" for query in attrs["queries"]
+        )
+        assert any("TotalDamageRP" in query["name"] for query in attrs["queries"])
 
         # Check event metrics
         file_path = path_im / "mandatory_metrics_config.toml"
-        with open(file_path, "rb") as f:
-            attrs = tomli.load(f)
-            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-            assert any(
-                "TotalDamageEvent" in query["name"] for query in attrs["queries"]
-            )
+        attrs = read_toml(file_path)
+        assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+        assert any("TotalDamageEvent" in query["name"] for query in attrs["queries"])
 
     def test_create_infometrics_with_default_infographics(
         self, mock_config: ConfigModel, mock_aggregation_areas
@@ -894,44 +891,34 @@ class TestDataBaseBuilder:
 
         # Check risk metrics
         file_path = path_im / "infographic_metrics_config_risk.toml"
-        with open(file_path, "rb") as f:
-            attrs = tomli.load(f)
-            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-            assert any(
-                query["name"] == "LikelyFloodedHomes" for query in attrs["queries"]
-            )
-            assert any("ImpactedHomes" in query["name"] for query in attrs["queries"])
-            assert any("HighSVI" in query["name"] for query in attrs["queries"])
-            assert any("LowSVI" in query["name"] for query in attrs["queries"])
-            for query in attrs["queries"]:
-                if "SVI" in query["name"]:
-                    assert any(
-                        part.startswith("`SVI` < 0.8")
-                        or part.startswith("`SVI` >= 0.8")
-                        for part in query["filter"].split(" AND ")
-                    )
+        attrs = read_toml(file_path)
+        assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+        assert any(query["name"] == "LikelyFloodedHomes" for query in attrs["queries"])
+        assert any("ImpactedHomes" in query["name"] for query in attrs["queries"])
+        assert any("HighSVI" in query["name"] for query in attrs["queries"])
+        assert any("LowSVI" in query["name"] for query in attrs["queries"])
+        for query in attrs["queries"]:
+            if "SVI" in query["name"]:
+                assert any(
+                    part.startswith("`SVI` < 0.8") or part.startswith("`SVI` >= 0.8")
+                    for part in query["filter"].split(" AND ")
+                )
 
         # Check event metrics
         file_path = path_im / "infographic_metrics_config.toml"
-        with open(file_path, "rb") as f:
-            attrs = tomli.load(f)
-            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-            assert any("road" in query["name"].lower() for query in attrs["queries"])
-            assert any("Residential" in query["name"] for query in attrs["queries"])
-            assert any("Commercial" in query["name"] for query in attrs["queries"])
-            assert any(
-                "LowVulnerability" in query["name"] for query in attrs["queries"]
-            )
-            assert any(
-                "HighVulnerability" in query["name"] for query in attrs["queries"]
-            )
-            for query in attrs["queries"]:
-                if "SVI" in query["name"]:
-                    assert any(
-                        part.startswith("`SVI` < 0.8")
-                        or part.startswith("`SVI` >= 0.8")
-                        for part in query["filter"].split(" AND ")
-                    )
+        attrs = read_toml(file_path)
+        assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+        assert any("road" in query["name"].lower() for query in attrs["queries"])
+        assert any("Residential" in query["name"] for query in attrs["queries"])
+        assert any("Commercial" in query["name"] for query in attrs["queries"])
+        assert any("LowVulnerability" in query["name"] for query in attrs["queries"])
+        assert any("HighVulnerability" in query["name"] for query in attrs["queries"])
+        for query in attrs["queries"]:
+            if "SVI" in query["name"]:
+                assert any(
+                    part.startswith("`SVI` < 0.8") or part.startswith("`SVI` >= 0.8")
+                    for part in query["filter"].split(" AND ")
+                )
 
     def test_create_infometrics_no_svi(
         self, mock_config: ConfigModel, mock_aggregation_areas
@@ -962,28 +949,20 @@ class TestDataBaseBuilder:
 
         # Check risk metrics
         file_path = path_im / "infographic_metrics_config_risk.toml"
-        with open(file_path, "rb") as f:
-            attrs = tomli.load(f)
-            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-            assert any(
-                query["name"] == "LikelyFloodedHomes" for query in attrs["queries"]
-            )
-            assert any("ImpactedHomes" in query["name"] for query in attrs["queries"])
-            assert all("SVI" not in query["name"] for query in attrs["queries"])
+        attrs = read_toml(file_path)
+        assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+        assert any(query["name"] == "LikelyFloodedHomes" for query in attrs["queries"])
+        assert any("ImpactedHomes" in query["name"] for query in attrs["queries"])
+        assert all("SVI" not in query["name"] for query in attrs["queries"])
 
         # Check event metrics
         file_path = path_im / "infographic_metrics_config.toml"
-        with open(file_path, "rb") as f:
-            attrs = tomli.load(f)
-            assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
-            assert all(
-                "road" not in query["name"].lower() for query in attrs["queries"]
-            )
-            assert any("Residential" in query["name"] for query in attrs["queries"])
-            assert any("Commercial" in query["name"] for query in attrs["queries"])
-            assert all(
-                "Vulnerability" not in query["name"] for query in attrs["queries"]
-            )
+        attrs = read_toml(file_path)
+        assert attrs["aggregateBy"] == ["aggr_lvl_1", "aggr_lvl_2"]
+        assert all("road" not in query["name"].lower() for query in attrs["queries"])
+        assert any("Residential" in query["name"] for query in attrs["queries"])
+        assert any("Commercial" in query["name"] for query in attrs["queries"])
+        assert all("Vulnerability" not in query["name"] for query in attrs["queries"])
 
     def test_create_infometrics_no_roads(
         self, mock_config: ConfigModel, mock_aggregation_areas
@@ -1015,11 +994,8 @@ class TestDataBaseBuilder:
 
         # Check event metrics
         file_path = path_im / "infographic_metrics_config.toml"
-        with open(file_path, "rb") as f:
-            attrs = tomli.load(f)
-            assert all(
-                "road" not in query["name"].lower() for query in attrs["queries"]
-            )
+        attrs = read_toml(file_path)
+        assert all("road" not in query["name"].lower() for query in attrs["queries"])
 
     def test_create_infometrics_no_risk(
         self, mock_config: ConfigModel, mock_aggregation_areas
@@ -1048,11 +1024,8 @@ class TestDataBaseBuilder:
 
         # Check event metrics
         file_path = path_im / "infographic_metrics_config.toml"
-        with open(file_path, "rb") as f:
-            attrs = tomli.load(f)
-            assert all(
-                "road" not in query["name"].lower() for query in attrs["queries"]
-            )
+        attrs = read_toml(file_path)
+        assert all("road" not in query["name"].lower() for query in attrs["queries"])
 
     def test_build(self, full_config: ConfigModel):
         # Arrange

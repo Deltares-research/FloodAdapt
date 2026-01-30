@@ -15,8 +15,6 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rioxarray as rxr
-import tomli
-import tomli_w
 import xarray as xr
 from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
@@ -88,6 +86,7 @@ from flood_adapt.database_builder.metrics_utils import (
 )
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.debug_timer import debug_timer
+from flood_adapt.misc.io import read_toml, write_toml
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import modified_environ
 from flood_adapt.objects.events.event_set import EventSet
@@ -433,9 +432,7 @@ class ConfigModel(BaseModel):
         -------
             ConfigModel: The validated attributes from the configuration file.
         """
-        toml_path = Path(toml_path)
-        with open(toml_path, mode="rb") as fp:
-            toml = tomli.load(fp)
+        toml = read_toml(toml_path)
         config = ConfigModel.model_validate(toml)
 
         # check if database path is provided and use config_file path if not
@@ -532,8 +529,7 @@ class ConfigModel(BaseModel):
                 ag["file"] = make_relative(ag["file"], toml_path)
 
         toml_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(toml_path, mode="wb") as fp:
-            tomli_w.dump(config_dict, fp)
+        write_toml(config_dict, toml_path)
 
 
 class DatabaseBuilder:
@@ -2592,11 +2588,7 @@ class DatabaseBuilder:
             dict: A dictionary containing the bin colors.
         """
         templates_path = Path(__file__).parent.resolve().joinpath("templates")
-        with open(
-            templates_path.joinpath("output_layers", "bin_colors.toml"), "rb"
-        ) as f:
-            bin_colors = tomli.load(f)
-        return bin_colors
+        return read_toml(templates_path.joinpath("output_layers", "bin_colors.toml"))
 
     def _delete_extra_geometries(self) -> None:
         """
