@@ -1,8 +1,7 @@
 from pathlib import Path
 from typing import Any, List
 
-import tomli
-
+from flood_adapt.misc.io import read_toml
 from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import (
     Event,
@@ -59,9 +58,8 @@ class EventFactory:
         """Get event template from toml file."""
         if not filepath.exists():
             raise FileNotFoundError(f"File not found: {filepath}")
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        if (template := toml.get("template")) is None:
+        data = read_toml(filepath)
+        if (template := data.get("template")) is None:
             raise ValueError(f"Event template not found in {filepath}")
 
         return Template(template)
@@ -71,11 +69,10 @@ class EventFactory:
         """Get event mode from toml file."""
         if not filepath.exists():
             raise FileNotFoundError(f"File not found: {filepath}")
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        if toml.get("mode") is None:
+        data = read_toml(filepath)
+        if data.get("mode") is None:
             raise ValueError(f"Event mode not found in {filepath}")
-        return Mode(toml.get("mode"))
+        return Mode(data.get("mode"))
 
     @staticmethod
     def load_file(toml_file: Path, load_all: bool = False) -> Event | EventSet:
