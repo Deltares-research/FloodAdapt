@@ -23,12 +23,9 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.misc.path_builder import (
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
@@ -113,12 +110,16 @@ class Database(IDatabase):
 
         # Set the paths
         self.base_path = Path(database_path) / database_name
-        self.input_path = db_path(TopLevelDir.input)
-        self.static_path = db_path(TopLevelDir.static)
-        self.output_path = db_path(TopLevelDir.output)
+        self.input_path = self.base_path / "input"
+        self.static_path = self.base_path / "static"
+        self.output_path = self.base_path / "output"
 
         # Read site configuration
         self.read_site()
+
+        # Initialize the different database objects
+        self.initialize_repositories()
+        self.load()
 
         # Delete any unfinished/crashed scenario output after initialization
         self._init_done = True
@@ -133,7 +134,8 @@ class Database(IDatabase):
             )
         self.site = Site.load_file(site_path)
 
-        # Initialize the different database objects
+    def initialize_repositories(self):
+        """Initialize object repositories and store them in `self._repositories`."""
         self.static = DbsStatic(self)
         self.events = DbsEvent(self, standard_objects=self.site.standard_objects.events)
         self.scenarios = DbsScenario(self)
@@ -145,6 +147,26 @@ class Database(IDatabase):
             self, standard_objects=self.site.standard_objects.projections
         )
         self.benefits = DbsBenefit(self)
+        self._repositories: list[AbstractDatabaseElement] = [
+            self.events,
+            self.projections,
+            self.measures,
+            self.strategies,
+            self.scenarios,
+            self.benefits,
+        ]
+
+    def load(self):
+        """Load all repositories from disk into memory."""
+        logger.info("Loading database into memory")
+        for repo in self._repositories:
+            repo.load()
+
+    def flush(self):
+        """Write all repository changes from memory to disk."""
+        logger.info("Writing database changes to disk")
+        for repo in self._repositories:
+            repo.flush()
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""

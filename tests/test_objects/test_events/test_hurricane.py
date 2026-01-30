@@ -68,8 +68,8 @@ def setup_hurricane_scenario(
         projection="current",
         strategy="no_measures",
     )
-    test_db.events.save(event)
-    test_db.scenarios.save(scn)
+    test_db.events.add(event)
+    test_db.scenarios.add(scn)
     return scn, event
 
 

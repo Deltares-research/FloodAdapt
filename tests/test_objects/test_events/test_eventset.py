@@ -160,9 +160,9 @@ def setup_eventset_scenario(
     dummy_projection,
     dummy_strategy,
 ):
-    test_db.projections.save(dummy_projection)
-    test_db.strategies.save(dummy_strategy)
-    test_db.events.save(test_eventset)
+    test_db.projections.add(dummy_projection)
+    test_db.strategies.add(dummy_strategy)
+    test_db.events.add(test_eventset)
 
     scn = Scenario(
         name="test_scenario",
@@ -170,7 +170,7 @@ def setup_eventset_scenario(
         projection=dummy_projection.name,
         strategy=dummy_strategy.name,
     )
-    test_db.scenarios.save(scn)
+    test_db.scenarios.add(scn)
 
     return test_db, scn, test_eventset
 
