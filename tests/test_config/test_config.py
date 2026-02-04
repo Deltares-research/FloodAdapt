@@ -22,6 +22,32 @@ DEFAULT_EXE_PATHS: dict[str, dict[str, Path]] = {
 }
 
 
+@pytest.fixture(autouse=True, scope="module")
+def protect_external_settings():
+    # Preserve env vars
+    FA_ENV_VARS = {
+        v.alias: os.getenv(v.alias, None)
+        for v in Settings.model_fields.values()
+        if v.alias is not None
+    }
+    for k in FA_ENV_VARS.keys():
+        os.unsetenv(k)
+    # Preserve binary validation classvar
+    validated = False
+    if Settings._binaries_validated:
+        validated = True
+    Settings._binaries_validated = False
+    try:
+        yield
+    finally:
+        for k, v in FA_ENV_VARS.items():
+            if v is None:
+                os.unsetenv(k)
+            else:
+                os.putenv(k, v)
+        Settings._binaries_validated = validated
+
+
 @pytest.fixture
 def mock_subprocess_run(monkeypatch):
     expected_sfincs_output = (
@@ -110,17 +136,6 @@ class TestSettingsModel:
         if expected_fiat is not None:
             assert settings.fiat_bin_path == expected_fiat
             assert os.environ["FIAT_BIN_PATH"] == str(expected_fiat)
-
-    @pytest.fixture(autouse=True, scope="class")
-    def protect_external_settings(self):
-        settings = Settings()
-
-        yield
-
-        Settings(
-            DATABASE_ROOT=settings.database_root,
-            DATABASE_NAME=settings.database_name,
-        )
 
     @pytest.fixture(autouse=True)
     def protect_envvars(self):
