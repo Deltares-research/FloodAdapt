@@ -32,53 +32,44 @@ class IDatabase(ABC):
     ) -> None: ...
 
     @abstractmethod
-    def get_outputs(self) -> dict[str, Any]:
-        pass
+    def read_site(self, site_name: str) -> None: ...
 
     @abstractmethod
-    def get_topobathy_path(self) -> str:
-        pass
+    def get_outputs(self) -> dict[str, Any]: ...
 
     @abstractmethod
-    def get_index_path(self) -> str:
-        pass
+    def get_topobathy_path(self) -> str: ...
 
     @abstractmethod
-    def get_depth_conversion(self) -> float:
-        pass
+    def get_index_path(self) -> str: ...
+
+    @abstractmethod
+    def get_depth_conversion(self) -> float: ...
 
     @abstractmethod
     def get_max_water_level(
         self, scenario_name: str, return_period: Optional[int] = None
-    ) -> np.ndarray:
-        pass
+    ) -> np.ndarray: ...
 
     @abstractmethod
-    def get_building_footprints(self, scenario_name: str) -> gpd.GeoDataFrame:
-        pass
+    def get_building_footprints(self, scenario_name: str) -> gpd.GeoDataFrame: ...
 
     @abstractmethod
-    def get_roads(self, scenario_name: str) -> gpd.GeoDataFrame:
-        pass
+    def get_roads(self, scenario_name: str) -> gpd.GeoDataFrame: ...
 
     @abstractmethod
-    def get_aggregation(self, scenario_name: str) -> dict[str, gpd.GeoDataFrame]:
-        pass
+    def get_aggregation(self, scenario_name: str) -> dict[str, gpd.GeoDataFrame]: ...
 
     @abstractmethod
     def get_aggregation_benefits(
         self, benefit_name: str
-    ) -> dict[str, gpd.GeoDataFrame]:
-        pass
+    ) -> dict[str, gpd.GeoDataFrame]: ...
 
     @abstractmethod
-    def get_object_list(self, object_type: str) -> dict[str, Any]:
-        pass
+    def get_object_list(self, object_type: str) -> dict[str, Any]: ...
 
     @abstractmethod
-    def has_run_hazard(self, scenario_name: str) -> None:
-        pass
+    def has_run_hazard(self, scenario_name: str) -> None: ...
 
     @abstractmethod
-    def cleanup(self) -> None:
-        pass
+    def cleanup(self) -> None: ...
