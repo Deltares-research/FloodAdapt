@@ -86,10 +86,10 @@ def update_database_input(database_path: Path):
         The path to the database directory. This is the directory that contains the `input`, `static` and `output` directories.
 
     """
-    database = Database(database_path.parent, database_path.name)
-    input_dir = database.input_path
+    input_dir = database_path / "input"
     if input_dir.exists():
         shutil.rmtree(input_dir)
+    database = Database(database_path.parent, database_path.name)
 
     input_dir.mkdir(parents=True)
     for obj_dir in [
