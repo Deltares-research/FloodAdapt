@@ -2,8 +2,6 @@ from os import environ, listdir
 from pathlib import Path
 from typing import Optional
 
-import tomli
-import tomli_w
 from pydantic import (
     Field,
     computed_field,
@@ -11,6 +9,8 @@ from pydantic import (
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from flood_adapt.misc.io import read_toml, write_toml
 
 
 class Settings(BaseSettings):
@@ -215,10 +215,8 @@ class Settings(BaseSettings):
         ValidationError
             If required configuration values are missing or if there is an error parsing the configuration file.
         """
-        with open(toml_path, "rb") as f:
-            settings = tomli.load(f)
-
-        return Settings(**settings)
+        data = read_toml(toml_path)
+        return Settings(**data)
 
     def write(self, toml_path: Path) -> None:
         """
@@ -237,12 +235,8 @@ class Settings(BaseSettings):
         toml_path = Path(toml_path).resolve()
         if not toml_path.parent.exists():
             toml_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(toml_path, "wb") as f:
-            tomli_w.dump(
-                self.model_dump(
-                    by_alias=True,
-                    exclude={"sfincs_bin_path", "fiat_bin_path", "database_path"},
-                ),
-                f,
-            )
+        data = self.model_dump(
+            by_alias=True,
+            exclude={"sfincs_bin_path", "fiat_bin_path", "database_path"},
+        )
+        write_toml(data, toml_path)

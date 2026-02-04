@@ -59,17 +59,16 @@ class Database(IDatabase):
     output_path: Path
 
     config: DatabaseConfig
+    site: Site
 
-    _site: Site
+    events: DbsEvent
+    scenarios: DbsScenario
+    strategies: DbsStrategy
+    measures: DbsMeasure
+    projections: DbsProjection
+    benefits: DbsBenefit
 
-    _events: DbsEvent
-    _scenarios: DbsScenario
-    _strategies: DbsStrategy
-    _measures: DbsMeasure
-    _projections: DbsProjection
-    _benefits: DbsBenefit
-
-    _static: DbsStatic
+    static: DbsStatic
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:  # Singleton pattern
@@ -129,26 +128,34 @@ class Database(IDatabase):
             self.config = DatabaseConfig(**cfg)
         else:
             self.config = DatabaseConfig()
-        self._site = Site.load_file(self.static_path / "config" / "site.toml")
-
-        # Initialize the different database objects
-        self._static = DbsStatic(self)
-        self._events = DbsEvent(
-            self, standard_objects=self.site.standard_objects.events
-        )
-        self._scenarios = DbsScenario(self)
-        self._strategies = DbsStrategy(
-            self, standard_objects=self.site.standard_objects.strategies
-        )
-        self._measures = DbsMeasure(self)
-        self._projections = DbsProjection(
-            self, standard_objects=self.site.standard_objects.projections
-        )
-        self._benefits = DbsBenefit(self)
-        self._init_done = True
+        # Read site configuration
+        self.read_site()
 
         # Delete any unfinished/crashed scenario output after initialization
+        self._init_done = True
         self.cleanup()
+
+    def read_site(self, site_name: str = "site") -> None:
+        """Read the site configuration from the static config folder and update database attributes."""
+        site_path = self.static_path / "config" / f"{site_name}.toml"
+        if not site_path.exists():
+            raise ConfigError(
+                f"Site configuration file '{site_path}' does not exist in the database."
+            )
+        self.site = Site.load_file(site_path)
+
+        # Initialize the different database objects
+        self.static = DbsStatic(self)
+        self.events = DbsEvent(self, standard_objects=self.site.standard_objects.events)
+        self.scenarios = DbsScenario(self)
+        self.strategies = DbsStrategy(
+            self, standard_objects=self.site.standard_objects.strategies
+        )
+        self.measures = DbsMeasure(self)
+        self.projections = DbsProjection(
+            self, standard_objects=self.site.standard_objects.projections
+        )
+        self.benefits = DbsBenefit(self)
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
@@ -158,39 +165,6 @@ class Database(IDatabase):
         self.__class__._instance = None
         self.__dict__.clear()
         gc.collect()
-
-    # Property methods
-    @property
-    def site(self) -> Site:
-        return self._site
-
-    @property
-    def static(self) -> DbsStatic:
-        return self._static
-
-    @property
-    def events(self) -> DbsEvent:
-        return self._events
-
-    @property
-    def scenarios(self) -> DbsScenario:
-        return self._scenarios
-
-    @property
-    def strategies(self) -> DbsStrategy:
-        return self._strategies
-
-    @property
-    def measures(self) -> DbsMeasure:
-        return self._measures
-
-    @property
-    def projections(self) -> DbsProjection:
-        return self._projections
-
-    @property
-    def benefits(self) -> DbsBenefit:
-        return self._benefits
 
     def get_slr_scenarios(self) -> SlrScenariosModel:
         """Get the path to the SLR scenarios file.
@@ -214,7 +188,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'path', 'last_modification_date' and "finished" info
         """
-        all_scenarios = pd.DataFrame(self._scenarios.summarize_objects())
+        all_scenarios = pd.DataFrame(self.scenarios.summarize_objects())
         if len(all_scenarios) > 0:
             df = all_scenarios[all_scenarios["finished"]]
         else:
@@ -242,14 +216,14 @@ class Database(IDatabase):
 
         if mode == Mode.single_event:
             if _type == FloodmapType.water_level:
-                paths = [base_dir / "max_water_level_map.nc"]
+                paths = [base_dir / "max_water_level_map.tif"]
             elif _type == FloodmapType.water_depth:
                 paths = [base_dir / f"FloodMap_{scenario_name}.tif"]
         elif mode == Mode.risk:
             if _type == FloodmapType.water_level:
-                paths = list(base_dir.glob("RP_*_maps.nc"))
+                paths = list(base_dir.glob("RP_*_max_water_level_map.tif"))
             elif _type == FloodmapType.water_depth:
-                paths = list(base_dir.glob("RP_*_maps.tif"))
+                paths = list(base_dir.glob("RP_*_FloodMap.tif"))
         else:
             raise DatabaseError(
                 f"Flood map type '{_type}' is not valid. Must be one of 'water_level' or 'water_depth'."
@@ -295,7 +269,7 @@ class Database(IDatabase):
         str
             path to topobathy tiles
         """
-        path = self.input_path.parent.joinpath("static", "dem", "tiles", "topobathy")
+        path = self.static_path / "dem" / self.site.sfincs.dem.filename
         return path.as_posix()
 
     def get_index_path(self) -> str:
@@ -306,7 +280,7 @@ class Database(IDatabase):
         str
             path to index tiles
         """
-        path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
+        path = self.static_path / "dem" / self.site.sfincs.dem.index_filename
         return path.as_posix()
 
     def get_depth_conversion(self) -> float:
@@ -344,23 +318,30 @@ class Database(IDatabase):
         np.array
             2D map of maximum water levels
         """
-        # If single event read with hydromt-sfincs
+        output_path = self.scenarios.output_path.joinpath(scenario_name, "Flooding")
+        # Check which file to use (if quadtree or regular)
         if not return_period:
-            map_path = self.scenarios.output_path.joinpath(
-                scenario_name,
-                "Flooding",
-                "max_water_level_map.nc",
-            )
-            with xr.open_dataarray(map_path) as map:
-                zsmax = map.to_numpy()
+            qt_path = output_path.joinpath("max_water_level_map_qt.nc")
+            if qt_path.is_file():
+                map_path = qt_path
+            else:
+                map_path = output_path.joinpath("max_water_level_map.tif")
         else:
-            file_path = self.scenarios.output_path.joinpath(
-                scenario_name,
-                "Flooding",
-                f"RP_{return_period:04d}_maps.nc",
+            qt_path = output_path.joinpath(
+                f"RP_{return_period:04d}_max_water_level_map_qt.nc"
             )
-            with xr.open_dataset(file_path) as ds:
-                zsmax = ds["risk_map"][:, :].to_numpy().T
+            if qt_path.is_file():
+                map_path = qt_path
+            else:
+                map_path = output_path.joinpath(
+                    f"RP_{return_period:04d}_max_water_level_map.tif"
+                )
+        # Open file
+        with xr.open_dataarray(map_path) as map:
+            zsmax = map.to_numpy()
+        # Make sure output is 1D array
+        if zsmax.ndim >= 2:
+            zsmax = zsmax.flatten("F")
         return zsmax
 
     def get_flood_map_geotiff(

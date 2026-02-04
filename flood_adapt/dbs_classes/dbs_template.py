@@ -3,9 +3,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional, TypeVar
 
-import tomli
-import tomli_w
-
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.misc.exceptions import (
@@ -15,6 +12,7 @@ from flood_adapt.misc.exceptions import (
     IsStandardObjectError,
     IsUsedInError,
 )
+from flood_adapt.misc.io import read_toml, write_toml
 from flood_adapt.objects.object_model import Object
 
 T_OBJECTMODEL = TypeVar("T_OBJECTMODEL", bound=Object)
@@ -108,8 +106,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         # Write only the toml file
         toml_path = self.input_path / new_name / f"{new_name}.toml"
         toml_path.parent.mkdir(parents=True)
-        with open(toml_path, "wb") as f:
-            tomli_w.dump(copy_object.model_dump(exclude_none=True), f)
+        write_toml(copy_object.model_dump(exclude_none=True), toml_path)
 
         # Then copy all the accompanied files
         src = self.input_path / old_name
@@ -292,8 +289,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
     @staticmethod
     def _read_variable_in_toml(variable_name: str, toml_path: Path) -> str:
-        with open(toml_path, "rb") as f:
-            data = tomli.load(f)
+        data = read_toml(toml_path)
         return data.get(variable_name, "")
 
     def _validate_to_save(self, object_model: T_OBJECTMODEL, overwrite: bool) -> None:
