@@ -2,7 +2,6 @@ import datetime
 import gc
 import logging
 import math
-import os
 import re
 import shutil
 import warnings
@@ -16,12 +15,11 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rioxarray as rxr
-import tomli
-import tomli_w
 import xarray as xr
 from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_sfincs import SfincsModel as HydromtSfincsModel
+from hydromt_sfincs.workflows.downscaling import make_index_cog
 from pydantic import BaseModel, Field
 from shapely import MultiLineString, MultiPolygon, Polygon
 from shapely.ops import nearest_points
@@ -88,6 +86,7 @@ from flood_adapt.database_builder.metrics_utils import (
 )
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.debug_timer import debug_timer
+from flood_adapt.misc.io import read_toml, write_toml
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import modified_environ
 from flood_adapt.objects.events.event_set import EventSet
@@ -245,6 +244,9 @@ class GuiConfigModel(BaseModel):
         Maximum benefits for visualization bins.
     additional_aggregated_layers : Optional[list[MetricLayer]]
         Additional metric layers for aggregation (optional).
+    topobathy_min_max : Union[tuple[float, float], Literal["dem"]]
+        Min/max values for DEM color scaling; set to "dem" to derive from the
+        elevation raster or provide explicit bounds in GUI units.
     """
 
     max_flood_depth: float
@@ -252,6 +254,7 @@ class GuiConfigModel(BaseModel):
     max_footprint_dmg: float
     max_benefits: float
     additional_aggregated_layers: Optional[list[MetricLayer]] = None
+    topobathy_min_max: Union[tuple[float, float], Literal["dem"]] = "dem"
 
 
 class SviConfigModel(SpatialJoinModel):
@@ -433,9 +436,7 @@ class ConfigModel(BaseModel):
         -------
             ConfigModel: The validated attributes from the configuration file.
         """
-        toml_path = Path(toml_path)
-        with open(toml_path, mode="rb") as fp:
-            toml = tomli.load(fp)
+        toml = read_toml(toml_path)
         config = ConfigModel.model_validate(toml)
 
         # check if database path is provided and use config_file path if not
@@ -532,8 +533,7 @@ class ConfigModel(BaseModel):
                 ag["file"] = make_relative(ag["file"], toml_path)
 
         toml_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(toml_path, mode="wb") as fp:
-            tomli_w.dump(config_dict, fp)
+        write_toml(config_dict, toml_path)
 
 
 class DatabaseBuilder:
@@ -1414,61 +1414,74 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_dem_model(self) -> DemModel:
+        subgrid_sfincs_folder = Path(self.sfincs_overland_model.root) / "subgrid"
+        subgrid_sfincs_folder_exist = subgrid_sfincs_folder.is_dir()
         if self.config.dem:
             subgrid_sfincs = Path(self.config.dem.filename)
-            delete_sfincs_folder = False
         else:
             logger.warning(
                 "No subgrid depth geotiff file provided in the config file. Using the one from the SFINCS model."
             )
-            subgrid_sfincs_folder = Path(self.sfincs_overland_model.root) / "subgrid"
-            subgrid_sfincs = subgrid_sfincs_folder / "dep_subgrid.tif"
-            delete_sfincs_folder = True
-
-        dem_file = self._check_exists_and_absolute(subgrid_sfincs)
+            if not subgrid_sfincs_folder_exist:
+                raise FileNotFoundError(
+                    f"Subgrid folder {subgrid_sfincs_folder} does not exist in the SFINCS model."
+                )
+            if self.sfincs_overland_model.grid_type == "quadtree":
+                # If SFINCS is quadtree use the 0 level
+                subgrid_sfincs = subgrid_sfincs_folder / "dep_subgrid_lev0.tif"
+            else:
+                subgrid_sfincs = subgrid_sfincs_folder / "dep_subgrid.tif"
+        # Check that file exists and get absolute path
+        dem_file = self._check_exists_and_absolute(str(subgrid_sfincs))
+        # Define where it will be stored in the database
         fa_subgrid_path = self.static_path / "dem" / dem_file.name
         fa_subgrid_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Check tiles
-        tiles_sfincs = Path(self.sfincs_overland_model.root) / "tiles"
-        fa_tiles_path = self.static_path / "dem" / "tiles"
-        if tiles_sfincs.exists():
-            shutil.move(tiles_sfincs, fa_tiles_path)
-            if (fa_tiles_path / "index").exists():
-                os.rename(fa_tiles_path / "index", fa_tiles_path / "indices")
-            logger.info(
-                "Tiles were already available in the SFINCS model and will directly be used in FloodAdapt."
-            )
-        else:
-            # Make tiles
-            fa_tiles_path.mkdir(parents=True)
-            self.sfincs_overland_model.setup_tiles(
-                path=fa_tiles_path,
-                datasets_dep=[{"elevtn": dem_file}],
-                zoom_range=[0, 13],
-                fmt="png",
-            )
-            logger.info(
-                f"Tiles were created using the {subgrid_sfincs.as_posix()} as the elevation map."
-            )
-
         shutil.copy2(dem_file, fa_subgrid_path)
+
+        fa_index_path = self.static_path / "dem" / "index.tif"
+        # Make index cog
+        make_index_cog(
+            model=self.sfincs_overland_model,
+            indices_fn=fa_index_path,
+            topobathy_fn=fa_subgrid_path,
+        )
+        logger.info(
+            f"An index file was created using the {subgrid_sfincs.as_posix()} as the elevation map, and save at {fa_index_path.as_posix()}."
+        )
+
         self._dem_path = fa_subgrid_path
 
-        # Remove the original subgrid folder if it exists
-        if delete_sfincs_folder:
-            gc.collect()
-            if subgrid_sfincs_folder.exists() and subgrid_sfincs_folder.is_dir():
-                try:
-                    shutil.rmtree(subgrid_sfincs_folder)
-                except Exception:
-                    logger.warning(
-                        f"Could not delete temporary SFINCS subgrid folder at {subgrid_sfincs_folder.as_posix()}."
-                    )
+        # Get min max values
+        if self.config.gui.topobathy_min_max == "dem":
+            dem: xr.DataArray = rxr.open_rasterio(fa_subgrid_path)
+            conversion_factor = us.UnitfulLength(
+                value=1.0, units=us.UnitTypesLength.meters
+            ).convert(self.unit_system.default_length_units)
 
+            cmin = float(dem.min().compute().item()) * conversion_factor
+            cmax = float(dem.max().compute().item()) * conversion_factor
+            cmin = round(cmin, 0)
+            cmax = round(cmax, 0)
+            self.topobathy_min_max = (cmin, cmax)
+        else:
+            self.topobathy_min_max = self.config.gui.topobathy_min_max
+        # Remove the original subgrid folder if it exists
+        gc.collect()
+        if subgrid_sfincs_folder_exist:
+            try:
+                shutil.rmtree(subgrid_sfincs_folder)
+            except Exception:
+                logger.warning(
+                    f"Could not delete temporary SFINCS subgrid folder at {subgrid_sfincs_folder.as_posix()}."
+                )
+
+        # Dem file always assumed to be in /static/dem
         return DemModel(
-            filename=fa_subgrid_path.name, units=us.UnitTypesLength.meters
-        )  # always in meters
+            filename=fa_subgrid_path.name,
+            units=us.UnitTypesLength.meters,  # SINFCS always in meters
+            index_filename=fa_index_path.name,
+        )
 
     @debug_timer
     def create_sfincs_model_config(self) -> SfincsConfigModel:
@@ -1527,9 +1540,13 @@ class DatabaseBuilder:
             )
             # Add tide gauge as obs point if within model region
             if coord.within(model_region):
+                if self.tide_gauge.name is None:
+                    name = "tide_gauge"
+                else:
+                    name = self.tide_gauge.name
                 obs_points.append(
                     ObsPointModel(
-                        name=self.tide_gauge.name,
+                        name=name,
                         description="Tide gauge observation point",
                         ID=self.tide_gauge.ID,
                         lon=self.tide_gauge.lon,
@@ -1795,26 +1812,22 @@ class DatabaseBuilder:
         if self.sfincs_offshore_model is None:
             return None
         # Connect boundary points of overland to output points of offshore
+        # First read in the boundary locations from the overland model
         fn = Path(self.sfincs_overland_model.root) / "sfincs.bnd"
-        bnd = pd.read_csv(fn, sep=" ", lineterminator="\n", header=None)
-        bnd = bnd.rename(columns={0: "x", 1: "y"})
-        bnd_geo = gpd.GeoDataFrame(
-            bnd,
-            geometry=gpd.points_from_xy(bnd.x, bnd.y),
+        lines = []
+        if fn.exists():
+            with open(fn) as f:
+                lines = f.readlines()
+        coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
+        x, y = zip(*coords)
+        bnd = gpd.GeoDataFrame(
+            geometry=gpd.points_from_xy(x, y),
             crs=self.sfincs_overland_model.config["epsg"],
         )
-        obs_geo = bnd_geo.to_crs(4326)
-        obs_geo["x"] = obs_geo.geometry.x
-        obs_geo["y"] = obs_geo.geometry.y
-        del obs_geo["geometry"]
-        obs_geo["name"] = [f"bnd_pt{num:02d}" for num in range(1, len(obs_geo) + 1)]
-        fn_off = Path(self.sfincs_offshore_model.root) / "sfincs.obs"
-        obs_geo.to_csv(
-            fn_off,
-            sep="\t",
-            index=False,
-            header=False,
-        )
+        # Then transform points to offshore crs and save them as observation points
+        obs_geo = bnd.to_crs(self.sfincs_offshore_model.config["epsg"])
+        self.sfincs_offshore_model.setup_observation_points(obs_geo)
+        self.sfincs_offshore_model.write()
         logger.info(
             "Output points of the offshore SFINCS model were reconfigured to the boundary points of the overland SFINCS model."
         )
@@ -1906,7 +1919,10 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_visualization_layers(self) -> VisualizationLayers:
-        visualization_layers = VisualizationLayers()
+        visualization_layers = VisualizationLayers(
+            topography_cmin=self.topobathy_min_max[0],
+            topography_cmax=self.topobathy_min_max[1],
+        )
         if self._svi is not None:
             visualization_layers.add_layer(
                 name="svi",
@@ -2597,11 +2613,7 @@ class DatabaseBuilder:
             dict: A dictionary containing the bin colors.
         """
         templates_path = Path(__file__).parent.resolve().joinpath("templates")
-        with open(
-            templates_path.joinpath("output_layers", "bin_colors.toml"), "rb"
-        ) as f:
-            bin_colors = tomli.load(f)
-        return bin_colors
+        return read_toml(templates_path.joinpath("output_layers", "bin_colors.toml"))
 
     def _delete_extra_geometries(self) -> None:
         """

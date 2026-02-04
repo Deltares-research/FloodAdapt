@@ -90,3 +90,30 @@ def test_run_on_all_scn(test_db, scn_name):
     runner = ScenarioRunner(test_db, scenario=scn)
     runner.run()
     assert runner.has_run_check()
+
+
+@pytest.fixture()
+def test_db_qt(test_db: IDatabase) -> IDatabase:
+    test_db.read_site(site_name="site_quadtree")
+    return test_db
+
+
+@pytest.mark.skipif(
+    not IS_WINDOWS,
+    reason="Only run on windows where we have a working sfincs binary",
+)
+@pytest.mark.parametrize(
+    "scn_name",
+    [
+        "all_projections_extreme12ft_strategy_comb",
+        "current_extreme12ft_no_measures",
+        "current_extreme12ft_raise_datum",
+        "current_extreme12ft_rivershape_windconst_no_measures",
+        "current_extreme12ft_strategy_impact_comb",
+    ],
+)
+def test_run_on_all_scn_quadtree(test_db_qt: IDatabase, scn_name: str):
+    scn = test_db_qt.scenarios.get(scn_name)
+    runner = ScenarioRunner(test_db_qt, scenario=scn)
+    runner.run()
+    assert runner.has_run_check()

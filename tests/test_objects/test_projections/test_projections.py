@@ -1,9 +1,9 @@
 from pathlib import Path
 
 import pytest
-import tomli
 
-from flood_adapt import unit_system as us
+from flood_adapt.misc.io import read_toml
+from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.projections.projections import (
     PhysicalProjection,
     Projection,
@@ -186,9 +186,7 @@ def test_save_with_new_development_areas_also_saves_shapefile(
     # Assert
     assert toml_path.exists()
     assert expected_new_path.exists()
-
-    with open(toml_path, "rb") as f:
-        data = tomli.load(f)
+    data = read_toml(toml_path)
     assert (
         data["socio_economic_change"]["new_development_shapefile"]
         == expected_new_path.name

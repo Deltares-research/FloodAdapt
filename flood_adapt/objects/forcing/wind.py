@@ -7,6 +7,7 @@ import xarray as xr
 
 from flood_adapt.misc.utils import (
     copy_file_to_output_dir,
+    path_exists_and_absolute,
     validate_file_extension,
 )
 from flood_adapt.objects.forcing import unit_system as us
@@ -83,6 +84,10 @@ class WindTrack(IWind):
         if self.path:
             self.path = copy_file_to_output_dir(self.path, Path(output_dir))
 
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
+        self.path = path_exists_and_absolute(self.path, file_path)
+
 
 class WindCSV(IWind):
     source: ForcingSource = ForcingSource.CSV
@@ -102,6 +107,10 @@ class WindCSV(IWind):
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))
 
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
+        self.path = path_exists_and_absolute(self.path, file_path)
+
 
 class WindMeteo(IWind):
     source: ForcingSource = ForcingSource.METEO
@@ -115,10 +124,14 @@ class WindNetCDF(IWind):
 
     def read(self) -> xr.Dataset:
         required_vars = ("wind10_v", "wind10_u", "press_msl")
-        required_coords = ("time", "lat", "lon")
+        required_coords = ("time", "y", "x")
         with xr.open_dataset(self.path) as ds:
             validated_ds = validate_netcdf_forcing(ds, required_vars, required_coords)
         return validated_ds
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
+        self.path = path_exists_and_absolute(self.path, file_path)
