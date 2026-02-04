@@ -6,9 +6,8 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import numpy as np
 
-from flood_adapt.config import Site
-from flood_adapt.dbs_classes.dbs_static import IDbsStatic
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
+from flood_adapt.dbs_classes.interface.static import IDbsStatic
 
 
 class IDatabase(ABC):
@@ -17,7 +16,6 @@ class IDatabase(ABC):
     output_path: Path
     static_path: Path
 
-    site: Site
     static: IDbsStatic
     events: AbstractDatabaseElement
     scenarios: AbstractDatabaseElement

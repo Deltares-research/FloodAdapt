@@ -355,6 +355,47 @@ class TestSettingsModel:
             assert os.getenv("MANUAL_DOCKER_CONTAINERS") == "True"
             assert os.getenv("USE_DOCKER") == "True"
 
+    def test_validate_binaries(self, tmp_path: Path):
+        existing_bin = (tmp_path / "bins/binary.exe").resolve()
+        existing_bin.parent.mkdir(parents=True, exist_ok=True)
+        existing_bin.touch(mode=0o755)  # Make executable
+        non_existing_bin = (tmp_path / "bins/no_binary.exe").resolve()
+
+        with pytest.raises(
+            ValueError,
+            match="SFINCS binary was not provided, but validate_binaries is True.",
+        ):
+            Settings(
+                USE_DOCKER=False,
+                VALIDATE_BINARIES=True,
+                SFINCS_BIN_PATH=None,
+                FIAT_BIN_PATH=existing_bin,
+            )
+        with pytest.raises(
+            ValueError,
+            match="FIAT binary was not provided, but validate_binaries is True.",
+        ):
+            Settings(
+                USE_DOCKER=False,
+                VALIDATE_BINARIES=True,
+                SFINCS_BIN_PATH=existing_bin,
+                FIAT_BIN_PATH=None,
+            )
+        with pytest.raises(ValueError, match=non_existing_bin.as_posix()):
+            Settings(
+                USE_DOCKER=False,
+                VALIDATE_BINARIES=True,
+                SFINCS_BIN_PATH=non_existing_bin,
+                FIAT_BIN_PATH=existing_bin,
+            )
+        with pytest.raises(ValueError, match=non_existing_bin.as_posix()):
+            Settings(
+                USE_DOCKER=False,
+                VALIDATE_BINARIES=True,
+                SFINCS_BIN_PATH=existing_bin,
+                FIAT_BIN_PATH=non_existing_bin,
+            )
+
     def test_get_scenario_execution_method_docker(self):
         settings = Settings(
             USE_DOCKER=True,

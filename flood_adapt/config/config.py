@@ -12,7 +12,6 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from flood_adapt.adapter.docker import HAS_DOCKER
 from flood_adapt.misc.io import read_toml, write_toml
 
 logger = logging.getLogger(__name__)
@@ -205,18 +204,28 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _validate_sfincs_path(self):
-        if self.sfincs_bin_path is not None and self.validate_binaries:
+        if self.validate_binaries:
+            if self.sfincs_bin_path is None:
+                raise ValueError(
+                    "SFINCS binary was not provided, but validate_binaries is True."
+                )
             if not self.sfincs_bin_path.exists():
                 raise ValueError(
-                    f"SFINCS binary {self.sfincs_bin_path} does not exist."
+                    f"SFINCS binary {self.sfincs_bin_path.as_posix()} does not exist."
                 )
         return self
 
     @model_validator(mode="after")
     def _validate_fiat_path(self):
-        if self.fiat_bin_path is not None and self.validate_binaries:
+        if self.validate_binaries:
+            if self.fiat_bin_path is None:
+                raise ValueError(
+                    "FIAT binary was not provided, but validate_binaries is True."
+                )
             if not self.fiat_bin_path.exists():
-                raise ValueError(f"FIAT binary {self.fiat_bin_path} does not exist.")
+                raise ValueError(
+                    f"FIAT binary {self.fiat_bin_path.as_posix()} does not exist."
+                )
         return self
 
     @field_serializer("database_root", "database_path")
@@ -272,21 +281,14 @@ class Settings(BaseSettings):
     def get_scenario_execution_method(
         self, strict: bool = False
     ) -> ExecutionMethod | None:
-        if (
-            self.validate_binaries
-            and self.sfincs_bin_path is not None
-            and self.sfincs_bin_path.exists()
-            and self.fiat_bin_path is not None
-            and self.fiat_bin_path.exists()
-        ):
+        if self.validate_binaries:
             return ExecutionMethod.BINARIES
-
-        if HAS_DOCKER and self.use_docker:
+        elif self.use_docker:
             return ExecutionMethod.DOCKER
-
-        msg = "Could not determine scenario execution method, please check your configuration."
-        if strict:
-            raise RuntimeError(msg)
         else:
-            logger.warning(msg)
-            return None
+            msg = "Could not determine scenario execution method, please check your configuration."
+            if strict:
+                raise RuntimeError(msg)
+            else:
+                logger.warning(msg)
+                return None
