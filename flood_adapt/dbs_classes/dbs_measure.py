@@ -4,7 +4,7 @@ from typing import Any
 import geopandas as gpd
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import DatabaseError, DoesNotExistError
 from flood_adapt.misc.utils import resolve_filepath
 from flood_adapt.objects.measures.measure_factory import MeasureFactory
 from flood_adapt.objects.measures.measures import Measure
@@ -14,6 +14,7 @@ class DbsMeasure(DbsTemplate[Measure]):
     dir_name = "measures"
     display_name = "Measure"
     _object_class = Measure
+    _higher_lvl_object = "Strategy"
 
     def get(self, name: str) -> Measure:
         """Return a measure object.
@@ -33,7 +34,7 @@ class DbsMeasure(DbsTemplate[Measure]):
 
         # Check if the object exists
         if not Path(full_path).is_file():
-            raise DatabaseError(f"{self.display_name}: '{name}' does not exist.")
+            raise DoesNotExistError(name, self.display_name)
 
         # Load and return the object
         return MeasureFactory.get_measure_object(full_path)

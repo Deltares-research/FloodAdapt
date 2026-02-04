@@ -1,7 +1,6 @@
 import gc
 import os
 import shutil
-import time
 from pathlib import Path
 from typing import Any, Literal, Optional, Union
 
@@ -11,7 +10,10 @@ import pandas as pd
 import xarray as xr
 from geopandas import GeoDataFrame
 
-from flood_adapt.config.sfincs import SlrScenariosModel
+from flood_adapt.adapter.fiat_adapter import FiatAdapter
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.hazard import SlrScenariosModel
+from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -21,15 +23,19 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     TopLevelDir,
     db_path,
 )
 from flood_adapt.misc.utils import finished_file_exists
+from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
+from flood_adapt.objects.output.floodmap import FloodMap
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
+
+logger = FloodAdaptLogging.getLogger("Database")
 
 
 class Database(IDatabase):
@@ -49,16 +55,16 @@ class Database(IDatabase):
     static_path: Path
     output_path: Path
 
-    _site: Site
+    site: Site
 
-    _events: DbsEvent
-    _scenarios: DbsScenario
-    _strategies: DbsStrategy
-    _measures: DbsMeasure
-    _projections: DbsProjection
-    _benefits: DbsBenefit
+    events: DbsEvent
+    scenarios: DbsScenario
+    strategies: DbsStrategy
+    measures: DbsMeasure
+    projections: DbsProjection
+    benefits: DbsBenefit
 
-    _static: DbsStatic
+    static: DbsStatic
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:  # Singleton pattern
@@ -99,85 +105,55 @@ class Database(IDatabase):
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
         re_option = "re-" if self._init_done else ""
-        self.logger = FloodAdaptLogging.getLogger("Database")
-        self.logger.info(
+        logger.info(
             f"{re_option}initializing database to {database_name} at {database_path}".capitalize()
         )
         self.database_path = database_path
         self.database_name = database_name
 
         # Set the paths
-
         self.base_path = Path(database_path) / database_name
         self.input_path = db_path(TopLevelDir.input)
         self.static_path = db_path(TopLevelDir.static)
         self.output_path = db_path(TopLevelDir.output)
 
-        self._site = Site.load_file(self.static_path / "config" / "site.toml")
+        # Read site configuration
+        self.read_site()
 
-        # Initialize the different database objects
-        self._static = DbsStatic(self)
-        self._events = DbsEvent(
-            self, standard_objects=self.site.standard_objects.events
-        )
-        self._scenarios = DbsScenario(self)
-        self._strategies = DbsStrategy(
-            self, standard_objects=self.site.standard_objects.strategies
-        )
-        self._measures = DbsMeasure(self)
-        self._projections = DbsProjection(
-            self, standard_objects=self.site.standard_objects.projections
-        )
-        self._benefits = DbsBenefit(self)
-
-        # Delete any unfinished/crashed scenario output
+        # Delete any unfinished/crashed scenario output after initialization
+        self._init_done = True
         self.cleanup()
 
-        self._init_done = True
+    def read_site(self, site_name: str = "site") -> None:
+        """Read the site configuration from the static config folder and update database attributes."""
+        site_path = self.static_path / "config" / f"{site_name}.toml"
+        if not site_path.exists():
+            raise ConfigError(
+                f"Site configuration file '{site_path}' does not exist in the database."
+            )
+        self.site = Site.load_file(site_path)
+
+        # Initialize the different database objects
+        self.static = DbsStatic(self)
+        self.events = DbsEvent(self, standard_objects=self.site.standard_objects.events)
+        self.scenarios = DbsScenario(self)
+        self.strategies = DbsStrategy(
+            self, standard_objects=self.site.standard_objects.strategies
+        )
+        self.measures = DbsMeasure(self)
+        self.projections = DbsProjection(
+            self, standard_objects=self.site.standard_objects.projections
+        )
+        self.benefits = DbsBenefit(self)
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
-        import gc
-
         self._instance = None
         self._init_done = False
 
         self.__class__._instance = None
         self.__dict__.clear()
         gc.collect()
-
-    # Property methods
-    @property
-    def site(self) -> Site:
-        return self._site
-
-    @property
-    def static(self) -> DbsStatic:
-        return self._static
-
-    @property
-    def events(self) -> DbsEvent:
-        return self._events
-
-    @property
-    def scenarios(self) -> DbsScenario:
-        return self._scenarios
-
-    @property
-    def strategies(self) -> DbsStrategy:
-        return self._strategies
-
-    @property
-    def measures(self) -> DbsMeasure:
-        return self._measures
-
-    @property
-    def projections(self) -> DbsProjection:
-        return self._projections
-
-    @property
-    def benefits(self) -> DbsBenefit:
-        return self._benefits
 
     def get_slr_scenarios(self) -> SlrScenariosModel:
         """Get the path to the SLR scenarios file.
@@ -188,9 +164,9 @@ class Database(IDatabase):
             SLR scenarios configuration model with the file path set to the static path.
         """
         if self.site.sfincs.slr_scenarios is None:
-            raise DatabaseError("No SLR scenarios defined in the site configuration.")
+            raise ConfigError("No SLR scenarios defined in the site configuration.")
         slr = self.site.sfincs.slr_scenarios
-        slr.file = str(self.static_path / slr.file)
+        slr.file = (self.static_path / slr.file).as_posix()
         return slr
 
     def get_outputs(self) -> dict[str, Any]:
@@ -201,13 +177,78 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'path', 'last_modification_date' and "finished" info
         """
-        all_scenarios = pd.DataFrame(self._scenarios.summarize_objects())
+        all_scenarios = pd.DataFrame(self.scenarios.summarize_objects())
         if len(all_scenarios) > 0:
             df = all_scenarios[all_scenarios["finished"]]
         else:
             df = all_scenarios
         finished = df.drop(columns="finished").reset_index(drop=True)
         return finished.to_dict()
+
+    def get_floodmap(self, scenario_name: str) -> FloodMap:
+        """Return the flood map for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario
+
+        Returns
+        -------
+        FloodMap
+            Flood map object containing the paths to the flood map files and their type.
+        """
+        _type = self.site.fiat.config.floodmap_type
+        event = self.scenarios.get(scenario_name).event
+        mode = self.events.get(event).mode
+        base_dir = self.scenarios.output_path / scenario_name / "Flooding"
+
+        if mode == Mode.single_event:
+            if _type == FloodmapType.water_level:
+                paths = [base_dir / "max_water_level_map.tif"]
+            elif _type == FloodmapType.water_depth:
+                paths = [base_dir / f"FloodMap_{scenario_name}.tif"]
+        elif mode == Mode.risk:
+            if _type == FloodmapType.water_level:
+                paths = list(base_dir.glob("RP_*_max_water_level_map.tif"))
+            elif _type == FloodmapType.water_depth:
+                paths = list(base_dir.glob("RP_*_FloodMap.tif"))
+        else:
+            raise DatabaseError(
+                f"Flood map type '{_type}' is not valid. Must be one of 'water_level' or 'water_depth'."
+            )
+
+        return FloodMap(name=scenario_name, map_type=_type, mode=mode, paths=paths)
+
+    def get_impacts_path(self, scenario_name: str) -> Path:
+        """Return the path to the impacts folder containing the impact runs for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario
+
+        Returns
+        -------
+        Path
+            Path to the impacts folder for the given scenario
+        """
+        return self.scenarios.output_path.joinpath(scenario_name, "Impacts")
+
+    def get_flooding_path(self, scenario_name: str) -> Path:
+        """Return the path to the flooding folder containing the hazard runs for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario
+
+        Returns
+        -------
+        Path
+            Path to the flooding folder for the given scenario
+        """
+        return self.scenarios.output_path.joinpath(scenario_name, "Flooding")
 
     def get_topobathy_path(self) -> str:
         """Return the path of the topobathy tiles in order to create flood maps with water level maps.
@@ -217,8 +258,8 @@ class Database(IDatabase):
         str
             path to topobathy tiles
         """
-        path = self.input_path.parent.joinpath("static", "dem", "tiles", "topobathy")
-        return str(path)
+        path = self.static_path / "dem" / self.site.sfincs.dem.filename
+        return path.as_posix()
 
     def get_index_path(self) -> str:
         """Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.
@@ -228,8 +269,8 @@ class Database(IDatabase):
         str
             path to index tiles
         """
-        path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
-        return str(path)
+        path = self.static_path / "dem" / self.site.sfincs.dem.index_filename
+        return path.as_posix()
 
     def get_depth_conversion(self) -> float:
         """Return the flood depth conversion that is need in the gui to plot the flood map.
@@ -266,23 +307,30 @@ class Database(IDatabase):
         np.array
             2D map of maximum water levels
         """
-        # If single event read with hydromt-sfincs
+        output_path = self.scenarios.output_path.joinpath(scenario_name, "Flooding")
+        # Check which file to use (if quadtree or regular)
         if not return_period:
-            map_path = self.scenarios.output_path.joinpath(
-                scenario_name,
-                "Flooding",
-                "max_water_level_map.nc",
-            )
-            with xr.open_dataarray(map_path) as map:
-                zsmax = map.to_numpy()
+            qt_path = output_path.joinpath("max_water_level_map_qt.nc")
+            if qt_path.is_file():
+                map_path = qt_path
+            else:
+                map_path = output_path.joinpath("max_water_level_map.tif")
         else:
-            file_path = self.scenarios.output_path.joinpath(
-                scenario_name,
-                "Flooding",
-                f"RP_{return_period:04d}_maps.nc",
+            qt_path = output_path.joinpath(
+                f"RP_{return_period:04d}_max_water_level_map_qt.nc"
             )
-            with xr.open_dataset(file_path) as ds:
-                zsmax = ds["risk_map"][:, :].to_numpy().T
+            if qt_path.is_file():
+                map_path = qt_path
+            else:
+                map_path = output_path.joinpath(
+                    f"RP_{return_period:04d}_max_water_level_map.tif"
+                )
+        # Open file
+        with xr.open_dataarray(map_path) as map:
+            zsmax = map.to_numpy()
+        # Make sure output is 1D array
+        if zsmax.ndim >= 2:
+            zsmax = zsmax.flatten("F")
         return zsmax
 
     def get_flood_map_geotiff(
@@ -317,7 +365,7 @@ class Database(IDatabase):
                 f"RP_{return_period:04d}_maps.tif",
             )
         if not file_path.is_file():
-            self.logger.warning(
+            logger.warning(
                 f"Flood map for scenario '{scenario_name}' at {file_path} does not exist."
             )
             return None
@@ -454,10 +502,9 @@ class Database(IDatabase):
             name of the scenario to check if needs to be rerun for hazard
         """
         scenario = self.scenarios.get(scenario_name)
-        runner = ScenarioRunner(self, scenario=scenario)
 
         # Dont do anything if the hazard model has already been run in itself
-        if runner.impacts.hazard.has_run:
+        if ScenarioRunner(self, scenario=scenario).hazard_run_check():
             return
 
         scenarios = [
@@ -476,16 +523,16 @@ class Database(IDatabase):
                 path_new = self.scenarios.output_path.joinpath(
                     scenario.name, "Flooding"
                 )
-                _runner = ScenarioRunner(self, scenario=scn)
 
-                if _runner.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                if ScenarioRunner(self, scenario=scn).hazard_run_check():
+                    # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,
                         dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("simulations"),
                     )
-                    self.logger.info(
+                    logger.info(
                         f"Hazard simulation is used from the '{scn.name}' scenario"
                     )
 
@@ -510,24 +557,76 @@ class Database(IDatabase):
             for dir in os.listdir(self.scenarios.output_path)
         ]
 
-        def _call_garbage_collector(func, path, exc_info, retries=5, delay=0.1):
-            """Retry deletion up to 5 times if the file is locked."""
-            for attempt in range(retries):
-                gc.collect()
-                time.sleep(delay)
-                try:
-                    func(path)  # Retry deletion
-                    return  # Exit if successful
-                except Exception as e:
-                    print(
-                        f"Attempt {attempt + 1}/{retries} failed to delete {path}: {e}"
-                    )
+        # Init model instances outside the loop
+        overland = self.static.get_overland_sfincs_model()
+        fiat = self.static.get_fiat_model()
+        if self.site.sfincs.config.offshore_model is not None:
+            offshore = self.static.get_offshore_sfincs_model()
+        else:
+            offshore = None
 
-            print(f"Giving up on deleting {path} after {retries} attempts.")
-
-        for dir in output_scenarios:
+        for _dir in output_scenarios:
             # Delete if: input was deleted or corrupted output due to unfinished run
-            if dir.name not in [
+            if _dir.name not in [
                 path.name for path in input_scenarios
-            ] or not finished_file_exists(dir):
-                shutil.rmtree(dir, onerror=_call_garbage_collector)
+            ] or not finished_file_exists(_dir):
+                logger.info(f"Cleaning up corrupted outputs of scenario: {_dir.name}.")
+                shutil.rmtree(_dir, ignore_errors=True)
+            # If the scenario is finished, delete the simulation folders depending on `save_simulation`
+            elif finished_file_exists(_dir):
+                self._delete_simulations(_dir.name, overland, fiat, offshore)
+
+    def _delete_simulations(
+        self,
+        scenario_name: str,
+        overland: SfincsAdapter,
+        fiat: FiatAdapter,
+        offshore: Optional[SfincsAdapter],
+    ) -> None:
+        """Delete all simulation folders for a given scenario.
+
+        Parameters
+        ----------
+        scenario_name : str
+            Name of the scenario to delete simulations for.
+        """
+        scn = self.scenarios.get(scenario_name)
+        event = self.events.get(scn.event, load_all=True)
+        sub_events = event._events if event.mode == Mode.risk else None
+
+        if not self.site.sfincs.config.save_simulation:
+            # Delete SFINCS overland
+            if sub_events:
+                for sub_event in sub_events:
+                    overland._delete_simulation_folder(scn, sub_event=sub_event)
+            else:
+                overland._delete_simulation_folder(scn)
+
+            # Delete SFINCS offshore
+            if self.site.sfincs.config.offshore_model and offshore is not None:
+                if sub_events:
+                    for sub_event in sub_events:
+                        sim_path = offshore._get_simulation_path_offshore(
+                            scn, sub_event=sub_event
+                        )
+                        if sim_path.exists():
+                            shutil.rmtree(sim_path, ignore_errors=True)
+                            logger.info(f"Deleted simulation folder: {sim_path}")
+                        if sim_path.parent.exists() and not any(
+                            sim_path.parent.iterdir()
+                        ):
+                            # Remove the parent directory `simulations` if it is empty
+                            shutil.rmtree(sim_path.parent, ignore_errors=True)
+                else:
+                    sim_path = offshore._get_simulation_path_offshore(scn)
+                    if sim_path.exists():
+                        shutil.rmtree(sim_path, ignore_errors=True)
+                        logger.info(f"Deleted simulation folder: {sim_path}")
+
+                    if sim_path.parent.exists() and not any(sim_path.parent.iterdir()):
+                        # Remove the parent directory `simulations` if it is empty
+                        shutil.rmtree(sim_path.parent, ignore_errors=True)
+
+        if not self.site.fiat.config.save_simulation:
+            # Delete FIAT
+            fiat._delete_simulation_folder(scn)

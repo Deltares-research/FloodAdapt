@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from flood_adapt.config.sfincs import RiverModel
+from flood_adapt.config.hazard import RiverModel
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.objects.events.events import (
     ForcingType,
@@ -118,10 +118,7 @@ class TestHurricaneEvent:
         with pytest.raises(FileNotFoundError) as e:
             HurricaneEvent.load_file(path)
 
-        assert (
-            f"Failed to load Event. File {cyc_file.name} does not exist in {cyc_file.parent}."
-            in str(e.value)
-        )
+        assert f"File {cyc_file} does not exist" in str(e.value)
 
     def test_save_additional_saves_cyc_file(
         self, setup_hurricane_event: HurricaneEvent

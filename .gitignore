@@ -177,6 +177,7 @@ flood_adapt/system/
 /tests/test_database
 /tests/system
 system/
+temp/
 
 # docs
 docs/api_ref
@@ -185,3 +186,4 @@ docs/objects.txt
 docs/_data
 *.html
 docs/site_libs/
+temp/

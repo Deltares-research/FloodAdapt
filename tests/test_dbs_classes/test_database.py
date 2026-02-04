@@ -7,7 +7,7 @@ import pytest
 from flood_adapt.config.config import Settings
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.database import Database
-from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import IsStandardObjectError
 from flood_adapt.workflows.benefit_runner import Benefit, BenefitRunner
 
 
@@ -138,15 +138,14 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase():
     assert dbs.input_path is not None
     assert dbs.static_path is not None
     assert dbs.output_path is not None
-    assert dbs._site is not None
-    assert dbs.logger is not None
-    assert dbs._static is not None
-    assert dbs._events is not None
-    assert dbs._scenarios is not None
-    assert dbs._strategies is not None
-    assert dbs._measures is not None
-    assert dbs._projections is not None
-    assert dbs._benefits is not None
+    assert dbs.site is not None
+    assert dbs.static is not None
+    assert dbs.events is not None
+    assert dbs.scenarios is not None
+    assert dbs.strategies is not None
+    assert dbs.measures is not None
+    assert dbs.projections is not None
+    assert dbs.benefits is not None
 
 
 def test_cannot_delete_standard_objects(test_db: Database):
@@ -154,19 +153,13 @@ def test_cannot_delete_standard_objects(test_db: Database):
 
     # Act
     for event in test_db.site.standard_objects.events:
-        with pytest.raises(DatabaseError) as excinfo:
+        with pytest.raises(IsStandardObjectError):
             test_db.events.delete(event)
 
-        assert "cannot be deleted/modified since it is a standard" in str(excinfo.value)
-
     for projection in test_db.site.standard_objects.projections:
-        with pytest.raises(DatabaseError) as excinfo:
+        with pytest.raises(IsStandardObjectError):
             test_db.projections.delete(projection)
 
-        assert "cannot be deleted/modified since it is a standard" in str(excinfo.value)
-
     for strategy in test_db.site.standard_objects.strategies:
-        with pytest.raises(DatabaseError) as excinfo:
+        with pytest.raises(IsStandardObjectError):
             test_db.strategies.delete(strategy)
-
-        assert "cannot be deleted/modified since it is a standard" in str(excinfo.value)

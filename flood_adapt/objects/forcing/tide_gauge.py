@@ -4,13 +4,17 @@ from typing import ClassVar, Optional
 
 import cht_observations.observation_stations as cht_station
 import pandas as pd
+import requests
 from noaa_coops.station import COOPSAPIError
 from pydantic import BaseModel, model_validator
 
+from flood_adapt.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.time_frame import TimeFrame
 from flood_adapt.objects.forcing.timeseries import CSVTimeseries
+
+logger = FloodAdaptLogging.getLogger("TideGauge")
 
 
 class TideGaugeSource(str, Enum):
@@ -53,7 +57,7 @@ class TideGauge(BaseModel):
     source: TideGaugeSource
     reference: str
     ID: Optional[int] = None  # Attribute used to download from correct gauge
-    file: Optional[Path] = None  # for locally stored data
+    file: Optional[str] = None  # for locally stored data
     lat: Optional[float] = None
     lon: Optional[float] = None
     units: us.UnitTypesLength = (
@@ -61,7 +65,6 @@ class TideGauge(BaseModel):
     )  # units of the water levels in the downloaded file
 
     _cached_data: ClassVar[dict[str, pd.DataFrame]] = {}
-    logger: ClassVar = FloodAdaptLogging.getLogger("TideGauge")
 
     @model_validator(mode="after")
     def validate_selection_type(self) -> "TideGauge":
@@ -100,16 +103,15 @@ class TideGauge(BaseModel):
         pd.DataFrame
             Dataframe with time as index and the waterlevel for each observation station as columns.
         """
-        self.logger.info(f"Retrieving waterlevels for tide gauge {self.ID} for {time}")
+        logger.info(f"Retrieving waterlevels for tide gauge {self.ID} for {time}")
         if self.file:
-            gauge_data = self._read_imported_waterlevels(time=time, path=self.file)
+            abs_path = Settings().database_path / "static" / self.file
+            gauge_data = self._read_imported_waterlevels(time=time, path=abs_path)
         else:
             gauge_data = self._download_tide_gauge_data(time=time)
 
         if gauge_data is None:
-            self.logger.warning(
-                f"Could not retrieve waterlevels for tide gauge {self.ID}"
-            )
+            logger.warning(f"Could not retrieve waterlevels for tide gauge {self.ID}")
             return pd.DataFrame()
 
         gauge_data.columns = [f"waterlevel_{self.ID}"]
@@ -159,7 +161,7 @@ class TideGauge(BaseModel):
         """
         cache_key = f"{self.ID}_{time.start_time}_{time.end_time}"
         if cache_key in self.__class__._cached_data:
-            self.logger.info("Tide gauge data retrieved from cache")
+            logger.info("Tide gauge data retrieved from cache")
             return self.__class__._cached_data[cache_key]
 
         try:
@@ -179,8 +181,8 @@ class TideGauge(BaseModel):
             series = series.reindex(index, method="nearest")
             df = pd.DataFrame(data=series, index=index)
 
-        except COOPSAPIError as e:
-            self.logger.error(
+        except (COOPSAPIError, requests.JSONDecodeError) as e:
+            logger.error(
                 f"Could not download tide gauge data for station {self.ID}. {e}"
             )
             return None

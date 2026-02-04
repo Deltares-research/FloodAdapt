@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-import tomli
 
-from flood_adapt.config.sfincs import RiverModel
+from flood_adapt.config.hazard import RiverModel
+from flood_adapt.misc.io import read_toml
 from flood_adapt.objects.events.historical import HistoricalEvent
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.discharge import DischargeConstant
@@ -101,10 +101,7 @@ class TestHistoricalEvent:
         test_event = test_event_all_csv
         test_event.save(path)
         assert path.exists()
-
-        with open(path, "rb") as f:
-            content = tomli.load(f)
-
+        content = read_toml(path)
         loaded_event = HistoricalEvent.load_file(path)
         csv_forcings = [
             f for f in loaded_event.get_forcings() if f.source == ForcingSource.CSV

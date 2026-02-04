@@ -5,7 +5,6 @@ import pytest
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.hurricane import HurricaneEvent
-from flood_adapt.workflows.impacts_integrator import Impacts
 from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
 from tests.test_objects.test_events.test_hurricane import setup_hurricane_event
 
@@ -41,8 +40,8 @@ class Test_scenario_run:
         not_run = test_db.scenarios.get(not_run_name)
         run = test_db.scenarios.get(run_name)
 
-        assert not Impacts(not_run).hazard.has_run
-        assert Impacts(run).hazard.has_run
+        assert not ScenarioRunner(database=test_db, scenario=not_run).has_run_check()
+        assert ScenarioRunner(database=test_db, scenario=run).has_run_check()
 
     @pytest.fixture()
     def setup_hurricane_scenario(
@@ -66,10 +65,9 @@ class Test_scenario_run:
     ):
         # Arrange
         test_db, scn, event = setup_hurricane_scenario
-        runner = ScenarioRunner(test_db, scenario=scn)
 
         # Act
-        runner.run()
+        ScenarioRunner(test_db, scenario=scn).run()
 
         # Assert
         assert finished_file_exists(test_db.scenarios.output_path / scn.name)
@@ -92,4 +90,30 @@ def test_run_on_all_scn(test_db, scn_name):
     scn = test_db.scenarios.get(scn_name)
     runner = ScenarioRunner(test_db, scenario=scn)
     runner.run()
-    assert Impacts(scn).hazard.has_run
+    assert runner.has_run_check()
+
+
+@pytest.fixture()
+def test_db_qt(test_db: IDatabase) -> IDatabase:
+    test_db.read_site(site_name="site_quadtree")
+    return test_db
+
+
+@pytest.mark.skipif(
+    platform.system() == "Linux", reason="Skipped on Linux due to broken sfincs binary"
+)
+@pytest.mark.parametrize(
+    "scn_name",
+    [
+        "all_projections_extreme12ft_strategy_comb",
+        "current_extreme12ft_no_measures",
+        "current_extreme12ft_raise_datum",
+        "current_extreme12ft_rivershape_windconst_no_measures",
+        "current_extreme12ft_strategy_impact_comb",
+    ],
+)
+def test_run_on_all_scn_quadtree(test_db_qt: IDatabase, scn_name: str):
+    scn = test_db_qt.scenarios.get(scn_name)
+    runner = ScenarioRunner(test_db_qt, scenario=scn)
+    runner.run()
+    assert runner.has_run_check()

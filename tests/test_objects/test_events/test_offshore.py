@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from flood_adapt.adapter.sfincs_offshore import OffshoreSfincsHandler
-from flood_adapt.config.sfincs import RiverModel
+from flood_adapt.config.hazard import RiverModel
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.objects.events.historical import (
     HistoricalEvent,
@@ -77,6 +77,9 @@ def setup_offshore_scenario(test_db: IDatabase):
     reason="Skipped on Linux due to broken sfincs binary",
 )
 class TestOffshoreSfincsHandler:
+    @pytest.mark.skip(
+        reason="Skipped until METEO forcing is fixed in hydromt-sfincs 1.3.0",
+    )
     def test_process_sfincs_offshore(
         self,
         setup_offshore_scenario: tuple[IDatabase, Scenario, HistoricalEvent],

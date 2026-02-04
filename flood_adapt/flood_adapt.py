@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 import geopandas as gpd
 import numpy as np
@@ -38,8 +38,9 @@ from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
 from flood_adapt.workflows.benefit_runner import BenefitRunner
-from flood_adapt.workflows.impacts_integrator import Impacts
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
+
+logger = FloodAdaptLogging.getLogger()
 
 
 class FloodAdapt:
@@ -56,7 +57,6 @@ class FloodAdapt:
         self.database = Database(
             database_path=database_path.parent, database_name=database_path.name
         )
-        self.logger = FloodAdaptLogging.getLogger()
 
     # Measures
     def get_measures(self) -> dict[str, Any]:
@@ -718,8 +718,7 @@ class FloodAdapt:
 
         for scn in scenario_name:
             scenario = self.get_scenario(scn)
-            runner = ScenarioRunner(self.database, scenario=scenario)
-            runner.run()
+            ScenarioRunner(self.database, scenario=scenario).run()
 
     # Outputs
     def get_completed_scenarios(
@@ -858,7 +857,7 @@ class FloodAdapt:
         """
         return self.database.get_roads(name)
 
-    def get_obs_point_timeseries(self, name: str) -> gpd.GeoDataFrame:
+    def get_obs_point_timeseries(self, name: str) -> Optional[gpd.GeoDataFrame]:
         """Return the HTML strings of the water level timeseries for the given scenario.
 
         Parameters
@@ -868,27 +867,35 @@ class FloodAdapt:
 
         Returns
         -------
-        html_path : str
-            The HTML strings of the water level timeseries
+        gdf : GeoDataFrame, optional
+            A GeoDataFrame with the observation points and their corresponding HTML paths for the timeseries.
+            Each row contains the station name and the path to the HTML file with the timeseries.
+            None if no observation points are found or if the scenario has not been run yet.
         """
+        obs_points = self.database.static.get_obs_points()
+        if obs_points is None:
+            logger.info(
+                "No observation points found in the sfincs model and site configuration."
+            )
+            return None
+
         # Get the impacts objects from the scenario
         scenario = self.database.scenarios.get(name)
-        hazard = Impacts(scenario).hazard
 
         # Check if the scenario has run
-        if not hazard.has_run:
-            raise ValueError(
-                f"Scenario {name} has not been run. Please run the scenario first."
+        if not ScenarioRunner(self.database, scenario=scenario).has_run_check():
+            logger.info(
+                f"Cannot retrieve observation point timeseries as the scenario {name} has not been run yet."
             )
+            return None
 
-        output_path = self.database.scenarios.output_path.joinpath(hazard.name)
-        gdf = self.database.static.get_obs_points()
-        gdf["html"] = [
-            str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
-            for station in gdf.name
+        output_path = self.database.get_flooding_path(scenario.name)
+        obs_points["html"] = [
+            (output_path / f"{station}_timeseries.html").as_posix()
+            for station in obs_points.name
         ]
 
-        return gdf
+        return obs_points
 
     def get_infographic(self, name: str) -> str:
         """Return the HTML string of the infographic for the given scenario.
@@ -928,42 +935,93 @@ class FloodAdapt:
 
         return infographic_path
 
-    def get_infometrics(self, name: str) -> pd.DataFrame:
-        """Return the metrics for the given scenario.
+    def get_infometrics(
+        self, name: str, aggr_name: Optional[str] = None
+    ) -> pd.DataFrame:
+        """Return the infometrics DataFrame for the given scenario and optional aggregation.
 
         Parameters
         ----------
         name : str
             The name of the scenario.
+        aggr_name : Optional[str], default None
+            The name of the aggregation, if any.
 
         Returns
         -------
-        metrics: pd.DataFrame
-            The metrics for the scenario.
+        df : pd.DataFrame
+            The infometrics DataFrame for the scenario (and aggregation if specified).
 
         Raises
         ------
         FileNotFoundError
-            If the metrics file does not exist.
+            If the metrics file does not exist for the given scenario (and aggregation).
         """
+        if aggr_name is not None:
+            fn = f"Infometrics_{name}_{aggr_name}.csv"
+        else:
+            fn = f"Infometrics_{name}.csv"
         # Create the infographic path
-        metrics_path = self.database.scenarios.output_path.joinpath(
-            name,
-            f"Infometrics_{name}.csv",
-        )
+        metrics_path = self.database.scenarios.output_path.joinpath(name, fn)
 
         # Check if the file exists
         if not metrics_path.exists():
             raise FileNotFoundError(
-                f"The metrics file for scenario {name}({str(metrics_path)}) does not exist."
+                f"The metrics file for scenario {name}({metrics_path.as_posix()}) does not exist."
             )
-
         # Read the metrics file
-        return MetricsFileReader(str(metrics_path)).read_metrics_from_file(
+        df = MetricsFileReader(metrics_path.as_posix()).read_metrics_from_file(
             include_long_names=True,
             include_description=True,
             include_metrics_table_selection=True,
+            include_metrics_map_selection=True,
         )
+        if aggr_name is not None:
+            df = df.T
+        return df
+
+    def get_aggr_metric_layers(
+        self,
+        name: str,
+        aggr_type: str,
+        type: Literal["single_event", "risk"] = "single_event",
+        rp: Optional[int] = None,
+        equity: bool = False,
+    ) -> list[dict]:
+        # Read infometrics from csv file
+        metrics_df = self.get_infometrics(name, aggr_name=aggr_type)
+
+        # Filter based on "Show in Metrics Map" column
+        if "Show In Metrics Map" in metrics_df.index:
+            mask = metrics_df.loc["Show In Metrics Map"].to_numpy().astype(bool)
+            metrics_df = metrics_df.loc[:, mask]
+
+        # Keep only relevant attributes of the infometrics
+        keep_rows = [
+            "Description",
+            "Long Name",
+            "Show In Metrics Table",
+            "Show In Metrics Map",
+        ]
+        metrics_df = metrics_df.loc[
+            [row for row in keep_rows if row in metrics_df.index]
+        ]
+
+        # Transform to list of dicts
+        metrics = []
+        for col in metrics_df.columns:
+            metric_dict = {"name": col}
+            # Add the first 4 rows as key-value pairs
+            for i, idx in enumerate(metrics_df.index):
+                metric_dict[idx] = metrics_df.loc[idx, col]
+            metrics.append(metric_dict)
+
+        # Get the filtered metrics layers from the GUI configuration
+        filtered_metrics = self.database.site.gui.output_layers.get_aggr_metrics_layers(
+            metrics, type, rp, equity
+        )
+
+        return filtered_metrics
 
     # Static
     def load_static_data(self):
@@ -1184,8 +1242,7 @@ class FloodAdapt:
         scenarios : pd.DataFrame
             A dataframe with the scenarios needed for this benefit assessment run.
         """
-        runner = BenefitRunner(self.database, benefit=benefit)
-        return runner.scenarios
+        return BenefitRunner(self.database, benefit=benefit).scenarios
 
     def create_benefit_scenarios(self, benefit: Benefit) -> None:
         """Create the benefit scenarios.
@@ -1195,8 +1252,7 @@ class FloodAdapt:
         benefit : Benefit
             The benefit object to create scenarios for.
         """
-        runner = BenefitRunner(self.database, benefit=benefit)
-        runner.create_benefit_scenarios()
+        BenefitRunner(self.database, benefit=benefit).create_benefit_scenarios()
 
     def run_benefit(self, name: Union[str, list[str]]) -> None:
         """Run the benefit assessment.
@@ -1210,8 +1266,7 @@ class FloodAdapt:
             benefit_name = [name]
         for name in benefit_name:
             benefit = self.database.benefits.get(name)
-            runner = BenefitRunner(self.database, benefit=benefit)
-            runner.run_cost_benefit()
+            BenefitRunner(self.database, benefit=benefit).run_cost_benefit()
 
     def get_aggregated_benefits(self, name: str) -> dict[str, gpd.GeoDataFrame]:
         """Get the aggregation benefits for a benefit assessment.

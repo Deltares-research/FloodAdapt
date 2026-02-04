@@ -8,10 +8,9 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import tomli
-import tomli_w
 from pydantic import BaseModel, model_validator
 
+from flood_adapt.misc.io import read_toml, write_toml
 from flood_adapt.misc.path_builder import TopLevelDir, db_path
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.csv import read_csv
@@ -175,9 +174,8 @@ class SyntheticTimeseries(BaseModel):
     @classmethod
     def load_file(cls, file_path: Path | str | os.PathLike) -> "SyntheticTimeseries":
         """Load object from file."""
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
-        return cls(**toml)
+        data = read_toml(file_path)
+        return cls(**data)
 
     def save(self, filepath: Path):
         """
@@ -188,8 +186,7 @@ class SyntheticTimeseries(BaseModel):
         file : Path
             path to the location where file will be saved
         """
-        with open(filepath, "wb") as f:
-            tomli_w.dump(self.model_dump(exclude_none=True), f)
+        write_toml(self.model_dump(exclude_none=True), filepath)
 
     @staticmethod
     def plot(
@@ -535,7 +532,6 @@ class TimeseriesFactory:
                         raise ValueError("SCS configuration not found in database.")
                     scs_file_name = scs_file_name or scs_config.file
                     scs_type = scs_type or scs_config.type
-
                 return ScsTimeseries(
                     duration=duration,
                     peak_time=peak_time,
@@ -553,11 +549,8 @@ class TimeseriesFactory:
         file_path: Path | str | os.PathLike,
     ) -> SyntheticTimeseries:
         """Load object from file."""
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
-        return TimeseriesFactory.from_args(
-            **toml,
-        )
+        data = read_toml(file_path)
+        return TimeseriesFactory.from_args(**data)
 
     @staticmethod
     def from_object(obj: SyntheticTimeseries) -> SyntheticTimeseries:

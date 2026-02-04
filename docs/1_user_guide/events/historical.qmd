@@ -10,7 +10,7 @@ Below is a video that demonstrates the creation of a historical event, followed 
 {{< video https://youtu.be/Ehqs9Ww8pms?rel=0 >}}
 :::
 
-![**Event template window for a historical event.**](../../../_static/images/popup_gaugedEventWindow.jpg){#fig-gaugedWindow}
+![**Event template window for a historical event.**](../../_static/images/popup_gaugedEventWindow.png){#fig-gaugedWindow}
 
 When a user selects the “Historical” option from the **Events** tab, they will see the event template window shown in @fig-gaugedWindow. This window allows the user to input (historical) time series for:
 
@@ -31,10 +31,10 @@ The water level time series for the historical event can be specified in differe
 
 2. **CSV** - users can import water level time series as a two-column CSV file. The first column should contain the date and time in the format yyyy-mm-dd hh:mm:ss, and the second column the water level relative to the reference level for the site (for example, mean lower low water). There is an "i" button next to the option to import a time series. Clicking this button will display an example of the format required for the CSV, including the water level units and reference.
 
-3. **Model** - when no gauged water level time series are available, users can select this option to model the nearshore water levels using an offshore model. When using this option, no plot visualization is available, because the nearshore water levels will only be calculated when a scenario using the event is run. Note that this option is only shown when an offshore model is configured for the site.
+3. **Synthetic** - when users have a historical record of rainfall or river discharge, but water levels were unknown or unmeasured, users can choose to generate a synthetic water level time series. The simple option is to specify a peak water level (default is average high tide), and the duration of the peak. Advanced options are described in the [synthetic event](synthetic_events.qmd) documentation.
 
-4. **Synthetic** - when users have a historical record of rainfall or river discharge, but water levels were unknown or unmeasured, users can choose to generate a synthetic water level time series. The simple option is to specify a peak water level (default is average high tide), and the duration of the peak. Advanced options are described in the [synthetic event](synthetic_events.qmd) documentation.
-
+<!--3. **Model** - when no gauged water level time series are available, users can select this option to model the nearshore water levels using an offshore model. When using this option, no plot visualization is available, because the nearshore water levels will only be calculated when a scenario using the event is run. Note that this option is only shown when an offshore model is configured for the site.
+-->
 ::: {.callout-note}
 ## What do we mean by 'water levels'
 In this documentation, we refer to water levels as the combined effect of (1) astronomoical tide and (2) the surge caused by wind.
@@ -43,7 +43,7 @@ In this documentation, we refer to water levels as the combined effect of (1) as
 <!--[**Example of the "required format" popup for water levels when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](../../../_static/images/events_waterLevel_TSformat.png){fig-align=left #fig-gaugedWindow_format}
 -->
 ## Rainfall
-The user has five options for specifying a rainfall time series for the event:
+The user has the following options for specifying a rainfall time series for the event:
 
 **None** - Selecting this option means that no rainfall will be included in the calculation.
 
@@ -53,11 +53,11 @@ The user has five options for specifying a rainfall time series for the event:
 
 **Synthetic** - The synthetic option allows users to build what-if rainfall scenarios to explore what would have happened if they had coincided with historical water level events, like a high tide event. The synthetic options ask a user for the cumulative rainfall, the duration of the rainfall, and a time when the peak rainfall occurred. More details about the synethtic options are covered in the [synthetic event](synthetic_events.qmd) documentation.
 
-**Meteo** - The 'meteo' option downloads spatially and temporally varying rainfall at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.
-
+<!-- **Meteo** - The 'meteo' option downloads spatially and temporally varying rainfall at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.
+-->
 
 ## Wind
-The user has four options for entering time series for the wind:
+The user has the following options for entering time series for the wind:
 
 **None** - Selecting none means no wind will be included in the calculation.
 
@@ -65,8 +65,8 @@ The user has four options for entering time series for the wind:
 
 **CSV** - The user can upload a wind time series; this should be a three-column csv. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, the second column contains the wind speed, and the third column contains the wind direction. The units of the wind speed and direction will depend on how the system is configured. In the event specification window, when you choose 'CSV' for the wind source, you will see an "i" button appear. Clicking this button will display an example of the format required for the csv, including the units.
 
-**Meteo** - The 'meteo' option downloads spatially and temporally varying wind data at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.
-
+<!--**Meteo** - The 'meteo' option downloads spatially and temporally varying wind data at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data. It is currently not possible to visualize this input in the time series plotting window, because it varies spatially.
+-->
 ::: {.callout-note}
 ## What role does wind play when using measured or synthetic nearshore water levels?
 The largest effect of wind on flooding is the surge it causes in the nearshore water levels. For gauged or synthetic nearshore water levels, this effect is already included. The (more limited) role wind plays in this event type is to skew the water levels from the model boundary (usually near the gauge) to the land. Unless this is of particular interest to a user, the wind can be ignored.

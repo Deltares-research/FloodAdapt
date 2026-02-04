@@ -6,6 +6,8 @@ import geopandas as gpd
 import pandas as pd
 from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
+from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
+from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 
 
@@ -36,6 +38,12 @@ class IDbsStatic(ABC):
 
     @abstractmethod
     def get_property_types(self) -> list: ...
+
+    @abstractmethod
+    def get_impact_models(self) -> list[IImpactAdapter]: ...
+
+    @abstractmethod
+    def get_hazard_models(self) -> list[IHazardAdapter]: ...
 
     @abstractmethod
     def get_overland_sfincs_model(self) -> SfincsAdapter: ...

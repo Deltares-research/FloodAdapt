@@ -2,13 +2,12 @@ import os
 from pathlib import Path
 from typing import Literal, Union
 
-import tomli
-import tomli_w
 from pydantic import BaseModel, Field
 
 from flood_adapt.config.fiat import FiatModel
 from flood_adapt.config.gui import GuiModel
 from flood_adapt.config.sfincs import SfincsModel
+from flood_adapt.misc.io import read_toml, write_toml
 
 
 class StandardObjectModel(BaseModel):
@@ -76,21 +75,19 @@ class Site(BaseModel):
 
         if self.sfincs is not None:
             config_dict["components"]["sfincs"] = sfincs
-            with open(parent_folder / sfincs, "wb") as f:
-                tomli_w.dump(self.sfincs.model_dump(exclude_none=True), f)
+            write_toml(
+                self.sfincs.model_dump(exclude_none=True), parent_folder / sfincs
+            )
 
         if self.fiat is not None:
             config_dict["components"]["fiat"] = fiat
-            with open(parent_folder / fiat, "wb") as f:
-                tomli_w.dump(self.fiat.model_dump(exclude_none=True), f)
+            write_toml(self.fiat.model_dump(exclude_none=True), parent_folder / fiat)
 
         if self.gui is not None:
             config_dict["components"]["gui"] = gui
-            with open(parent_folder / gui, "wb") as f:
-                tomli_w.dump(self.gui.model_dump(exclude_none=True), f)
+            write_toml(self.gui.model_dump(exclude_none=True), parent_folder / gui)
 
-        with open(filepath, "wb") as f:
-            tomli_w.dump(config_dict, f)
+        write_toml(config_dict, filepath)
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> "Site":
@@ -113,17 +110,15 @@ class SiteBuilder(BaseModel):
 
     @staticmethod
     def load_file(file_path: Path) -> "Site":
-        with open(file_path, "rb") as f:
-            model_dict = tomli.load(f)
-
+        model_dict = read_toml(file_path)
         toml_dir = file_path.parent
         if (sfincs_config := model_dict["components"].get("sfincs")) is not None:
-            model_dict["sfincs"] = SfincsModel.read_toml(toml_dir / sfincs_config)
+            model_dict["sfincs"] = SfincsModel(**read_toml(toml_dir / sfincs_config))
 
         if (gui_config := model_dict["components"].get("gui")) is not None:
-            model_dict["gui"] = GuiModel.read_toml(toml_dir / gui_config)
+            model_dict["gui"] = GuiModel(**read_toml(toml_dir / gui_config))
 
         if (fiat_config := model_dict["components"].get("fiat")) is not None:
-            model_dict["fiat"] = FiatModel.read_toml(toml_dir / fiat_config)
+            model_dict["fiat"] = FiatModel(**read_toml(toml_dir / fiat_config))
 
         return Site(**model_dict)

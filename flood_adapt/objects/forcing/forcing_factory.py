@@ -1,8 +1,7 @@
 from pathlib import Path
 from typing import Any, List, Type
 
-import tomli
-
+from flood_adapt.misc.io import read_toml
 from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -110,10 +109,10 @@ class ForcingFactory(IForcingFactory):
         filepath: Path,
     ) -> tuple[Type[IForcing], ForcingType, ForcingSource]:
         """Extract forcing type and source from a TOML file."""
-        with open(filepath, mode="rb") as fp:
-            toml_data = tomli.load(fp)
-        type = toml_data.get("type")
-        source = toml_data.get("source")
+        data = read_toml(filepath)
+
+        type = data.get("type")
+        source = data.get("source")
 
         if type is None or source is None:
             raise ValueError(
@@ -137,11 +136,12 @@ class ForcingFactory(IForcingFactory):
         return forcing_cls
 
     @classmethod
-    def load_file(cls, toml_file: Path) -> IForcing:
+    def load_file(cls, toml_file: Path, **kwargs) -> IForcing:
         """Create a forcing object from a TOML file."""
-        with open(toml_file, mode="rb") as fp:
-            toml_data = tomli.load(fp)
-        return cls.load_dict(toml_data)
+        data = read_toml(toml_file)
+        instance = cls.load_dict(data)
+        instance._post_load(file_path=toml_file, **kwargs)
+        return instance
 
     @classmethod
     def load_dict(cls, attrs: dict[str, Any] | IForcing) -> IForcing:

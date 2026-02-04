@@ -1,31 +1,26 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import cht_meteo
 import numpy as np
 import xarray as xr
 from cht_meteo.dataset import MeteoDataset
 
-from flood_adapt.config.config import Settings
-from flood_adapt.config.site import Site
 from flood_adapt.objects.forcing.time_frame import TimeFrame
 
 
 class MeteoHandler:
-    def __init__(self, dir: Optional[Path] = None, site: Optional[Site] = None) -> None:
-        self.dir: Path = dir or Settings().database_path / "static" / "meteo"
+    def __init__(self, dir: Path, lat: float, lon: float) -> None:
+        self.dir: Path = dir
         self.dir.mkdir(parents=True, exist_ok=True)
-        self.site: Site = site or Site.load_file(
-            Settings().database_path / "static" / "config" / "site.toml"
-        )
+
         # Create GFS dataset
         self.dataset = cht_meteo.dataset(
             name="gfs_anl_0p50",
             source="gfs_analysis_0p50",
             path=self.dir,
-            lon_range=(self.site.lon - 10, self.site.lon + 10),
-            lat_range=(self.site.lat - 10, self.site.lat + 10),
+            lon_range=(lon - 10, lon + 10),
+            lat_range=(lat - 10, lat + 10),
         )
         # quick fix for sites near the 0 degree longitude -> shift the meteo download area either east or west of the 0 degree longitude
         # TODO implement a good solution to this in cht_meteo

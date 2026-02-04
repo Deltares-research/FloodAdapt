@@ -1,13 +1,14 @@
+import re
+from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Any, Literal, Optional, Union
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import tomli
 from pydantic import BaseModel, Field, model_validator
 
-from flood_adapt.config.fiat import DamageType
+from flood_adapt.config.impacts import DamageType
 from flood_adapt.objects.forcing import unit_system as us
 
 
@@ -25,6 +26,7 @@ class Layer(BaseModel):
 
     bins: list[float]
     colors: list[str]
+    decimals: Optional[int] = 0
 
     @model_validator(mode="after")
     def check_bins_and_colors(self) -> "Layer":
@@ -42,18 +44,116 @@ class FloodMapLayer(Layer):
     roads_min_zoom_level: int = 14
 
 
-class AggregationDmgLayer(Layer):
-    damage_decimals: Optional[int] = 0
-
-
 class FootprintsDmgLayer(Layer):
     type: DamageType = DamageType.absolute
-    damage_decimals: Optional[int] = 0
-    buildings_min_zoom_level: int = 13
 
 
 class BenefitsLayer(Layer):
     threshold: Optional[float] = None
+
+
+class LogicalOperator(str, Enum):
+    AND = "and"
+    OR = "or"
+
+
+class FieldName(str, Enum):
+    """Enum for valid field names with mapping to dictionary keys."""
+
+    NAME = "name"
+    LONG_NAME = "long_name"
+    DESCRIPTION = "description"
+
+    @property
+    def dict_key(self) -> str:
+        """Get the actual dictionary key for this field name."""
+        mapping = {
+            "name": "name",
+            "long_name": "Long Name",
+            "description": "Description",
+        }
+        return mapping[self.value]
+
+
+class FilterCondition(BaseModel):
+    """A single filter condition."""
+
+    field_name: FieldName
+    values: list[Any]
+    operator: LogicalOperator = (
+        LogicalOperator.OR
+    )  # How to combine values within this condition
+
+
+class FilterGroup(BaseModel):
+    """A group of filter conditions with logical operators."""
+
+    conditions: list[FilterCondition]
+    operator: LogicalOperator = (
+        LogicalOperator.OR
+    )  # How to combine conditions within this group
+
+
+class MetricLayer(Layer):
+    type: str
+    # Simplified: just a single FilterGroup or FilterCondition
+    filters: Union[FilterGroup, FilterCondition] = Field(
+        default_factory=lambda: FilterGroup(conditions=[])
+    )
+
+    def matches(self, data_dict: dict) -> bool:
+        """Check if the given data dictionary matches the filter criteria."""
+        if isinstance(self.filters, FilterCondition):
+            return self._evaluate_condition(self.filters, data_dict)
+        else:  # FilterGroup
+            return self._evaluate_filter_group(self.filters, data_dict)
+
+    def _evaluate_filter_group(self, group: FilterGroup, data_dict: dict) -> bool:
+        """Evaluate a single filter group."""
+        if not group.conditions:
+            return True
+
+        condition_results = []
+        for condition in group.conditions:
+            condition_results.append(self._evaluate_condition(condition, data_dict))
+
+        if group.operator == LogicalOperator.AND:
+            return all(condition_results)
+        else:  # OR
+            return any(condition_results)
+
+    def _evaluate_condition(self, condition: FilterCondition, data_dict: dict) -> bool:
+        """Evaluate a single condition."""
+        # Use the dict_key property to get the actual dictionary key
+        field_value = data_dict.get(condition.field_name.dict_key)
+        if field_value is None:
+            return False
+
+        value_matches = [value in field_value for value in condition.values]  # noqa: PD011
+
+        if condition.operator == LogicalOperator.AND:
+            return all(value_matches)
+        else:  # OR
+            return any(value_matches)
+
+
+class AggregationDmgLayer(MetricLayer):
+    type: str = "damage"
+    filters: FilterGroup = Field(
+        default_factory=lambda: FilterGroup(
+            conditions=[
+                FilterCondition(
+                    field_name=FieldName.NAME,
+                    values=[
+                        "TotalDamageEvent",
+                        "ExpectedAnnualDamages",
+                        "TotalDamageRP",
+                        "EWEAD",
+                    ],
+                )
+            ]
+        )
+    )
 
 
 class OutputLayers(BaseModel):
@@ -75,8 +175,83 @@ class OutputLayers(BaseModel):
     floodmap: FloodMapLayer
     aggregation_dmg: AggregationDmgLayer
     footprints_dmg: FootprintsDmgLayer
-
+    aggregated_metrics: list[MetricLayer] = Field(default_factory=list)
     benefits: Optional[BenefitsLayer] = None
+
+    def get_aggr_metrics_layers(
+        self,
+        metrics: list[dict],
+        type: Literal["single_event", "risk"] = "single_event",
+        rp: Optional[int] = None,
+        equity: bool = False,
+    ):
+        layer_types = [self.aggregation_dmg] + self.aggregated_metrics
+        filtered_input_metrics = self._filter_metrics(metrics, type, rp, equity)
+        return self._match_metrics_to_layers(filtered_input_metrics, layer_types)
+
+    def _should_skip_metric(
+        self, metric_name: str, rp: Optional[int], equity: bool
+    ) -> bool:
+        rp_match = re.search(r"RP(\d+)", metric_name)
+        y_match = re.search(r"(\d+)Y", metric_name)
+        name_match = rp_match or y_match
+
+        if rp is None:
+            if name_match:
+                return True
+            if not equity and "EW" in metric_name:
+                return True
+            if equity and "EW" not in metric_name:
+                return True
+        return False
+
+    def _process_metric_name(
+        self, metric_name: str, rp: Optional[int]
+    ) -> tuple[str, bool]:
+        rp_match = re.search(r"RP(\d+)", metric_name)
+        y_match = re.search(r"(\d+)Y", metric_name)
+        name_match = rp_match or y_match
+        if rp is not None:
+            if name_match:
+                extracted_rp = int(name_match.group(1))
+                name_check = extracted_rp == int(rp)
+                cleaned_name = re.sub(r"(RP\d+|\d+Y)", "", metric_name)
+                return cleaned_name.rstrip("_"), name_check
+            else:
+                return metric_name, False
+        return metric_name, True
+
+    def _filter_metrics(self, metrics, type, rp, equity):
+        filtered = []
+        for metric in metrics:
+            metric_name = metric.get("name", "")
+            metric["name_to_show"] = metric_name
+            if type == "risk":
+                if self._should_skip_metric(metric_name, rp, equity):
+                    continue
+                metric["name_to_show"], name_check = self._process_metric_name(
+                    metric_name, rp
+                )
+                if rp is not None and not name_check:
+                    continue
+            filtered.append(metric)
+        return filtered
+
+    def _match_metrics_to_layers(self, metrics, layer_types):
+        filtered_metrics = []
+        for metric in metrics:
+            for layer in layer_types:
+                if layer.matches(metric):
+                    filtered_metrics.append(
+                        {
+                            "metric": metric,
+                            "bins": getattr(layer, "bins", None),
+                            "colors": getattr(layer, "colors", None),
+                            "decimals": getattr(layer, "decimals", None),
+                        }
+                    )
+                    break
+        return filtered_metrics
 
 
 class VisualizationLayer(Layer):
@@ -151,12 +326,19 @@ class VisualizationLayers(BaseModel):
 
     Attributes
     ----------
-    default : Layer
-        The default layer settings the visualization layers.
+    buildings_min_zoom_level : int
+        The minimum zoom level before building footprints become visible in the map.
+    topography_cmin : float
+        Default minimum for DEM color scaling.
+    topography_cmax : float
+        Default maximum for DEM color scaling.
     layers : list[VisualizationLayer]
-        The layers to visualize.
+        The extra layers to visualize.
     """
 
+    buildings_min_zoom_level: int = 13
+    topography_cmin: float = -10.0
+    topography_cmax: float = 10.0
     layers: list[VisualizationLayer] = Field(default_factory=list)
 
     def add_layer(
@@ -323,10 +505,3 @@ class GuiModel(BaseModel):
     output_layers: OutputLayers
     visualization_layers: VisualizationLayers
     plotting: PlottingModel
-
-    @staticmethod
-    def read_toml(path: Path) -> "GuiModel":
-        with open(path, mode="rb") as fp:
-            toml_contents = tomli.load(fp)
-
-        return GuiModel(**toml_contents)

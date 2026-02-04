@@ -1,4 +1,5 @@
 import shutil
+from pathlib import Path
 from typing import Any
 
 import geopandas as gpd
@@ -6,11 +7,10 @@ import numpy as np
 import numpy_financial as npf
 import pandas as pd
 import plotly.graph_objects as go
-import tomli
-import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.io import read_toml, write_toml
 from flood_adapt.misc.path_builder import (
     ObjectDir,
     TopLevelDir,
@@ -32,7 +32,7 @@ class BenefitRunner:
         self.benefit = benefit
 
         # Get output path based on database path
-        self.results_path = self.database.benefits.output_path.joinpath(
+        self.results_path: Path = self.database.benefits.output_path.joinpath(
             self.benefit.name
         )
         self.site_info = self.database.site
@@ -69,9 +69,8 @@ class BenefitRunner:
 
         results_toml = self.results_path.joinpath("results.toml")
         results_html = self.results_path.joinpath("benefits.html")
-        with open(results_toml, mode="rb") as fp:
-            results = tomli.load(fp)
-        results["html"] = str(results_html)
+        results = read_toml(results_toml)
+        results["html"] = results_html.as_posix()
         self._results = results
         return results
 
@@ -299,8 +298,7 @@ class BenefitRunner:
 
         # Save indicators in a toml file
         indicators = self.results_path.joinpath("results.toml")
-        with open(indicators, "wb") as f:
-            tomli_w.dump(results, f)
+        write_toml(results, indicators)
 
         # Save time-series in a csv
         time_series = self.results_path.joinpath("time_series.csv")

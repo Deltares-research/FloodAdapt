@@ -4,12 +4,16 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Union
 
+import geopandas as gpd
 from pydantic import BeforeValidator
 
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
     ObjectDir,
     db_path,
 )
+
+logger = FloodAdaptLogging.getLogger(__name__)
 
 
 @contextmanager
@@ -136,20 +140,35 @@ def save_file_to_database(
     if src_file == dst_file:
         return dst_file
     elif dst_file.exists():
-        if dst_file.suffix == ".shp":
-            for file in list(dst_file.parent.glob(f"{dst_file.stem}.*")):
-                os.remove(file)
-        else:
-            os.remove(dst_file)
+        match dst_file.suffix:
+            case ".shp":
+                for file in list(dst_file.parent.glob(f"{dst_file.stem}.*")):
+                    os.remove(file)
+            case _:
+                os.remove(dst_file)
 
     dst_file.parent.mkdir(parents=True, exist_ok=True)
-    if src_file.suffix == ".shp":
-        for file in list(src_file.parent.glob(f"{src_file.stem}.*")):
-            shutil.copy2(file, dst_file.parent.joinpath(file.name))
-    else:
-        shutil.copy2(src_file, dst_file)
+    match src_file.suffix:
+        case ".shp" | ".geojson" | ".gpkg":
+            write_gdf_with_global_crs(src_file, dst_file)
+        case _:
+            shutil.copy2(src_file, dst_file)
 
     return dst_file
+
+
+def write_gdf_with_global_crs(src: gpd.GeoDataFrame | Path, dst_path: Path) -> None:
+    if isinstance(src, gpd.GeoDataFrame):
+        gdf = src
+    else:
+        gdf = gpd.read_file(src)
+
+    if gdf.crs is None:
+        logger.warning(f"CRS is not defined for {src}. Assuming EPSG:4326.")
+        gdf = gdf.set_crs(epsg=4326)
+    else:
+        gdf = gdf.to_crs(epsg=4326)
+    gdf.to_file(dst_path)
 
 
 def copy_file_to_output_dir(file_path: Path, output_dir: Path) -> Path:
@@ -183,3 +202,20 @@ def validate_file_extension(allowed_extensions: list[str]):
         return value
 
     return BeforeValidator(_validator)
+
+
+def path_exists_and_absolute(
+    obj_path: Path | str | os.PathLike, argument_path: Path | str | os.PathLike
+) -> Path:
+    """Take a path which can be absolute or relative, and return an absolute path.
+
+    When the obj_path is relative, it is made absolute relative to the argument_path.
+    """
+    obj_path = Path(obj_path)
+    if obj_path.is_absolute():
+        _path = obj_path
+    else:
+        _path = Path(argument_path).parent.joinpath(obj_path)
+    if not _path.exists():
+        raise FileNotFoundError(f"File {_path} does not exist.")
+    return _path

@@ -1,4 +1,3 @@
-import shutil
 from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
@@ -11,6 +10,7 @@ class DbsScenario(DbsTemplate[Scenario]):
     dir_name = "scenarios"
     display_name = "Scenario"
     _object_class = Scenario
+    _higher_lvl_object = "Benefit"
 
     def summarize_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the events that currently exist in the database.
@@ -34,29 +34,6 @@ class DbsScenario(DbsTemplate[Scenario]):
         scenarios["finished"] = [self.has_run_check(scn) for scn in scenarios["name"]]
 
         return scenarios
-
-    def delete(self, name: str, toml_only: bool = False):
-        """Delete an already existing scenario in the database.
-
-        Parameters
-        ----------
-        name : str
-            name of the scenario to be deleted
-        toml_only : bool, optional
-            whether to only delete the toml file or the entire folder. If the folder is empty after deleting the toml,
-            it will always be deleted. By default False
-
-        Raises
-        ------
-        DatabaseError
-            Raise error if scenario to be deleted is already in use.
-        """
-        # First delete the scenario
-        super().delete(name, toml_only)
-
-        # Then delete the results
-        if (self.output_path / name).exists():
-            shutil.rmtree(self.output_path / name, ignore_errors=False)
 
     def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a scenario is used in a benefit.
@@ -102,7 +79,8 @@ class DbsScenario(DbsTemplate[Scenario]):
         """
         event_left = self._database.events.get(left.event)
         event_right = self._database.events.get(right.event)
-        equal_events = event_left == event_right
+        # Deep-compare events including forcing data contents
+        equal_events = event_left.data_equivalent(event_right)
 
         left_projection = self._database.projections.get(left.projection)
         right_projection = self._database.projections.get(right.projection)

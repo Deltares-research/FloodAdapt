@@ -1,7 +1,7 @@
 from itertools import combinations
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.misc.exceptions import DatabaseError
+from flood_adapt.misc.exceptions import AlreadyExistsError, DatabaseError
 from flood_adapt.objects.measures.measures import MeasureType
 from flood_adapt.objects.strategies.strategies import Strategy
 
@@ -10,6 +10,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
     dir_name = "strategies"
     display_name = "Strategy"
     _object_class = Strategy
+    _higher_lvl_object = "Scenario"
 
     def get(self, name: str) -> Strategy:
         strategy = super().get(name)
@@ -48,9 +49,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
         if overwrite and object_exists:
             self.delete(object_model.name, toml_only=True)
         elif not overwrite and object_exists:
-            raise DatabaseError(
-                f"'{object_model.name}' name is already used by another {self.display_name}. Choose a different name"
-            )
+            raise AlreadyExistsError(object_model.name, self.display_name)
 
         # Check if any measures overlap
         self._check_overlapping_measures(object_model.measures)
