@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from pathlib import Path
 
@@ -7,6 +8,8 @@ import xarray as xr
 from cht_meteo.dataset import MeteoDataset
 
 from flood_adapt.objects.forcing.time_frame import TimeFrame
+
+logger = logging.getLogger(__name__)
 
 
 class MeteoHandler:
@@ -26,21 +29,23 @@ class MeteoHandler:
         # TODO implement a good solution to this in cht_meteo
         self.dataset.lon_range = self._shift_grid_to_positive_lon(self.dataset)
 
-    def download(self, time: TimeFrame):
+    def download(self, time: TimeFrame) -> None:
         # Download and collect data
         time_range = self.get_time_range(time)
-
         self.dataset.download(time_range=time_range)
 
-    def read(self, time: TimeFrame) -> xr.Dataset:
-        self.download(time)
-        time_range = self.get_time_range(time)
-        ds = self.dataset.collect(time_range=time_range)
-
-        if ds is None:
-            raise FileNotFoundError(
-                f"No meteo files found in meteo directory {self.dir}"
-            )
+    def read(self, time: TimeFrame, retries: int = 5) -> xr.Dataset:
+        for i in range(retries):
+            self.download(time)
+            time_range = self.get_time_range(time)
+            ds = self.dataset.collect(time_range=time_range)
+            if ds is not None:
+                break  # Exit the loop if data is found
+            else:
+                msg = f"No meteo files found in meteo directory {self.dir}"
+                logger.warning(f"{msg}. Retrying {i+1}/{retries}...")
+                if i == retries - 1:
+                    raise FileNotFoundError(f"{msg} after {retries} retries.")
 
         # rename coordinates to time, x, y, press_msl, precip, wind10_u, wind10_v
         # as required by hydromt-sfincs
