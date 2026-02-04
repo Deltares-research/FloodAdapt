@@ -64,16 +64,29 @@ def update_database_static(settings: Settings):
     config_dir = database_path / "static" / "config"
     config_dir.mkdir(parents=True, exist_ok=True)
 
-    sfincs = create_sfincs_config()
-
-    site = create_site_config(database_path=database_path, sfincs=sfincs)
+    # default config
+    sfincs = create_sfincs_config(database_path=database_path, quadtree=False)
+    site = create_site_config(
+        database_path=database_path, sfincs=sfincs, quadtree=False
+    )
     site.save(config_dir / "site.toml")
 
+    # site without river
     sfincs.river = None
     sfincs.config.overland_model.name = "overland_0_rivers"  # this model has template the .src file deleted, and the sfincs.inp updated accordingly
-    no_river = create_site_config(database_path=database_path, sfincs=sfincs)
+    no_river = create_site_config(
+        database_path=database_path, sfincs=sfincs, quadtree=False
+    )
     no_river.save(
-        config_dir / "site_without_river.toml", sfincs="sfincs_without_river.toml"
+        filepath=config_dir / "site_without_river.toml",
+        sfincs="sfincs_without_river.toml",
+    )
+
+    # quadtree config
+    qt_site = create_site_config(database_path=database_path, quadtree=True)
+    qt_site.save(
+        filepath=config_dir / "site_quadtree.toml",
+        sfincs="sfincs_quadtree.toml",
     )
 
 
@@ -206,7 +219,7 @@ def create_gui_config(database_path: Path) -> GuiModel:
     return gui
 
 
-def create_sfincs_config() -> SfincsModel:
+def create_sfincs_config(database_path: Path, quadtree: bool) -> SfincsModel:
     waterlevel_reference = WaterlevelReferenceModel(
         reference="MLLW",
         datums=[
@@ -228,6 +241,16 @@ def create_sfincs_config() -> SfincsModel:
             ),
         ],
     )
+    overland_regular = database_path / "static" / "templates" / "overland"
+    overland_quadtree = database_path / "static" / "templates" / "overland_qt"
+    if not overland_regular.exists():
+        raise FileNotFoundError(
+            f"Overland regular model folder not found: {overland_regular}"
+        )
+    if not overland_quadtree.exists():
+        raise FileNotFoundError(
+            f"Overland quadtree model folder not found: {overland_quadtree}"
+        )
 
     config = SfincsConfigModel(
         csname="WGS 84 / UTM zone 17N",
@@ -238,7 +261,7 @@ def create_sfincs_config() -> SfincsModel:
             vertical_offset=us.UnitfulLength(value=0.6, units=us.UnitTypesLength.feet),
         ),
         overland_model=FloodModel(
-            name="overland",
+            name=overland_regular.name if not quadtree else overland_quadtree.name,
             reference="NAVD88",
         ),
         floodmap_units=us.UnitTypesLength.feet,
@@ -286,7 +309,7 @@ def create_sfincs_config() -> SfincsModel:
         config=config,
         water_level=waterlevel_reference,
         slr_scenarios=SlrScenariosModel(relative_to_year=2020, file="slr/slr.csv"),
-        dem=DemModel(filename="charleston_14m.tif", units=us.UnitTypesLength.meters),
+        dem=create_dem_model(database_path),
         scs=SCSModel(file="scs_rainfall.csv", type=Scstype.type3),
         cyclone_track_database=CycloneTrackDatabaseModel(file="IBTrACS.NA.v04r00.nc"),
         tide_gauge=tide_gauge,
@@ -294,6 +317,20 @@ def create_sfincs_config() -> SfincsModel:
         obs_point=obs_points,
     )
     return sfincs
+
+
+def create_dem_model(database_path: Path) -> DemModel:
+    dem_path = database_path / "static" / "dem" / "dep_subgrid.tif"
+    index_path = database_path / "static" / "dem" / "index.tif"
+    assert dem_path.exists(), f"DEM file for quadtree model not found: {dem_path}"
+    assert (
+        index_path.exists()
+    ), f"DEM index file for quadtree model not found: {index_path}"
+    return DemModel(
+        filename=dem_path.name,
+        units=us.UnitTypesLength.meters,
+        index_filename=index_path.name,
+    )
 
 
 def create_standard_objects() -> StandardObjectModel:
@@ -309,10 +346,13 @@ def create_site_config(
     fiat: Optional[FiatModel] = None,
     gui: Optional[GuiModel] = None,
     sfincs: Optional[SfincsModel] = None,
+    quadtree: bool = True,
 ) -> Site:
     fiat = fiat or create_fiat_config()
     gui = gui or create_gui_config(database_path)
-    sfincs = sfincs or create_sfincs_config()
+    sfincs = sfincs or create_sfincs_config(
+        database_path=database_path, quadtree=quadtree
+    )
 
     config = Site(
         name="Charleston",

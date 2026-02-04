@@ -6,12 +6,25 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import numpy as np
 
+from flood_adapt.config import Site
+from flood_adapt.dbs_classes.dbs_static import IDbsStatic
+from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
+
 
 class IDatabase(ABC):
     base_path: Path
     input_path: Path
     output_path: Path
     static_path: Path
+
+    site: Site
+    static: IDbsStatic
+    events: AbstractDatabaseElement
+    scenarios: AbstractDatabaseElement
+    strategies: AbstractDatabaseElement
+    measures: AbstractDatabaseElement
+    projections: AbstractDatabaseElement
+    benefits: AbstractDatabaseElement
 
     @abstractmethod
     def __init__(

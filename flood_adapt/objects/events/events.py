@@ -1,9 +1,8 @@
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, List, Optional, Protocol, runtime_checkable
+from typing import Any, ClassVar, List, Optional
 
-import tomli
 from pydantic import (
     Field,
     field_serializer,
@@ -64,16 +63,6 @@ class Template(str, Enum):
                 raise ValueError(f"Invalid event template: {self}")
 
 
-@runtime_checkable
-class PathBasedForcing(Protocol):
-    """Protocol for forcing classes that have a path attribute.
-
-    Performing an isinstance check on this class will return True if the class has a path attribute (even if it is None).
-    """
-
-    path: Path
-
-
 class Event(Object):
     """The accepted input for an event in FloodAdapt.
 
@@ -117,40 +106,67 @@ class Event(Object):
         for forcing in self.get_forcings():
             forcing.save_additional(output_dir)
 
-    @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "Event":
-        """Load object from file.
+    def data_equivalent(self, other: "Event") -> bool:
+        """Deep-compare two events, including forcing data contents.
+
+        Compares core attributes (time, template, mode, rainfall_multiplier) and then
+        verifies that each forcing (by type) has the same data fingerprint. For
+        path-based forcings, the fingerprint hashes the file bytes; for others,
+        a canonical attribute-based hash is used.
 
         Parameters
         ----------
-        file_path : Path | str | os.PathLike
-            Path to the file to load.
+        other : Event
+            The event to compare against.
 
+        Returns
+        -------
+        bool
+            True when events are equivalent in terms of their hazard inputs.
         """
-        with open(file_path, mode="rb") as fp:
-            toml = tomli.load(fp)
+        if not isinstance(other, Event):
+            return False
 
-        event = cls.model_validate(toml)
+        # Compare high-level attributes first
+        if (
+            self.template != other.template
+            or self.mode != other.mode
+            or self.rainfall_multiplier != other.rainfall_multiplier
+            or self.time != other.time
+        ):
+            return False
 
-        # Update all forcings with paths to absolute paths
-        for forcing in event.get_forcings():
-            if isinstance(forcing, PathBasedForcing):
-                if forcing.path.exists():
-                    continue
-                elif forcing.path == Path(forcing.path.name):
-                    # convert relative path to absolute path
-                    in_dir = Path(file_path).parent / forcing.path.name
-                    if not in_dir.exists():
-                        raise FileNotFoundError(
-                            f"Failed to load Event. File {forcing.path} does not exist in {in_dir.parent}."
-                        )
-                    forcing.path = in_dir
-                else:
-                    raise FileNotFoundError(
-                        f"Failed to load Event. File {forcing.path} does not exist."
-                    )
+        # Compare allowed forcing types present in each event
+        if set(self.forcings.keys()) != set(other.forcings.keys()):
+            return False
 
-        return event
+        # Build comparable, sorted fingerprint lists per forcing type
+        def fingerprints(evt: "Event") -> dict[ForcingType, list[tuple[str, str]]]:
+            d: dict[ForcingType, list[tuple[str, str]]] = {}
+            for ftype, flist in evt.forcings.items():
+                fps: list[tuple[str, str]] = []
+                for f in flist:
+                    # Include source and the fingerprint to guard against collisions across different sources
+                    src = f.source.value if hasattr(f, "source") else ""
+                    fp = f.content_fingerprint()  # type: ignore[attr-defined]
+                    fps.append((src, fp))
+                # Sort for order-insensitive comparison
+                d[ftype] = sorted(fps, key=lambda t: (t[0], t[1]))
+            return d
+
+        left_fp = fingerprints(self)
+        right_fp = fingerprints(other)
+
+        for ftype in left_fp.keys():
+            if left_fp[ftype] != right_fp[ftype]:
+                return False
+
+        return True
+
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
+        for forcing in self.get_forcings():
+            forcing._post_load(file_path, **kwargs)
 
     @staticmethod
     def _parse_forcing_from_dict(

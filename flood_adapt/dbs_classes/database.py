@@ -26,9 +26,6 @@ from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.misc.path_builder import (
-    TopLevelDir,
-)
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
@@ -61,6 +58,7 @@ class Database(IDatabase):
     measures: DbsMeasure
     projections: DbsProjection
     benefits: DbsBenefit
+
     static: DbsStatic
 
     def __new__(cls, *args, **kwargs):
@@ -106,13 +104,28 @@ class Database(IDatabase):
         )
 
         # Set the paths
-        self.base_path = database_root / database_name
-        self.input_path = self.base_path / TopLevelDir.input.value
-        self.static_path = self.base_path / TopLevelDir.static.value
-        self.output_path = self.base_path / TopLevelDir.output.value
+        self.base_path = Path(database_root) / database_name
+        self.input_path = self.base_path / "input"
+        self.static_path = self.base_path / "static"
+        self.output_path = self.base_path / "output"
+
+        # Read site configuration
+        self.read_site()
+
+        # Delete any unfinished/crashed scenario output after initialization
+        self._init_done = True
+        self.cleanup()
+
+    def read_site(self, site_name: str = "site") -> None:
+        """Read the site configuration from the static config folder and update database attributes."""
+        site_path = self.static_path / "config" / f"{site_name}.toml"
+        if not site_path.exists():
+            raise ConfigError(
+                f"Site configuration file '{site_path}' does not exist in the database."
+            )
+        self.site = Site.load_file(site_path)
 
         # Initialize the different database objects
-        self.site = Site.load_file(self.static_path / "config" / "site.toml")
         self.static = DbsStatic(self)
         self.events = DbsEvent(self, standard_objects=self.site.standard_objects.events)
         self.scenarios = DbsScenario(self)
@@ -124,13 +137,6 @@ class Database(IDatabase):
             self, standard_objects=self.site.standard_objects.projections
         )
         self.benefits = DbsBenefit(self)
-
-        self._init_done = True
-        self._settings = settings or Settings()
-
-        # Delete any unfinished/crashed scenario output after initialization
-        if self._settings.delete_crashed_runs:
-            self.cleanup()
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
@@ -191,14 +197,14 @@ class Database(IDatabase):
 
         if mode == Mode.single_event:
             if _type == FloodmapType.water_level:
-                paths = [base_dir / "max_water_level_map.nc"]
+                paths = [base_dir / "max_water_level_map.tif"]
             elif _type == FloodmapType.water_depth:
                 paths = [base_dir / f"FloodMap_{scenario_name}.tif"]
         elif mode == Mode.risk:
             if _type == FloodmapType.water_level:
-                paths = list(base_dir.glob("RP_*_maps.nc"))
+                paths = list(base_dir.glob("RP_*_max_water_level_map.tif"))
             elif _type == FloodmapType.water_depth:
-                paths = list(base_dir.glob("RP_*_maps.tif"))
+                paths = list(base_dir.glob("RP_*_FloodMap.tif"))
         else:
             raise DatabaseError(
                 f"Flood map type '{_type}' is not valid. Must be one of 'water_level' or 'water_depth'."
@@ -244,7 +250,7 @@ class Database(IDatabase):
         str
             path to topobathy tiles
         """
-        path = self.input_path.parent.joinpath("static", "dem", "tiles", "topobathy")
+        path = self.static_path / "dem" / self.site.sfincs.dem.filename
         return path.as_posix()
 
     def get_index_path(self) -> str:
@@ -255,7 +261,7 @@ class Database(IDatabase):
         str
             path to index tiles
         """
-        path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
+        path = self.static_path / "dem" / self.site.sfincs.dem.index_filename
         return path.as_posix()
 
     def get_depth_conversion(self) -> float:
@@ -293,23 +299,30 @@ class Database(IDatabase):
         np.array
             2D map of maximum water levels
         """
-        # If single event read with hydromt-sfincs
+        output_path = self.scenarios.output_path.joinpath(scenario_name, "Flooding")
+        # Check which file to use (if quadtree or regular)
         if not return_period:
-            map_path = self.scenarios.output_path.joinpath(
-                scenario_name,
-                "Flooding",
-                "max_water_level_map.nc",
-            )
-            with xr.open_dataarray(map_path) as map:
-                zsmax = map.to_numpy()
+            qt_path = output_path.joinpath("max_water_level_map_qt.nc")
+            if qt_path.is_file():
+                map_path = qt_path
+            else:
+                map_path = output_path.joinpath("max_water_level_map.tif")
         else:
-            file_path = self.scenarios.output_path.joinpath(
-                scenario_name,
-                "Flooding",
-                f"RP_{return_period:04d}_maps.nc",
+            qt_path = output_path.joinpath(
+                f"RP_{return_period:04d}_max_water_level_map_qt.nc"
             )
-            with xr.open_dataset(file_path) as ds:
-                zsmax = ds["risk_map"][:, :].to_numpy().T
+            if qt_path.is_file():
+                map_path = qt_path
+            else:
+                map_path = output_path.joinpath(
+                    f"RP_{return_period:04d}_max_water_level_map.tif"
+                )
+        # Open file
+        with xr.open_dataarray(map_path) as map:
+            zsmax = map.to_numpy()
+        # Make sure output is 1D array
+        if zsmax.ndim >= 2:
+            zsmax = zsmax.flatten("F")
         return zsmax
 
     def get_flood_map_geotiff(
