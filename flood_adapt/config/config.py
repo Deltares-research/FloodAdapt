@@ -143,10 +143,9 @@ class Settings(BaseSettings):
         self._validate_database_path()
         if self.validate_binaries:
             self.check_binary_versions()
-        self._update_environment_variables()
         return self
 
-    def _update_environment_variables(self):
+    def export_to_env(self):
         environ["DATABASE_ROOT"] = str(self.database_root)
         environ["DATABASE_NAME"] = self.database_name
 
@@ -162,12 +161,18 @@ class Settings(BaseSettings):
 
         if self.validate_binaries:
             environ["VALIDATE_BINARIES"] = str(self.validate_binaries)
-            environ["SFINCS_BIN_PATH"] = str(self.sfincs_bin_path)
-            environ["FIAT_BIN_PATH"] = str(self.fiat_bin_path)
         else:
             environ.pop("VALIDATE_BINARIES", None)
 
-        return self
+        if self.sfincs_bin_path is not None:
+            environ["SFINCS_BIN_PATH"] = self.sfincs_bin_path.as_posix()
+        else:
+            environ.pop("SFINCS_BIN_PATH", None)
+
+        if self.fiat_bin_path is not None:
+            environ["FIAT_BIN_PATH"] = self.fiat_bin_path.as_posix()
+        else:
+            environ.pop("FIAT_BIN_PATH", None)
 
     def _validate_database_path(self):
         if not self.database_root.is_dir():

@@ -121,6 +121,7 @@ class TestSettingsModel:
         expected_sfincs: Optional[Path] = None,
         expected_fiat: Optional[Path] = None,
     ):
+        settings.export_to_env()
         assert settings.database_root == expected_root
         assert os.environ["DATABASE_ROOT"] == str(expected_root)
 
@@ -353,6 +354,7 @@ class TestSettingsModel:
                 DATABASE_NAME=name2,
                 DATABASE_ROOT=db_root2,
             )
+            from_args.export_to_env()  # Update envvars with new settings
 
             from_env2 = Settings()  # Create settings object with updated envvars again
 
@@ -375,6 +377,7 @@ class TestSettingsModel:
                 VALIDATE_ALLOWED_FORCINGS=False,
                 VALIDATE_BINARIES=False,
             )
+            settings.export_to_env()
 
             assert not settings.delete_crashed_runs
             assert not settings.validate_allowed_forcings
@@ -406,6 +409,7 @@ class TestSettingsModel:
                 SFINCS_BIN_PATH=fake_sfincs_exe,
                 FIAT_BIN_PATH=fake_fiat_exe,
             )
+            settings.export_to_env()
 
             assert settings.delete_crashed_runs
             assert settings.validate_allowed_forcings

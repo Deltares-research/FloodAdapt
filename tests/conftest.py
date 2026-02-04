@@ -88,6 +88,7 @@ def session_setup_teardown():
         VALIDATE_ALLOWED_FORCINGS=True,
         VALIDATE_BINARIES=IS_WINDOWS,
     )
+    settings.export_to_env()
 
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     FloodAdaptLogging(
