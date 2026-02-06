@@ -1542,9 +1542,13 @@ class DatabaseBuilder:
             )
             # Add tide gauge as obs point if within model region
             if coord.within(model_region):
+                if self.tide_gauge.name is None:
+                    name = "tide_gauge"
+                else:
+                    name = self.tide_gauge.name
                 obs_points.append(
                     ObsPointModel(
-                        name=self.tide_gauge.name,
+                        name=name,
                         description="Tide gauge observation point",
                         ID=self.tide_gauge.ID,
                         lon=self.tide_gauge.lon,

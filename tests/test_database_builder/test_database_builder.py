@@ -643,6 +643,13 @@ class TestDataBaseBuilder:
             filename=str(self.static_path / "dem/charleston_14m.tif"),
             units=us.UnitTypesLength.meters,
         )
+        mock_config.gui = GuiConfigModel(
+            max_flood_depth=10.0,
+            max_aggr_dmg=1_000_000.0,
+            max_footprint_dmg=500_000.0,
+            max_benefits=1_000_000.0,
+            topobathy_min_max=(-10.0, 10.0),
+        )
         builder = DatabaseBuilder(mock_config)
         builder.setup()
 
