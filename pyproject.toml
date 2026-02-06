@@ -26,10 +26,12 @@ requires-python = ">=3.10,<3.13"
 # Any package below will be taken from pypi.
 # These are ignored if any packages is also defined in the section: [tool.pixi.dependencies]
 dependencies = [
+    "cartopy",
     "cht-cyclones               >=1.0.3,<2.0",
     "cht-meteo                  >=0.3.1,<1.0",
     "cht-observations           >=0.2.1,<1.0",
     "cht-tide                   >=0.1.1,<1.0",
+    "ffmpeg",
     "fiat-toolbox               >=0.1.22,<0.2.0",
     "fiona                      >=1.0,<2.0",
     "geojson                    >=3.0,<4.0",
