@@ -108,13 +108,20 @@ class Database(IDatabase):
         self.database_name = database_name
 
         # Set the paths
-
         self.base_path = Path(database_path) / database_name
         self.input_path = self.base_path / "input"
         self.static_path = self.base_path / "static"
         self.output_path = self.base_path / "output"
 
-        self._site = Site.load_file(self.static_path / "config" / "site.toml")
+        self.read_site()
+
+        self._init_done = True
+
+        # Delete any unfinished/crashed scenario output after initialization
+        self.cleanup()
+
+    def read_site(self, site_name: str = "site"):
+        self._site = Site.load_file(self.static_path / "config" / f"{site_name}.toml")
 
         # Initialize the different database objects
         self._static = DbsStatic(self)
@@ -130,10 +137,6 @@ class Database(IDatabase):
             self, standard_objects=self.site.standard_objects.projections
         )
         self._benefits = DbsBenefit(self)
-        self._init_done = True
-
-        # Delete any unfinished/crashed scenario output after initialization
-        self.cleanup()
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
