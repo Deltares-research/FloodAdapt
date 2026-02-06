@@ -42,11 +42,13 @@ class MeteoHandler:
                 f"No meteo files found in meteo directory {self.dir}"
             )
 
-        ds.raster.set_crs(4326)
-
-        # Rename the variables to match what hydromt-sfincs expects
+        # rename coordinates to time, x, y, press_msl, precip, wind10_u, wind10_v
+        # as required by hydromt-sfincs
+        # variables: ['wind10_u' (m/s), 'wind10_v' (m/s)]
         ds = ds.rename(
             {
+                "lon": "x",
+                "lat": "y",
                 "barometric_pressure": "press_msl",
                 "precipitation": "precip",
                 "wind_u": "wind10_u",
@@ -54,9 +56,11 @@ class MeteoHandler:
             }
         )
 
+        ds.raster.set_crs(4326)
+
         # Convert the longitude to -180 to 180 to match hydromt-sfincs
-        if ds["lon"].min() > 180:
-            ds["lon"] = ds["lon"] - 360
+        if ds["x"].min() > 180:
+            ds["x"] = ds["x"] - 360
 
         return ds
 

@@ -54,6 +54,16 @@ class TestMeteoHandler:
         "wind10_v",
     ]
 
+    COORDS_DOWNLOADED = [
+        "lon",
+        "lat",
+    ]
+    COORDS_RETURNED = [
+        "x",
+        "y",
+        "time",
+    ]
+
     @pytest.fixture()
     def setup_meteo_test(self, tmp_path):
         handler = MeteoHandler(
@@ -94,7 +104,11 @@ class TestMeteoHandler:
         for nc_file in nc_files:
             with xr.open_dataset(nc_file) as ds:
                 for var in self.VARIABLES_DOWNLOADED:
-                    assert var in ds, f"`{var}` not found in dataset"
+                    assert var in ds, f"variable `{var}` not found in dataset"
+                for coord in self.COORDS_DOWNLOADED:
+                    assert (
+                        coord in ds.coords
+                    ), f"coord `{coord}` not found in dataset coords"
 
     def test_read_meteo_no_nc_files_raises_filenotfound(
         self, setup_meteo_test: tuple[MeteoHandler, TimeFrame]
@@ -137,10 +151,12 @@ class TestMeteoHandler:
 
             for var in self.VARIABLES_RETURNED:
                 assert var in result, f"Expected `{var}` in databaset, but not found"
+            for coord in self.COORDS_RETURNED:
+                assert coord in result.coords, f"`{coord}` not found in dataset coords"
 
             assert (
-                result["lon"].min() > -180 and result["lon"].max() < 180
-            ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"
+                result["x"].min() > -180 and result["x"].max() < 180
+            ), f"Expected longitude in range (-180, 180), but got ({result['x'].min()}, {result['x'].max()})"
 
     def test_read_meteo_multiple_nc_files(
         self, setup_meteo_test: tuple[MeteoHandler, TimeFrame]
@@ -166,7 +182,9 @@ class TestMeteoHandler:
 
             for var in self.VARIABLES_RETURNED:
                 assert var in result, f"Expected `{var}` in databaset, but not found"
+            for coord in self.COORDS_RETURNED:
+                assert coord in result.coords, f"`{coord}` not found in dataset coords"
 
             assert (
-                result["lon"].min() > -180 and result["lon"].max() < 180
-            ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"
+                result["x"].min() > -180 and result["x"].max() < 180
+            ), f"Expected longitude in range (-180, 180), but got ({result['x'].min()}, {result['x'].max()})"
