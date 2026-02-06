@@ -195,13 +195,19 @@ class Settings(BaseSettings):
     def serialize_path(self, path: Path) -> str:
         return path.as_posix()
 
-    # Public methods
-    def export_to_env(self):
+    @model_validator(mode="after")
+    def _export_to_env(self):
         for k, v in Settings.model_fields.items():
             if v.alias is not None:
                 env_key = v.alias
                 value = getattr(self, k)
                 self._export_env_var(env_key, value)
+        return self
+
+    # Public methods
+    def export_to_env(self):
+        """Manually export settings to environment variables. This is now called automatically during initialization."""
+        self._export_to_env()
 
     def get_sfincs_version(self) -> str:
         """
