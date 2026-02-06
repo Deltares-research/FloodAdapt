@@ -242,9 +242,14 @@ class TestSettings:
         )
         s.export_to_env()
 
-        assert os.getenv("DELETE_CRASHED_RUNS") is None
-        assert os.getenv("VALIDATE_ALLOWED_FORCINGS") is None
-        assert os.getenv("USE_BINARIES") is None
+        assert os.getenv("DELETE_CRASHED_RUNS") == "False"
+        assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "False"
+        assert os.getenv("USE_BINARIES") == "False"
+
+        s = Settings()
+        assert s.delete_crashed_runs is False
+        assert s.validate_allowed_forcings is False
+        assert s.use_binaries is False
 
     def test_true_booleans_persisted(
         self, dummy_db, fake_binaries, mock_subprocess_run
@@ -266,6 +271,11 @@ class TestSettings:
         assert os.getenv("DELETE_CRASHED_RUNS") == "True"
         assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "True"
         assert os.getenv("USE_BINARIES") == "True"
+
+        s = Settings()
+        assert s.delete_crashed_runs is True
+        assert s.validate_allowed_forcings is True
+        assert s.use_binaries is True
 
     def test_get_sfincs_version_success(
         self, dummy_db, fake_binaries, mock_subprocess_run

@@ -197,33 +197,11 @@ class Settings(BaseSettings):
 
     # Public methods
     def export_to_env(self):
-        environ["DATABASE_ROOT"] = str(self.database_root)
-        environ["DATABASE_NAME"] = self.database_name
-
-        if self.delete_crashed_runs:
-            environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
-        else:
-            environ.pop("DELETE_CRASHED_RUNS", None)
-
-        if self.validate_allowed_forcings:
-            environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
-        else:
-            environ.pop("VALIDATE_ALLOWED_FORCINGS", None)
-
-        if self.use_binaries:
-            environ["USE_BINARIES"] = str(self.use_binaries)
-        else:
-            environ.pop("USE_BINARIES", None)
-
-        if self.sfincs_bin_path is not None:
-            environ["SFINCS_BIN_PATH"] = self.sfincs_bin_path.as_posix()
-        else:
-            environ.pop("SFINCS_BIN_PATH", None)
-
-        if self.fiat_bin_path is not None:
-            environ["FIAT_BIN_PATH"] = self.fiat_bin_path.as_posix()
-        else:
-            environ.pop("FIAT_BIN_PATH", None)
+        for k, v in Settings.model_fields.items():
+            if v.alias is not None:
+                env_key = v.alias
+                value = getattr(self, k)
+                self._export_env_var(env_key, value)
 
     def get_sfincs_version(self) -> str:
         """
@@ -368,6 +346,18 @@ class Settings(BaseSettings):
             exclude={"sfincs_bin_path", "fiat_bin_path", "database_path"},
         )
         write_toml(data, toml_path)
+
+    def _export_env_var(self, key: str, value: str | Path | bool | None) -> None:
+        if isinstance(value, Path):
+            environ[key] = value.as_posix()
+        elif isinstance(value, (str, bool)):
+            environ[key] = str(value)
+        elif value is None:
+            environ.pop(key, None)
+        else:
+            raise ValueError(
+                f"Unsupported type for environment variable {key}: {type(value)}"
+            )
 
     # Error helpers
     @staticmethod
