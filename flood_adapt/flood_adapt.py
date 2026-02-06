@@ -39,6 +39,7 @@ from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.objects.strategies.strategies import Strategy
 from flood_adapt.workflows.benefit_runner import BenefitRunner
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
+from flood_adapt.adapter import SfincsAdapter
 
 logger = FloodAdaptLogging.getLogger()
 
@@ -1282,3 +1283,40 @@ class FloodAdapt:
             The aggregation benefits for the benefit assessment.
         """
         return self.database.get_aggregation_benefits(name)
+
+    def save_flood_animation(self, scenario: str, bbox=None, zoomlevel=15) -> str:
+        """Create an animation of the flood extent over time.
+        Produced floodmap is in the units defined in the sfincs config settings.
+
+        Parameters
+        ----------
+        database : Database
+            The database object containing the scenario and results.
+        scenario : Scenario
+            Scenario for which to create the floodmap.
+        bbox : array, optional
+            Bounding box to limit the animation to a specific area (default is None, which means no bounding box).
+            Format: [lon_min, lat_min, lon_max, lat_max]
+        zoomlevel : int, optional
+            Zoom level for the animation (default is 15).
+        """
+        scn = self.get_scenario(scenario)
+        results_path = (
+            self.database.scenarios.output_path / 
+            scn.name / "Flooding"
+        )
+        sim_path = (
+            results_path / "simulations"
+            / self.database.site.sfincs.config.overland_model.name
+        )
+
+        vmin = 0
+        vmax = self.database.site.gui.output_layers.floodmap.bins[-1]
+
+        with SfincsAdapter(model_root=sim_path) as model:
+            animation_path = model.create_animation(scenario=scn, 
+            bbox=bbox, zoomlevel=zoomlevel,
+            vmin=vmin, vmax=vmax
+        )
+            
+        return animation_path

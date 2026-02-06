@@ -7,8 +7,10 @@ import tempfile
 from pathlib import Path
 from typing import Optional, Union
 
+import contextily as ctx
 import geopandas as gpd
 import hydromt_sfincs.utils as utils
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -23,8 +25,7 @@ from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 from shapely.affinity import translate
 
-import cartopy.crs as ccrs
-from pyproj import Transformer
+# import cartopy.crs as ccrs
 from matplotlib import animation
 import numpy as np
 import xarray as xr
@@ -591,10 +592,10 @@ class SfincsAdapter(IHazardAdapter):
                 floodmap_fn=floodmap_fn.as_posix(),
             )
 
-    def create_animation_qt(
+    def create_animation(
         self, scenario: Scenario, sim_path: Optional[Path] = None, 
-        bbox=None, zoomlevel=16,
-    ):
+        bbox=None, zoomlevel=15, vmin: float = 0.0, vmax: float = 3.0
+    ) -> str:
         """
         Read simulation results from SFINCS and saves an animation of water depths as mp4.
 
@@ -606,6 +607,11 @@ class SfincsAdapter(IHazardAdapter):
             Scenario for which to create the floodmap.
         sim_path : Path, optional
             Path to the simulation folder, by default None.
+        bbox : array, optional
+            Bounding box to limit the animation to a specific area (default is None, which means no bounding box).
+            Format: [lon_min, lat_min, lon_max, lat_max]
+        zoomlevel : int, optional
+            Zoom level for the animation (default is 15).
         """
 
         logger.info("Creating flood animation.")
@@ -614,35 +620,16 @@ class SfincsAdapter(IHazardAdapter):
         demfile = self.database.get_topobathy_path()
         index_file = self.database.get_index_path()
 
-        # animation output settings
-        fps = 1  # frames per second
-        dpi = 200  # dots per inch
-        vmin = 0
-        vmax = 3
-        cmap = plt.cm.Blues
-
         with SfincsAdapter(model_root=sim_path) as model:
-
-            # convert bbox to WGS84 when provided
-            if bbox is not None:
-                # Create a transformer from local CRS to WGS84
-                transformer = Transformer.from_crs(mod.crs, "EPSG:4326", always_xy=True)
-                # Unpack bbox
-                minx, miny, maxx, maxy = bbox
-                # Transform the corners
-                lon_min, lat_min = transformer.transform(minx, miny)
-                lon_max, lat_max = transformer.transform(maxx, maxy)
-                # Create the new bbox in WGS84
-                bbox = [lon_min, lat_min, lon_max, lat_max]
             
             # read water levels
             zs = model._get_zs()
 
             # read dem and index file
-            dem = model._model.data_catalog.get_rasterdataset(demfile)
+            dem = model._model.data_catalog.get_rasterdataset(demfile, bbox=bbox)
             if index_file is not None:
             # obtain the index file (if available)
-                da_index = model._model.data_catalog.get_rasterdataset(index_file, bbox=bbox, zoom_level=(resolution, "meter"))
+                da_index = model._model.data_catalog.get_rasterdataset(index_file, bbox=bbox)#, zoom_level=(resolution, "meter"))
 
             # convert dem from dem units to floodmap units
             dem_conversion = us.UnitfulLength(
@@ -660,52 +647,48 @@ class SfincsAdapter(IHazardAdapter):
 
                 # add the 'time' coordinate
                 h['time'] = zs.time[i]
-
+                
                 # create (or append) and xarray DataArray while concatenating along the time dimension
                 if i == 0:
                     da_h = h
                 else:
                     da_h = xr.concat([da_h, h], dim="time")
-        
+
         step = 1  # one frame every <step> dtout
-        cbar_kwargs = {"shrink": 0.6, "anchor": (0, 0)}
-        crs = ccrs.epsg(model._model.crs.to_epsg())
+        # crs = ccrs.epsg(model._model.crs.to_epsg())
+        crs_str = model._model.crs.to_string()
 
         def update_plot(i, da_h, cax_h):
             da_hi = da_h.isel(time=i)
             t = da_hi.time.dt.strftime("%d-%B-%Y %H:%M:%S").item()
             ax.set_title(f"{t}")
-            bounds = da_h.raster.box.buffer(abs(da_h.raster.res[0] * 1)).total_bounds
-            extent = np.array(bounds)[[0, 2, 1, 3]]
-            ax.set_extent(extent, crs=crs)
-
+            print(f"Adding frame {t}")
             cax_h.set_array(da_hi.values.ravel())
 
-        fig, ax = model._model.plot_basemap(
-            fn_out=None,
-            variable="",
-            plot_bounds=False, 
-            plot_geoms=False,
-            bmap="sat",
-            zoomlevel = zoomlevel,
-            figsize=(11, 7),
-            vmin=vmin, vmax=vmax,
-            cmap=cmap,
-            cbar_kwargs=cbar_kwargs    
-        )
+        fig, ax = plt.subplots(1, 1, figsize=(11, 7))
 
-        cax_h = da_h.isel(time=0).plot(
+        # first frame
+        h0 = da_h.isel(time=0)
+        cax_h = h0.plot(
             x="x", y="y",
             ax=ax,
-            vmin=vmin, 
+            vmin=vmin,
             vmax=vmax,
-            cmap=cmap,
-            cbar_kwargs=cbar_kwargs
+            cmap=plt.cm.Blues,
+            zorder=1,
+            cbar_kwargs={"shrink": 0.6, "label": f"Water depth [{self.settings.config.floodmap_units.value}]"},
         )
 
-        bounds = da_h.raster.box.buffer(abs(da_h.raster.res[0] * 1)).total_bounds
-        extent = np.array(bounds)[[0, 2, 1, 3]]
-        ax.set_extent(extent, crs=crs)
+        # add basemap in the model CRS (contextily will reproject)
+        ctx.add_basemap(
+            ax,
+            crs=crs_str,
+            source=ctx.providers.CartoDB.Positron,
+            zoom=zoomlevel,
+            zorder=0,
+        )
+
+        ax.set_aspect('equal', adjustable='box')
 
         plt.close()  # to prevent double plot
 
@@ -721,10 +704,12 @@ class SfincsAdapter(IHazardAdapter):
         )
 
         # to save to mp4
-        fn_out = os.path.join(results_path, f"{scenario.name}.mp4")  # output filename, if None will be set to model_root/sfincs_h.mp4
+        fn_out = os.path.join(results_path, f"{scenario.name}.mp4")  
         # make sure output directory exists
         os.makedirs(os.path.dirname(fn_out), exist_ok=True)
-        ani.save(fn_out, fps=fps, dpi=200)
+        ani.save(fn_out, fps=1, dpi=200)
+
+        return fn_out
     
     
     def write_water_level_map(
