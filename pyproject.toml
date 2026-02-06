@@ -30,8 +30,6 @@ dependencies = [
     "cht-meteo          ==0.3.1",
     "cht-observations   ==0.2.1",
     "cht-tide           ==0.1.1",
-    "dask               ==2024.11.2",   # not a dependency, but a we need to use this version
-    "numba_celltree     ==0.2.2",       # not a dependency, but a we need to use this version
     "fiat-toolbox       ==0.1.20",
     "fiona              >=1.0,<2.0",
     "geojson            >=3.0,<4.0",

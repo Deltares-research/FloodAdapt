@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Union
 
 import tomli_w
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator
 
 from flood_adapt.adapter.fiat_adapter import _IMPACT_COLUMNS
 
@@ -131,42 +131,52 @@ class MetricModel(BaseModel):
     name : str
         The short name of the metric.
     long_name : Optional[str], default=None
-        The long descriptive name of the metric. If not provided, defaults to `name`.
+        The long descriptive name of the metric. Defaults to `name` if not provided.
     show_in_metrics_table : Optional[bool], default=True
         Indicates whether the metric should be displayed in the metrics table.
-    show_in_map : Optional[bool], default=True
-        Indicates whether the metric should be displayed on the map.
     description : Optional[str], default=None
-        A detailed description of the metric. If not provided, defaults to `name`.
+        A detailed description of the metric. Defaults to `name` if not provided.
     select : str
         The SQL select statement or expression for the metric.
     filter : Optional[str], default=""
         An optional SQL filter to apply to the metric. Defaults to no filter.
 
-    Validation
-    ----------
-    If `long_name` or `description` are None, they will be set to the value of `name`.
+    Methods
+    -------
+    set_defaults(value, info)
+        Sets default values for `long_name` and `description` fields using the `name` field if they are not provided.
     """
 
     name: str
     long_name: Optional[str] = None
     show_in_metrics_table: Optional[bool] = True
-    show_in_map: Optional[bool] = True
     description: Optional[str] = None
     select: str
     filter: Optional[str] = ""  # This defaults to no filter
 
-    @model_validator(mode="after")
-    def fill_defaults(self):
-        # If long_name is missing, copy name
-        if self.long_name is None:
-            self.long_name = self.name
+    @field_validator("long_name", "description", mode="after")
+    @classmethod
+    def set_defaults(cls, value, info):
+        """
+        Set default values for long_name and description fields.
 
-        # If description is missing, copy long_name (which is now guaranteed)
-        if self.description is None:
-            self.description = self.long_name
+        Parameters
+        ----------
+        value : Any
+            The current field value.
+        info : Any
+            Field validation info containing all field values.
 
-        return self
+        Returns
+        -------
+        str
+            The field value or the default value from 'name' field.
+        """
+        # info.data contains all field values
+        if value is None:
+            # Use 'name' field as default
+            return info.data.get("name")
+        return value
 
 
 class ImpactCategoriesModel(BaseModel):
