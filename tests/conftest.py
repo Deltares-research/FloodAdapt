@@ -1,6 +1,7 @@
 import filecmp
 import logging
 import os
+import platform
 import shutil
 import tempfile
 from datetime import datetime
@@ -15,7 +16,13 @@ from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.log import FloodAdaptLogging
 from tests.data.create_test_input import update_database_input
 from tests.data.create_test_static import update_database_static
-from tests.fixtures import *  # noqa
+from tests.fixtures import dummy_1d_timeseries_df as dummy_1d_timeseries_df  # noqa
+from tests.fixtures import dummy_2d_timeseries_df as dummy_2d_timeseries_df
+from tests.fixtures import dummy_buyout_measure as dummy_buyout_measure
+from tests.fixtures import dummy_projection as dummy_projection
+from tests.fixtures import dummy_pump_measure as dummy_pump_measure
+from tests.fixtures import dummy_strategy as dummy_strategy
+from tests.fixtures import dummy_time_model as dummy_time_model
 
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"
@@ -23,6 +30,7 @@ logs_dir = Path(__file__).absolute().parent / "logs"
 src_dir = Path(
     *__path__
 ).resolve()  # __path__ is a list of paths to the package, but has only one element
+IS_WINDOWS = platform.system() == "Windows"
 
 #### DEBUGGING ####
 # To disable resetting the database after tests: set CLEAN = False
@@ -84,8 +92,9 @@ def session_setup_teardown():
         DATABASE_NAME="charleston_test",
         DELETE_CRASHED_RUNS=clean,
         VALIDATE_ALLOWED_FORCINGS=True,
-        VALIDATE_BINARIES=True,
+        USE_BINARIES=IS_WINDOWS,
     )
+    settings.export_to_env()
 
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     FloodAdaptLogging(
