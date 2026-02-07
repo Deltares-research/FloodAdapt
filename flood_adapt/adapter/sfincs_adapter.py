@@ -658,15 +658,8 @@ class SfincsAdapter(IHazardAdapter):
         # crs = ccrs.epsg(model._model.crs.to_epsg())
         crs_str = model._model.crs.to_string()
 
-        def update_plot(i, da_h, cax_h):
-            da_hi = da_h.isel(time=i)
-            t = da_hi.time.dt.strftime("%d-%B-%Y %H:%M:%S").item()
-            ax.set_title(f"{t}")
-            print(f"Adding frame {t}")
-            cax_h.set_array(da_hi.values.ravel())
-
         fig, ax = plt.subplots(1, 1, figsize=(11, 7))
-
+        
         # first frame
         h0 = da_h.isel(time=0)
         cax_h = h0.plot(
@@ -674,7 +667,7 @@ class SfincsAdapter(IHazardAdapter):
             ax=ax,
             vmin=vmin,
             vmax=vmax,
-            cmap=plt.cm.Blues,
+            cmap="Blues",
             zorder=1,
             cbar_kwargs={"shrink": 0.6, "label": f"Water depth [{self.settings.config.floodmap_units.value}]"},
         )
@@ -688,19 +681,26 @@ class SfincsAdapter(IHazardAdapter):
             zorder=0,
         )
 
-        ax.set_aspect('equal', adjustable='box')
+        def update_plot(i, da_h, cax_h):
+            da_hi = da_h.isel(time=i)
+            t = da_hi.time.dt.strftime("%d-%B-%Y %H:%M:%S").item()
+            ax.set_title(f"{t}")
+            print(f"Adding frame {t}")
+            cax_h.set_array(da_hi.values.ravel())
+            return cax_h
 
-        plt.close()  # to prevent double plot
+        ax.set_aspect('equal', adjustable='box')
 
         ani = animation.FuncAnimation(
             fig,
             update_plot,
             frames=np.arange(0, da_h.time.size, step),
-            interval=250,  # ms between frames
+            interval=100,  # ms between frames
             fargs=(
                 da_h,
                 cax_h,
             ),
+            repeat=False,
         )
 
         # to save to mp4
@@ -708,6 +708,10 @@ class SfincsAdapter(IHazardAdapter):
         # make sure output directory exists
         os.makedirs(os.path.dirname(fn_out), exist_ok=True)
         ani.save(fn_out, fps=1, dpi=200)
+
+        plt.close(fig)
+
+        logger.info("Flood animation saved.")
 
         return fn_out
     
