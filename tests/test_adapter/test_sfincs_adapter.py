@@ -1,4 +1,3 @@
-import platform
 import tempfile
 from copy import copy
 from datetime import datetime, timedelta
@@ -83,6 +82,7 @@ from flood_adapt.objects.measures.measures import (
 )
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
+from tests.conftest import IS_WINDOWS
 from tests.fixtures import TEST_DATA_DIR
 from tests.test_objects.test_forcing.test_netcdf import (
     get_test_dataset,
@@ -254,14 +254,14 @@ def _mock_meteohandler_read(
 
     ds = xr.Dataset(
         data_vars={
-            "wind10_u": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
-            "wind10_v": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
-            "press_msl": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
-            "precip": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
+            "wind10_u": (("time", "y", "x"), gen.random((len(_time), 2, 2))),
+            "wind10_v": (("time", "y", "x"), gen.random((len(_time), 2, 2))),
+            "press_msl": (("time", "y", "x"), gen.random((len(_time), 2, 2))),
+            "precip": (("time", "y", "x"), gen.random((len(_time), 2, 2))),
         },
         coords={
-            "lat": lat,
-            "lon": lon,
+            "y": lat,
+            "x": lon,
             "time": _time,
         },
         attrs={
@@ -271,8 +271,8 @@ def _mock_meteohandler_read(
     ds.raster.set_crs(4326)
 
     # Convert the longitude to -180 to 180 to match hydromt-sfincs
-    if ds["lon"].min() > 180:
-        ds["lon"] = ds["lon"] - 360
+    if ds["x"].min() > 180:
+        ds["x"] = ds["x"] - 360
 
     return ds
 
@@ -1382,8 +1382,8 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
 
 
 @pytest.mark.skipif(
-    platform.system() == "Linux",
-    reason="Skipped on Linux due to broken sfincs binary",
+    not IS_WINDOWS,
+    reason="Only run on windows where we have a working sfincs binary",
 )
 class TestPostProcessing:
     @pytest.fixture(scope="class")

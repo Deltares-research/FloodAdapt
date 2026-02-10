@@ -2,6 +2,7 @@ from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.misc.utils import finished_file_exists
+from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.workflows.benefit_runner import BenefitRunner
 
@@ -79,8 +80,16 @@ class DbsScenario(DbsTemplate[Scenario]):
         """
         event_left = self._database.events.get(left.event)
         event_right = self._database.events.get(right.event)
-        # Deep-compare events including forcing data contents
-        equal_events = event_left.data_equivalent(event_right)
+
+        if event_left.mode == event_right.mode == Mode.single_event:
+            # Deep-compare events including forcing data contents
+            equal_events = event_left.data_equivalent(event_right)
+        elif event_left.mode == event_right.mode == Mode.risk:
+            # Check only event set
+            equal_events = event_left == event_right
+        else:
+            # Only same mode events can be compared, if modes differ, they are not equal
+            equal_events = False
 
         left_projection = self._database.projections.get(left.projection)
         right_projection = self._database.projections.get(right.projection)
