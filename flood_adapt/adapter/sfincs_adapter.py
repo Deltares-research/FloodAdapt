@@ -7,8 +7,10 @@ import tempfile
 from pathlib import Path
 from typing import Optional, Union
 
+import contextily as ctx
 import geopandas as gpd
 import hydromt_sfincs.utils as utils
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -21,6 +23,9 @@ from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
+
+# import cartopy.crs as ccrs
+from matplotlib import animation
 from shapely.affinity import translate
 
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
@@ -562,7 +567,7 @@ class SfincsAdapter(IHazardAdapter):
         logger.info("Writing flood maps to geotiff.")
         results_path = self._get_result_path(scenario)
         sim_path = sim_path or self._get_simulation_path(scenario)
-        demfile = self.database.static_path / "dem" / self.settings.dem.filename
+        demfile = self.database.get_topobathy_path()
 
         with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
@@ -582,6 +587,139 @@ class SfincsAdapter(IHazardAdapter):
                 hmin=0.01,
                 floodmap_fn=floodmap_fn.as_posix(),
             )
+
+    def create_animation(
+        self,
+        scenario: Scenario,
+        sim_path: Optional[Path] = None,
+        bbox=None,
+        zoomlevel=15,
+        vmin: float = 0.0,
+        vmax: float = 3.0,
+    ) -> str:
+        """
+        Read simulation results from SFINCS and saves an animation of water depths as mp4.
+
+        Produced flood animation is in the units defined in the sfincs config settings.
+
+        Parameters
+        ----------
+        scenario : Scenario
+            Scenario for which to create the floodmap.
+        sim_path : Path, optional
+            Path to the simulation folder, by default None.
+        bbox : array, optional
+            Bounding box to limit the animation to a specific area (default is None, which means no bounding box).
+            Format: [lon_min, lat_min, lon_max, lat_max]
+        zoomlevel : int, optional
+            Zoom level for the animation (default is 15).
+        """
+        logger.info("Creating flood animation.")
+        results_path = self._get_result_path(scenario)
+        sim_path = sim_path or self._get_simulation_path(scenario)
+        demfile = self.database.get_topobathy_path()
+
+        with SfincsAdapter(model_root=sim_path) as model:
+            # read water levels
+            zs = model._get_zs()
+
+            # read dem
+            dem = model._model.data_catalog.get_rasterdataset(demfile, bbox=bbox)
+
+            # convert dem from dem units to floodmap units
+            dem_conversion = us.UnitfulLength(
+                value=1.0, units=self.settings.dem.units
+            ).convert(self.settings.config.floodmap_units)
+
+            # now downscale the water levels to the high-resolution DEM
+            # loop through all time steps of zs
+            for i in range(zs.shape[0]):
+                h = utils.downscale_floodmap(
+                    zsmax=zs[i],
+                    dep=dem_conversion * dem,
+                    hmin=0.01,
+                )
+
+                # add the 'time' coordinate
+                h["time"] = zs.time[i]
+
+                # create (or append) and xarray DataArray while concatenating along the time dimension
+                if i == 0:
+                    da_h = h
+                else:
+                    da_h = xr.concat([da_h, h], dim="time")
+
+        step = 1  # one frame every <step> dtout
+        # crs = ccrs.epsg(model._model.crs.to_epsg())
+        crs_str = model._model.crs.to_string()
+
+        fig, ax = plt.subplots(1, 1, figsize=(11, 7))
+
+        # first frame
+        h0 = da_h.isel(time=0)
+        cax_h = h0.plot(
+            x="x",
+            y="y",
+            ax=ax,
+            vmin=vmin,
+            vmax=vmax,
+            cmap="Blues",
+            zorder=1,
+            cbar_kwargs={
+                "shrink": 0.6,
+                "label": f"Water depth [{self.settings.config.floodmap_units.value}]",
+            },
+        )
+
+        # add basemap in the model CRS (contextily will reproject)
+        ctx.add_basemap(
+            ax,
+            crs=crs_str,
+            source=ctx.providers.CartoDB.Positron,
+            zoom=zoomlevel,
+            zorder=0,
+        )
+
+        def update_plot(i, da_h, cax_h):
+            da_hi = da_h.isel(time=i)
+            t = da_hi.time.dt.strftime("%d-%B-%Y %H:%M:%S").item()
+            ax.set_title(f"{t}")
+            print(f"Adding frame {t}")
+            cax_h.set_array(da_hi.to_numpy().ravel())
+            return cax_h
+
+        ax.set_aspect("equal", adjustable="box")
+
+        ani = animation.FuncAnimation(
+            fig,
+            update_plot,
+            frames=np.arange(0, da_h.time.size, step),
+            interval=100,  # ms between frames
+            fargs=(
+                da_h,
+                cax_h,
+            ),
+            repeat=False,
+        )
+
+        # to save to mp4
+        if bbox is not None:
+            lon_min = f"{bbox[0]:.2f}".replace(".", "p").replace("-", "m")
+            lon_max = f"{bbox[2]:.2f}".replace(".", "p").replace("-", "m")
+            fn_out = os.path.join(
+                results_path, f"{scenario.name}_lon_{lon_min}_{lon_max}.mp4"
+            )
+        else:
+            fn_out = os.path.join(results_path, f"{scenario.name}.mp4")
+        # make sure output directory exists
+        os.makedirs(os.path.dirname(fn_out), exist_ok=True)
+        ani.save(fn_out, fps=1, dpi=200)
+
+        plt.close(fig)
+
+        logger.info("Flood animation saved.")
+
+        return fn_out
 
     def write_water_level_map(
         self, scenario: Scenario, sim_path: Optional[Path] = None
@@ -1611,6 +1749,19 @@ class SfincsAdapter(IHazardAdapter):
         zsmax.attrs["units"] = self.settings.config.floodmap_units.value
 
         return zsmax
+
+    def _get_zs(self):
+        """Read zsmax file and return absolute maximum water level over entire simulation."""
+        self._model.read_results()
+        zs = self._model.results["zs"]
+
+        # Convert from meters to floodmap units
+        floodmap_conversion = us.UnitfulLength(
+            value=1.0, units=us.UnitTypesLength.meters
+        ).convert(self.settings.config.floodmap_units)
+        zs = zs * floodmap_conversion
+        zs.attrs["units"] = self.settings.config.floodmap_units.value
+        return zs
 
     def _get_zs_points(self):
         """Read water level (zs) timeseries at observation points.
