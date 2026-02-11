@@ -3,9 +3,10 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel, Field, model_validator
+import geopandas as gpd
+from pydantic import BaseModel, Field, PrivateAttr, field_serializer, model_validator
 
-from flood_adapt.misc.utils import resolve_filepath, save_file_to_database
+from flood_adapt.misc.utils import path_exists_and_absolute
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.object_model import Object
 
@@ -58,6 +59,7 @@ class SocioEconomicChange(BaseModel):
     population_growth_new: Optional[float] = 0.0
     new_development_elevation: Optional[us.UnitfulLengthRefValue] = None
     new_development_shapefile: Optional[str] = None
+    _gdf: gpd.GeoDataFrame | None = PrivateAttr(default=None)
 
     @model_validator(mode="after")
     def validate_selection_type(self) -> "SocioEconomicChange":
@@ -67,6 +69,28 @@ class SocioEconomicChange(BaseModel):
                     "If `population_growth_new` is non-zero, then `new_development_shapefile` must also be provided."
                 )
         return self
+
+    @field_serializer("new_development_shapefile")
+    def serialize_new_development_shapefile(
+        self, value: Optional[str]
+    ) -> Optional[str]:
+        """Serialize the new_development_shapefile attribute to a string of only the file name."""
+        if value is None:
+            return None
+        return Path(value).name
+
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        if self.new_development_shapefile is not None:
+            self.new_development_shapefile = path_exists_and_absolute(
+                self.new_development_shapefile, file_path
+            ).as_posix()
+
+    def read_gdf(self, reload: bool = False) -> gpd.GeoDataFrame | None:
+        if self._gdf is not None and not reload:
+            return self._gdf
+        if self.new_development_shapefile is not None:
+            self._gdf = gpd.read_file(self.new_development_shapefile)
+        return self._gdf
 
 
 class Projection(Object):
@@ -92,12 +116,14 @@ class Projection(Object):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.socio_economic_change.new_development_shapefile:
-            src_path = resolve_filepath(
-                "projections",
-                self.name,
-                self.socio_economic_change.new_development_shapefile,
-            )
-            path = save_file_to_database(src_path, Path(output_dir))
+            gdf = self.socio_economic_change.read_gdf()
+            if gdf is None:
+                raise ValueError(
+                    "The socio-economic change has a new development shapefile path, but the GeoDataFrame could not be read."
+                )
+            filename = Path(self.socio_economic_change.new_development_shapefile).name
+            path = Path(output_dir, filename)
+            gdf.to_file(path)
 
-            # Update the shapefile path in the object so it is saved in the toml file as well
-            self.socio_economic_change.new_development_shapefile = path.name
+    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+        self.socio_economic_change._post_load(file_path)

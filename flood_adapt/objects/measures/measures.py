@@ -202,20 +202,16 @@ class Measure(Object):
                     f"Cannot save measure {self.name}: `polygon_file` is set but no GeoDataFrame could be read from it."
                 )
             filename = Path(self.polygon_file).name
-            file_path = Path(output_dir, filename).with_suffix(".geojson")
-            gdf.to_file(file_path, driver="GeoJSON")
-            self.polygon_file = file_path.as_posix()
+            file_path = Path(output_dir, filename)
+            gdf.to_file(file_path)
 
     def read_gdf(self, reload: bool = False) -> gpd.GeoDataFrame | None:
         """Read the polygon file as a GeoDataFrame if it exists."""
         if self._gdf is not None and not reload:
             return self._gdf
-
         if self.polygon_file:
             self._gdf = gpd.read_file(self.polygon_file)
-            return self._gdf
-        else:
-            return None
+        return self._gdf
 
 
 class HazardMeasure(Measure):
