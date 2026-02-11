@@ -8,9 +8,9 @@ from flood_adapt.objects.events.hurricane import HurricaneEvent
 from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
 from tests.test_objects.test_events.test_hurricane import setup_hurricane_event
 
-pytestmark = (
-    pytest.mark.integration
-)  # mark all tests in this module as integration tests
+# mark all tests in this module as integration tests
+pytestmark = pytest.mark.integration
+
 __all__ = ["setup_hurricane_event"]
 
 

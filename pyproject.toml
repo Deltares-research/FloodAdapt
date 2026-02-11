@@ -99,7 +99,7 @@ flood_adapt = ["py.typed", "database_builder/**"]
 [tool.pytest.ini_options]
 addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
 markers = [
-    "integration: runs external binaries (SFINCS/FIAT) or network calls",
+    "integration: runs external binaries (SFINCS/FIAT)",
 ]
 testpaths = ["tests"]
 

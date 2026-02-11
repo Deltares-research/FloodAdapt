@@ -178,6 +178,7 @@ class TestScenarios:
     platform.system() == "Linux",
     reason="Skipped on Linux due to broken sfincs binary",
 )
+@pytest.mark.integration
 class TestOutput:
     @pytest.fixture(scope="class")
     def completed_scenario(self, test_fa_class: FloodAdapt):
