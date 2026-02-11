@@ -110,6 +110,7 @@ platforms = ["win-64", "linux-64"]
 
 [tool.pixi.dependencies]
 python = "3.12.*"
+ffmpeg = "*"
 
 [tool.pixi.feature.build.pypi-dependencies]
 flood-adapt = { path = "." }
