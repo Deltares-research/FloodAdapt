@@ -32,6 +32,10 @@ class IDatabase(ABC):
     ) -> None: ...
 
     @abstractmethod
+    def read_site(self, site_name: str) -> Site:
+        pass
+
+    @abstractmethod
     def get_outputs(self) -> dict[str, Any]:
         pass
 
