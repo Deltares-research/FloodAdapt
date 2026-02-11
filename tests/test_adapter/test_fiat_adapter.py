@@ -14,6 +14,9 @@ from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
 
 _FIAT_COLUMNS = get_fiat_columns()
 
+# mark all tests in this module as integration tests since they require running a full scenario
+pytestmark = pytest.mark.integration
+
 
 @pytest.mark.skipif(
     platform.system() == "Linux",

@@ -754,7 +754,6 @@ class SfincsAdapter(IHazardAdapter):
 
         TODO: make this robust and more efficient for bigger datasets.
         """
-        # Check if the scenario is a risk scenario
         event = self.database.events.get_event_set(scenario.event)
         logger.info("Calculating flood risk maps, this may take some time.")
 
@@ -805,6 +804,14 @@ class SfincsAdapter(IHazardAdapter):
             return_periods=floodmap_rp,
         )
 
+        # convert dem from dem units to floodmap units
+        dem_conversion = us.UnitfulLength(
+            value=1.0, units=self.settings.dem.units
+        ).convert(self.settings.config.floodmap_units)
+        dem = self._model.data_catalog.get_rasterdataset(
+            self.database.get_topobathy_path()
+        )
+
         # For each return period, save water level and flood depth maps
         for ii, rp in enumerate(floodmap_rp):
             # Prepare data array for the return period flood map
@@ -849,18 +856,9 @@ class SfincsAdapter(IHazardAdapter):
                 tags={"units": self.settings.config.floodmap_units.value},
             )
 
-            # dem file for high resolution flood depth map
-            demfile = self.database.static_path / "dem" / self.settings.dem.filename
-            # convert dem from dem units to floodmap units
-            dem_conversion = us.UnitfulLength(
-                value=1.0, units=self.settings.dem.units
-            ).convert(self.settings.config.floodmap_units)
-
             # writing the geotiff to the scenario results folder
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
-                dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
                 floodmap_fn = result_path / f"RP_{rp:04d}_FloodMap.tif"
-
                 utils.downscale_floodmap(
                     zsmax=zs_rp_single,
                     dep=dem_conversion * dem,

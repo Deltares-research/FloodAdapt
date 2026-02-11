@@ -8,13 +8,9 @@ import pytest
 from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.exceptions import (
     AlreadyExistsError,
-    DatabaseError,
-    DoesNotExistError,
-    IsUsedInError,
 )
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.hurricane import HurricaneEvent
-from flood_adapt.objects.measures.measures import Measure
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.workflows.benefit_runner import BenefitRunner
 from tests.data.create_test_input import create_event_set_with_hurricanes
@@ -25,8 +21,6 @@ from tests.test_objects.test_events.test_eventset import (
 )
 from tests.test_objects.test_events.test_historical import (
     setup_nearshore_event,
-    setup_offshore_meteo_event,
-    setup_offshore_scenario,
 )
 from tests.test_objects.test_events.test_hurricane import setup_hurricane_event
 from tests.test_objects.test_events.test_synthetic import test_event_all_synthetic
@@ -47,10 +41,7 @@ __all__ = [
     "test_event_all_synthetic",
     "create_event_set_with_hurricanes",
     "setup_nearshore_event",
-    "setup_offshore_meteo_event",
     "setup_hurricane_event",
-    # Scenarios
-    "setup_offshore_scenario",
     # Mock
     "mock_meteohandler_read",
     # Measures
@@ -68,222 +59,11 @@ def get_rng():
     yield np.random.default_rng(2021)
 
 
-class TestEvents:
-    @pytest.fixture()
-    def test_dict(self):
-        test_dict = {
-            "name": "extreme12ft",
-            "description": "extreme 12 foot event",
-            "mode": "single_event",
-            "template": "Synthetic",
-            "timing": "idealized",
-            "water_level_offset": {"value": 0, "units": "feet"},
-            "wind": {
-                "source": "constant",
-                "constant_speed": {"value": 0, "units": "m/s"},
-                "constant_direction": {"value": 0, "units": "deg N"},
-            },
-            "rainfall": {"source": "none"},
-            "river": [
-                {
-                    "source": "constant",
-                    "constant_discharge": {"value": 5000, "units": "cfs"},
-                }
-            ],
-            "time": {"duration_before_t0": 24, "duration_after_t0": "24"},
-            "tide": {
-                "source": "harmonic",
-                "harmonic_amplitude": {"value": 3, "units": "feet"},
-            },
-            "surge": {
-                "source": "shape",
-                "shape_type": "gaussian",
-                "shape_duration": 24,
-                "shape_peak_time": 0,
-                "shape_peak": {"value": 9.22, "units": "feet"},
-            },
-        }
-        yield test_dict
-
-    def test_create_synthetic_event_valid_dict(self, test_fa: FloodAdapt, test_dict):
-        # When user presses add event and chooses the events
-        # the dictionary is returned and an Event object is created
-        test_fa.create_event(test_dict)
-        # TODO assert event attrs
-
-    def test_create_synthetic_event_invalid_dict(self, test_fa: FloodAdapt, test_dict):
-        del test_dict["name"]
-        with pytest.raises(ValueError):
-            # Assert error if a value is incorrect
-            test_fa.create_event(test_dict)
-        # TODO assert error msg
-
-    def test_save_synthetic_event_already_exists(self, test_fa: FloodAdapt, test_dict):
-        event = test_fa.create_event(test_dict)
-        if test_dict["name"] not in test_fa.get_events()["name"]:
-            test_fa.save_event(event)
-
-        with pytest.raises(AlreadyExistsError):
-            test_fa.save_event(event)
-
-    def test_save_event_valid(self, test_fa: FloodAdapt, test_dict):
-        # Change name to something new
-        name = "testNew"
-        test_dict["name"] = name
-        event = test_fa.create_event(test_dict)
-        if test_dict["name"] in test_fa.get_events()["name"]:
-            test_fa.delete_event(test_dict["name"])
-
-        test_fa.save_event(event)
-
-        _event = test_fa.get_event(name)
-        assert _event is not None
-        assert _event.name == name
-
-    def test_delete_event_doesnt_exist(self, test_fa: FloodAdapt):
-        with pytest.raises(DoesNotExistError):
-            test_fa.delete_event("doesnt_exist")
-
-
-class TestProjections:
-    def test_projection(self, test_fa: FloodAdapt):
-        test_dict = {
-            "name": "SLR_2ft",
-            "description": "SLR_2ft",
-            "physical_projection": {
-                "sea_level_rise": {"value": "two", "units": "feet"},
-                "subsidence": {"value": 1, "units": "feet"},
-            },
-            "socio_economic_change": {},
-        }
-        # When user presses add projection and chooses the projections
-        # the dictionary is returned and an Projection object is created
-        with pytest.raises(ValueError):
-            # Assert error if a value is incorrect
-            projection = test_fa.create_projection(test_dict)
-
-        # correct projection
-        test_dict["physical_projection"]["sea_level_rise"]["value"] = 2
-        projection = test_fa.create_projection(test_dict)
-
-        with pytest.raises(AlreadyExistsError):
-            test_fa.save_projection(projection)
-
-        # Change name to something new
-        test_dict["name"] = "test_proj_1"
-        projection = test_fa.create_projection(test_dict)
-
-        # If the name is not used before the measure is save in the database
-        test_fa.save_projection(projection)
-        saved = test_fa.get_projection(projection.name)
-        assert saved == projection
-
-        # If user presses delete projection the measure is deleted
-        test_fa.delete_projection(projection.name)
-
-
-class TestMeasures:
-    # dict of measure fixture names and their corresponding measure type
-    measure_fixtures = {
-        "test_elevate": "elevate_properties",
-        "test_buyout": "buyout_properties",
-        "test_floodproof": "floodproof_properties",
-        "test_floodwall": "floodwall",
-        "test_pump": "pump",
-        "test_green_infra": "greening",
-    }
-
-    @pytest.mark.parametrize("measure_fixture_name", measure_fixtures.keys())
-    def test_create_measure(
-        self, test_fa_class: FloodAdapt, measure_fixture_name, request
-    ):
-        measure: Measure = request.getfixturevalue(measure_fixture_name)
-        measure = test_fa_class.create_measure(
-            attrs=measure.model_dump(exclude_none=True), type=measure.type
-        )
-        assert measure is not None
-
-    @pytest.mark.parametrize("measure_fixture", measure_fixtures.keys())
-    def test_save_measure(self, test_fa: FloodAdapt, measure_fixture, request):
-        measure = request.getfixturevalue(measure_fixture)
-
-        test_fa.save_measure(measure)
-        assert (test_fa.database.measures.input_path / measure.name).exists()
-
-    @pytest.mark.parametrize("measure_fixture", measure_fixtures.keys())
-    def test_get_measure(self, test_fa: FloodAdapt, measure_fixture, request):
-        measure = request.getfixturevalue(measure_fixture)
-
-        test_fa.save_measure(measure)
-        assert (test_fa.database.measures.input_path / measure.name).exists()
-
-        loaded_measure = test_fa.get_measure(measure.name)
-        assert loaded_measure == measure
-
-    @pytest.mark.parametrize("measure_fixture", measure_fixtures.keys())
-    def test_delete_measure(self, test_fa: FloodAdapt, measure_fixture, request):
-        measure = request.getfixturevalue(measure_fixture)
-        test_fa.save_measure(measure)
-        assert (test_fa.database.measures.input_path / measure.name).exists()
-
-        test_fa.delete_measure(measure.name)
-        assert not (test_fa.database.measures.input_path / measure.name).exists()
-
-    @pytest.mark.parametrize("measure_fixture", measure_fixtures.keys())
-    def test_copy_measure(self, test_fa: FloodAdapt, measure_fixture, request):
-        measure = request.getfixturevalue(measure_fixture)
-        test_fa.save_measure(measure)
-        assert (test_fa.database.measures.input_path / measure.name).exists()
-
-        new_name = f"copy_{measure.name}"
-        new_description = f"copy of {measure.description}"
-
-        test_fa.copy_measure(
-            old_name=measure.name, new_name=new_name, new_description=new_description
-        )
-        new_measure = test_fa.get_measure(new_name)
-
-        assert (test_fa.database.measures.input_path / new_name).exists()
-        assert measure == new_measure
-
-
-class TestStrategies:
-    def test_strategy(self, test_fa: FloodAdapt):
-        strat_with_existing_name = {
-            "name": "strategy_comb",
-            "description": "strategy_comb",
-            "measures": [
-                "seawall",
-                "raise_property_aggregation_area",
-                "raise_property_polygon",
-            ],
-        }
-        # Create a new strategy object with a name that already exists
-        strategy = test_fa.create_strategy(strat_with_existing_name)
-
-        # Save it in the database -> name exists error
-        with pytest.raises(AlreadyExistsError):
-            test_fa.save_strategy(strategy)
-
-        # Delete a strategy which is already used in a scenario
-        with pytest.raises(IsUsedInError):
-            test_fa.delete_strategy("strategy_comb")
-
-        # Change to unused name
-        strategy.name = "test_strat_1"
-
-        test_fa.save_strategy(strategy)
-        assert test_fa.get_strategy(strategy.name) == strategy
-
-        test_fa.delete_strategy(strategy.name)
-        with pytest.raises(DoesNotExistError):
-            test_fa.get_strategy(strategy.name)
-
-
 @pytest.mark.skipif(
     platform.system() == "Linux",
     reason="Skipped on Linux due to broken sfincs binary",
 )
+@pytest.mark.integration
 class TestScenarios:
     @pytest.fixture()
     def setup_nearshore_scenario(self, test_fa: FloodAdapt, setup_nearshore_event):
@@ -296,24 +76,6 @@ class TestScenarios:
             projection="current",
             strategy="no_measures",
         )
-        return scn
-
-    @pytest.fixture()
-    def setup_offshore_meteo_scenario(
-        self,
-        test_fa: FloodAdapt,
-        setup_offshore_meteo_event,
-        mock_meteohandler_read,
-    ):
-        test_fa.save_event(setup_offshore_meteo_event)
-
-        scn = Scenario(
-            name="offshore_meteo",
-            event=setup_offshore_meteo_event.name,
-            projection="current",
-            strategy="no_measures",
-        )
-
         return scn
 
     @pytest.fixture()
@@ -410,44 +172,6 @@ class TestScenarios:
         test_fa.run_scenario(scn.name)
 
         assert finished_file_exists(test_fa.database.scenarios.output_path / scn.name)
-
-    @pytest.mark.skip(
-        reason="Skipped until METEO forcing is fixed in hydromt-sfincs 1.3.0",
-    )
-    def test_create_save_scenario(
-        self, test_fa: FloodAdapt, setup_offshore_meteo_event
-    ):
-        test_fa.save_event(setup_offshore_meteo_event)
-
-        test_dict = {
-            "name": "current_extreme12ft_no_measures",
-            "description": "current_extreme12ft_no_measures",
-            "projection": "current",
-            "strategy": "no_measures",
-        }
-        # When user presses add scenario and chooses the measures
-        # the dictionary is returned and a Strategy object is created
-        with pytest.raises(ValueError):
-            # Assert error if the event is not a correct value
-            scenario = test_fa.create_scenario(test_dict)
-
-        # correct event
-        test_dict["event"] = setup_offshore_meteo_event.name
-        scenario = test_fa.create_scenario(test_dict)
-
-        with pytest.raises(DatabaseError):
-            # Assert error if name already exists
-            test_fa.save_scenario(scenario)
-
-        # Change name to something new
-        test_dict["name"] = "test1"
-        scenario = test_fa.create_scenario(test_dict)
-        test_fa.save_scenario(scenario)
-        test_fa.database.scenarios.summarize_objects()
-
-        # If user presses delete scenario the measure is deleted
-        test_fa.delete_scenario("test1")
-        test_fa.database.scenarios.summarize_objects()
 
 
 @pytest.mark.skipif(

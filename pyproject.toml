@@ -98,6 +98,9 @@ flood_adapt = ["py.typed", "database_builder/**"]
 ### pytest ###
 [tool.pytest.ini_options]
 addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
+markers = [
+    "integration: runs external binaries (SFINCS/FIAT) or network calls",
+]
 testpaths = ["tests"]
 
 ### pixi ###
@@ -126,7 +129,9 @@ update-test-db = { depends-on = ["update-test-db-static", "update-test-db-input"
 install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"] }
 pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"] }
 lint = { depends-on=["pre-commit"] }
-tests = {cmd = "pytest tests"}
+tests-unit = { cmd = "pytest tests -m 'not integration'" }
+tests-integration = { cmd = "pytest tests -m integration" }
+tests = { cmd = "pytest tests" }
 
 [tool.pixi.feature.build.tasks]
 build-db-builder = {cmd = "python distribution/build_database_builder_executable.py" }

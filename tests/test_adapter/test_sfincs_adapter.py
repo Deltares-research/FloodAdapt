@@ -1530,6 +1530,7 @@ class TestPostProcessing:
         return_periods = [2, 50, 100]
         return floodmaps, frequencies, zb, mask, return_periods
 
+    @pytest.mark.integration
     def test_write_geotiff(
         self,
         adapter_preprocess_process_scenario_class: Tuple[SfincsAdapter, Scenario],
@@ -1544,6 +1545,7 @@ class TestPostProcessing:
         # Assert
         assert floodmap_path.exists()
 
+    @pytest.mark.integration
     @pytest.mark.parametrize("floodmaps_fixture", ["floodmaps_1d", "floodmaps_2d"])
     def test_calc_rp_maps_basic(self, request, floodmaps_fixture):
         floodmaps, frequencies, zb, mask, return_periods = request.getfixturevalue(

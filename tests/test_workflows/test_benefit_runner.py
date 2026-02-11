@@ -6,7 +6,12 @@ import pytest
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.io import read_toml
 from flood_adapt.workflows.benefit_runner import Benefit, BenefitRunner
-from tests.test_objects.test_benefits.test_benefit import _RAND, _TEST_NAMES
+
+_RAND = np.random.default_rng(2021)  # Value to make sure randomizing is always the same
+_TEST_NAMES = {
+    "benefit_with_costs": "benefit_raise_properties_2050",
+    "benefit_without_costs": "benefit_raise_properties_2050_no_costs",
+}
 
 
 # Tests for when the scenarios needed for the benefit analysis are not there yet

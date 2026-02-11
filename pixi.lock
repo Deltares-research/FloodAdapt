@@ -2009,7 +2009,7 @@ packages:
 - pypi: ./
   name: flood-adapt
   version: 2.0.3
-  sha256: 4b85fba9a459222bb01f0eec36ad75bc11dce60b7eb3b985f381d3aaafcb0f36
+  sha256: 0da1df001d52f93eafa4b5df68a5e5b33552627d92d4de3c77a99cb40751eb22
   requires_dist:
   - cht-cyclones>=1.0.3,<2.0
   - cht-meteo>=0.3.1,<1.0
@@ -2058,7 +2058,7 @@ packages:
 - pypi: ./
   name: flood-adapt
   version: 2.0.3
-  sha256: 4b85fba9a459222bb01f0eec36ad75bc11dce60b7eb3b985f381d3aaafcb0f36
+  sha256: 0da1df001d52f93eafa4b5df68a5e5b33552627d92d4de3c77a99cb40751eb22
   requires_dist:
   - cht-cyclones>=1.0.3,<2.0
   - cht-meteo>=0.3.1,<1.0
