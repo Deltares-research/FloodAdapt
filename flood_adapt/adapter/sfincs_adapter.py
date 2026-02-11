@@ -703,7 +703,14 @@ class SfincsAdapter(IHazardAdapter):
         )
 
         # to save to mp4
-        fn_out = os.path.join(results_path, f"{scenario.name}.mp4")
+        if bbox is not None:
+            lon_min = f"{bbox[0]:.2f}".replace(".", "p").replace("-", "m")
+            lon_max = f"{bbox[2]:.2f}".replace(".", "p").replace("-", "m")
+            fn_out = os.path.join(
+                results_path, f"{scenario.name}_lon_{lon_min}_{lon_max}.mp4"
+            )
+        else:
+            fn_out = os.path.join(results_path, f"{scenario.name}.mp4")
         # make sure output directory exists
         os.makedirs(os.path.dirname(fn_out), exist_ok=True)
         ani.save(fn_out, fps=1, dpi=200)
