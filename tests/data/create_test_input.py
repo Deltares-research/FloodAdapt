@@ -86,12 +86,9 @@ def update_database_input(database_path: Path):
         The path to the database directory. This is the directory that contains the `input`, `static` and `output` directories.
 
     """
-    input_dir = database_path / "input"
-    if input_dir.exists():
-        shutil.rmtree(input_dir)
-    database = Database(database_path.parent, database_path.name)
-
-    input_dir.mkdir(parents=True)
+    # Clear existing input and output directories
+    shutil.rmtree(database_path / "input", ignore_errors=True)
+    shutil.rmtree(database_path / "output", ignore_errors=True)
     for obj_dir in [
         "events",
         "projections",
@@ -100,7 +97,10 @@ def update_database_input(database_path: Path):
         "scenarios",
         "benefits",
     ]:
-        (input_dir / obj_dir).mkdir()
+        (database_path / "input" / obj_dir).mkdir(parents=True, exist_ok=True)
+
+    # Initialize database
+    database = Database(database_path.parent, database_path.name)
 
     for event in create_events():
         database.events.add(event)

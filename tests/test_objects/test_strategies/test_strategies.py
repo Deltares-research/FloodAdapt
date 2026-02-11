@@ -197,7 +197,7 @@ def test_check_overlapping_measures(
     mock_get_object_ids.return_value = [1, 2, 3]
 
     with pytest.raises(DatabaseError) as excinfo:
-        test_db.strategies._check_overlapping_measures(strategy.measures)
+        test_db.strategies._assert_no_overlapping_measures(strategy.measures)
 
     assert (
         "Cannot create strategy! There are overlapping buildings for which measures are proposed"

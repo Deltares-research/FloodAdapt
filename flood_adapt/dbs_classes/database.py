@@ -27,6 +27,7 @@ from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import finished_file_exists
+from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.output.floodmap import FloodMap
@@ -118,7 +119,7 @@ class Database(IDatabase):
         self.read_site()
 
         # Initialize the different database objects
-        self.initialize_repositories()
+        self._initialize_repositories()
         self.load()
 
         # Delete any unfinished/crashed scenario output after initialization
@@ -134,7 +135,7 @@ class Database(IDatabase):
             )
         self.site = Site.load_file(site_path)
 
-    def initialize_repositories(self):
+    def _initialize_repositories(self):
         """Initialize object repositories and store them in `self._repositories`."""
         self.static = DbsStatic(self)
         self.events = DbsEvent(self, standard_objects=self.site.standard_objects.events)
@@ -613,8 +614,12 @@ class Database(IDatabase):
             Name of the scenario to delete simulations for.
         """
         scn = self.scenarios.get(scenario_name)
-        event = self.events.get(scn.event, load_all=True)
-        sub_events = event._events if event.mode == Mode.risk else None
+        event = self.events.get(scn.event)
+        if isinstance(event, EventSet):
+            event = self.events.get_event_set(scn.event)
+            sub_events = event._events
+        else:
+            sub_events = None
 
         if not self.site.sfincs.config.save_simulation:
             # Delete SFINCS overland

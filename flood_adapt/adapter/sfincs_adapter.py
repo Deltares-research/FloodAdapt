@@ -755,9 +755,7 @@ class SfincsAdapter(IHazardAdapter):
         TODO: make this robust and more efficient for bigger datasets.
         """
         # Check if the scenario is a risk scenario
-        event: EventSet = self.database.events.get(scenario.event, load_all=True)
-        if not isinstance(event, EventSet):
-            raise ValueError("This function is only available for risk scenarios.")
+        event = self.database.events.get_event_set(scenario.event)
         logger.info("Calculating flood risk maps, this may take some time.")
 
         # Get the simulation paths and result path
@@ -899,7 +897,7 @@ class SfincsAdapter(IHazardAdapter):
 
         This means preprocessing and running the SFINCS model for each event in the event set, and then postprocessing the results.
         """
-        event_set: EventSet = self.database.events.get(scenario.event, load_all=True)
+        event_set: EventSet = self.database.events.get_event_set(scenario.event)
         total = len(event_set._events)
 
         for i, sub_event in enumerate(event_set._events):

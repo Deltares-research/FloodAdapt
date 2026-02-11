@@ -79,7 +79,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
             list of scenarios that use the strategy
         """
         scenarios = [
-            self._database.scenarios.get(scn)
+            self._database.scenarios.get(scn.name)
             for scn in self._database.scenarios.list_all()
         ]
 

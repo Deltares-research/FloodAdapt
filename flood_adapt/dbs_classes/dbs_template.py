@@ -32,13 +32,14 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         self._objects: dict[str, T_OBJECTMODEL] = {}
         self._mutated: set[str] = set()
         self._deleted: set[str] = set()
-        self._last_modified: dict[str, str] = {}
+        self._last_modified: dict[str, datetime] = {}
 
         self._database = database
         self.input_path = database.input_path / self.dir_name
         self.output_path = database.output_path / self.dir_name
         self.standard_objects = standard_objects
 
+    ## Public
     ## IO
     def load(self, names: list[str] | None = None):
         """Read all objects from self.input_path and add them to the in-memory database."""
@@ -116,17 +117,47 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         self._mutated.clear()
         self._deleted.clear()
 
-    def _read_object(self, path: Path) -> T_OBJECTMODEL:
-        """Read object from disk, overwritable function that is called in `flush`."""
-        return self._object_class.load_file(path)
+    def used_by_higher_level(self, name: str) -> list[str]:
+        """Check if an object is used in a higher level object.
 
-    def _write_object(self, obj: T_OBJECTMODEL, path: Path) -> None:
-        """Write object to disk, overwritable function that is called in `flush`."""
-        path.parent.mkdir(parents=True, exist_ok=True)
-        obj.save(path)
+        Parameters
+        ----------
+        name : str
+            name of the object to be checked
+
+        Returns
+        -------
+        list[str]
+            list of higher level objects that use the object
+        """
+        # If this function is not implemented for the object type, it cannot be used in a higher
+        # level object. By default, return an empty list
+        return []
+
+    def list_all(self) -> list[T_OBJECTMODEL]:
+        """Return a list of all objects that currently exist in the database."""
+        return list(self._objects.values())
 
     ## In memory mutation
     def add(self, obj: T_OBJECTMODEL, overwrite: bool = False):
+        """Add an object to the in-memory database, and mark it for addition during the next flush.
+
+        Parameters
+        ----------
+        obj : Object
+            object to be added to the database
+        overwrite : bool, optional
+            whether to overwrite an existing object with the same name, by default False
+
+        Raises
+        ------
+        AlreadyExistsError
+            Raise error if name is already in use and overwrite is False.
+        IsStandardObjectError
+            Raise error if object to be added is a standard object and overwrite is True.
+        IsUsedInError
+            Raise error if object to be added is already in use and overwrite is True.
+        """
         self._assert_can_be_added(obj, overwrite=overwrite)
         self._objects[obj.name] = obj
         self._mutated.add(obj.name)
@@ -159,7 +190,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         self.add(source)
 
-    def delete(self, name: str, toml_only: bool = False):
+    def delete(self, name: str):
         """Delete an already existing object from the in-memory database and mark it for deletion during the next flush.
 
         Parameters
@@ -216,17 +247,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             A dictionary that contains the keys: `name`, `description`, `path`  and `last_modification_date`.
             Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
         """
-        return self._get_object_summary()
-
-    def _get_object_summary(self) -> dict[str, list[Any]]:
-        """Get a dictionary with all the toml paths and last modification dates that exist in the database of the given object_type.
-
-        Returns
-        -------
-        dict[str, Any]
-            A dictionary that contains the keys: `name`, `description`, `path`  and `last_modification_date`.
-            Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
-        """
         names = list(self._objects)
         paths = [self._object_path(self.input_path, name) for name in names]
         descriptions = [obj.description for obj in self._objects.values()]
@@ -239,8 +259,19 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         }
         return objects
 
+    ## Private methods
+    def _read_object(self, path: Path) -> T_OBJECTMODEL:
+        """Read object from disk, overwritable function that is called in `flush`."""
+        return self._object_class.load_file(path)
+
+    def _write_object(self, obj: T_OBJECTMODEL, path: Path) -> None:
+        """Write object to disk, overwritable function that is called in `flush`."""
+        path.parent.mkdir(parents=True, exist_ok=True)
+        obj.save(path)
+
     # Helpers
     def _object_path(self, base: Path, name: str):
+        """Get the path to the toml file of an object with a given name."""
         return base / name / f"{name}.toml"
 
     def _is_standard_object(self, name: str) -> bool:
@@ -261,52 +292,14 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         return False
 
     def _has_object(self, name: str) -> bool:
+        """Check if an object with the given name exists in the database."""
         return name in self._objects
-
-    def used_by_higher_level(self, name: str) -> list[str]:
-        """Check if an object is used in a higher level object.
-
-        Parameters
-        ----------
-        name : str
-            name of the object to be checked
-
-        Returns
-        -------
-        list[str]
-            list of higher level objects that use the object
-        """
-        # If this function is not implemented for the object type, it cannot be used in a higher
-        # level object. By default, return an empty list
-        return []
-
-    def list_all(self) -> list[T_OBJECTMODEL]:
-        return list(self._objects.values())
 
     # Validation
     def _assert_can_be_added(
         self, object_model: T_OBJECTMODEL, overwrite: bool
     ) -> None:
-        """Validate if the object can be added to the database.
-
-        Parameters
-        ----------
-        object_model : Object
-            object to be validated
-
-        Raises
-        ------
-        AlreadyExistsError
-            Raise error if name is already in use.
-        IsStandardObjectError
-            Raise error if object to be deleted is a standard object.
-        IsUsedInError
-            Raise error if object to be deleted is already in use.
-        DoesNotExistError
-            Raise error if object to be deleted does not exist.
-        DatabaseError
-            Raise error if the deletion of the object fails.
-        """
+        """Validate if the object can be added to the database and raise appropriate errors if not."""
         if self._has_object(object_model.name):
             if overwrite:
                 self._assert_can_be_deleted(object_model.name)
@@ -314,21 +307,20 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
                 raise AlreadyExistsError(object_model.name, self.display_name)
 
     def _assert_can_be_deleted(self, name: str) -> None:
-        # Check if the object is a standard object. If it is, raise an error
+        """Validate if the object can be deleted from the database and raise appropriate errors if not."""
         if self._is_standard_object(name):
             raise IsStandardObjectError(name, self.display_name)
 
-        # Check if object is used in a higher level object. If it is, raise an error
         if used_in := self.used_by_higher_level(name):
             raise IsUsedInError(
                 name, self.display_name, self._higher_lvl_object, used_in
             )
 
-        # Check if the object exists
         if name not in self._objects:
             raise DoesNotExistError(name, self.display_name)
 
     def _assert_has_object(self, name: str) -> None:
+        """Validate if the object exists in the database and raise an error if not."""
         if not self._has_object(name):
             raise DoesNotExistError(name, self.display_name)
 

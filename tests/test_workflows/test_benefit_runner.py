@@ -1,5 +1,3 @@
-import shutil
-
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -87,12 +85,11 @@ class TestBenefitScenariosNotCreated:
         self, benefit_obj_and_runner: tuple[Benefit, BenefitRunner]
     ):
         benefit_obj, runner = benefit_obj_and_runner
-        # Delete one of the scenarios
-        to_delete = (
-            runner.database.scenarios.input_path
-            / runner.scenarios["scenario created"][0]
+
+        # Delete the scenarios like this. calling `delete` will raise IsUsedInError
+        runner.database.scenarios._objects.pop(
+            runner.scenarios["scenario created"][0], None
         )
-        shutil.rmtree(to_delete)
 
         with pytest.raises(RuntimeError) as exception_info:
             runner.run_cost_benefit()
