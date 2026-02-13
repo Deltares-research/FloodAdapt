@@ -9,31 +9,9 @@ class DbsBenefit(DbsTemplate[Benefit]):
     _object_class = Benefit
     _higher_lvl_object = ""
 
-    def save(self, object_model: Benefit, overwrite: bool = False):
-        """Save a benefit object in the database.
-
-        Parameters
-        ----------
-        object_model : Benefit
-            object of Benefit type
-        overwrite : bool, optional
-            whether to overwrite existing benefit with same name, by default False
-
-        Raises
-        ------
-        DatabaseError
-            Raise error if name is already in use. Names of benefits assessments should be unique.
-        """
-        runner = BenefitRunner(self._database, benefit=object_model)
-
-        # Check if all scenarios are created
-        if not all(runner.scenarios["scenario created"] != "No"):
-            raise DatabaseError(
-                f"'{object_model.name}' name cannot be created before all necessary scenarios are created."
-            )
-
-        # Save the benefit
-        super().save(object_model, overwrite=overwrite)
+    def add(self, obj: Benefit, overwrite: bool = False):
+        self._assert_all_scenarios_created(obj)
+        super().add(obj, overwrite=overwrite)
 
     def get_runner(self, name: str) -> BenefitRunner:
         return BenefitRunner(self._database, self.get(name))
@@ -50,3 +28,12 @@ class DbsBenefit(DbsTemplate[Benefit]):
             True if required scenarios have been already run
         """
         return self.get_runner(name).ready_to_run()
+
+    def _assert_all_scenarios_created(self, benefit: Benefit):
+        runner = BenefitRunner(self._database, benefit=benefit)
+
+        # Check if all scenarios are created
+        if not all(runner.scenarios["scenario created"] != "No"):
+            raise DatabaseError(
+                f"'{benefit.name}' name cannot be created before all necessary scenarios are created."
+            )
