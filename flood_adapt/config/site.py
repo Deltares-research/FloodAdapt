@@ -1,3 +1,4 @@
+import enum
 import os
 from pathlib import Path
 from typing import Literal, Union
@@ -18,6 +19,12 @@ class StandardObjectModel(BaseModel):
     strategies: list[str] = Field(default_factory=list)
 
 
+class GeoGraphicMode(enum.StrEnum):
+    COASTAL = enum.auto()
+    INLAND_OUTFLOW = enum.auto()
+    INLAND_BND = enum.auto()
+
+
 class Site(BaseModel):
     """The expected variables and data types of attributes of the Site class.
 
@@ -33,6 +40,8 @@ class Site(BaseModel):
         Longitude of the site.
     standard_objects : StandardObjectModel, default=StandardObjectModel()
         Standard objects of the site.
+    geographic_mode: GeoGraphicMode
+        The geographic mode of the site, which can be coastal, inland with outflow, or inland with boundary.
     gui : GuiModel
         GUI model of the site.
     sfincs : SfincsModel
@@ -46,6 +55,7 @@ class Site(BaseModel):
     lat: float
     lon: float
     standard_objects: StandardObjectModel = StandardObjectModel()
+    geographic_mode: GeoGraphicMode
 
     gui: GuiModel
     sfincs: SfincsModel
@@ -60,18 +70,10 @@ class Site(BaseModel):
     ) -> None:
         """Write toml file from model object."""
         parent_folder = Path(filepath).parent
-        config_dict = {
-            "name": self.name,
-            "description": self.description,
-            "lat": self.lat,
-            "lon": self.lon,
-            "standard_objects": {
-                "events": self.standard_objects.events,
-                "projections": self.standard_objects.projections,
-                "strategies": self.standard_objects.strategies,
-            },
-            "components": {},
-        }
+        config_dict = self.model_dump(
+            exclude_none=True, exclude={"gui", "sfincs", "fiat"}
+        )
+        config_dict["components"] = {}
 
         if self.sfincs is not None:
             config_dict["components"]["sfincs"] = sfincs

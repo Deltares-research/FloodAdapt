@@ -72,6 +72,7 @@ from flood_adapt.config.sfincs import (
     SfincsModel,
 )
 from flood_adapt.config.site import (
+    GeoGraphicMode,
     Site,
     StandardObjectModel,
 )
@@ -320,6 +321,8 @@ class ConfigModel(BaseModel):
         Path to the database root directory.
     unit_system : UnitSystems
         Unit system for all calculations (imperial or metric).
+    geographic_mode: Optional[GeoGraphicMode]
+        Geographic mode of the site, if not provided it will be determined based on the presence of offshore SFINCS model and/or boundary in the overland model.
     gui : GuiConfigModel
         GUI visualization scaling configuration.
     infographics : bool
@@ -385,6 +388,7 @@ class ConfigModel(BaseModel):
     description: Optional[str] = None
     database_path: Optional[str] = None
     unit_system: UnitSystems
+    geographic_mode: Optional[GeoGraphicMode] = None
     gui: GuiConfigModel
     infographics: bool = True
     event_infographics: Optional[EventInfographicModel] = None
@@ -1873,6 +1877,7 @@ class DatabaseBuilder:
         description = (
             self.config.description if self.config.description else self.config.name
         )
+        mode = self._determine_geographic_mode()
 
         config = Site(
             name=self.config.name,
@@ -1883,6 +1888,7 @@ class DatabaseBuilder:
             gui=gui,
             sfincs=sfincs,
             standard_objects=std_objs,
+            geographic_mode=mode,
         )
         return config
 
@@ -2192,6 +2198,32 @@ class DatabaseBuilder:
             aggregation_levels=aggr_levels,
             infographics_path=path_ig,
         )
+
+    def _determine_geographic_mode(self) -> GeoGraphicMode:
+        if self.config.geographic_mode is not None:
+            # if geographic mode is provided in the config, use it.
+            # Otherwise determine based on the SFINCS model characteristics.
+            return self.config.geographic_mode
+
+        if self.sfincs_offshore_model is not None:
+            return GeoGraphicMode.COASTAL
+
+        # https://sfincs.readthedocs.io/en/latest/parameters.html
+        mask = self.sfincs_overland_model.mask or xr.DataArray()
+        has_bnd = bool(
+            (mask == 2).any()
+        )  # boundary points are marked with 2 in the SFINCS mask
+        has_outflow = bool(
+            (mask == 3).any()
+        )  # outflow points are marked with 3 in the SFINCS mask
+
+        # TODO this needs attention.
+        if has_outflow:
+            return GeoGraphicMode.INLAND_OUTFLOW
+        elif has_bnd:  # and not coastal. How to distinguish between inland with boundary and coastal without offshore model?
+            return GeoGraphicMode.INLAND_BND
+        else:
+            return GeoGraphicMode.COASTAL
 
     @debug_timer
     def add_static_files(self):
