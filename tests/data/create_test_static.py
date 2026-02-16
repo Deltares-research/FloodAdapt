@@ -392,5 +392,6 @@ if __name__ == "__main__":
         DATABASE_ROOT=Path(args.database_root).resolve(),
         DATABASE_NAME=args.database_name,
     )
+    settings.export_to_env()
     print(f"Updating database: {settings.database_path}")
     update_database_static(settings.database_path)
