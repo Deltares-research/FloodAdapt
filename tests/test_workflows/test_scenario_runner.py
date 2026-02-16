@@ -7,9 +7,6 @@ from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
 from tests.conftest import IS_WINDOWS
 from tests.test_objects.test_events.test_hurricane import setup_hurricane_event
 
-# mark all tests in this module as integration tests
-pytestmark = pytest.mark.integration
-
 __all__ = ["setup_hurricane_event"]
 
 
@@ -58,8 +55,8 @@ class Test_scenario_run:
             projection="current",
             strategy="no_measures",
         )
-        test_db.events.add(event)
-        test_db.scenarios.add(scn)
+        test_db.events.save(event)
+        test_db.scenarios.save(scn)
         return test_db, scn, event
 
     def test_run_hurricane_scenario(

@@ -144,8 +144,7 @@ class FloodAdapt:
         DatabaseError
             If the measure object is not valid.
         """
-        self.database.measures.add(measure, overwrite=overwrite)
-        self.database.measures.flush()
+        self.database.measures.save(measure, overwrite=overwrite)
 
     def delete_measure(self, name: str) -> None:
         """Delete an measure from the database.
@@ -161,7 +160,6 @@ class FloodAdapt:
             If the measure does not exist.
         """
         self.database.measures.delete(name)
-        self.database.measures.flush()
 
     def copy_measure(self, old_name: str, new_name: str, new_description: str) -> None:
         """Copy a measure in the database.
@@ -176,7 +174,6 @@ class FloodAdapt:
             The description of the new measure
         """
         self.database.measures.copy(old_name, new_name, new_description)
-        self.database.measures.flush()
 
     def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:
         """Return a table with different types of green infrastructure measures and their infiltration depths.
@@ -266,8 +263,7 @@ class FloodAdapt:
             If the strategy object is not valid.
             If the strategy object already exists.
         """
-        self.database.strategies.add(strategy, overwrite=overwrite)
-        self.database.strategies.flush()
+        self.database.strategies.save(strategy, overwrite=overwrite)
 
     def delete_strategy(self, name: str) -> None:
         """
@@ -284,7 +280,6 @@ class FloodAdapt:
             If the strategy does not exist.
         """
         self.database.strategies.delete(name)
-        self.database.strategies.flush()
 
     def copy_strategy(self, old_name: str, new_name: str, new_description: str) -> None:
         """Copy a strategy in the database.
@@ -299,7 +294,6 @@ class FloodAdapt:
             The description of the new strategy
         """
         self.database.strategies.copy(old_name, new_name, new_description)
-        self.database.strategies.flush()
 
     # Events
     def get_events(self) -> dict[str, Any]:
@@ -394,8 +388,7 @@ class FloodAdapt:
         DatabaseError
             If the event object is not valid.
         """
-        self.database.events.add(event, overwrite=overwrite)
-        self.database.events.flush()
+        self.database.events.save(event, overwrite=overwrite)
 
     def delete_event(self, name: str) -> None:
         """Delete an event from the database.
@@ -412,7 +405,6 @@ class FloodAdapt:
             If the event is used in a scenario.
         """
         self.database.events.delete(name)
-        self.database.events.flush()
 
     def copy_event(self, old_name: str, new_name: str, new_description: str) -> None:
         """Copy an event in the database.
@@ -427,7 +419,6 @@ class FloodAdapt:
             The description of the new event
         """
         self.database.events.copy(old_name, new_name, new_description)
-        self.database.events.flush()
 
     def plot_event_forcing(
         self, event: Event, forcing_type: ForcingType
@@ -534,8 +525,7 @@ class FloodAdapt:
         DatabaseError
             If the projection object is not valid.
         """
-        self.database.projections.add(projection, overwrite=overwrite)
-        self.database.projections.flush()
+        self.database.projections.save(projection, overwrite=overwrite)
 
     def delete_projection(self, name: str) -> None:
         """Delete a projection from the database.
@@ -552,7 +542,6 @@ class FloodAdapt:
             If the projection is used in a scenario.
         """
         self.database.projections.delete(name)
-        self.database.projections.flush()
 
     def copy_projection(
         self, old_name: str, new_name: str, new_description: str
@@ -569,7 +558,6 @@ class FloodAdapt:
             The description of the new projection
         """
         self.database.projections.copy(old_name, new_name, new_description)
-        self.database.projections.flush()
 
     def get_slr_scn_names(
         self,
@@ -696,8 +684,7 @@ class FloodAdapt:
             If the scenario object is not valid or if it already exists and overwrite is False.
 
         """
-        self.database.scenarios.add(scenario, overwrite=overwrite)
-        self.database.scenarios.flush()
+        self.database.scenarios.save(scenario, overwrite=overwrite)
 
     def delete_scenario(self, name: str) -> None:
         """Delete a scenario from the database.
@@ -713,7 +700,6 @@ class FloodAdapt:
             If the scenario does not exist.
         """
         self.database.scenarios.delete(name)
-        self.database.scenarios.flush()
 
     def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
         """Run a scenario hazard and impacts.
@@ -1227,8 +1213,7 @@ class FloodAdapt:
         DatabaseError
             If the benefit object is not valid.
         """
-        self.database.benefits.add(benefit, overwrite=overwrite)
-        self.database.benefits.flush()
+        self.database.benefits.save(benefit, overwrite=overwrite)
 
     def delete_benefit(self, name: str) -> None:
         """Delete a benefit object from the database.
@@ -1244,7 +1229,6 @@ class FloodAdapt:
             If the benefit object does not exist.
         """
         self.database.benefits.delete(name)
-        self.database.benefits.flush()
 
     def check_benefit_scenarios(self, benefit: Benefit) -> pd.DataFrame:
         """Return a dataframe with the scenarios needed for this benefit assessment run.

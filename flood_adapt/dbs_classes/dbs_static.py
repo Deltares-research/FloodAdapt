@@ -84,22 +84,6 @@ class DbsStatic(IDbsStatic):
         return aggregation_areas
 
     @cache_method_wrapper
-    def get_aggregation_area_by_type_and_name(
-        self, area_type: str, area_name: str
-    ) -> gpd.GeoDataFrame:
-        areas = self.get_aggregation_areas()
-        if area_type not in areas:
-            raise DatabaseError(
-                f"Aggregation area type {area_type} for measure {area_name} does not exist."
-            )
-        gdf = areas[area_type]
-        if area_name not in gdf["name"].to_numpy():
-            raise DatabaseError(
-                f"Aggregation area name {area_name} for measure {area_type} does not exist."
-            )
-        return gdf.loc[gdf["name"] == area_name, :]
-
-    @cache_method_wrapper
     def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get the model boundary from the SFINCS model."""
         bnd = self.get_overland_sfincs_model().get_model_boundary()

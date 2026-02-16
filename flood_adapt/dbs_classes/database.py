@@ -23,11 +23,9 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import finished_file_exists
-from flood_adapt.objects.events.event_set import EventSet
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.output.floodmap import FloodMap
@@ -118,10 +116,6 @@ class Database(IDatabase):
         # Read site configuration
         self.read_site()
 
-        # Initialize the different database objects
-        self._initialize_repositories()
-        self.load()
-
         # Delete any unfinished/crashed scenario output after initialization
         self._init_done = True
         self.cleanup()
@@ -135,8 +129,7 @@ class Database(IDatabase):
             )
         self.site = Site.load_file(site_path)
 
-    def _initialize_repositories(self):
-        """Initialize object repositories and store them in `self._repositories`."""
+        # Initialize the different database objects
         self.static = DbsStatic(self)
         self.events = DbsEvent(self, standard_objects=self.site.standard_objects.events)
         self.scenarios = DbsScenario(self)
@@ -148,26 +141,6 @@ class Database(IDatabase):
             self, standard_objects=self.site.standard_objects.projections
         )
         self.benefits = DbsBenefit(self)
-        self._repositories: list[AbstractDatabaseElement] = [
-            self.events,
-            self.projections,
-            self.measures,
-            self.strategies,
-            self.scenarios,
-            self.benefits,
-        ]
-
-    def load(self):
-        """Load all repositories from disk into memory."""
-        logger.info("Loading database into memory")
-        for repo in self._repositories:
-            repo.load()
-
-    def flush(self):
-        """Write all repository changes from memory to disk."""
-        logger.info("Writing database changes to disk")
-        for repo in self._repositories:
-            repo.flush()
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
@@ -614,12 +587,8 @@ class Database(IDatabase):
             Name of the scenario to delete simulations for.
         """
         scn = self.scenarios.get(scenario_name)
-        event = self.events.get(scn.event)
-        if isinstance(event, EventSet):
-            event = self.events.get_event_set(scn.event)
-            sub_events = event._events
-        else:
-            sub_events = None
+        event = self.events.get(scn.event, load_all=True)
+        sub_events = event._events if event.mode == Mode.risk else None
 
         if not self.site.sfincs.config.save_simulation:
             # Delete SFINCS overland

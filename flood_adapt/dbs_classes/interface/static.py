@@ -16,11 +16,6 @@ class IDbsStatic(ABC):
     def get_aggregation_areas(self) -> dict: ...
 
     @abstractmethod
-    def get_aggregation_area_by_type_and_name(
-        self, area_type: str, area_name: str
-    ) -> gpd.GeoDataFrame: ...
-
-    @abstractmethod
     def get_model_boundary(self) -> gpd.GeoDataFrame: ...
 
     @abstractmethod

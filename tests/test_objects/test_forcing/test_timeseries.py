@@ -561,7 +561,7 @@ class TestBlock:
 
 
 class TestTriangle:
-    _TEST_ATTRS = permutations([1, 10, 100], r=3)
+    _TEST_ATTRS = permutations([1, 10, 100, 1000], r=3)
 
     @pytest.mark.parametrize(
         "cumulative, duration, time_step",

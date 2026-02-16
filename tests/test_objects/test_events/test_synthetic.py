@@ -3,7 +3,9 @@ from datetime import datetime
 import pytest
 
 from flood_adapt.config.hazard import RiverModel
-from flood_adapt.objects.events.synthetic import SyntheticEvent
+from flood_adapt.objects.events.synthetic import (
+    SyntheticEvent,
+)
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.discharge import DischargeConstant
 from flood_adapt.objects.forcing.forcing import ForcingType
@@ -21,7 +23,6 @@ from flood_adapt.objects.forcing.waterlevels import (
     WaterlevelSynthetic,
 )
 from flood_adapt.objects.forcing.wind import WindConstant
-from tests.test_objects import assert_object_save_load_eq
 
 
 @pytest.fixture()
@@ -97,5 +98,20 @@ def test_event_all_synthetic():
     )
 
 
-def test_synthetic_event_save_load_eq(tmp_path, test_event_all_synthetic):
-    assert_object_save_load_eq(tmp_path, test_event_all_synthetic, SyntheticEvent)
+class TestSyntheticEvent:
+    # TODO add test for for eventmodel validators
+    def test_save_event_toml(self, test_event_all_synthetic, tmp_path):
+        path = tmp_path / "test_event.toml"
+        test_event = test_event_all_synthetic
+        test_event.save(path)
+        assert path.exists()
+
+    def test_load_file(self, test_event_all_synthetic, tmp_path):
+        path = tmp_path / "test_event.toml"
+        saved_event = test_event_all_synthetic
+        saved_event.save(path)
+        assert path.exists()
+
+        loaded_event = SyntheticEvent.load_file(path)
+
+        assert loaded_event == saved_event

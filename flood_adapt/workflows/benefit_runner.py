@@ -169,7 +169,6 @@ class BenefitRunner:
         benefit : Benefit
         """
         # Iterate through the scenarios needed and create them if not existing
-        flush_required = False
         for _, row in self.scenarios.iterrows():
             if row["scenario created"] == "No":
                 name = "_".join([row["projection"], row["event"], row["strategy"]])
@@ -184,10 +183,7 @@ class BenefitRunner:
                         projection=row["projection"],
                         strategy=row["strategy"],
                     )
-                    self.database.scenarios.add(scenario)
-                    flush_required = True
-        if flush_required:
-            self.database.scenarios.flush()
+                    self.database.scenarios.save(scenario)
 
     def ready_to_run(self) -> bool:
         """Check if all the required scenarios have already been run.

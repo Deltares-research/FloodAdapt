@@ -22,15 +22,21 @@ class DbsScenario(DbsTemplate[Scenario]):
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         scenarios = super().summarize_objects()
-
-        scenarios["Projection"] = [obj.projection for obj in self._objects.values()]
-        scenarios["Event"] = [obj.event for obj in self._objects.values()]
-        scenarios["Strategy"] = [obj.strategy for obj in self._objects.values()]
-        scenarios["finished"] = [self.has_run_check(scn) for scn in self._objects]
+        scenarios["Projection"] = [
+            self._read_variable_in_toml("projection", path)
+            for path in scenarios["path"]
+        ]
+        scenarios["Event"] = [
+            self._read_variable_in_toml("event", path) for path in scenarios["path"]
+        ]
+        scenarios["Strategy"] = [
+            self._read_variable_in_toml("strategy", path) for path in scenarios["path"]
+        ]
+        scenarios["finished"] = [self.has_run_check(scn) for scn in scenarios["name"]]
 
         return scenarios
 
-    def used_by_higher_level(self, name: str) -> list[str]:
+    def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a scenario is used in a benefit.
 
         Parameters
@@ -43,7 +49,10 @@ class DbsScenario(DbsTemplate[Scenario]):
             list[str]
                 list of benefits that use the scenario
         """
-        benefits = self._database.benefits.list_all()
+        benefits = [
+            self._database.benefits.get(benefit)
+            for benefit in self._database.benefits.summarize_objects()["name"]
+        ]
         used_in_benefit = []
         for benefit in benefits:
             runner = BenefitRunner(database=self._database, benefit=benefit)

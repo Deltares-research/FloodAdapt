@@ -8,7 +8,7 @@ class DbsProjection(DbsTemplate[Projection]):
     _object_class = Projection
     _higher_lvl_object = "Scenario"
 
-    def used_by_higher_level(self, name: str) -> list[str]:
+    def check_higher_level_usage(self, name: str) -> list[str]:
         """Check if a projection is used in a scenario.
 
         Parameters
@@ -22,7 +22,10 @@ class DbsProjection(DbsTemplate[Projection]):
             list of scenarios that use the projection
         """
         # Get all the scenarios
-        scenarios = self._database.scenarios.list_all()
+        scenarios = [
+            self._database.scenarios.get(scn)
+            for scn in self._database.scenarios.summarize_objects()["name"]
+        ]
 
         # Check if projection is used in a scenario
         used_in_scenario = [

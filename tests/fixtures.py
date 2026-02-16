@@ -90,7 +90,7 @@ def dummy_strategy(test_db, dummy_buyout_measure, dummy_pump_measure):
     )
 
     for measure in [buyout, pump]:
-        test_db.measures.add(measure)
+        test_db.measures.save(measure)
 
     return model
 

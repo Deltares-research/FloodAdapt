@@ -1000,7 +1000,7 @@ class TestAddMeasure:
                 polygon_file=str(TEST_DATA_DIR / "seawall.geojson"),
             )
 
-            test_db.measures.add(floodwall)
+            test_db.measures.save(floodwall)
             return floodwall
 
         def test_add_measure_floodwall(
@@ -1093,7 +1093,7 @@ class TestAddMeasure:
                 selection_type=SelectionType.polyline,
                 polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
             )
-            test_db.measures.add(pump)
+            test_db.measures.save(pump)
             return pump
 
         def test_add_measure_pump(
@@ -1203,7 +1203,7 @@ class TestAddMeasure:
                 percent_area=0.5,
             )
 
-            test_db.measures.add(green_infra)
+            test_db.measures.save(green_infra)
             return green_infra
 
         def test_add_measure_greeninfra(
@@ -1480,14 +1480,14 @@ class TestPostProcessing:
             end_time=start_time + duration,
         )
         event.time = time
-        test_db_class.events.add(event)
+        test_db_class.events.save(event)
         scn = Scenario(
             name="synthetic",
             event=event.name,
             projection="current",
             strategy="no_measures",
         )
-        test_db_class.scenarios.add(scn)
+        test_db_class.scenarios.save(scn)
 
         # Prepare adapter
         overland_path = (
@@ -1530,7 +1530,6 @@ class TestPostProcessing:
         return_periods = [2, 50, 100]
         return floodmaps, frequencies, zb, mask, return_periods
 
-    @pytest.mark.integration
     def test_write_geotiff(
         self,
         adapter_preprocess_process_scenario_class: Tuple[SfincsAdapter, Scenario],

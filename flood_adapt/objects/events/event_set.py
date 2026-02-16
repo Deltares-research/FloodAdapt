@@ -67,6 +67,18 @@ class EventSet(Object):
         else:
             raise ValueError("Either `sub_events` or `file_path` must be provided.")
 
+    def _post_load(
+        self,
+        file_path: Path | str | os.PathLike,
+        *,
+        load_all: bool = False,
+        sub_events: List[Event] | None = None,
+        **kwargs,
+    ) -> None:
+        """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
+        if load_all:
+            self.load_sub_events(sub_events=sub_events, file_path=file_path)
+
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self._events is None:
             return

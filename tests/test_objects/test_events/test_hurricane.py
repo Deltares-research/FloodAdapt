@@ -1,8 +1,10 @@
+import tempfile
 from pathlib import Path
 
 import pytest
 
 from flood_adapt.config.hazard import RiverModel
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.objects.events.events import (
     ForcingType,
 )
@@ -19,6 +21,7 @@ from flood_adapt.objects.forcing.waterlevels import (
     WaterlevelModel,
 )
 from flood_adapt.objects.forcing.wind import WindTrack
+from flood_adapt.objects.scenarios.scenarios import Scenario
 from tests.fixtures import TEST_DATA_DIR
 
 
@@ -54,38 +57,79 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
     return event
 
 
-def test_save_and_load(setup_hurricane_event: HurricaneEvent, tmp_path: Path):
-    path = tmp_path / "test_event.toml"
+@pytest.fixture()
+def setup_hurricane_scenario(
+    test_db: IDatabase, setup_hurricane_event: HurricaneEvent
+) -> tuple[Scenario, HurricaneEvent]:
     event = setup_hurricane_event
+    scn = Scenario(
+        name="test_scenario",
+        event=event.name,
+        projection="current",
+        strategy="no_measures",
+    )
+    test_db.events.save(event)
+    test_db.scenarios.save(scn)
+    return scn, event
 
-    event.save(path)
 
-    cyc_file = path.parent / f"{event.track_name}.cyc"
-    assert path.exists()
-    assert cyc_file.exists()
+class TestHurricaneEvent:
+    def test_save_event_toml_and_track_file(
+        self, setup_hurricane_event: HurricaneEvent, tmp_path: Path
+    ):
+        path = tmp_path / "test_event.toml"
+        event = setup_hurricane_event
 
-    loaded_event = HurricaneEvent.load_file(path)
-    assert loaded_event == event
+        event.save(path)
 
+        cyc_file = path.parent / f"{event.track_name}.cyc"
+        assert path.exists()
+        assert cyc_file.exists()
 
-def test_load_file_raises_when_files_are_missing(
-    setup_hurricane_event: HurricaneEvent, tmp_path: Path
-):
-    path = tmp_path / "test_event.toml"
+    def test_load_file(self, setup_hurricane_event: HurricaneEvent, tmp_path: Path):
+        path = tmp_path / "test_event.toml"
+        saved_event = setup_hurricane_event
+        saved_event.save(path)
+        cyc_file = path.parent / f"{saved_event.track_name}.cyc"
+        assert path.exists()
+        assert cyc_file.exists()
 
-    saved_event = setup_hurricane_event
-    saved_event.save(path)
-    wind = saved_event.forcings[ForcingType.WIND][0]
-    assert isinstance(wind, WindTrack)
+        loaded_event = HurricaneEvent.load_file(path)
 
-    cyc_file = path.parent / wind.path
+        assert loaded_event == saved_event
 
-    assert path.exists()
-    assert cyc_file.exists()
+    def test_load_file_raises_when_files_are_missing(
+        self, setup_hurricane_event: HurricaneEvent, tmp_path: Path
+    ):
+        path = tmp_path / "test_event.toml"
 
-    cyc_file.unlink()
+        saved_event = setup_hurricane_event
+        saved_event.save(path)
+        wind = saved_event.forcings[ForcingType.WIND][0]
+        assert isinstance(wind, WindTrack)
 
-    with pytest.raises(FileNotFoundError) as e:
-        HurricaneEvent.load_file(path)
+        cyc_file = path.parent / wind.path
 
-    assert f"File {cyc_file} does not exist" in str(e.value)
+        assert path.exists()
+        assert cyc_file.exists()
+
+        cyc_file.unlink()
+
+        with pytest.raises(FileNotFoundError) as e:
+            HurricaneEvent.load_file(path)
+
+        assert f"File {cyc_file} does not exist" in str(e.value)
+
+    def test_save_additional_saves_cyc_file(
+        self, setup_hurricane_event: HurricaneEvent
+    ):
+        # Arrange
+        event = setup_hurricane_event
+        toml_path = Path(tempfile.gettempdir()) / "test_event.toml"
+
+        # Act
+        event.save_additional(toml_path.parent)
+
+        # Assert
+        cyc_file = toml_path.parent / f"{event.track_name}.cyc"
+        assert cyc_file.exists()
