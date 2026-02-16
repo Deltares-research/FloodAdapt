@@ -92,6 +92,17 @@ class SocioEconomicChange(BaseModel):
             self._gdf = gpd.read_file(self.new_development_shapefile)
         return self._gdf
 
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.new_development_shapefile:
+            gdf = self.read_gdf()
+            if gdf is None:
+                raise ValueError(
+                    "The socio-economic change has a new development shapefile path, but the GeoDataFrame could not be read."
+                )
+            filename = Path(self.new_development_shapefile).name
+            path = Path(output_dir, filename)
+            gdf.to_file(path)
+
 
 class Projection(Object):
     """The accepted input for a projection in FloodAdapt.
@@ -115,15 +126,7 @@ class Projection(Object):
     socio_economic_change: SocioEconomicChange = SocioEconomicChange()
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.socio_economic_change.new_development_shapefile:
-            gdf = self.socio_economic_change.read_gdf()
-            if gdf is None:
-                raise ValueError(
-                    "The socio-economic change has a new development shapefile path, but the GeoDataFrame could not be read."
-                )
-            filename = Path(self.socio_economic_change.new_development_shapefile).name
-            path = Path(output_dir, filename)
-            gdf.to_file(path)
+        self.socio_economic_change.save_additional(output_dir)
 
     def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
         self.socio_economic_change._post_load(file_path)

@@ -2,6 +2,7 @@ import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
+from tempfile import gettempdir
 from typing import Any, Optional, TypeVar
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
@@ -75,9 +76,19 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
 
         for name in self._mutated:
             obj = self._objects[name]
-            path = self._object_path(self.input_path, name)
+            path = self.input_path / name / f"{name}.toml"
 
-            self._write_object(obj, path)
+            # To avoid issues with editing objects, we first write the new version to a temporary dir,
+            # then delete the old dir, and finally move the new dir to the correct location.
+            # This way, the old version is not deleted until the new version is successfully written,
+            # and additional files can be copied from the old version to the new version,
+            # before the old version is deleted.
+            tmp_path = (
+                Path(gettempdir())
+                / f"{name}_{datetime.now().timestamp()}"
+                / f"{name}.toml"
+            )
+            self._write_object(obj, tmp_path)
 
             try:
                 if path.parent.exists():
@@ -95,9 +106,15 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
                     f"Failed to delete output for `{name}` due to: {e}"
                 ) from e
 
+            try:
+                shutil.move(tmp_path.parent, path.parent)
+            except OSError as e:
+                raise DatabaseError(
+                    f"Failed to move temporary file for `{name}` due to: {e}"
+                ) from e
+
             self._last_modified[name] = datetime.now()
 
-        # remove deleted
         for name in self._deleted:
             try:
                 if (self.input_path / name).exists():
@@ -258,7 +275,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
         """
         names = list(self._objects)
-        paths = [self._object_path(self.input_path, name) for name in names]
+        paths = [self.input_path / name / f"{name}.toml" for name in names]
         descriptions = [obj.description for obj in self._objects.values()]
         last_modification_date = [self._last_modified.get(name) for name in names]
         objects = {
@@ -280,10 +297,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         obj.save(path)
 
     # Helpers
-    def _object_path(self, base: Path, name: str):
-        """Get the path to the toml file of an object with a given name."""
-        return base / name / f"{name}.toml"
-
     def _is_standard_object(self, name: str) -> bool:
         """Check if an object is a standard object.
 

@@ -21,7 +21,7 @@ class DbsEvent(DbsTemplate[Event]):
         event_set = self.get(name)
         if not isinstance(event_set, EventSet):
             raise DatabaseError(f"Event {name} is not an event set.")
-        path = self._object_path(self.input_path, event_set.name)
+        path = self.input_path / event_set.name / f"{event_set.name}.toml"
         event_set.load_sub_events(file_path=path)
         return event_set
 
