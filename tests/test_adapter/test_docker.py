@@ -78,10 +78,7 @@ class TestDockerContainer:
 
     def test_run_raises_if_root_dir_is_None(self, running_container: DockerContainer):
         running_container._root_dir = None
-        with pytest.raises(
-            ValueError,
-            match="`root_dir` must be set before running commands in the container.",
-        ):
+        with pytest.raises(RuntimeError, match="Container is not started."):
             running_container.run(Path("some/path"))
 
     def test_run_raises_if_external_path(self, running_container: DockerContainer):

@@ -9,14 +9,14 @@ from flood_adapt.misc.path_builder import (
     db_path,
 )
 from flood_adapt.workflows.scenario_runner import Scenario, ScenarioRunner
-from tests.conftest import IS_WINDOWS
+from tests.conftest import CAN_EXECUTE_SCENARIOS
 
 _FIAT_COLUMNS = get_fiat_columns()
 
 
 @pytest.mark.skipif(
-    not IS_WINDOWS,
-    reason="Only run on windows where we have a working sfincs binary",
+    not CAN_EXECUTE_SCENARIOS,
+    reason="Only run when we can execute scenarios. Requires either a working sfincs binary, or a working docker setup",
 )
 class TestFiatAdapter:
     @pytest.fixture(scope="class")

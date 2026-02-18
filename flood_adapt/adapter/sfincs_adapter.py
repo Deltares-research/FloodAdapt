@@ -196,7 +196,7 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
-        settings = self._database_instance._settings
+        settings = self.database._settings
 
         match settings.get_scenario_execution_method():
             case ExecutionMethod.DOCKER:

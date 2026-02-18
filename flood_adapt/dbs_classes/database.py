@@ -109,15 +109,16 @@ class Database(IDatabase):
         self.static_path = self.base_path / "static"
         self.output_path = self.base_path / "output"
 
-        # Read site configuration
-        self.read_site()
-
+        # Settings
         if settings is None:
             settings = Settings(
                 DATABASE_ROOT=database_root, DATABASE_NAME=database_name
             )
             settings.export_to_env()
         self._settings = settings
+
+        # Read site configuration
+        self.read_site()
         self._init_done = True
 
         # Delete any unfinished/crashed scenario output after initialization
