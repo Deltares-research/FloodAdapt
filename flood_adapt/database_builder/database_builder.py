@@ -2256,6 +2256,14 @@ class DatabaseBuilder:
         )  # check if boundary points are specified
         if mask_has_bnd and has_bnd_points:
             has_bnd = True
+        elif mask_has_bnd and not has_bnd_points:
+            raise ValueError(
+                "The SFINCS overland model mask indicates the presence of boundary points, but no boundary file is specifie in SFINCS input. This may lead to issues in the model setup"
+            )
+        elif has_bnd_points:
+            raise ValueError(
+                "A boundary file specified in the SFINCS overland model input, but the mask does not include water levels."
+            )
         else:
             has_bnd = False
         return has_bnd

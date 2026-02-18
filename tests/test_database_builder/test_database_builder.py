@@ -1193,10 +1193,7 @@ class TestDataBaseBuilder:
         db_path = Settings().database_path
         templates_path = db_path / "static" / "templates"
 
-        with pytest.raises(
-            ValidationError,
-            match="When 'is_coastal' is False (thus this is an inland site), 'sfincs_offshore' cannot be provided.",
-        ):
+        with pytest.raises(ValidationError) as exc_info:
             ConfigModel(
                 name="test_db",
                 unit_system=UnitSystems.imperial,
@@ -1217,3 +1214,9 @@ class TestDataBaseBuilder:
                 ),
                 fiat=str(templates_path / "fiat"),
             )
+
+        error_msg = str(exc_info.value)
+        assert (
+            "When 'is_coastal' is False (thus this is an inland site), 'sfincs_offshore' cannot be provided."
+            in error_msg
+        )
