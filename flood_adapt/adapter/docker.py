@@ -31,6 +31,7 @@ class DockerContainer(ABC):
         self._command = command  # Command to run inside the container
         self._mount_dir = "/data/flood_adapt"  # Directory inside the container
         self._root_dir: Path | None = None  # Host directory the container has access to
+        self._container_created = False
 
     def start(self, root_dir: Path) -> None:
         """Start the Docker container by giving it access to root_dir.
@@ -45,11 +46,11 @@ class DockerContainer(ABC):
         RuntimeError
             If the container fails to start.
         """
-        if self._root_dir is not None:
+        if self._container_created:
             logger.info(f"Container {self.name} is already running.")
             return
-        self._root_dir = root_dir.resolve()
 
+        root_dir = root_dir.resolve()
         logger.info(f"Starting container {self.name} from {self.container_image}...")
         docker_command = [
             "docker",
@@ -58,7 +59,7 @@ class DockerContainer(ABC):
             "--name",
             self.name,
             "-v",
-            f"{self._root_dir.as_posix()}:{self._mount_dir}",
+            f"{root_dir.as_posix()}:{self._mount_dir}",
             "-w",
             self._mount_dir,
             "--entrypoint",
@@ -68,15 +69,39 @@ class DockerContainer(ABC):
             "tail -f /dev/null",
         ]
 
-        subprocess.run(
+        process = subprocess.run(
             docker_command,
-            check=True,
+            text=True,
+            capture_output=True,
         )
-
-        if not self._is_running():
-            raise RuntimeError(
-                f"Failed to start container: `{self.name}` from image `{self.container_image}`."
+        if process.returncode != 0:
+            msg = (
+                f"Docker run failed with code {process.returncode}. "
+                f"Failed to start container `{self.name}`. Command was: {' '.join(docker_command)}. "
+                f"stdout:\n{process.stdout}. "
+                f"stderr:\n{process.stderr}. "
             )
+            logger.error(
+                msg
+                + "Attempting to stop any existing container with the same name and retrying... "
+            )
+            self._force_remove_container()
+            retry = subprocess.run(
+                docker_command,
+                text=True,
+                capture_output=True,
+            )
+            if retry.returncode != 0:
+                msg += (
+                    f"Retry also failed with code {retry.returncode}. "
+                    f"retry stdout:\n{retry.stdout}. "
+                    f"retry stderr:\n{retry.stderr}. "
+                )
+                logger.error(msg)
+                raise RuntimeError(msg)
+
+        self._root_dir = root_dir
+        self._container_created = True
         DockerContainer.CONTAINERS_INITIALIZED += 1
 
     def stop(self) -> None:
@@ -85,6 +110,7 @@ class DockerContainer(ABC):
             subprocess.run(["docker", "stop", self.name], check=True)
             subprocess.run(["docker", "rm", self.name], check=True)
         self._root_dir = None
+        self._container_created = False
 
     def run(self, scn_dir: Path) -> bool:
         """
@@ -95,10 +121,9 @@ class DockerContainer(ABC):
         scn_dir : Path
             Absolute path where simulation should run.
         """
-        if self._root_dir is None:
-            raise ValueError(
-                "`root_dir` must be set before running commands in the container.\n"
-                "Call `container.start(root_dir)` first."
+        if not self._container_created or self._root_dir is None:
+            raise RuntimeError(
+                "Container is not started. Call `container.start(root_dir)` first."
             )
         if not scn_dir.is_absolute():
             raise ValueError(f"scn_dir: {scn_dir} must be an absolute path")
@@ -116,8 +141,10 @@ class DockerContainer(ABC):
         )
 
     def _exec(self, cwd: Path, log_file: Path) -> bool:
-        if not self._is_running():
-            raise RuntimeError("Container is not running")
+        if not self._container_created or self._root_dir is None:
+            raise RuntimeError(
+                "Container is not started. Call `container.start(root_dir)` first."
+            )
 
         cwd_inside = f"{self._mount_dir}/{cwd.as_posix()}"
         docker_command = [
@@ -166,6 +193,13 @@ class DockerContainer(ABC):
             return result.stdout.strip().lower() == "true"
 
         return False  # fallback, should not happen
+
+    def _force_remove_container(self) -> None:
+        subprocess.run(
+            ["docker", "rm", "-f", self.name],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
 
 class SfincsContainer(DockerContainer):

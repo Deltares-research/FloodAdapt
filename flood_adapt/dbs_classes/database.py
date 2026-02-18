@@ -43,7 +43,7 @@ class Database(IDatabase):
 
     _instance = None
     _init_done: bool = False
-    _settings: Settings | None = None
+    _settings: Settings
 
     base_path: Path
     input_path: Path
@@ -112,8 +112,15 @@ class Database(IDatabase):
         # Read site configuration
         self.read_site()
 
-        # Delete any unfinished/crashed scenario output after initialization
+        if settings is None:
+            settings = Settings(
+                DATABASE_ROOT=database_root, DATABASE_NAME=database_name
+            )
+            settings.export_to_env()
+        self._settings = settings
         self._init_done = True
+
+        # Delete any unfinished/crashed scenario output after initialization
         self.cleanup()
 
     def read_site(self, site_name: str = "site") -> None:

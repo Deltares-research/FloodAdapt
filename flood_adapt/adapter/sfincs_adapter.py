@@ -30,7 +30,7 @@ from shapely.affinity import translate
 
 from flood_adapt.adapter.docker import SFINCS_CONTAINER
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
-from flood_adapt.config.config import ExecutionMethod, Settings
+from flood_adapt.config.config import ExecutionMethod
 from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
@@ -196,7 +196,7 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
-        settings = Settings()
+        settings = self._database_instance._settings
 
         match settings.get_scenario_execution_method():
             case ExecutionMethod.DOCKER:

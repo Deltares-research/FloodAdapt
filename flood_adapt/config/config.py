@@ -162,11 +162,7 @@ class Settings(BaseSettings):
 
     # Validators
     @model_validator(mode="after")
-    def validate_settings(self):
-        self._validate_database_path()
-        return self
-
-    def _validate_database_path(self):
+    def validate_database_path(self):
         if not self.database_root.is_dir():
             raise ValueError(f"Database root {self.database_root} does not exist.")
 
@@ -326,6 +322,22 @@ class Settings(BaseSettings):
 
         Settings._binaries_validated = True
 
+    def get_scenario_execution_method(
+        self, strict: bool = False
+    ) -> ExecutionMethod | None:
+        if self.use_binaries:
+            return ExecutionMethod.BINARIES
+        elif self.use_docker:
+            return ExecutionMethod.DOCKER
+        else:
+            msg = "Could not determine scenario execution method, please check your configuration."
+            if strict:
+                raise RuntimeError(msg)
+            else:
+                logger.warning(msg)
+                return None
+
+    # IO
     @staticmethod
     def read(toml_path: Path) -> "Settings":
         """
@@ -372,6 +384,7 @@ class Settings(BaseSettings):
         )
         write_toml(data, toml_path)
 
+    # Helpers
     def _export_env_var(self, key: str, value: str | Path | bool | None) -> None:
         if isinstance(value, Path):
             environ[key] = value.as_posix()
@@ -384,7 +397,6 @@ class Settings(BaseSettings):
                 f"Unsupported type for environment variable {key}: {type(value)}"
             )
 
-    # Error helpers
     @staticmethod
     def _raise_exe_not_provided(model: str) -> NoReturn:
         raise ValueError(f"{model.upper()} binary path is not set.")
@@ -398,18 +410,3 @@ class Settings(BaseSettings):
         raise ValueError(
             f"{model.upper()} version mismatch: expected {expected}, got {actual}."
         )
-
-    def get_scenario_execution_method(
-        self, strict: bool = False
-    ) -> ExecutionMethod | None:
-        if self.validate_binaries:
-            return ExecutionMethod.BINARIES
-        elif self.use_docker:
-            return ExecutionMethod.DOCKER
-        else:
-            msg = "Could not determine scenario execution method, please check your configuration."
-            if strict:
-                raise RuntimeError(msg)
-            else:
-                logger.warning(msg)
-                return None

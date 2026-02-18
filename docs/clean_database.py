@@ -29,6 +29,7 @@ def clean_database(database_dir: Path):
 
     # Validate
     settings = Settings(DATABASE_ROOT=database_dir.parent, DATABASE_NAME=database_dir.name)
+    settings.export_to_env()
     FloodAdapt(settings.database_path)
 
 if __name__ == "__main__":

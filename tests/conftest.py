@@ -54,7 +54,7 @@ SETTINGS = Settings(
     USE_DOCKER=not IS_WINDOWS,
     USE_BINARIES=IS_WINDOWS,
 )
-
+SETTINGS.export_to_env()
 execution_method = SETTINGS.get_scenario_execution_method(strict=False)
 CAN_EXECUTE_SCENARIOS = execution_method is not None
 if IS_WINDOWS and not CAN_EXECUTE_SCENARIOS:

@@ -61,6 +61,7 @@ class FloodAdapt:
             DATABASE_ROOT=database_path.parent,
             DATABASE_NAME=database_path.name,
         )
+        self._settings.export_to_env()
         self.database = Database(
             database_root=database_path.parent,
             database_name=database_path.name,

@@ -6,6 +6,7 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import numpy as np
 
+from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
 
@@ -23,6 +24,8 @@ class IDatabase(ABC):
     measures: AbstractDatabaseElement
     projections: AbstractDatabaseElement
     benefits: AbstractDatabaseElement
+
+    _settings: Settings
 
     @abstractmethod
     def __init__(

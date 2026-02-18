@@ -22,7 +22,7 @@ from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.adapter.docker import FIAT_CONTAINER
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
-from flood_adapt.config.config import ExecutionMethod, Settings
+from flood_adapt.config.config import ExecutionMethod
 from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.misc.io import read_toml, write_toml
@@ -327,7 +327,7 @@ class FiatAdapter(IImpactAdapter):
         FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
         exe = exe_path or self.exe_path
         fiat_log = path / "fiat.log"
-        settings = Settings()
+        settings = self.database._settings
         match settings.get_scenario_execution_method():
             case ExecutionMethod.DOCKER:
                 success = FIAT_CONTAINER.run(path)
