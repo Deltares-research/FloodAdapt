@@ -1284,18 +1284,18 @@ class FloodAdapt:
         """
         return self.database.get_aggregation_benefits(name)
 
-    def save_flood_animation(self, scenario: str, bbox=None, zoomlevel=15) -> str:
+    def save_flood_animation(
+        self, scenario: str, bbox: list[float] | None = None, zoomlevel: int = 15
+    ) -> str:
         """Create an animation of the flood extent over time.
 
         Produced floodmap is in the units defined in the sfincs config settings.
 
         Parameters
         ----------
-        database : Database
-            The database object containing the scenario and results.
         scenario : Scenario
             Scenario for which to create the floodmap.
-        bbox : array, optional
+        bbox : list[float], optional
             Bounding box to limit the animation to a specific area (default is None, which means no bounding box).
             Format: [lon_min, lat_min, lon_max, lat_max]
         zoomlevel : int, optional

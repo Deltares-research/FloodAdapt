@@ -46,21 +46,16 @@ class FieldMapping(BaseModel):
     """
     Represents a mapping of a database field to a list of allowed values.
 
-    Parameters
+    Attributes
     ----------
     field_name : str
         The name of the database field/column
     values : List[str]
         List of values that should match this field
-
-    Methods
-    -------
-    to_sql_filter()
-        Generate SQL filter string for this field mapping.
     """
 
     field_name: str
-    values: List[str]
+    values: list[str]
 
     def to_sql_filter(self) -> str:
         """
@@ -79,17 +74,10 @@ class TypeMapping(BaseModel):
     """
     Container for multiple field mappings that define object type filtering.
 
-    Parameters
+    Attributes
     ----------
     mappings : List[FieldMapping]
         List of field mappings that together define the type criteria
-
-    Methods
-    -------
-    add_mapping(field_name, values)
-        Add a new field mapping.
-    to_sql_filter()
-        Generate combined SQL filter string from all mappings.
     """
 
     mappings: List[FieldMapping] = Field(default_factory=list)
@@ -126,7 +114,7 @@ class MetricModel(BaseModel):
     """
     Represents a metric configuration for infometric analysis.
 
-    Parameters
+    Attributes
     ----------
     name : str
         The short name of the metric.
@@ -173,7 +161,7 @@ class ImpactCategoriesModel(BaseModel):
     """
     Model for defining impact categories with associated colors, field, unit, and bins.
 
-    Parameters
+    Attributes
     ----------
     categories : list[str], default=["Minor", "Major", "Severe"]
         List of impact category names.
@@ -185,13 +173,6 @@ class ImpactCategoriesModel(BaseModel):
         The unit of measurement for the field.
     bins : list[float]
         List of threshold values for binning the field values.
-
-    Methods
-    -------
-    validate_colors_length(colors, info)
-        Validate that colors list length matches categories list length.
-    validate_bins_length(bins, info)
-        Validate that bins list length is one less than categories list length.
     """
 
     categories: list[str] = Field(default_factory=lambda: ["Minor", "Major", "Severe"])
@@ -265,7 +246,7 @@ class BuildingsInfographicModel(BaseModel):
     """
     Model for building infographic configuration.
 
-    Parameters
+    Attributes
     ----------
     types : list[str]
         List of building types.
@@ -275,13 +256,6 @@ class BuildingsInfographicModel(BaseModel):
         Mapping of building types to their database filtering criteria.
     impact_categories : ImpactCategoriesModel
         Impact categories configuration.
-
-    Methods
-    -------
-    validate_icons_length(icons, info)
-        Validate that icons list length matches types list length.
-    get_template(type)
-        Get a pre-configured template for OSM or NSI building types.
     """
 
     # Define building types
@@ -436,7 +410,7 @@ class SviModel(BaseModel):
     """
     Model for Social Vulnerability Index (SVI) configuration.
 
-    Parameters
+    Attributes
     ----------
     classes : list[str], default=["Low", "High"]
         List of vulnerability class names.
@@ -444,13 +418,6 @@ class SviModel(BaseModel):
         List of colors corresponding to each vulnerability class.
     thresholds : list[float], default=[0.7]
         List of threshold values for vulnerability classification.
-
-    Methods
-    -------
-    validate_colors_length(colors, info)
-        Validate that colors list length matches classes list length.
-    validate_thresholds_length(thresholds, info)
-        Validate that thresholds list length is one less than classes list length.
     """
 
     classes: list[str] = Field(default_factory=lambda: ["Low", "High"])
@@ -520,7 +487,7 @@ class HomesInfographicModel(BaseModel):
     """
     Model for Homes and SVI (Social Vulnerability Index) infographic configuration.
 
-    Parameters
+    Attributes
     ----------
     svi : SviModel
         SVI classification configuration.
@@ -528,11 +495,6 @@ class HomesInfographicModel(BaseModel):
         Database field mapping for filtering relevant objects.
     impact_categories : ImpactCategoriesModel
         Impact categories configuration.
-
-    Methods
-    -------
-    get_template(svi_threshold, type)
-        Get a pre-configured template for SVI infographics.
     """
 
     svi: Optional[SviModel] = None
@@ -606,7 +568,7 @@ class RoadsInfographicModel(BaseModel):
     """
     Model for roads infographic configuration.
 
-    Parameters
+    Attributes
     ----------
     categories : list[str], default=["Slight", "Minor", "Major", "Severe"]
         List of road impact category names.
@@ -624,13 +586,6 @@ class RoadsInfographicModel(BaseModel):
         The unit of measurement for the field.
     road_length_field : str, default=_IMPACT_COLUMNS.segment_length
         The database field name containing road segment lengths.
-
-    Methods
-    -------
-    validate_lengths(v, info)
-        Validate that all list attributes have the same length.
-    get_template(unit_system)
-        Get a pre-configured template for metric or imperial units.
     """
 
     categories: list[str] = Field(
@@ -714,7 +669,7 @@ class EventInfographicModel(BaseModel):
     """
     Model for event-based infographic configuration.
 
-    Parameters
+    Attributes
     ----------
     buildings : Optional[BuildingsInfographicModel], default=None
         Buildings infographic configuration.
@@ -733,7 +688,7 @@ class FloodExceedanceModel(BaseModel):
     """
     Model for flood exceedance probability configuration.
 
-    Parameters
+    Attributes
     ----------
     column : str, default=_IMPACT_COLUMNS.inundation_depth
         The database column name for flood depth measurements.
@@ -755,17 +710,12 @@ class RiskInfographicModel(BaseModel):
     """
     Model for risk-based infographic configuration.
 
-    Parameters
+    Attributes
     ----------
     homes : HomesInfographicModel
         Homes infographic configuration.
     flood_exceedances : FloodExceedanceModel
         Flood exceedance configuration.
-
-    Methods
-    -------
-    get_template(type, svi_threshold)
-        Get a pre-configured template for risk infographics.
     """
 
     homes: HomesInfographicModel
