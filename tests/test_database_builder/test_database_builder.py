@@ -8,6 +8,7 @@ import geopandas as gpd
 import pandas as pd
 import pytest
 import shapely
+from pydantic import ValidationError
 from shapely import Polygon
 
 from flood_adapt.config.config import Settings
@@ -1187,3 +1188,32 @@ class TestDataBaseBuilder:
                 return_periods=[1, 2, 5, 10, 25, 50, 100],
             )
             yield config
+
+    def test_config_model_raises_when_non_coastal_with_offshore(self):
+        db_path = Settings().database_path
+        templates_path = db_path / "static" / "templates"
+
+        with pytest.raises(
+            ValidationError,
+            match="When 'is_coastal' is False (thus this is an inland site), 'sfincs_offshore' cannot be provided.",
+        ):
+            ConfigModel(
+                name="test_db",
+                unit_system=UnitSystems.imperial,
+                is_coastal=False,
+                gui=GuiConfigModel(
+                    max_flood_depth=5,
+                    max_aggr_dmg=1e6,
+                    max_footprint_dmg=250000,
+                    max_benefits=5e6,
+                ),
+                sfincs_overland=FloodModel(
+                    name=str(templates_path / "overland"),
+                    reference="NAVD88",
+                ),
+                sfincs_offshore=FloodModel(
+                    name=str(templates_path / "offshore"),
+                    reference="MSL",
+                ),
+                fiat=str(templates_path / "fiat"),
+            )

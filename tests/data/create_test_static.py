@@ -46,7 +46,7 @@ from flood_adapt.config.sfincs import (
     SfincsConfigModel,
     SfincsModel,
 )
-from flood_adapt.config.site import GeoGraphicMode, Site, StandardObjectModel
+from flood_adapt.config.site import Site, StandardObjectModel
 from flood_adapt.objects.forcing.tide_gauge import (
     TideGauge,
     TideGaugeSource,
@@ -362,7 +362,7 @@ def create_site_config(
         fiat=fiat,
         gui=gui,
         sfincs=sfincs,
-        geographic_mode=GeoGraphicMode.COASTAL,
+        is_coastal=True,
     )
     return config
 

@@ -1,4 +1,3 @@
-import enum
 import os
 from pathlib import Path
 from typing import Literal, Union
@@ -19,12 +18,6 @@ class StandardObjectModel(BaseModel):
     strategies: list[str] = Field(default_factory=list)
 
 
-class GeoGraphicMode(enum.StrEnum):
-    COASTAL = enum.auto()
-    INLAND_OUTFLOW = enum.auto()
-    INLAND_BND = enum.auto()
-
-
 class Site(BaseModel):
     """The expected variables and data types of attributes of the Site class.
 
@@ -40,8 +33,8 @@ class Site(BaseModel):
         Longitude of the site.
     standard_objects : StandardObjectModel, default=StandardObjectModel()
         Standard objects of the site.
-    geographic_mode: GeoGraphicMode
-        The geographic mode of the site, which can be coastal, inland with outflow, or inland with boundary.
+    is_coastal: bool
+        Indicates whether the site is coastal.
     gui : GuiModel
         GUI model of the site.
     sfincs : SfincsModel
@@ -55,7 +48,7 @@ class Site(BaseModel):
     lat: float
     lon: float
     standard_objects: StandardObjectModel = StandardObjectModel()
-    geographic_mode: GeoGraphicMode
+    is_coastal: bool = True
 
     gui: GuiModel
     sfincs: SfincsModel

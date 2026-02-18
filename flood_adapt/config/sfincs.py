@@ -77,7 +77,8 @@ class SfincsModel(BaseModel):
     """
 
     config: SfincsConfigModel
-    water_level: WaterlevelReferenceModel
+    water_level: WaterlevelReferenceModel  # TODO water_level and datums should be split to separate models
+    has_wl_boundaries: bool = True
     cyclone_track_database: Optional[CycloneTrackDatabaseModel] = None
     slr_scenarios: Optional[SlrScenariosModel] = None
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
