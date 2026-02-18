@@ -36,7 +36,6 @@ logs_dir = Path(__file__).resolve().parent / "logs"
 src_dir = Path(
     *__path__
 ).resolve()  # __path__ is a list of paths to the package, but has only one element
-IS_WINDOWS = platform.system() == "Windows"
 
 #### DEBUGGING ####
 # To disable resetting the database after tests: set CLEAN = False
