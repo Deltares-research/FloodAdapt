@@ -400,7 +400,7 @@ class UnitfulLengthRefValue(UnitfulLength):
         The vertical reference for the length.
     """
 
-    type: VerticalReference
+    type: VerticalReference = VerticalReference.datum
 
 
 class UnitfulArea(ValueUnitPair[UnitTypesArea]):
