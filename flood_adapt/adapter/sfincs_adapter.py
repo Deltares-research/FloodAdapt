@@ -67,6 +67,7 @@ from flood_adapt.objects.forcing.rainfall import (
     RainfallTrack,
 )
 from flood_adapt.objects.forcing.time_frame import TimeFrame
+from flood_adapt.objects.forcing.unit_system import VerticalReference
 from flood_adapt.objects.forcing.waterlevels import (
     WaterlevelCSV,
     WaterlevelGauged,
@@ -1370,6 +1371,158 @@ class SfincsAdapter(IHazardAdapter):
         self._model.set_config("spwfile", output_spw_path.name)
 
     ### MEASURES ###
+    def _iter_line_geometries(self, geometry: shapely.Geometry):
+        if geometry is None or geometry.is_empty:
+            return []
+        if geometry.geom_type == "LineString":
+            return [geometry]
+        if geometry.geom_type == "MultiLineString":
+            return list(geometry.geoms)
+        return []
+
+    def _sampling_distances(self, line: shapely.LineString, interval_m: float):
+        if line.length == 0:
+            return [0.0]
+
+        distances = list(np.arange(0.0, line.length, interval_m))
+        if not distances or not math.isclose(distances[-1], line.length):
+            distances.append(float(line.length))
+        return distances
+
+    def _build_line_and_point_frames(
+        self, gdf_metric: gpd.GeoDataFrame, interval_m: float
+    ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+        row_records = []
+        point_records = []
+        line_id = 0
+
+        for _, row in gdf_metric.iterrows():
+            for line in self._iter_line_geometries(row.geometry):
+                for vertex_idx, distance in enumerate(
+                    self._sampling_distances(line, interval_m)
+                ):
+                    point_records.append(
+                        {
+                            "line_id": line_id,
+                            "vertex_idx": vertex_idx,
+                            "geometry": line.interpolate(distance),
+                        }
+                    )
+
+                row_record = row.copy()
+                row_record["_line_id"] = line_id
+                row_record.geometry = line
+                row_records.append(row_record)
+                line_id += 1
+
+        return (
+            gpd.GeoDataFrame(row_records, crs=gdf_metric.crs),
+            gpd.GeoDataFrame(point_records, crs=gdf_metric.crs),
+        )
+
+    def _to_z_linestring(
+        self,
+        line_points: list[shapely.Point],
+        line_z: list[float],
+        fallback_geometry: shapely.LineString,
+        fallback_z: float,
+    ) -> tuple[shapely.LineString, float]:
+        if len(line_points) < 2 or len(line_points) != len(line_z):
+            return fallback_geometry, fallback_z
+
+        z_coords = [
+            (point.x, point.y, float(z_val))
+            for point, z_val in zip(line_points, line_z)
+        ]
+        return shapely.LineString(z_coords), float(np.mean(line_z))
+
+    def _apply_bfe_sampling_to_points(
+        self,
+        gdf_points: gpd.GeoDataFrame,
+        gdf_bfe: gpd.GeoDataFrame,
+        bfe_field_name: str,
+        elevation_offset_m: float,
+    ) -> gpd.GeoDataFrame:
+        gdf_join = gpd.sjoin(
+            gdf_points,
+            gdf_bfe[[bfe_field_name, "geometry"]],
+            how="left",
+            predicate="within",
+        )
+        sampled_bfe = pd.to_numeric(gdf_join[bfe_field_name], errors="coerce")
+        gdf_join["z"] = sampled_bfe + elevation_offset_m
+
+        n_missing = int(sampled_bfe.isna().sum())
+        if n_missing > 0:
+            logger.warning(
+                f"No BFE value was found for {n_missing} floodwall vertices. Falling back to wall elevation offset for these vertices."
+            )
+            gdf_join.loc[sampled_bfe.isna(), "z"] = elevation_offset_m
+
+        return gdf_join.sort_values(["line_id", "vertex_idx"])
+
+    def _create_z_linestrings_from_bfe(
+        self,
+        gdf_lines: gpd.GeoDataFrame,
+        gdf_bfe: gpd.GeoDataFrame,
+        bfe_field_name: str,
+        interval_m: float = 100.0,
+        elevation_offset_m: float = 0.0,
+    ) -> gpd.GeoDataFrame:
+        """Densify lines by `interval_m` and convert to ZLineStrings using sampled BFE values."""
+        if interval_m <= 0:
+            raise ValueError("interval_m must be larger than zero.")
+
+        if gdf_lines.empty:
+            return gdf_lines
+
+        metric_crs = gdf_lines.estimate_utm_crs() or "EPSG:3857"
+        gdf_metric = gdf_lines.to_crs(metric_crs)
+
+        gdf_rows_metric, gdf_points_metric = self._build_line_and_point_frames(
+            gdf_metric=gdf_metric,
+            interval_m=interval_m,
+        )
+
+        if gdf_rows_metric.empty or gdf_points_metric.empty:
+            return gdf_lines
+
+        gdf_rows = gdf_rows_metric.to_crs(gdf_lines.crs)
+        gdf_points = gdf_points_metric.to_crs(gdf_lines.crs)
+        gdf_join = self._apply_bfe_sampling_to_points(
+            gdf_points=gdf_points,
+            gdf_bfe=gdf_bfe,
+            bfe_field_name=bfe_field_name,
+            elevation_offset_m=elevation_offset_m,
+        )
+
+        points_by_line = {
+            line_key: list(group["geometry"])
+            for line_key, group in gdf_join.groupby("line_id", sort=False)
+        }
+        z_by_line = {
+            line_key: list(group["z"])
+            for line_key, group in gdf_join.groupby("line_id", sort=False)
+        }
+
+        z_geometries = []
+        representative_z = []
+        for _, row in gdf_rows.iterrows():
+            line_key = row["_line_id"]
+            z_geometry, z_value = self._to_z_linestring(
+                line_points=points_by_line.get(line_key, []),
+                line_z=z_by_line.get(line_key, []),
+                fallback_geometry=row.geometry,
+                fallback_z=elevation_offset_m,
+            )
+            z_geometries.append(z_geometry)
+            representative_z.append(z_value)
+
+        gdf_out = gdf_rows.drop(columns=["_line_id"]).copy()
+        gdf_out.geometry = z_geometries
+        gdf_out["z"] = representative_z
+        return gdf_out.reset_index(drop=True)
+
     def _add_measure_floodwall(self, floodwall: FloodWall):
         """Add floodwall to sfincs model.
 
@@ -1394,24 +1547,56 @@ class SfincsAdapter(IHazardAdapter):
         if (gdf_floodwall.geometry.type == "MultiLineString").any():
             gdf_floodwall = gdf_floodwall.explode()
 
-        try:
-            heights = [
-                float(
-                    us.UnitfulLength(
-                        value=float(height),
-                        units=self.database.site.gui.units.default_length_units,
-                    ).convert(us.UnitTypesLength("meters"))
+        if floodwall.elevation.type == VerticalReference.datum:
+            # TODO why use try except here and not check if "z" is in the columns of the dataframe?
+            try:
+                heights = [
+                    float(
+                        us.UnitfulLength(
+                            value=float(height),
+                            units=self.database.site.gui.units.default_length_units,
+                        ).convert(us.UnitTypesLength("meters"))
+                    )
+                    for height in gdf_floodwall["z"]
+                ]
+                gdf_floodwall["z"] = heights
+                logger.info("Using floodwall height from shape file.")
+            except Exception:
+                logger.warning(
+                    f"Could not use height data from file due to missing `z` column or missing values therein. Using uniform height of {floodwall.elevation} instead."
                 )
-                for height in gdf_floodwall["z"]
-            ]
-            gdf_floodwall["z"] = heights
-            logger.info("Using floodwall height from shape file.")
-        except Exception:
-            logger.warning(
-                f"Could not use height data from file due to missing `z` column or missing values therein. Using uniform height of {floodwall.elevation} instead."
+                gdf_floodwall["z"] = floodwall.elevation.convert(
+                    us.UnitTypesLength(us.UnitTypesLength.meters)
+                )
+        else:
+            if self.database.site.fiat.config.bfe is None:
+                raise ValueError(
+                    "Base flood elevation (bfe) map is required to use 'floodmap' as reference for floodwalls."
+                )
+
+            bfe_path = db_path(TopLevelDir.static).joinpath(
+                self.database.site.fiat.config.bfe.geom
             )
-            gdf_floodwall["z"] = floodwall.elevation.convert(
+            bfe_field_name = self.database.site.fiat.config.bfe.field_name
+
+            gdf_bfe = self._model.data_catalog.get_geodataframe(
+                bfe_path, geom=self._model.region, crs=self._model.crs
+            )
+
+            if bfe_field_name not in gdf_bfe.columns:
+                raise ValueError(
+                    f"BFE field '{bfe_field_name}' was not found in {bfe_path}."
+                )
+
+            floodwall_elevation_m = floodwall.elevation.convert(
                 us.UnitTypesLength(us.UnitTypesLength.meters)
+            )
+            gdf_floodwall = self._create_z_linestrings_from_bfe(
+                gdf_lines=gdf_floodwall,
+                gdf_bfe=gdf_bfe,
+                bfe_field_name=bfe_field_name,
+                interval_m=100.0,
+                elevation_offset_m=floodwall_elevation_m,
             )
 
         # par1 is the overflow coefficient for weirs
