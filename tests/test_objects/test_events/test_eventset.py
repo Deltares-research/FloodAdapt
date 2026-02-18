@@ -34,7 +34,7 @@ from flood_adapt.objects.forcing.waterlevels import (
 from flood_adapt.objects.forcing.wind import WindConstant
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.workflows.scenario_runner import ScenarioRunner
-from tests.conftest import CAN_EXECUTE_SCENARIOS
+from tests.conftest import IS_WINDOWS
 from tests.data.create_test_input import _create_hurricane_event
 from tests.test_objects.test_events.test_historical import (
     setup_nearshore_event,
@@ -186,8 +186,8 @@ class TestEventSet:
             ).exists()
 
     @pytest.mark.skipif(
-        not CAN_EXECUTE_SCENARIOS,
-        reason="Skipping scenario tests since binaries or docker are not available.",
+        not IS_WINDOWS,
+        reason="Only run on windows where we have a working sfincs binary",
     )
     def test_calculate_rp_floodmaps(
         self, setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet]

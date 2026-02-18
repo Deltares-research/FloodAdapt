@@ -15,7 +15,7 @@ from flood_adapt.objects.events.hurricane import HurricaneEvent
 from flood_adapt.objects.measures.measures import Measure
 from flood_adapt.objects.scenarios.scenarios import Scenario
 from flood_adapt.workflows.benefit_runner import BenefitRunner
-from tests.conftest import CAN_EXECUTE_SCENARIOS
+from tests.conftest import IS_WINDOWS
 from tests.data.create_test_input import create_event_set_with_hurricanes
 from tests.test_adapter.test_sfincs_adapter import mock_meteohandler_read
 from tests.test_objects.test_events.test_eventset import (
@@ -280,8 +280,8 @@ class TestStrategies:
 
 
 @pytest.mark.skipif(
-    not CAN_EXECUTE_SCENARIOS,
-    reason="Skipping scenario tests since binaries or docker are not available.",
+    not IS_WINDOWS,
+    reason="Only run on windows where we have a working sfincs binary",
 )
 class TestScenarios:
     @pytest.fixture()
@@ -450,8 +450,8 @@ class TestScenarios:
 
 
 @pytest.mark.skipif(
-    not CAN_EXECUTE_SCENARIOS,
-    reason="Skipping scenario tests since binaries or docker are not available.",
+    not IS_WINDOWS,
+    reason="Only run on windows where we have a working sfincs binary",
 )
 class TestOutput:
     @pytest.fixture(scope="class")

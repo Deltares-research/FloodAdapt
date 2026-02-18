@@ -82,7 +82,7 @@ from flood_adapt.objects.measures.measures import (
 )
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from tests.conftest import CAN_EXECUTE_SCENARIOS
+from tests.conftest import IS_WINDOWS
 from tests.fixtures import TEST_DATA_DIR
 from tests.test_objects.test_forcing.test_netcdf import (
     get_test_dataset,
@@ -1382,8 +1382,8 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
 
 
 @pytest.mark.skipif(
-    not CAN_EXECUTE_SCENARIOS,
-    reason="Skipping scenario tests since binaries or docker are not available.",
+    not IS_WINDOWS,
+    reason="Only run on windows where we have a working sfincs binary",
 )
 class TestPostProcessing:
     @pytest.fixture(scope="class")
