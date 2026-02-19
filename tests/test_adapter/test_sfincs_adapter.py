@@ -12,6 +12,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
+from shapely.geometry import LineString, Polygon
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.config.hazard import (
@@ -996,7 +997,9 @@ class TestAddMeasure:
                 name="test_seawall",
                 description="seawall",
                 selection_type=SelectionType.polyline,
-                elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
+                elevation=us.UnitfulLengthRefValue(
+                    value=12, units=us.UnitTypesLength.feet
+                ),
                 polygon_file=str(TEST_DATA_DIR / "seawall.geojson"),
             )
 
@@ -1039,6 +1042,90 @@ class TestAddMeasure:
             assert all(
                 height == pytest.approx(expected_height, 1) for height in added_heights
             ), "Height in file does not match height in polygon file"
+
+        def test_create_z_linestrings_from_bfe_densifies_and_samples(
+            self, default_sfincs_adapter: SfincsAdapter
+        ):
+            gdf_lines = gpd.GeoDataFrame(
+                {"name": ["fw"]},
+                geometry=[LineString([(0.0, 0.0), (250.0, 0.0)])],
+                crs="EPSG:3857",
+            )
+            gdf_bfe = gpd.GeoDataFrame(
+                {"bfe": [1.0, 2.0]},
+                geometry=[
+                    Polygon([(0, -10), (150, -10), (150, 10), (0, 10)]),
+                    Polygon([(150, -10), (260, -10), (260, 10), (150, 10)]),
+                ],
+                crs="EPSG:3857",
+            )
+
+            gdf_out = default_sfincs_adapter._create_z_linestrings_from_bfe(
+                gdf_lines=gdf_lines,
+                gdf_bfe=gdf_bfe,
+                bfe_field_name="bfe",
+                interval_m=100.0,
+                elevation_offset_m=0.5,
+            )
+
+            assert len(gdf_out) == 1
+            geom = gdf_out.geometry.iloc[0]
+            assert geom.has_z
+
+            coords = list(geom.coords)
+            assert len(coords) == 4
+            assert [coord[2] for coord in coords] == pytest.approx([1.5, 1.5, 2.5, 2.5])
+            assert gdf_out["z"].iloc[0] == pytest.approx(2.0)
+
+        def test_create_z_linestrings_from_bfe_fallback_for_missing_vertices(
+            self, default_sfincs_adapter: SfincsAdapter
+        ):
+            gdf_lines = gpd.GeoDataFrame(
+                {"name": ["fw"]},
+                geometry=[LineString([(0.0, 0.0), (250.0, 0.0)])],
+                crs="EPSG:3857",
+            )
+            gdf_bfe = gpd.GeoDataFrame(
+                {"bfe": [1.0]},
+                geometry=[Polygon([(0, -10), (120, -10), (120, 10), (0, 10)])],
+                crs="EPSG:3857",
+            )
+
+            gdf_out = default_sfincs_adapter._create_z_linestrings_from_bfe(
+                gdf_lines=gdf_lines,
+                gdf_bfe=gdf_bfe,
+                bfe_field_name="bfe",
+                interval_m=100.0,
+                elevation_offset_m=0.5,
+            )
+
+            geom = gdf_out.geometry.iloc[0]
+            z_values = [coord[2] for coord in geom.coords]
+
+            assert z_values == pytest.approx([1.5, 1.5, 0.5, 0.5])
+            assert np.isfinite(gdf_out["z"].iloc[0])
+
+        def test_create_z_linestrings_from_bfe_raises_for_invalid_interval(
+            self, default_sfincs_adapter: SfincsAdapter
+        ):
+            gdf_lines = gpd.GeoDataFrame(
+                {"name": ["fw"]},
+                geometry=[LineString([(0.0, 0.0), (10.0, 0.0)])],
+                crs="EPSG:3857",
+            )
+            gdf_bfe = gpd.GeoDataFrame(
+                {"bfe": [1.0]},
+                geometry=[Polygon([(0, -1), (20, -1), (20, 1), (0, 1)])],
+                crs="EPSG:3857",
+            )
+
+            with pytest.raises(ValueError, match="interval_m"):
+                default_sfincs_adapter._create_z_linestrings_from_bfe(
+                    gdf_lines=gdf_lines,
+                    gdf_bfe=gdf_bfe,
+                    bfe_field_name="bfe",
+                    interval_m=0.0,
+                )
 
         def read_weir_file(self, adapter: SfincsAdapter, floodwall_name: str):
             weir_file = adapter._model.get_config("weirfile")
