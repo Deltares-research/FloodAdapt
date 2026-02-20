@@ -592,9 +592,9 @@ class SfincsAdapter(IHazardAdapter):
     def create_animation(
         self,
         scenario: Scenario,
-        sim_path: Optional[Path] = None,
-        bbox=None,
-        zoomlevel=15,
+        sim_path: Path | None = None,
+        bbox: list[float] | None = None,
+        zoomlevel: int = 15,
         vmin: float = 0.0,
         vmax: float = 3.0,
     ) -> str:
@@ -609,11 +609,15 @@ class SfincsAdapter(IHazardAdapter):
             Scenario for which to create the floodmap.
         sim_path : Path, optional
             Path to the simulation folder, by default None.
-        bbox : array, optional
+        bbox : list[float], optional
             Bounding box to limit the animation to a specific area (default is None, which means no bounding box).
             Format: [lon_min, lat_min, lon_max, lat_max]
         zoomlevel : int, optional
             Zoom level for the animation (default is 15).
+        vmin : float, optional
+            Minimum water depth for the color scale (default is 0.0).
+        vmax : float, optional
+            Maximum water depth for the color scale (default is 3.0).
         """
         logger.info("Creating flood animation.")
         results_path = self._get_result_path(scenario)

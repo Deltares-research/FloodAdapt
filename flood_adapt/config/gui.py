@@ -457,7 +457,7 @@ class GuiUnitModel(BaseModel):
 class SyntheticTideModel(BaseModel):
     """Configuration for the synthetic tide.
 
-    Parameters
+    Attributes
     ----------
     harmonic_amplitude : us.UnitfulLength
         The amplitude of the tide harmonic relative to the datum.
