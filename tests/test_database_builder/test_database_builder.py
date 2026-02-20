@@ -1043,7 +1043,11 @@ class TestDataBaseBuilder:
         builder.build()
 
         # Assert
-        db = Database(str(full_config.database_path), full_config.name)
+        assert full_config.database_path is not None
+        db = Database(
+            database_root=Path(full_config.database_path),
+            database_name=full_config.name,
+        )
         assert db is not None
 
     @pytest.mark.parametrize(

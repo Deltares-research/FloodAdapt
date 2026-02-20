@@ -3256,12 +3256,28 @@ packages:
   - psutil ; extra == 'test'
   - setuptools ; extra == 'test'
   requires_python: '>=3.10'
-- pypi: https://files.pythonhosted.org/packages/9c/83/3b1d03d36f224edded98e9affd0467630fc09d766c0e56fb1498cbb04a9b/griffe-1.15.0-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/8b/94/ee21d41e7eb4f823b94603b9d40f86d3c7fde80eacc2c3c71845476dddaa/griffe-2.0.0-py3-none-any.whl
   name: griffe
-  version: 1.15.0
-  sha256: 6f6762661949411031f5fcda9593f586e6ce8340f0ba88921a0f2ef7a81eb9a3
+  version: 2.0.0
+  sha256: 5418081135a391c3e6e757a7f3f156f1a1a746cc7b4023868ff7d5e2f9a980aa
+  requires_dist:
+  - griffecli==2.0.0
+  - griffelib==2.0.0
+  - griffelib[pypi]==2.0.0 ; extra == 'pypi'
+  requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/e6/ed/d93f7a447bbf7a935d8868e9617cbe1cadf9ee9ee6bd275d3040fbf93d60/griffecli-2.0.0-py3-none-any.whl
+  name: griffecli
+  version: 2.0.0
+  sha256: 9f7cd9ee9b21d55e91689358978d2385ae65c22f307a63fb3269acf3f21e643d
   requires_dist:
   - colorama>=0.4
+  - griffelib==2.0.0
+  requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/4d/51/c936033e16d12b627ea334aaaaf42229c37620d0f15593456ab69ab48161/griffelib-2.0.0-py3-none-any.whl
+  name: griffelib
+  version: 2.0.0
+  sha256: 01284878c966508b6d6f1dbff9b6fa607bc062d8261c5c7253cb285b06422a7f
+  requires_dist:
   - pip>=24.0 ; extra == 'pypi'
   - platformdirs>=4.2 ; extra == 'pypi'
   - wheel>=0.42 ; extra == 'pypi'

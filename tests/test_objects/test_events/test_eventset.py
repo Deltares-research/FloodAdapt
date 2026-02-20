@@ -187,7 +187,7 @@ class TestEventSet:
 
     @pytest.mark.skipif(
         not IS_WINDOWS,
-        reason="Only run on windows where we have a working sfincs binary",
+        reason="Only run when we can execute scenarios. Requires either a working sfincs binary, or a working docker setup",
     )
     def test_calculate_rp_floodmaps(
         self, setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet]

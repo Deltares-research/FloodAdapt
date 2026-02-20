@@ -2,7 +2,7 @@ import gc
 import os
 import shutil
 from pathlib import Path
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal, Optional
 
 import geopandas as gpd
 import numpy as np
@@ -12,6 +12,7 @@ from geopandas import GeoDataFrame
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import SlrScenariosModel
 from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.config.site import Site
@@ -41,10 +42,8 @@ class Database(IDatabase):
     """
 
     _instance = None
-
-    database_path: Union[str, os.PathLike]
-    database_name: str
     _init_done: bool = False
+    _settings: Settings
 
     base_path: Path
     input_path: Path
@@ -69,55 +68,60 @@ class Database(IDatabase):
 
     def __init__(
         self,
-        database_path: Union[str, os.PathLike, None] = None,
-        database_name: Optional[str] = None,
+        database_root: Path | None = None,
+        database_name: str | None = None,
+        settings: Settings | None = None,
     ) -> None:
         """
         Initialize the DatabaseController object.
 
         Parameters
         ----------
-        database_path : Union[str, os.PathLike]
+        database_root : Union[str, os.PathLike]
             The path to the database root
         database_name : str
             The name of the database.
+        settings : Settings, optional
+            Settings object to configure behavior, by default None
+
         -----
         """
-        if database_path is None or database_name is None:
+        if database_root is None or database_name is None:
             if not self._init_done:
                 raise DatabaseError(
-                    """Database path and name must be provided for the first initialization.
-                    To do this, run `flood_adapt.api.static.read_database(database_path, site_name)` first."""
+                    "``database_root`` and ``database_name`` are required for the first initialization of the Database."
                 )
             else:
                 return  # Skip re-initialization
 
-        if (
-            self._init_done
-            and self.database_path == database_path
-            and self.database_name == database_name
-        ):
+        if self._init_done and self.base_path == Path(database_root) / database_name:
             return  # Skip re-initialization
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
         re_option = "re-" if self._init_done else ""
         logger.info(
-            f"{re_option}initializing database to {database_name} at {database_path}".capitalize()
+            f"{re_option}initializing database to {database_name} at {database_root}".capitalize()
         )
-        self.database_path = database_path
-        self.database_name = database_name
 
         # Set the paths
-        self.base_path = Path(database_path) / database_name
+        self.base_path = Path(database_root) / database_name
         self.input_path = self.base_path / "input"
         self.static_path = self.base_path / "static"
         self.output_path = self.base_path / "output"
 
+        # Settings
+        if settings is None:
+            settings = Settings(
+                DATABASE_ROOT=database_root, DATABASE_NAME=database_name
+            )
+            settings.export_to_env()
+        self._settings = settings
+
         # Read site configuration
         self.read_site()
+        self._init_done = True
 
         # Delete any unfinished/crashed scenario output after initialization
-        self._init_done = True
         self.cleanup()
 
     def read_site(self, site_name: str = "site") -> None:

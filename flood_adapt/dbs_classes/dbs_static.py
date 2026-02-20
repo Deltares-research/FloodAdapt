@@ -9,7 +9,6 @@ from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
-from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
@@ -38,9 +37,10 @@ class DbsStatic(IDbsStatic):
     _cached_data: dict[str, Any] = {}
     _database: IDatabase
 
-    def __init__(self, database: IDatabase):
+    def __init__(self, database: IDatabase) -> None:
         """Initialize any necessary attributes."""
         self._database = database
+        self._settings = database._settings
 
     def load_static_data(self):
         """Read data into the cache.
@@ -160,6 +160,8 @@ class DbsStatic(IDbsStatic):
         list
             List of scenario names
         """
+        if self._database.site.sfincs.slr_scenarios is None:
+            raise ConfigError("No sea level rise scenarios defined in the site config.")
         input_file = self._database.static_path.joinpath(
             self._database.site.sfincs.slr_scenarios.file
         )
@@ -275,11 +277,12 @@ class DbsStatic(IDbsStatic):
         if self._database.site.fiat is None:
             raise ConfigError("No FIAT model defined in the site configuration.")
         template_path = self._database.static_path / "templates" / "fiat"
+
         with FiatAdapter(
             model_root=template_path,
             config=self._database.site.fiat.config,
-            exe_path=Settings().fiat_bin_path,
-            delete_crashed_runs=Settings().delete_crashed_runs,
+            exe_path=self._settings.fiat_bin_path,
+            delete_crashed_runs=self._settings.delete_crashed_runs,
             config_base_path=self._database.static_path,
         ) as fm:
             return fm
