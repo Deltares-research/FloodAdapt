@@ -1,6 +1,6 @@
 from os import PathLike
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -50,7 +50,7 @@ class FieldMapping(BaseModel):
     ----------
     field_name : str
         The name of the database field/column
-    values : List[str]
+    values : list[str]
         List of values that should match this field
     """
 
@@ -76,13 +76,13 @@ class TypeMapping(BaseModel):
 
     Attributes
     ----------
-    mappings : List[FieldMapping]
+    mappings : list[FieldMapping]
         List of field mappings that together define the type criteria
     """
 
-    mappings: List[FieldMapping] = Field(default_factory=list)
+    mappings: list[FieldMapping] = Field(default_factory=list)
 
-    def add_mapping(self, field_name: str, values: List[str]) -> None:
+    def add_mapping(self, field_name: str, values: list[str]) -> None:
         """
         Add a new field mapping.
 
@@ -90,7 +90,7 @@ class TypeMapping(BaseModel):
         ----------
         field_name : str
             Name of the database field.
-        values : List[str]
+        values : list[str]
             List of allowed values for this field.
         """
         self.mappings.append(FieldMapping(field_name=field_name, values=values))
@@ -118,17 +118,17 @@ class MetricModel(BaseModel):
     ----------
     name : str
         The short name of the metric.
-    long_name : Optional[str], default=None
+    long_name : str | None, default=None
         The long descriptive name of the metric. If not provided, defaults to `name`.
-    show_in_metrics_table : Optional[bool], default=True
+    show_in_metrics_table : bool | None, default=True
         Indicates whether the metric should be displayed in the metrics table.
-    show_in_map : Optional[bool], default=True
+    show_in_map : bool | None, default=True
         Indicates whether the metric should be displayed on the map.
-    description : Optional[str], default=None
+    description : str | None, default=None
         A detailed description of the metric. If not provided, defaults to `name`.
     select : str
         The SQL select statement or expression for the metric.
-    filter : Optional[str], default=""
+    filter : str | None, default=""
         An optional SQL filter to apply to the metric. Defaults to no filter.
 
     Validation
@@ -137,12 +137,12 @@ class MetricModel(BaseModel):
     """
 
     name: str
-    long_name: Optional[str] = None
-    show_in_metrics_table: Optional[bool] = True
-    show_in_map: Optional[bool] = True
-    description: Optional[str] = None
+    long_name: str | None = None
+    show_in_metrics_table: bool | None = True
+    show_in_map: bool | None = True
+    description: str | None = None
     select: str
-    filter: Optional[str] = ""  # This defaults to no filter
+    filter: str = ""  # This defaults to no filter
 
     @model_validator(mode="after")
     def fill_defaults(self):
@@ -165,7 +165,7 @@ class ImpactCategoriesModel(BaseModel):
     ----------
     categories : list[str], default=["Minor", "Major", "Severe"]
         List of impact category names.
-    colors : Optional[list[str]], default=["#ffa500", "#ff0000", "#000000"]
+    colors : list[str], default=["#ffa500", "#ff0000", "#000000"]
         List of colors corresponding to each category.
     field : str
         The database field name used for categorization.
@@ -176,9 +176,7 @@ class ImpactCategoriesModel(BaseModel):
     """
 
     categories: list[str] = Field(default_factory=lambda: ["Minor", "Major", "Severe"])
-    colors: Optional[list[str]] = Field(
-        default_factory=lambda: ["#ffa500", "#ff0000", "#000000"]
-    )
+    colors: list[str] = Field(default_factory=lambda: ["#ffa500", "#ff0000", "#000000"])
     field: str = _IMPACT_COLUMNS.inundation_depth
     unit: str
     bins: list[float]
@@ -497,20 +495,20 @@ class HomesInfographicModel(BaseModel):
         Impact categories configuration.
     """
 
-    svi: Optional[SviModel] = None
+    svi: SviModel | None = None
     mapping: TypeMapping
     impact_categories: ImpactCategoriesModel
 
     @staticmethod
     def get_template(
-        type: Literal["OSM", "NSI"] = "OSM", svi_threshold: Optional[float] = None
+        type: Literal["OSM", "NSI"] = "OSM", svi_threshold: float | None = None
     ):
         """
         Get a pre-configured template for SVI infographics.
 
         Parameters
         ----------
-        svi_threshold : Optional[float], default=None
+        svi_threshold : float | None, default=None
             The SVI threshold value for vulnerability classification. If not provided, SVI will be None.
         type : Literal["OSM", "NSI"], default="OSM"
             The database type to create a template for.
@@ -671,17 +669,17 @@ class EventInfographicModel(BaseModel):
 
     Attributes
     ----------
-    buildings : Optional[BuildingsInfographicModel], default=None
+    buildings : BuildingsInfographicModel | None, default=None
         Buildings infographic configuration.
-    svi : Optional[SviInfographicModel], default=None
+    svi : SviInfographicModel | None, default=None
         SVI infographic configuration.
-    roads : Optional[RoadsInfographicModel], default=None
+    roads : RoadsInfographicModel | None, default=None
         Roads infographic configuration.
     """
 
-    buildings: Optional[BuildingsInfographicModel] = None
-    svi: Optional[HomesInfographicModel] = None
-    roads: Optional[RoadsInfographicModel] = None
+    buildings: BuildingsInfographicModel | None = None
+    svi: HomesInfographicModel | None = None
+    roads: RoadsInfographicModel | None = None
 
 
 class FloodExceedanceModel(BaseModel):
@@ -722,9 +720,7 @@ class RiskInfographicModel(BaseModel):
     flood_exceedance: FloodExceedanceModel
 
     @staticmethod
-    def get_template(
-        type: Literal["OSM", "NSI"], svi_threshold: Optional[float] = None
-    ):
+    def get_template(type: Literal["OSM", "NSI"], svi_threshold: float | None = None):
         """
         Get a pre-configured template for risk infographics.
 
@@ -732,7 +728,7 @@ class RiskInfographicModel(BaseModel):
         ----------
         type : Literal["OSM", "NSI"]
             The database type to create a template for.
-        svi_threshold : Optional[float], default=None
+        svi_threshold : float | None, default=None
             The SVI threshold value for vulnerability classification.
 
         Returns
@@ -837,7 +833,7 @@ class Metrics:
         ----------
         metrics : list[MetricModel]
             List of metric models to write.
-        path : Union[str, Path]
+        path : str | Path
             Path to the output TOML file.
         aggr_levels : list[str], default=[]
             List of aggregation levels.
@@ -851,20 +847,20 @@ class Metrics:
 
     def write(
         self,
-        metrics_path: Union[str, Path, PathLike],
-        aggregation_levels: List[str],
-        infographics_path: Optional[Union[str, Path, PathLike]] = None,
+        metrics_path: str | Path | PathLike,
+        aggregation_levels: list[str],
+        infographics_path: str | Path | PathLike | None = None,
     ) -> None:
         """
         Write all metrics (mandatory, additional, and infographics) to TOML files.
 
         Parameters
         ----------
-        metrics_path : Union[str, Path, PathLike]
+        metrics_path : str | Path | PathLike
             The directory path where the metrics configuration files will be saved.
-        aggregation_levels : List[str]
+        aggregation_levels : list[str]
             A list of aggregation levels to include in the metrics configuration files.
-        infographics_path : Optional[Union[str, Path, PathLike]], default=None
+        infographics_path : str | Path | PathLike | None, default=None
             The directory path where infographics configuration files will be saved.
             Required if infographics configurations are present.
 
@@ -1355,7 +1351,7 @@ class Metrics:
     @staticmethod
     def _make_infographics_config_buildings(
         buildings_config: BuildingsInfographicModel,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create infographics configuration dictionary for buildings.
 
@@ -1366,7 +1362,7 @@ class Metrics:
 
         Returns
         -------
-        Dict[str, Any]
+        dict[str, Any]
             Configuration dictionary for building infographics.
         """
         image_path = "{image_path}"
@@ -1384,7 +1380,7 @@ class Metrics:
                     f"    {cat}: >{buildings_config.impact_categories.bins[-1]} {buildings_config.impact_categories.unit}<br>"
                 )
 
-        other_config: Dict[str, Any] = {
+        other_config: dict[str, Any] = {
             "Plot": {
                 "image_scale": 0.15,
                 "numbers_font": 20,
@@ -1401,7 +1397,7 @@ class Metrics:
             },
         }
 
-        cfg: Dict[str, Any] = {
+        cfg: dict[str, Any] = {
             "Charts": {},
             "Categories": {},
             "Slices": {},
@@ -1443,7 +1439,7 @@ class Metrics:
     @staticmethod
     def _make_infographics_config_svi(
         svi_config: HomesInfographicModel,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create infographics configuration dictionary for SVI.
 
@@ -1454,7 +1450,7 @@ class Metrics:
 
         Returns
         -------
-        Dict[str, Any]
+        dict[str, Any]
             Configuration dictionary for SVI infographics.
         """
         image_path = "{image_path}"
@@ -1571,7 +1567,7 @@ class Metrics:
     @staticmethod
     def _make_infographics_config_roads(
         roads_config: RoadsInfographicModel,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create infographics configuration dictionary for roads.
 
@@ -1582,7 +1578,7 @@ class Metrics:
 
         Returns
         -------
-        Dict[str, Any]
+        dict[str, Any]
             Configuration dictionary for roads infographics.
         """
         image_path = "{image_path}"

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, Literal
 
 import geopandas as gpd
 import numpy as np
@@ -323,7 +323,7 @@ class FloodAdapt:
 
         Returns
         -------
-        event: Union[Event, EventSet]
+        event: Event | EventSet
             The event with the given name.
 
         Raises
@@ -427,7 +427,7 @@ class FloodAdapt:
 
     def plot_event_forcing(
         self, event: Event, forcing_type: ForcingType
-    ) -> tuple[str, Optional[List[Exception]]]:
+    ) -> tuple[str, list[Exception] | None]:
         """Plot forcing data for an event.
 
         Parameters
@@ -564,16 +564,14 @@ class FloodAdapt:
         """
         self.database.projections.copy(old_name, new_name, new_description)
 
-    def get_slr_scn_names(
-        self,
-    ) -> list:
+    def get_slr_scn_names(self) -> list:
         """
         Get all sea level rise scenario names from the database.
 
         Returns
         -------
-        names : List[str]
-            List of scenario names
+        names : list[str]
+            list of scenario names
         """
         return self.database.static.get_slr_scn_names()
 
@@ -706,12 +704,12 @@ class FloodAdapt:
         """
         self.database.scenarios.delete(name)
 
-    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
+    def run_scenario(self, scenario_name: str | list[str]) -> None:
         """Run a scenario hazard and impacts.
 
         Parameters
         ----------
-        scenario_name : Union[str, list[str]]
+        scenario_name : str | list[str]
             name(s) of the scenarios to run.
 
         Raises
@@ -775,9 +773,7 @@ class FloodAdapt:
         """
         return self.database.get_depth_conversion()
 
-    def get_max_water_level_map(
-        self, name: str, rp: Optional[int] = None
-    ) -> np.ndarray:
+    def get_max_water_level_map(self, name: str, rp: int | None = None) -> np.ndarray:
         """
         Return the maximum water level for the given scenario.
 
@@ -795,9 +791,7 @@ class FloodAdapt:
         """
         return self.database.get_max_water_level(name, rp)
 
-    def get_flood_map_geotiff(
-        self, name: str, rp: Optional[int] = None
-    ) -> Optional[Path]:
+    def get_flood_map_geotiff(self, name: str, rp: int | None = None) -> Path | None:
         """
         Return the path to the geotiff file with the flood map for the given scenario.
 
@@ -810,7 +804,7 @@ class FloodAdapt:
 
         Returns
         -------
-        flood_map_geotiff : Optional[Path]
+        flood_map_geotiff : Path | None
             The path to the geotiff file with the flood map for the scenario if it exists, otherwise None.
         """
         return self.database.get_flood_map_geotiff(name, rp)
@@ -863,7 +857,7 @@ class FloodAdapt:
         """
         return self.database.get_roads(name)
 
-    def get_obs_point_timeseries(self, name: str) -> Optional[gpd.GeoDataFrame]:
+    def get_obs_point_timeseries(self, name: str) -> gpd.GeoDataFrame | None:
         """Return the HTML strings of the water level timeseries for the given scenario.
 
         Parameters
@@ -941,16 +935,14 @@ class FloodAdapt:
 
         return infographic_path
 
-    def get_infometrics(
-        self, name: str, aggr_name: Optional[str] = None
-    ) -> pd.DataFrame:
+    def get_infometrics(self, name: str, aggr_name: str | None = None) -> pd.DataFrame:
         """Return the infometrics DataFrame for the given scenario and optional aggregation.
 
         Parameters
         ----------
         name : str
             The name of the scenario.
-        aggr_name : Optional[str], default None
+        aggr_name : str | None, default None
             The name of the aggregation, if any.
 
         Returns
@@ -991,7 +983,7 @@ class FloodAdapt:
         name: str,
         aggr_type: str,
         type: Literal["single_event", "risk"] = "single_event",
-        rp: Optional[int] = None,
+        rp: int | None = None,
         equity: bool = False,
     ) -> list[dict]:
         # Read infometrics from csv file
@@ -1091,7 +1083,7 @@ class FloodAdapt:
 
     def get_svi_map(
         self,
-    ) -> Union[gpd.GeoDataFrame, None]:
+    ) -> gpd.GeoDataFrame | None:
         """Get the SVI map that are used in Fiat.
 
         Returns
@@ -1106,12 +1098,12 @@ class FloodAdapt:
         else:
             return None
 
-    def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
+    def get_static_map(self, path: str | Path) -> gpd.GeoDataFrame:
         """Get a static map from the database.
 
         Parameters
         ----------
-        path : Union[str, Path]
+        path : str | Path
             path to the static map
 
         Returns
@@ -1260,12 +1252,12 @@ class FloodAdapt:
         """
         BenefitRunner(self.database, benefit=benefit).create_benefit_scenarios()
 
-    def run_benefit(self, name: Union[str, list[str]]) -> None:
+    def run_benefit(self, name: str | list[str]) -> None:
         """Run the benefit assessment.
 
         Parameters
         ----------
-        name : Union[str, list[str]]
+        name : str | list[str]
             The name of the benefit object to run.
         """
         if not isinstance(name, list):
@@ -1298,8 +1290,8 @@ class FloodAdapt:
 
         Parameters
         ----------
-        scenario : Scenario
-            Scenario for which to create the floodmap.
+        scenario : str
+            Name of the scenario for which to create the floodmap.
         bbox : list[float], optional
             Bounding box to limit the animation to a specific area (default is None, which means no bounding box).
             Format: [lon_min, lat_min, lon_max, lat_max]
