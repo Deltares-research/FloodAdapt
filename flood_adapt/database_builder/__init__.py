@@ -15,15 +15,18 @@ from flood_adapt.database_builder.database_builder import (
     UnitSystems,
     create_database,
 )
-
-from .metrics_utils import (
+from flood_adapt.database_builder.metrics_utils import (
     BuildingsInfographicModel,
     EventInfographicModel,
+    FieldMapping,
+    FloodExceedanceModel,
     HomesInfographicModel,
     ImpactCategoriesModel,
     MetricModel,
     RiskInfographicModel,
     RoadsInfographicModel,
+    SviModel,
+    TypeMapping,
 )
 
 __all__ = [
@@ -41,6 +44,10 @@ __all__ = [
     "EventInfographicModel",
     "HomesInfographicModel",
     "MetricModel",
+    "FloodExceedanceModel",
+    "TypeMapping",
+    "FieldMapping",
+    "SviModel",
     "RiskInfographicModel",
     "RoadsInfographicModel",
     "ImpactCategoriesModel",
