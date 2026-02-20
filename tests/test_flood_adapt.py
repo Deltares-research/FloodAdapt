@@ -361,9 +361,6 @@ class TestScenarios:
         )
         return test_fa, scn, test_eventset
 
-    @pytest.mark.skip(
-        reason="Skipped until METEO forcing is fixed in hydromt-sfincs 1.3.0",
-    )
     def test_run_offshore_scenario(
         self, test_fa: FloodAdapt, setup_offshore_meteo_scenario
     ):
@@ -410,9 +407,6 @@ class TestScenarios:
 
         assert finished_file_exists(test_fa.database.scenarios.output_path / scn.name)
 
-    @pytest.mark.skip(
-        reason="Skipped until METEO forcing is fixed in hydromt-sfincs 1.3.0",
-    )
     def test_create_save_scenario(
         self, test_fa: FloodAdapt, setup_offshore_meteo_event
     ):

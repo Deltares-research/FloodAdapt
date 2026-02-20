@@ -138,10 +138,10 @@ def setup_offshore_scenario(
 
 class TestHistoricalEvent:
     def test_save_event_toml(
-        self, setup_nearshore_event: HistoricalEvent, tmp_path: Path
+        self, setup_offshore_meteo_event: HistoricalEvent, tmp_path: Path
     ):
         path = tmp_path / "test_event.toml"
-        event = setup_nearshore_event
+        event = setup_offshore_meteo_event
         event.save(path)
         assert path.exists()
 
@@ -162,9 +162,11 @@ class TestHistoricalEvent:
         # Assert
         assert all(csv.exists() for csv in expected_csvs)
 
-    def test_load_file(self, setup_nearshore_event: HistoricalEvent, tmp_path: Path):
+    def test_load_file(
+        self, setup_offshore_meteo_event: HistoricalEvent, tmp_path: Path
+    ):
         path = tmp_path / "test_event.toml"
-        saved_event = setup_nearshore_event
+        saved_event = setup_offshore_meteo_event
         saved_event.save(path)
         assert path.exists()
 
