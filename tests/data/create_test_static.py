@@ -363,6 +363,7 @@ def create_site_config(
         fiat=fiat,
         gui=gui,
         sfincs=sfincs,
+        is_coastal=True,
     )
     return config
 

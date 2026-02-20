@@ -20,7 +20,7 @@ from hydromt_fiat import FiatModel as HydromtFiatModel
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from hydromt_sfincs.workflows.downscaling import make_index_cog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from shapely import MultiLineString, MultiPolygon, Polygon
 from shapely.ops import nearest_points
 
@@ -163,7 +163,7 @@ class SpatialJoinModel(BaseModel):
     """
     Model for representing a spatial join between geometries and tabular data.
 
-    Parameters
+    Attributes
     ----------
     name : Optional[str]
         Name of the spatial join (optional).
@@ -232,7 +232,7 @@ class GuiConfigModel(BaseModel):
     """
     Configuration for FloodAdapt GUI visualization scaling.
 
-    Parameters
+    Attributes
     ----------
     max_flood_depth : float
         Maximum flood depth for visualization bins (last bin is ">value").
@@ -263,7 +263,7 @@ class SviConfigModel(SpatialJoinModel):
 
     Inherits from SpatialJoinModel.
 
-    Parameters
+    Attributes
     ----------
     threshold : float
         Threshold value to specify vulnerability.
@@ -276,7 +276,7 @@ class TideGaugeConfigModel(BaseModel):
     """
     Model for tide gauge configuration.
 
-    Parameters
+    Attributes
     ----------
     source : TideGaugeSource
         Source of tide gauge data.
@@ -310,7 +310,7 @@ class ConfigModel(BaseModel):
     """
     Main configuration model for FloodAdapt database builder.
 
-    Parameters
+    Attributes
     ----------
     name : str
         Name of the site (must be valid for folder names).
@@ -320,6 +320,8 @@ class ConfigModel(BaseModel):
         Path to the database root directory.
     unit_system : UnitSystems
         Unit system for all calculations (imperial or metric).
+    is_coastal: Optional[bool] = None
+        Indicates whether the site is coastal.
     gui : GuiConfigModel
         GUI visualization scaling configuration.
     infographics : bool
@@ -368,7 +370,7 @@ class ConfigModel(BaseModel):
         Sea level rise scenarios configuration.
     scs : Optional[SCSModel]
         SCS model configuration.
-    tide_gauge : Optional[TideGaugeConfigModel]
+    tide_gauge : Optional[TideGaugeConfigModel] #TODO Change name to gauge to cover inland cases?
         Tide gauge configuration.
     cyclones : Optional[bool]
         Enable/disable cyclones.
@@ -385,6 +387,7 @@ class ConfigModel(BaseModel):
     description: Optional[str] = None
     database_path: Optional[str] = None
     unit_system: UnitSystems
+    is_coastal: Optional[bool] = None
     gui: GuiConfigModel
     infographics: bool = True
     event_infographics: Optional[EventInfographicModel] = None
@@ -423,6 +426,14 @@ class ConfigModel(BaseModel):
     cyclone_basin: Optional[Basins] = None
     obs_point: Optional[list[ObsPointModel]] = None
     probabilistic_set: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_offshore_for_non_coastal(self) -> "ConfigModel":
+        if self.is_coastal is False and self.sfincs_offshore is not None:
+            raise ValueError(
+                "When 'is_coastal' is False (thus this is an inland site), 'sfincs_offshore' cannot be provided."
+            )
+        return self
 
     @staticmethod
     def read(toml_path: Union[str, Path]) -> "ConfigModel":
@@ -1337,6 +1348,7 @@ class DatabaseBuilder:
         sfincs = SfincsModel(
             config=config,
             water_level=self.water_level_references,
+            has_wl_boundaries=self._determine_if_wl_boundaries(),
             slr_scenarios=self.create_slr(),
             dem=self.create_dem_model(),
             scs=self.create_scs_model(),
@@ -1875,6 +1887,7 @@ class DatabaseBuilder:
         description = (
             self.config.description if self.config.description else self.config.name
         )
+        is_coastal = self._determine_if_coastal()
 
         config = Site(
             name=self.config.name,
@@ -1885,6 +1898,7 @@ class DatabaseBuilder:
             gui=gui,
             sfincs=sfincs,
             standard_objects=std_objs,
+            is_coastal=is_coastal,
         )
         return config
 
@@ -2194,6 +2208,67 @@ class DatabaseBuilder:
             aggregation_levels=aggr_levels,
             infographics_path=path_ig,
         )
+
+    def _determine_if_coastal(self) -> bool:
+        if self.config.is_coastal is not None:
+            # if coastal information is provided in the config, use it.
+            if self.config.is_coastal:
+                msg = f"Based on the config input 'is_coastal={self.config.is_coastal}', the site is classified as coastal."
+            else:
+                msg = f"Based on the config input 'is_coastal={self.config.is_coastal}', the site is classified as inland."
+            logger.info(msg)
+            return self.config.is_coastal
+
+        logger.warning(
+            "Explicit information on site type was not provided in the config with the 'is_coastal' parameter. The coastal/inland classification will be determined based on the SFINCS model characteristics."
+        )
+
+        # Otherwise determine based on the SFINCS model characteristics.
+        if self.sfincs_offshore_model is not None:
+            logger.info(
+                "An offshore SFINCS model was provided, so the site is classified as coastal."
+            )
+            return True
+
+        has_bnd = self._determine_if_wl_boundaries()
+
+        if has_bnd:  # and not coastal. How to distinguish between inland with boundary and coastal without offshore model?
+            logger.info(
+                "Water level boundaries detected in the SFINCS overland model. The site is classified as coastal."
+            )
+            return True
+        else:
+            logger.info(
+                "No water level boundaries detected in the SFINCS overland model. The site is classified as inland."
+            )
+            return False
+
+    def _determine_if_wl_boundaries(self) -> bool:
+        # https://sfincs.readthedocs.io/en/latest/parameters.html
+        mask = (
+            self.sfincs_overland_model.mask
+            if self.sfincs_overland_model.mask is not None
+            else xr.DataArray()
+        )
+        mask_has_bnd = bool(
+            (mask == 2).any()
+        )  # boundary points are marked with 2 in the SFINCS mask
+        has_bnd_points = (
+            "bndfile" in self.sfincs_overland_model.config
+        )  # check if boundary points are specified
+        if mask_has_bnd and has_bnd_points:
+            has_bnd = True
+        elif mask_has_bnd and not has_bnd_points:
+            raise ValueError(
+                "The SFINCS overland model mask indicates the presence of boundary points, but no boundary file is specifie in SFINCS input. This may lead to issues in the model setup"
+            )
+        elif has_bnd_points:
+            raise ValueError(
+                "A boundary file specified in the SFINCS overland model input, but the mask does not include water levels."
+            )
+        else:
+            has_bnd = False
+        return has_bnd
 
     @debug_timer
     def add_static_files(self):

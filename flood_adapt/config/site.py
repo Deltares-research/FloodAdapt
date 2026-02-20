@@ -33,6 +33,8 @@ class Site(BaseModel):
         Longitude of the site.
     standard_objects : StandardObjectModel, default=StandardObjectModel()
         Standard objects of the site.
+    is_coastal: bool
+        Indicates whether the site is coastal.
     gui : GuiModel
         GUI model of the site.
     sfincs : SfincsModel
@@ -46,6 +48,7 @@ class Site(BaseModel):
     lat: float
     lon: float
     standard_objects: StandardObjectModel = StandardObjectModel()
+    is_coastal: bool = True
 
     gui: GuiModel
     sfincs: SfincsModel
@@ -60,18 +63,10 @@ class Site(BaseModel):
     ) -> None:
         """Write toml file from model object."""
         parent_folder = Path(filepath).parent
-        config_dict = {
-            "name": self.name,
-            "description": self.description,
-            "lat": self.lat,
-            "lon": self.lon,
-            "standard_objects": {
-                "events": self.standard_objects.events,
-                "projections": self.standard_objects.projections,
-                "strategies": self.standard_objects.strategies,
-            },
-            "components": {},
-        }
+        config_dict = self.model_dump(
+            exclude_none=True, exclude={"gui", "sfincs", "fiat"}
+        )
+        config_dict["components"] = {}
 
         if self.sfincs is not None:
             config_dict["components"]["sfincs"] = sfincs
