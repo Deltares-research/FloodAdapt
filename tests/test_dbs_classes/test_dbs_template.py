@@ -70,7 +70,6 @@ def test_add_and_flush(tmp_path: Path):
     repo.add(obj)
     assert not expected_path.exists()
     assert obj.name in repo._mutated
-    print(repo._mutated)
 
     repo.flush()
     assert expected_path.exists()

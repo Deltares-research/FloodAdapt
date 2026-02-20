@@ -169,6 +169,12 @@ class Database(IDatabase):
         for repo in self._repositories:
             repo.flush()
 
+    def clear(self):
+        """Clear all repositories from memory without writing to disk."""
+        logger.info("Clearing database")
+        for repo in self._repositories:
+            repo.clear()
+
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
         self._instance = None

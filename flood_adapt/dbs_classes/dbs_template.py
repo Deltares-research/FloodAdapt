@@ -43,6 +43,8 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
     ## IO
     def load(self, names: list[str] | None = None):
         """Read all objects from self.input_path and add them to the in-memory database."""
+        self.clear()
+
         if not self.input_path.exists():
             return
 
@@ -61,7 +63,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
             self._last_modified[path.stem] = datetime.fromtimestamp(
                 path.stat().st_mtime
             )
-            self.add(obj, overwrite=True)
+            self.add(obj)
 
         # Loading should not mark mutations
         self._mutated.clear()
@@ -74,6 +76,8 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         for name in self._mutated:
             obj = self._objects[name]
             path = self._object_path(self.input_path, name)
+
+            self._write_object(obj, path)
 
             try:
                 if path.parent.exists():
@@ -91,7 +95,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
                     f"Failed to delete output for `{name}` due to: {e}"
                 ) from e
 
-            self._write_object(obj, path)
             self._last_modified[name] = datetime.now()
 
         # remove deleted
@@ -236,6 +239,13 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         """
         self._assert_has_object(name)
         return self._objects[name].model_copy(deep=True)
+
+    def clear(self):
+        """Clear the in-memory database, without deleting any files on disk. This will unstage any staged changes."""
+        self._objects.clear()
+        self._mutated.clear()
+        self._deleted.clear()
+        self._last_modified.clear()
 
     ## Query / Info methods
     def summarize_objects(self) -> dict[str, list[Any]]:
