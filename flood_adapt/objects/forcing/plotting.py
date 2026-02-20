@@ -228,21 +228,9 @@ def plot_waterlevel(
     # Plot actual thing
     fig = px.line(data)
 
-    # plot main reference
-    fig.add_hline(
-        y=0,
-        line_dash="dash",
-        line_color="#000000",
-        annotation_text=site.sfincs.water_level.reference,
-        annotation_position="bottom right",
-    )
-
     # plot other references
     for wl_ref in site.sfincs.water_level.datums:
-        if (
-            wl_ref.name == site.sfincs.config.overland_model.reference
-            or wl_ref.name in site.gui.plotting.excluded_datums
-        ):
+        if wl_ref.name in site.gui.plotting.excluded_datums:
             continue
 
         fig.add_hline(

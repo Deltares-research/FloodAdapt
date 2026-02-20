@@ -28,10 +28,6 @@ from flood_adapt.dbs_classes.interface.database import IDatabase, PostProcessing
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
 from flood_adapt.misc.io import read_toml
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.misc.path_builder import (
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.events import Mode
 from flood_adapt.objects.forcing import unit_system as us
@@ -117,9 +113,9 @@ class Database(IDatabase):
 
         # Set the paths
         self.base_path = Path(database_path) / database_name
-        self.input_path = db_path(TopLevelDir.input)
-        self.static_path = db_path(TopLevelDir.static)
-        self.output_path = db_path(TopLevelDir.output)
+        self.input_path = self.base_path / "input"
+        self.static_path = self.base_path / "static"
+        self.output_path = self.base_path / "output"
 
         # Load the configuration files
         db_config_path = self.static_path / "config" / "database.toml"

@@ -69,7 +69,7 @@ Settings(
     DATABASE_NAME=name,
     SFINCS_BIN_PATH=sfincs_bin,
     FIAT_BIN_PATH=fiat_path,
-    VALIDATE_BINARIES=True,
+    USE_BINARIES=True,
 )
 ```
 

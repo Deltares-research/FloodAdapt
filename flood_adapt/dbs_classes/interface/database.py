@@ -32,6 +32,10 @@ class IDatabase(ABC):
     benefits: AbstractDatabaseElement
 
     @abstractmethod
+    def read_site(self, site_name: str) -> None:
+        pass
+
+    @abstractmethod
     def get_outputs(self) -> dict[str, Any]:
         pass
 
