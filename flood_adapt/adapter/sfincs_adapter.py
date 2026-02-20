@@ -164,9 +164,6 @@ class SfincsAdapter(IHazardAdapter):
                         handler.close()
                         _logger.removeHandler(handler)
 
-        if hasattr(self, "_model") and self._model is not None:
-            del self._model
-
     def __enter__(self) -> "SfincsAdapter":
         return self
 
@@ -1022,7 +1019,7 @@ class SfincsAdapter(IHazardAdapter):
         self.preprocess(scenario, event)
         self.process(scenario, event)
         self.postprocess(scenario, event)
-        self.close_files()
+        del self._model
         if not self.settings.config.save_simulation:
             self._delete_simulation_folder(scenario, sub_event=event)
 
@@ -1059,7 +1056,7 @@ class SfincsAdapter(IHazardAdapter):
 
         # Postprocess
         self.calculate_rp_floodmaps(scenario)
-        self.close_files()
+
         # Cleanup
         if not self.settings.config.save_simulation:
             for i, sub_event in enumerate(event_set._events):
