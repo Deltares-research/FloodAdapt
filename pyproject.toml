@@ -70,7 +70,8 @@ docs = [
     "jupyter-cache      >=1.0,<2.0",
     "nbstripout         >=0.8.0,<0.9",
     "matplotlib         >=3.0,<4.0",
-    "quartodoc          >=0.9.0,<1.0",
+    "quartodoc          >=0.11.0,<1.0",
+    "griffe             <2.0", # v2 is not compatible with quartodoc v0.11
     "sphinx             >=8.0,<9.0",
     "sphinx-rtd-theme   >=3.0,<4.0",
     "regex              >=2024.11,<2025.0",
@@ -143,7 +144,8 @@ build-db-builder = {cmd = "python distribution/build_database_builder_executable
 clean-generated-docs = { cmd = "rm -rf docs/_freeze docs/_version.yml docs/api_ref docs/objects.json docs/_site" }
 clean-example-output = { cmd = "python docs/clean_notebook_output.py" }
 clean-example-database = { cmd = "python docs/clean_database.py ./docs/_data/examples/charleston_test" }
-clean-docs = {depends-on=["clean-generated-docs", "clean-example-output", "clean-example-database"]}
+clean-db-builder-outputs = { cmd = "rm -rf docs/_data/examples/static-data/1_DatabaseBuilder/Database" }
+clean-docs = {depends-on=["clean-generated-docs", "clean-example-output", "clean-example-database", "clean-db-builder-outputs"]}
 fetch-data = { cmd = "python docs/fetch_data.py" }
 build-docs = { cmd = "quartodoc build --config docs/_quarto.yml", depends-on=[ "clean-docs" ] }
 build-interlinks = { cmd = "quartodoc interlinks", depends-on=[ "clean-docs" ], cwd = "docs" }
