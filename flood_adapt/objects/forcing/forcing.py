@@ -125,7 +125,9 @@ class IForcing(BaseModel, ABC):
         payload = json.dumps(data, sort_keys=True, default=str).encode("utf-8")
         return f"ATTR:{hashlib.sha256(payload).hexdigest()}"
 
-    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+    def _post_load(
+        self, file_path: Path | str | os.PathLike, force: bool = False, **kwargs
+    ) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
         return
 

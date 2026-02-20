@@ -13,6 +13,9 @@ from tests.conftest import IS_WINDOWS
 
 _FIAT_COLUMNS = get_fiat_columns()
 
+# mark all tests in this module as integration tests
+pytestmark = pytest.mark.integration
+
 
 @pytest.mark.skipif(
     not IS_WINDOWS,

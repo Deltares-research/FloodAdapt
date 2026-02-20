@@ -58,7 +58,7 @@ def setup_offshore_scenario(test_db: IDatabase):
             ],
         },
     )
-    test_db.events.save(event)
+    test_db.events.add(event)
 
     scn = Scenario(
         name="test_scenario",
@@ -66,7 +66,7 @@ def setup_offshore_scenario(test_db: IDatabase):
         projection="current",
         strategy="no_measures",
     )
-    test_db.scenarios.save(scn)
+    test_db.scenarios.add(scn)
 
     return test_db, scn, event
 

@@ -81,12 +81,14 @@ class WindTrack(IWind):
     # path to cyc file, set this when creating it
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        if self.path:
-            self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+        copy_file_to_output_dir(self.path, Path(output_dir))
 
-    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+    def _post_load(
+        self, file_path: Path | str | os.PathLike, force: bool = False, **kwargs
+    ) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
-        self.path = path_exists_and_absolute(self.path, file_path)
+        path = self.path.name if force else self.path
+        self.path = path_exists_and_absolute(path, file_path)
 
 
 class WindCSV(IWind):
@@ -105,11 +107,14 @@ class WindCSV(IWind):
         ).to_dataframe(time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+        copy_file_to_output_dir(self.path, Path(output_dir))
 
-    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+    def _post_load(
+        self, file_path: Path | str | os.PathLike, force: bool = False, **kwargs
+    ) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
-        self.path = path_exists_and_absolute(self.path, file_path)
+        path = self.path.name if force else self.path
+        self.path = path_exists_and_absolute(path, file_path)
 
 
 class WindMeteo(IWind):
@@ -130,8 +135,11 @@ class WindNetCDF(IWind):
         return validated_ds
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        self.path = copy_file_to_output_dir(self.path, Path(output_dir))
+        copy_file_to_output_dir(self.path, Path(output_dir))
 
-    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+    def _post_load(
+        self, file_path: Path | str | os.PathLike, force: bool = False, **kwargs
+    ) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
-        self.path = path_exists_and_absolute(self.path, file_path)
+        path = self.path.name if force else self.path
+        self.path = path_exists_and_absolute(path, file_path)

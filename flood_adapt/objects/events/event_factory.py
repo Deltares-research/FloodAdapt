@@ -75,7 +75,7 @@ class EventFactory:
         return Mode(data.get("mode"))
 
     @staticmethod
-    def load_file(toml_file: Path, load_all: bool = False) -> Event | EventSet:
+    def load_file(toml_file: Path) -> Event | EventSet:
         """Return event object based on toml file.
 
         Parameters
@@ -90,7 +90,7 @@ class EventFactory:
         """
         mode = EventFactory.read_mode(toml_file)
         if mode == Mode.risk:
-            return EventSet.load_file(toml_file, load_all=load_all)
+            return EventSet.load_file(toml_file)
         elif mode == Mode.single_event:
             template = Template(EventFactory.read_template(toml_file))
             event_type = EventFactory.get_event_from_template(template)

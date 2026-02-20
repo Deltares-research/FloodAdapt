@@ -1,8 +1,6 @@
 from pathlib import Path
-from tempfile import gettempdir
 from typing import Optional
 
-import geopandas as gpd
 import pytest
 from pydantic import ValidationError
 
@@ -18,6 +16,17 @@ from flood_adapt.objects.measures.measures import (
     Pump,
     SelectionType,
 )
+from tests.test_objects import assert_object_save_load_eq
+
+
+def assert_measure_save_load_eq(
+    write_path: Path, obj: Measure, cls: type[Measure], load_kwargs: dict | None = None
+):
+    loaded = assert_object_save_load_eq(write_path, obj, cls, load_kwargs)
+    if obj.polygon_file:
+        assert loaded.polygon_file is not None
+        assert Path(loaded.polygon_file).is_absolute()
+        assert Path(loaded.polygon_file).is_file()
 
 
 def assert_validation_error(
@@ -598,6 +607,34 @@ class TestGreenInfrastructure:
         assert error_message in str(excinfo.value)
 
 
+def test_floodwall_read(tmp_path: Path, test_floodwall):
+    assert_measure_save_load_eq(tmp_path, test_floodwall, FloodWall)
+
+
+def test_elevate_aggr_area_save(raise_property_aggregation_area, tmp_path):
+    assert_measure_save_load_eq(tmp_path, raise_property_aggregation_area, Elevate)
+
+
+def test_elevate_polygon_read(raise_property_polygon, tmp_path):
+    assert_measure_save_load_eq(tmp_path, raise_property_polygon, Elevate)
+
+
+def test_buyout_read(tmp_path, test_buyout):
+    assert_measure_save_load_eq(tmp_path, test_buyout, Buyout)
+
+
+def test_floodproof_read(tmp_path, test_floodproof):
+    assert_measure_save_load_eq(tmp_path, test_floodproof, FloodProof)
+
+
+def test_pump_read(tmp_path, test_pump):
+    assert_measure_save_load_eq(tmp_path, test_pump, Pump)
+
+
+def test_green_infra_read(tmp_path, test_green_infra):
+    assert_measure_save_load_eq(tmp_path, test_green_infra, GreenInfrastructure)
+
+
 @pytest.fixture
 def test_floodwall(test_data_dir):
     floodwall_model = {
@@ -611,187 +648,42 @@ def test_floodwall(test_data_dir):
     return FloodWall(**floodwall_model)
 
 
-def test_floodwall_read(test_floodwall):
-    assert isinstance(test_floodwall.name, str)
-    assert isinstance(test_floodwall.description, str)
-    assert test_floodwall.type == MeasureType.floodwall
-    assert isinstance(test_floodwall.elevation, us.UnitfulLength)
-
-    assert test_floodwall.name == "test_seawall"
-    assert test_floodwall.type == "floodwall"
-    assert test_floodwall.elevation.value == 12
-    assert test_floodwall.elevation.units == us.UnitTypesLength.feet
-
-
-def test_elevate_aggr_area_read(test_db):
-    test_toml = (
-        test_db.input_path
-        / "measures"
-        / "raise_property_aggregation_area"
-        / "raise_property_aggregation_area.toml"
-    )
-    assert test_toml.is_file()
-
-    elevate = Elevate.load_file(test_toml)
-
-    assert isinstance(elevate.name, str)
-    assert isinstance(elevate.description, str)
-    assert isinstance(elevate.type, MeasureType)
-    assert isinstance(elevate.elevation, us.UnitfulLengthRefValue)
-    assert isinstance(elevate.selection_type, SelectionType)
-    assert isinstance(elevate.aggregation_area_name, str)
-
-    assert elevate.name == "raise_property_aggregation_area"
-    assert elevate.type == "elevate_properties"
-    assert elevate.elevation.value == 1
-    assert elevate.elevation.units == us.UnitTypesLength.feet
-    assert elevate.elevation.type == "floodmap"
-    assert elevate.selection_type == "aggregation_area"
-    assert elevate.aggregation_area_type == "aggr_lvl_2"
-    assert elevate.aggregation_area_name == "name5"
-
-
-def test_elevate_aggr_area_read_fail(test_db):
-    test_dict = {
-        "name": "test1",
-        "description": "test1",
-        "type": "elevate_properties",
-        "elevation": {
-            "value": 1,
-            "units": us.UnitTypesLength.feet.value,
-            "type": "floodmap",
-        },
-        "selection_type": "aggregation_area",
-        "aggregation_area_name": "test_area",
-        "property_type": "RES",
-    }
-    with pytest.raises(ValidationError) as excinfo:
-        Elevate(**test_dict)
-
-    assert_validation_error(
-        excinfo=excinfo,
-        class_name="Elevate",
-        expected_msg="If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set.",
-        expected_type="value_error",
-    )
-
-
-def test_elevate_aggr_area_save():
-    elevate = Elevate(
+@pytest.fixture
+def raise_property_aggregation_area():
+    return Elevate(
         name="raise_property_aggregation_area",
-        description="raise_property_aggregation_area",
+        description="",
         type=MeasureType.elevate_properties,
-        elevation=us.UnitfulLengthRefValue(
-            value=1,
-            units=us.UnitTypesLength.feet,
-            type=us.VerticalReference.floodmap,
-        ),
         selection_type=SelectionType.aggregation_area,
         aggregation_area_type="aggr_lvl_2",
         aggregation_area_name="name5",
         property_type="RES",
+        elevation=us.UnitfulLengthRefValue(
+            value=1.0,
+            units=us.UnitTypesLength.feet,
+            type=us.VerticalReference.floodmap,
+        ),
     )
-    test_path = Path(gettempdir()) / "to_load.toml"
-    test_path.parent.mkdir(exist_ok=True)
-
-    elevate.name = "new_name"
-    elevate.save(test_path)
-
-    loaded_elevate = Elevate.load_file(test_path)
-
-    assert loaded_elevate == elevate
-
-
-def test_elevate_polygon_read(test_db):
-    test_toml = (
-        test_db.input_path
-        / "measures"
-        / "raise_property_polygon"
-        / "raise_property_polygon.toml"
-    )
-    assert test_toml.is_file()
-
-    elevate = Elevate.load_file(test_toml)
-
-    assert isinstance(elevate.name, str)
-    assert isinstance(elevate.description, str)
-    assert isinstance(elevate.type, MeasureType)
-    assert isinstance(elevate.elevation, us.UnitfulLengthRefValue)
-    assert isinstance(elevate.selection_type, SelectionType)
-    assert isinstance(elevate.polygon_file, str)
-
-    assert elevate.name == "raise_property_polygon"
-    assert elevate.type == "elevate_properties"
-    assert elevate.elevation.value == 1
-    assert elevate.elevation.units == us.UnitTypesLength.feet
-    assert elevate.elevation.type == "floodmap"
-    assert elevate.selection_type == "polygon"
-    assert (
-        elevate.polygon_file
-        == (test_toml.parent / "raise_property_polygon.geojson").as_posix()
-    )
-
-    polygon = gpd.read_file(elevate.polygon_file)
-    assert isinstance(polygon, gpd.GeoDataFrame)
-
-
-def test_buyout_read(test_db):
-    test_toml = test_db.input_path / "measures" / "buyout" / "buyout.toml"
-    assert test_toml.is_file()
-
-    buyout = Buyout.load_file(test_toml)
-
-    assert isinstance(buyout.name, str)
-    assert isinstance(buyout.description, str)
-    assert isinstance(buyout.type, MeasureType)
-    assert isinstance(buyout.selection_type, SelectionType)
-    assert isinstance(buyout.aggregation_area_name, str)
-
-
-def test_floodproof_read(test_db):
-    test_toml = test_db.input_path / "measures" / "floodproof" / "floodproof.toml"
-    assert test_toml.is_file()
-
-    floodproof = FloodProof.load_file(test_toml)
-
-    assert isinstance(floodproof.name, str)
-    assert isinstance(floodproof.description, str)
-    assert isinstance(floodproof.type, MeasureType)
-    assert isinstance(floodproof.selection_type, SelectionType)
-    assert isinstance(floodproof.aggregation_area_name, str)
-
-
-def test_pump_read(test_db):
-    test_toml = test_db.input_path / "measures" / "pump" / "pump.toml"
-
-    assert test_toml.is_file()
-
-    pump = Pump.load_file(test_toml)
-
-    assert isinstance(pump.name, str)
-    assert isinstance(pump.type, MeasureType)
-    assert isinstance(pump.discharge, us.UnitfulDischarge)
-
-    assert Path(pump.polygon_file).is_file()
-
-
-def test_green_infra_read(test_db):
-    test_toml = test_db.input_path / "measures" / "green_infra" / "green_infra.toml"
-    assert test_toml.is_file()
-
-    green_infra = GreenInfrastructure.load_file(test_toml)
-
-    assert isinstance(green_infra.name, str)
-    assert isinstance(green_infra.description, str)
-    assert isinstance(green_infra.type, MeasureType)
-    assert isinstance(green_infra.volume, us.UnitfulVolume)
-    assert isinstance(green_infra.height, us.UnitfulLength)
-
-    assert Path(green_infra.polygon_file).is_file()
 
 
 @pytest.fixture
-def test_pump(test_db, test_data_dir):
+def raise_property_polygon(test_data_dir: Path):
+    return Elevate(
+        name="raise_property_polygon",
+        type=MeasureType.elevate_properties,
+        selection_type=SelectionType.polygon,
+        polygon_file=(test_data_dir / "raise_property_polygon.geojson").as_posix(),
+        property_type="RES",
+        elevation=us.UnitfulLengthRefValue(
+            value=1.0,
+            units=us.UnitTypesLength.feet,
+            type=us.VerticalReference.floodmap,
+        ),
+    )
+
+
+@pytest.fixture
+def test_pump(test_data_dir):
     return Pump(
         name="test_pump",
         description="test_pump",
@@ -803,7 +695,7 @@ def test_pump(test_db, test_data_dir):
 
 
 @pytest.fixture
-def test_elevate(test_db, test_data_dir):
+def test_elevate(test_data_dir):
     return Elevate(
         name="test_elevate",
         description="test_elevate",
@@ -820,7 +712,7 @@ def test_elevate(test_db, test_data_dir):
 
 
 @pytest.fixture
-def test_buyout(test_db, test_data_dir):
+def test_buyout(test_data_dir):
     return Buyout(
         name="test_buyout",
         description="test_buyout",
@@ -832,7 +724,7 @@ def test_buyout(test_db, test_data_dir):
 
 
 @pytest.fixture
-def test_floodproof(test_db, test_data_dir):
+def test_floodproof(test_data_dir):
     return FloodProof(
         name="test_floodproof",
         description="test_floodproof",
@@ -849,7 +741,7 @@ def test_floodproof(test_db, test_data_dir):
 
 
 @pytest.fixture
-def test_green_infra(test_db, test_data_dir):
+def test_green_infra(test_data_dir):
     return GreenInfrastructure(
         name="test_green_infra",
         description="test_green_infra",
@@ -860,73 +752,3 @@ def test_green_infra(test_db, test_data_dir):
         polygon_file=str(test_data_dir / "polygon.geojson"),
         percent_area=10,
     )
-
-
-def test_pump_save_saves_geojson(test_pump, tmp_path):
-    # Arrange
-    output_path = tmp_path / "test_pump.toml"
-    expected_geojson = output_path.parent / Path(test_pump.polygon_file).name
-
-    # Act
-    test_pump.save(output_path)
-
-    # Assert
-    assert output_path.exists()
-    assert expected_geojson.exists()
-    assert test_pump.polygon_file == expected_geojson.name
-
-
-def test_elevate_save_saves_geojson(test_elevate, tmp_path):
-    # Arrange
-    output_path = tmp_path / "test_elevate.toml"
-    expected_geojson = output_path.parent / Path(test_elevate.polygon_file).name
-
-    # Act
-    test_elevate.save(output_path)
-
-    # Assert
-    assert output_path.exists()
-    assert expected_geojson.exists()
-    assert test_elevate.polygon_file == expected_geojson.name
-
-
-def test_buyout_save_saves_geojson(test_buyout, tmp_path):
-    # Arrange
-    output_path = tmp_path / "test_buyout.toml"
-    expected_geojson = output_path.parent / Path(test_buyout.polygon_file).name
-
-    # Act
-    test_buyout.save(output_path)
-
-    # Assert
-    assert output_path.exists()
-    assert expected_geojson.exists()
-    assert test_buyout.polygon_file == expected_geojson.name
-
-
-def test_floodproof_save_saves_geojson(test_floodproof, tmp_path):
-    # Arrange
-    output_path = tmp_path / "test_floodproof.toml"
-    expected_geojson = output_path.parent / Path(test_floodproof.polygon_file).name
-
-    # Act
-    test_floodproof.save(output_path)
-
-    # Assert
-    assert output_path.exists()
-    assert expected_geojson.exists()
-    assert test_floodproof.polygon_file == expected_geojson.name
-
-
-def test_green_infra_save_saves_geojson(test_green_infra, tmp_path):
-    # Arrange
-    output_path = tmp_path / "test_greeninfra.toml"
-    expected_geojson = output_path.parent / Path(test_green_infra.polygon_file).name
-
-    # Act
-    test_green_infra.save(output_path)
-
-    # Assert
-    assert output_path.exists()
-    assert expected_geojson.exists()
-    assert test_green_infra.polygon_file == expected_geojson.name

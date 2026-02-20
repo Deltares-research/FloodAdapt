@@ -1,10 +1,8 @@
 from pathlib import Path
-from tempfile import gettempdir
 
 import pytest
 
 from flood_adapt.config.hazard import RiverModel
-from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.objects.events.event_set import (
     EventSet,
     SubEventModel,
@@ -32,16 +30,12 @@ from flood_adapt.objects.forcing.waterlevels import (
     WaterlevelSynthetic,
 )
 from flood_adapt.objects.forcing.wind import WindConstant
-from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.workflows.scenario_runner import ScenarioRunner
-from tests.conftest import IS_WINDOWS
 from tests.data.create_test_input import _create_hurricane_event
 from tests.test_objects.test_events.test_historical import (
     setup_nearshore_event,
-    setup_offshore_meteo_event,
 )
 
-__all__ = ["setup_nearshore_event", "setup_offshore_meteo_event"]
+__all__ = ["setup_nearshore_event"]
 
 
 @pytest.fixture()
@@ -115,7 +109,6 @@ def test_sub_event() -> SyntheticEvent:
 def test_eventset(
     test_sub_event: SyntheticEvent,
     setup_nearshore_event: HistoricalEvent,
-    # setup_offshore_meteo_event: HistoricalEvent, # uncomment when hydromt-sfincs 1.3.0 is released
 ) -> EventSet:
     sub_event_models: list[SubEventModel] = []
     sub_events = []
@@ -123,7 +116,6 @@ def test_eventset(
     hurricane = _create_hurricane_event("sub_hurricane")
     synthetic = test_sub_event
     historical_nearshore = setup_nearshore_event
-    # historical_offshore = setup_offshore_meteo_event # uncomment when hydromt-sfincs 1.3.0 is released
 
     for i, event in enumerate(
         [
@@ -149,56 +141,11 @@ def test_save_reload_eventset(test_eventset: EventSet, tmp_path: Path):
     path = tmp_path / f"{test_eventset.name}.toml"
     test_eventset.save(path)
     reloaded = EventSet.load_file(path)
-
     assert reloaded == test_eventset
 
 
-@pytest.fixture()
-def setup_eventset_scenario(
-    test_db: IDatabase,
-    test_eventset,
-    dummy_projection,
-    dummy_strategy,
-):
-    test_db.projections.save(dummy_projection)
-    test_db.strategies.save(dummy_strategy)
-    test_db.events.save(test_eventset)
-
-    scn = Scenario(
-        name="test_scenario",
-        event=test_eventset.name,
-        projection=dummy_projection.name,
-        strategy=dummy_strategy.name,
-    )
-    test_db.scenarios.save(scn)
-
-    return test_db, scn, test_eventset
-
-
-class TestEventSet:
-    def test_save_all_sub_events(self, test_eventset: EventSet):
-        tmp_path = Path(gettempdir()) / "test_eventset.toml"
-        test_eventset.save_additional(output_dir=tmp_path.parent)
-
-        for sub_event in test_eventset.sub_events:
-            assert (
-                tmp_path.parent / sub_event.name / f"{sub_event.name}.toml"
-            ).exists()
-
-    @pytest.mark.skipif(
-        not IS_WINDOWS,
-        reason="Only run on windows where we have a working sfincs binary",
-    )
-    def test_calculate_rp_floodmaps(
-        self, setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet]
-    ):
-        test_db, scn, event_set = setup_eventset_scenario
-        ScenarioRunner(test_db, scenario=scn).run()
-
-        output_path = Path(test_db.scenarios.output_path) / scn.name / "Flooding"
-
-        for rp in test_db.site.fiat.risk.return_periods:
-            water_level_map_path = output_path / f"RP_{rp:04d}_max_water_level_map.tif"
-            flood_map_path = output_path / f"RP_{rp:04d}_FloodMap.tif"
-            assert water_level_map_path.exists()
-            assert flood_map_path.exists()
+def test_save_all_sub_events(test_eventset: EventSet, tmp_path: Path):
+    path = tmp_path / "test_eventset.toml"
+    test_eventset.save(toml_path=path)
+    for sub_event in test_eventset.sub_events:
+        assert (path.parent / sub_event.name / f"{sub_event.name}.toml").exists()

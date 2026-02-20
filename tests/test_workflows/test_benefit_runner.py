@@ -1,5 +1,3 @@
-import shutil
-
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -8,7 +6,12 @@ import pytest
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.io import read_toml
 from flood_adapt.workflows.benefit_runner import Benefit, BenefitRunner
-from tests.test_objects.test_benefits.test_benefit import _RAND, _TEST_NAMES
+
+_RAND = np.random.default_rng(2021)  # Value to make sure randomizing is always the same
+_TEST_NAMES = {
+    "benefit_with_costs": "benefit_raise_properties_2050",
+    "benefit_without_costs": "benefit_raise_properties_2050_no_costs",
+}
 
 
 # Tests for when the scenarios needed for the benefit analysis are not there yet
@@ -87,12 +90,11 @@ class TestBenefitScenariosNotCreated:
         self, benefit_obj_and_runner: tuple[Benefit, BenefitRunner]
     ):
         benefit_obj, runner = benefit_obj_and_runner
-        # Delete one of the scenarios
-        to_delete = (
-            runner.database.scenarios.input_path
-            / runner.scenarios["scenario created"][0]
+
+        # Delete the scenarios like this. calling `delete` will raise IsUsedInError
+        runner.database.scenarios._objects.pop(
+            runner.scenarios["scenario created"][0], None
         )
-        shutil.rmtree(to_delete)
 
         with pytest.raises(RuntimeError) as exception_info:
             runner.run_cost_benefit()
