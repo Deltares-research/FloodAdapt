@@ -72,20 +72,17 @@ def test_load_file_raises_when_files_are_missing(
     setup_hurricane_event: HurricaneEvent, tmp_path: Path
 ):
     path = tmp_path / "test_event.toml"
+    setup_hurricane_event.save(path)
 
-    saved_event = setup_hurricane_event
-    saved_event.save(path)
-    wind = saved_event.forcings[ForcingType.WIND][0]
+    loaded = HurricaneEvent.load_file(path)
+
+    wind = loaded.forcings[ForcingType.WIND][0]
     assert isinstance(wind, WindTrack)
-
-    cyc_file = path.parent / wind.path
-
     assert path.exists()
-    assert cyc_file.exists()
+    assert wind.path.exists()
 
-    cyc_file.unlink()
-
+    wind.path.unlink()
     with pytest.raises(FileNotFoundError) as e:
         HurricaneEvent.load_file(path)
 
-    assert f"File {cyc_file} does not exist" in str(e.value)
+    assert f"File {wind.path} does not exist" in str(e.value)

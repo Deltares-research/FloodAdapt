@@ -31,7 +31,10 @@ class FakeObject:
     def model_copy(self, deep=True):
         return FakeObject(self.name, self.description)
 
-    def model_validate(self, _):
+    def model_validate(self, _) -> None:
+        pass
+
+    def _post_load(self, *args, **kwargs) -> None:
         pass
 
 
