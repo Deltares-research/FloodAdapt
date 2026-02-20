@@ -39,7 +39,12 @@ from flood_adapt.objects.forcing.wind import (
 )
 
 # TODO remove from frontend
-UNPLOTTABLE_SOURCES = [ForcingSource.TRACK, ForcingSource.METEO, ForcingSource.MODEL]
+UNPLOTTABLE_SOURCES = [
+    ForcingSource.TRACK,
+    ForcingSource.METEO,
+    ForcingSource.MODEL,
+    ForcingSource.NETCDF,
+]
 logger = FloodAdaptLogging.getLogger("Plotting")
 
 
@@ -278,7 +283,7 @@ def plot_rainfall(
         return "", None
     elif forcing_list[0].source in UNPLOTTABLE_SOURCES:
         logger.warning(
-            f"Plotting not supported for rainfall datafrom sources {', '.join(UNPLOTTABLE_SOURCES)}"
+            f"Plotting not supported for rainfall data from sources {', '.join(UNPLOTTABLE_SOURCES)}"
         )
         return "", None
 
