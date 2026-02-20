@@ -79,10 +79,17 @@ class SocioEconomicChange(BaseModel):
             return None
         return Path(value).name
 
-    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+    def _post_load(
+        self, file_path: Path | str | os.PathLike, force: bool = False, **kwargs
+    ) -> None:
         if self.new_development_shapefile is not None:
+            path = (
+                Path(self.new_development_shapefile).name
+                if force
+                else self.new_development_shapefile
+            )
             self.new_development_shapefile = path_exists_and_absolute(
-                self.new_development_shapefile, file_path
+                path, file_path
             ).as_posix()
 
     def read_gdf(self, reload: bool = False) -> gpd.GeoDataFrame | None:
@@ -128,5 +135,7 @@ class Projection(Object):
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         self.socio_economic_change.save_additional(output_dir)
 
-    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+    def _post_load(
+        self, file_path: Path | str | os.PathLike, force: bool = False, **kwargs
+    ) -> None:
         self.socio_economic_change._post_load(file_path)

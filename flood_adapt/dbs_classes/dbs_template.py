@@ -1,4 +1,3 @@
-import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -14,10 +13,11 @@ from flood_adapt.misc.exceptions import (
     IsStandardObjectError,
     IsUsedInError,
 )
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.object_model import Object
 
 T_OBJECTMODEL = TypeVar("T_OBJECTMODEL", bound=Object)
-logger = logging.getLogger(__name__)
+logger = FloodAdaptLogging.getLogger(__name__)
 
 
 class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
@@ -113,6 +113,8 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
                     f"Failed to move temporary file for `{name}` due to: {e}"
                 ) from e
 
+            # Update path attributes to reflect new location, if necessary
+            obj._post_load(path, force=True)
             self._last_modified[name] = datetime.now()
 
         for name in self._deleted:
