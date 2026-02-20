@@ -4,6 +4,7 @@ import os
 import platform
 import shutil
 import tempfile
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -45,6 +46,17 @@ def create_snapshot():
     shutil.copytree(Settings().database_path, snapshot_dir)
 
 
+def _safe_remove(file_path, retries=5, delay=0.5):
+    """Safely remove a file with retries to handle transient file locks."""
+    for _ in range(retries):
+        try:
+            os.remove(file_path)
+            return
+        except PermissionError:
+            time.sleep(delay)
+    raise PermissionError(f"Could not delete file: {file_path}")
+
+
 def restore_db_from_snapshot():
     """Restore the database directory from the snapshot."""
     if not snapshot_dir.exists():
@@ -73,7 +85,7 @@ def restore_db_from_snapshot():
         for file in files:
             database_file = Path(root) / file
             if database_file not in seen_files:
-                os.remove(database_file)
+                _safe_remove(database_file)
 
         # Remove empty directories from the database
         for directory in dirs:
