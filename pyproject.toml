@@ -32,7 +32,7 @@ dependencies = [
     "cht-observations           >=0.2.1,<1.0",
     "cht-tide                   >=0.1.1,<1.0",
     "ffmpeg",
-    "fiat-toolbox               >=0.1.22,<0.2.0",
+    "fiat-toolbox               >=0.1.23,<0.2.0",
     "fiona                      >=1.0,<2.0",
     "geojson                    >=3.0,<4.0",
     "geopandas                  >=1.0,<2.0",

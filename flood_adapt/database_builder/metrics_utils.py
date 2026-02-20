@@ -536,7 +536,7 @@ class HomesInfographicModel(BaseModel):
                 ),
                 impact_categories=ImpactCategoriesModel(
                     categories=["Flooded", "Displaced"],
-                    colors=None,
+                    colors=["#ffa500", "#ff0000"],
                     unit="meters",
                     bins=[1.5],
                 ),
@@ -554,7 +554,7 @@ class HomesInfographicModel(BaseModel):
                 ),
                 impact_categories=ImpactCategoriesModel(
                     categories=["Flooded", "Displaced"],
-                    colors=None,
+                    colors=["#ffa500", "#ff0000"],
                     unit="feet",
                     bins=[6],
                 ),
