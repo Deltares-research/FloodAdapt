@@ -330,11 +330,14 @@ class FiatAdapter(IImpactAdapter):
         settings = self.database._settings
         match settings.get_scenario_execution_method():
             case ExecutionMethod.DOCKER:
+                logger.info(f"Running FIAT in {path} using a Docker image.")
                 success = FIAT_CONTAINER.run(path)
             case ExecutionMethod.BINARIES:
                 with cd(path):
                     with FloodAdaptLogging.to_file(file_path=fiat_log):
-                        logger.info(f"Running FIAT in {path}")
+                        logger.info(
+                            f"Running FIAT in {path} using a binary executable."
+                        )
                         process = subprocess.run(
                             args=[
                                 Path(exe).resolve().as_posix(),

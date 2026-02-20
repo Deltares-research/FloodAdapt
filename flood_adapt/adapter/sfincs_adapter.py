@@ -200,10 +200,11 @@ class SfincsAdapter(IHazardAdapter):
 
         match settings.get_scenario_execution_method():
             case ExecutionMethod.DOCKER:
+                logger.info(f"Running SFINCS in {path} using a Docker image.")
                 success = SFINCS_CONTAINER.run(path)
             case ExecutionMethod.BINARIES:
                 with cd(path):
-                    logger.info(f"Running SFINCS in {path}")
+                    logger.info(f"Running SFINCS in {path} using a binary executable.")
                     process = subprocess.run(
                         settings.sfincs_bin_path.as_posix(),
                         stdout=subprocess.PIPE,
