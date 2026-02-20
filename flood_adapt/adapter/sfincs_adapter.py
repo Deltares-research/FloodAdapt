@@ -67,6 +67,7 @@ from flood_adapt.objects.forcing.rainfall import (
     RainfallTrack,
 )
 from flood_adapt.objects.forcing.time_frame import TimeFrame
+from flood_adapt.objects.forcing.unit_system import VerticalReference
 from flood_adapt.objects.forcing.waterlevels import (
     WaterlevelCSV,
     WaterlevelGauged,
@@ -92,6 +93,7 @@ from flood_adapt.objects.projections.projections import (
     Projection,
 )
 from flood_adapt.objects.scenarios.scenarios import Scenario
+from flood_adapt.workflows.floodwall import create_z_linestrings_from_bfe
 
 logger = FloodAdaptLogging.getLogger("SfincsAdapter")
 
@@ -1374,6 +1376,7 @@ class SfincsAdapter(IHazardAdapter):
         self._model.set_config("spwfile", output_spw_path.name)
 
     ### MEASURES ###
+
     def _add_measure_floodwall(self, floodwall: FloodWall):
         """Add floodwall to sfincs model.
 
@@ -1398,24 +1401,58 @@ class SfincsAdapter(IHazardAdapter):
         if (gdf_floodwall.geometry.type == "MultiLineString").any():
             gdf_floodwall = gdf_floodwall.explode()
 
-        try:
-            heights = [
-                float(
-                    us.UnitfulLength(
-                        value=float(height),
-                        units=self.database.site.gui.units.default_length_units,
-                    ).convert(us.UnitTypesLength("meters"))
+        if floodwall.elevation.type == VerticalReference.datum:
+            logger.info("Using floodwall height relative to datum.")
+            if "z" in gdf_floodwall.columns and gdf_floodwall["z"].notna().all():
+                heights = [
+                    float(
+                        us.UnitfulLength(
+                            value=float(height),
+                            units=self.database.site.gui.units.default_length_units,
+                        ).convert(us.UnitTypesLength("meters"))
+                    )
+                    for height in gdf_floodwall["z"]
+                ]
+                gdf_floodwall["z"] = heights
+                logger.info(
+                    "'z' column with height data found in shapefile. Each segment will use the respective height above datum."
                 )
-                for height in gdf_floodwall["z"]
-            ]
-            gdf_floodwall["z"] = heights
-            logger.info("Using floodwall height from shape file.")
-        except Exception:
-            logger.warning(
-                f"Could not use height data from file due to missing `z` column or missing values therein. Using uniform height of {floodwall.elevation} instead."
+            else:
+                logger.warning(
+                    f"Using uniform height of {floodwall.elevation} above datum."
+                )
+                gdf_floodwall["z"] = floodwall.elevation.convert(
+                    us.UnitTypesLength(us.UnitTypesLength.meters)
+                )
+        else:
+            if self.database.site.fiat.config.bfe is None:
+                raise ValueError(
+                    "Base flood elevation (bfe) map is required to use 'floodmap' as reference for floodwalls."
+                )
+
+            bfe_path = self.database.static_path.joinpath(
+                self.database.site.fiat.config.bfe.geom
             )
-            gdf_floodwall["z"] = floodwall.elevation.convert(
-                us.UnitTypesLength(us.UnitTypesLength.meters)
+            bfe_field_name = self.database.site.fiat.config.bfe.field_name
+
+            gdf_bfe = self._model.data_catalog.get_geodataframe(
+                bfe_path, geom=self._model.region, crs=self._model.crs
+            )
+
+            if bfe_field_name not in gdf_bfe.columns:
+                raise ValueError(
+                    f"BFE field '{bfe_field_name}' was not found in {bfe_path}."
+                )
+            interval = 100.0  # interval in meters to sample the floodwall linestrings for creating points with z values, can be adjusted if needed
+            gdf_floodwall = create_z_linestrings_from_bfe(
+                gdf_lines=gdf_floodwall,
+                gdf_bfe=gdf_bfe,
+                bfe_field_name=bfe_field_name,
+                interval_m=interval,
+                elevation_offset_m=floodwall.elevation.value,
+            )
+            logger.info(
+                f"Floodwall height is defined {floodwall.elevation} above Base Flood Elevation (BFE)."
             )
 
         # par1 is the overflow coefficient for weirs

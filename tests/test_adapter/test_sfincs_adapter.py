@@ -12,6 +12,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
+from shapely.geometry import LineString, Polygon
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.config.hazard import (
@@ -82,6 +83,7 @@ from flood_adapt.objects.measures.measures import (
 )
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
+from flood_adapt.workflows.floodwall import create_z_linestrings_from_bfe
 from tests.conftest import IS_WINDOWS
 from tests.fixtures import TEST_DATA_DIR
 from tests.test_objects.test_forcing.test_netcdf import (
@@ -996,14 +998,16 @@ class TestAddMeasure:
                 name="test_seawall",
                 description="seawall",
                 selection_type=SelectionType.polyline,
-                elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
+                elevation=us.UnitfulLengthRefValue(
+                    value=12, units=us.UnitTypesLength.feet
+                ),
                 polygon_file=str(TEST_DATA_DIR / "seawall.geojson"),
             )
 
             test_db.measures.save(floodwall)
             return floodwall
 
-        def test_add_measure_floodwall(
+        def test_add_measure_floodwall_datum(
             self,
             default_sfincs_adapter: SfincsAdapter,
             floodwall: FloodWall,
@@ -1039,6 +1043,160 @@ class TestAddMeasure:
             assert all(
                 height == pytest.approx(expected_height, 1) for height in added_heights
             ), "Height in file does not match height in polygon file"
+
+        def test_add_measure_floodwall_floodmap(
+            self,
+            default_sfincs_adapter: SfincsAdapter,
+            test_db,
+            tmp_path: Path,
+        ):
+            floodwall = FloodWall(
+                name="test_seawall_floodmap",
+                description="seawall floodmap",
+                selection_type=SelectionType.polyline,
+                elevation=us.UnitfulLengthRefValue(
+                    value=2,
+                    units=us.UnitTypesLength.feet,
+                    type=us.VerticalReference.floodmap,
+                ),
+                polygon_file=str(TEST_DATA_DIR / "seawall.geojson"),
+            )
+            test_db.measures.save(floodwall)
+
+            bfe_value = 1.25
+            test_db.site.fiat.config.bfe = mock.Mock(
+                geom="dummy_bfe.geojson",
+                field_name="bfe",
+            )
+
+            measure_gdf = TestAddMeasure.get_measure_gdf(
+                default_sfincs_adapter, floodwall
+            )
+            xmin, ymin, xmax, ymax = measure_gdf.total_bounds
+            pad = 1000.0
+            gdf_bfe = gpd.GeoDataFrame(
+                {"bfe": [bfe_value]},
+                geometry=[
+                    Polygon(
+                        [
+                            (xmin - pad, ymin - pad),
+                            (xmax + pad, ymin - pad),
+                            (xmax + pad, ymax + pad),
+                            (xmin - pad, ymax + pad),
+                        ]
+                    )
+                ],
+                crs=measure_gdf.crs,
+            )
+
+            original_get_geodataframe = (
+                default_sfincs_adapter._model.data_catalog.get_geodataframe
+            )
+
+            def _get_geodataframe_side_effect(data_like, *args, **kwargs):
+                if str(data_like).endswith("dummy_bfe.geojson"):
+                    return gdf_bfe
+                return original_get_geodataframe(data_like, *args, **kwargs)
+
+            new_root = tmp_path / "floodwall_floodmap"
+            with mock.patch.object(
+                default_sfincs_adapter._model.data_catalog,
+                "get_geodataframe",
+                side_effect=_get_geodataframe_side_effect,
+            ):
+                default_sfincs_adapter.add_measure(floodwall)
+                default_sfincs_adapter.write(path_out=new_root)
+
+            added_coords, added_heights = self.read_weir_file(
+                default_sfincs_adapter, floodwall.name
+            )
+
+            expected_height = floodwall.elevation.convert(us.UnitTypesLength.meters)
+            expected_total_height = expected_height + bfe_value
+
+            assert len(added_coords) > 0
+            assert all(
+                height == pytest.approx(expected_total_height, abs=0.2)
+                for height in added_heights
+            )
+
+        def test_create_z_linestrings_from_bfe_densifies_and_samples(self):
+            gdf_lines = gpd.GeoDataFrame(
+                {"name": ["fw"]},
+                geometry=[LineString([(0.0, 0.0), (250.0, 0.0)])],
+                crs="EPSG:3857",
+            )
+            gdf_bfe = gpd.GeoDataFrame(
+                {"bfe": [1.0, 2.0]},
+                geometry=[
+                    Polygon([(0, -10), (150, -10), (150, 10), (0, 10)]),
+                    Polygon([(150, -10), (260, -10), (260, 10), (150, 10)]),
+                ],
+                crs="EPSG:3857",
+            )
+
+            gdf_out = create_z_linestrings_from_bfe(
+                gdf_lines=gdf_lines,
+                gdf_bfe=gdf_bfe,
+                bfe_field_name="bfe",
+                interval_m=100.0,
+                elevation_offset_m=0.5,
+            )
+
+            assert len(gdf_out) == 1
+            geom = gdf_out.geometry.iloc[0]
+            assert geom.has_z
+
+            coords = list(geom.coords)
+            assert len(coords) == 4
+            assert [coord[2] for coord in coords] == pytest.approx([1.5, 1.5, 2.5, 2.5])
+            assert gdf_out["z"].iloc[0] == pytest.approx(2.0)
+
+        def test_create_z_linestrings_from_bfe_fallback_for_missing_vertices(self):
+            gdf_lines = gpd.GeoDataFrame(
+                {"name": ["fw"]},
+                geometry=[LineString([(0.0, 0.0), (250.0, 0.0)])],
+                crs="EPSG:3857",
+            )
+            gdf_bfe = gpd.GeoDataFrame(
+                {"bfe": [1.0]},
+                geometry=[Polygon([(0, -10), (120, -10), (120, 10), (0, 10)])],
+                crs="EPSG:3857",
+            )
+
+            gdf_out = create_z_linestrings_from_bfe(
+                gdf_lines=gdf_lines,
+                gdf_bfe=gdf_bfe,
+                bfe_field_name="bfe",
+                interval_m=100.0,
+                elevation_offset_m=0.5,
+            )
+
+            geom = gdf_out.geometry.iloc[0]
+            z_values = [coord[2] for coord in geom.coords]
+
+            assert z_values == pytest.approx([1.5, 1.5, 0.5, 0.5])
+            assert np.isfinite(gdf_out["z"].iloc[0])
+
+        def test_create_z_linestrings_from_bfe_raises_for_invalid_interval(self):
+            gdf_lines = gpd.GeoDataFrame(
+                {"name": ["fw"]},
+                geometry=[LineString([(0.0, 0.0), (10.0, 0.0)])],
+                crs="EPSG:3857",
+            )
+            gdf_bfe = gpd.GeoDataFrame(
+                {"bfe": [1.0]},
+                geometry=[Polygon([(0, -1), (20, -1), (20, 1), (0, 1)])],
+                crs="EPSG:3857",
+            )
+
+            with pytest.raises(ValueError, match="interval_m"):
+                create_z_linestrings_from_bfe(
+                    gdf_lines=gdf_lines,
+                    gdf_bfe=gdf_bfe,
+                    bfe_field_name="bfe",
+                    interval_m=0.0,
+                )
 
         def read_weir_file(self, adapter: SfincsAdapter, floodwall_name: str):
             weir_file = adapter._model.get_config("weirfile")
