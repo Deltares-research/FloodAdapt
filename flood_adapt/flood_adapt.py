@@ -10,6 +10,7 @@ from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.adapter import SfincsAdapter
+from flood_adapt.config.config import Settings
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.benefits.benefits import Benefit
@@ -55,6 +56,10 @@ class FloodAdapt:
         database_path : Path
             The path to the database file.
         """
+        self._settings = Settings(
+            DATABASE_ROOT=database_path.parent, DATABASE_NAME=database_path.name
+        )
+        self._settings.export_to_env()
         self.database = Database(
             database_path=database_path.parent, database_name=database_path.name
         )
