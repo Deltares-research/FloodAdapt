@@ -1019,7 +1019,7 @@ class SfincsAdapter(IHazardAdapter):
         self.preprocess(scenario, event)
         self.process(scenario, event)
         self.postprocess(scenario, event)
-        del self._model
+
         if not self.settings.config.save_simulation:
             self._delete_simulation_folder(scenario, sub_event=event)
 
