@@ -2668,7 +2668,7 @@ packages:
 - pypi: ./
   name: flood-adapt
   version: 2.0.3
-  sha256: b5b6fe637a9849ebf5e1014e27d008caf89592545eeef13b0b58c981b55d6a39
+  sha256: 29a716da4f6fdf1c1ce78207d8e8ad89771765fb36d5496c9a0646b01a21dff2
   requires_dist:
   - cartopy
   - cht-cyclones>=1.0.3,<2.0
@@ -2676,7 +2676,7 @@ packages:
   - cht-observations>=0.2.1,<1.0
   - cht-tide>=0.1.1,<1.0
   - ffmpeg
-  - fiat-toolbox>=0.1.22,<0.2.0
+  - fiat-toolbox>=0.1.23,<0.2.0
   - fiona>=1.0,<2.0
   - geojson>=3.0,<4.0
   - geopandas>=1.0,<2.0
@@ -2720,7 +2720,7 @@ packages:
 - pypi: ./
   name: flood-adapt
   version: 2.0.3
-  sha256: b5b6fe637a9849ebf5e1014e27d008caf89592545eeef13b0b58c981b55d6a39
+  sha256: 29a716da4f6fdf1c1ce78207d8e8ad89771765fb36d5496c9a0646b01a21dff2
   requires_dist:
   - cartopy
   - cht-cyclones>=1.0.3,<2.0
@@ -2728,7 +2728,7 @@ packages:
   - cht-observations>=0.2.1,<1.0
   - cht-tide>=0.1.1,<1.0
   - ffmpeg
-  - fiat-toolbox>=0.1.22,<0.2.0
+  - fiat-toolbox>=0.1.23,<0.2.0
   - fiona>=1.0,<2.0
   - geojson>=3.0,<4.0
   - geopandas>=1.0,<2.0
