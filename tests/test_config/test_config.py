@@ -118,7 +118,7 @@ def test_invalid_root_raises():
 
 
 def test_invalid_db_name_raises(tmp_path: Path):
-    with pytest.raises(ValidationError, match="does not exist"):
+    with pytest.raises(ValidationError, match=r"Database .* at .* does not exist\."):
         Settings(DATABASE_ROOT=tmp_path, DATABASE_NAME="missing")
 
 
@@ -199,12 +199,11 @@ def test_export_to_env_roundtrip(tmp_path: Path):
 
 
 def test_false_booleans_persisted():
-    s = Settings(
+    Settings(
         DELETE_CRASHED_RUNS=False,
         VALIDATE_ALLOWED_FORCINGS=False,
         USE_BINARIES=False,
-    )
-    s.export_to_env()
+    ).export_to_env()
 
     s = Settings()
     assert os.getenv("DELETE_CRASHED_RUNS") == "False"
@@ -221,14 +220,13 @@ def test_true_booleans_persisted(
 ):
     mock_subprocess_run()
     sfincs, fiat = fake_binaries
-    s = Settings(
+    Settings(
         SFINCS_BIN_PATH=sfincs,
         FIAT_BIN_PATH=fiat,
         DELETE_CRASHED_RUNS=True,
         VALIDATE_ALLOWED_FORCINGS=True,
         USE_BINARIES=True,
-    )
-    s.export_to_env()
+    ).export_to_env()
 
     s = Settings()
     assert os.getenv("DELETE_CRASHED_RUNS") == "True"
@@ -251,7 +249,7 @@ def test_get_sfincs_version_success(
         FIAT_BIN_PATH=fiat,
         USE_BINARIES=True,
     )
-    assert s.get_sfincs_version() == "v2.2.1-alpha col d'Eze"
+    assert s.get_sfincs_version() == "2.2.1-alpha col d'Eze"
 
 
 def test_get_sfincs_version_no_match_regex(
@@ -330,3 +328,9 @@ def test_check_binary_versions_invalid_fiat(
     )
     with pytest.raises(ValueError, match=r"FIAT version mismatch"):
         s.check_binary_versions()
+
+
+def test_database_path_raises_when_not_set():
+    s = Settings()
+    with pytest.raises(ValueError, match=r"database_root or database_name is not set"):
+        _ = s.database_path

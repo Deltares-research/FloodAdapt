@@ -42,23 +42,23 @@ class Settings(BaseSettings):
 
     Attributes
     ----------
-    database_name : str
+    database_name : str | None, default is None
         The name of the database. Alias: `DATABASE_NAME` (environment variable).
-    database_root : Path
+    database_root : Path | None, default is None
         The root directory of the database. Alias: `DATABASE_ROOT` (environment variable).
-    delete_crashed_runs : bool
+    delete_crashed_runs : bool, default is False
         Whether to delete crashed/corrupted runs immediately after they are detected. Alias: `DELETE_CRASHED_RUNS` (environment variable).
-    validate_allowed_forcings : bool
+    validate_allowed_forcings : bool, default is False
         Whether to validate the forcing types and sources against the allowed forcings in the event model. Alias: `VALIDATE_ALLOWED_FORCINGS` (environment variable).
-    use_binaries : bool
+    use_binaries : bool, default is False
         Whether to validate the existence of the paths to the SFINCS and FIAT binaries. Alias: `USE_BINARIES` (environment variable).
-    sfincs_bin_path : Path
+    sfincs_bin_path : Path | None, default is None
         The path to the SFINCS binary. Alias: `SFINCS_BIN_PATH` (environment variable).
-    sfincs_version : str
+    sfincs_version : str, default is '2.2.1-alpha col d'Eze'
         The expected version of the SFINCS binary. Alias: `SFINCS_VERSION` (environment variable).
-    fiat_bin_path : Path
+    fiat_bin_path : Path | None, default is None
         The path to the FIAT binary. Alias: `FIAT_BIN_PATH` (environment variable).
-    fiat_version : str
+    fiat_version : str, default is '0.2.1'
         The expected version of the FIAT binary. Alias: `FIAT_VERSION` (environment variable).
 
     Properties
@@ -78,8 +78,7 @@ class Settings(BaseSettings):
         alias="DATABASE_ROOT",  # environment variable DATABASE_ROOT
         default=None,
         description="The root directory of the database that contains site(s). "
-        "Usually the directory name is 'Database'. "
-        "Default is to look for the Database in the same dir as the FloodAdapt cloned repo.",
+        "Usually the directory name is 'Database'. ",
     )
     database_name: str | None = Field(
         alias="DATABASE_NAME",  # environment variable DATABASE_NAME
@@ -115,9 +114,9 @@ class Settings(BaseSettings):
         exclude=True,
     )
     sfincs_version: str = Field(
-        default="v2.2.1-alpha col d'Eze",
+        default="2.2.1-alpha col d'Eze",
         alias="SFINCS_VERSION",  # environment variable: SFINCS_VERSION
-        description="The expected version of the sfincs binary."
+        description="The expected version of the sfincs binary. "
         "If the version of the binary does not match this version, an error is raised.",
         exclude=True,
     )
@@ -130,7 +129,8 @@ class Settings(BaseSettings):
     fiat_version: str = Field(
         default="0.2.1",
         alias="FIAT_VERSION",  # environment variable: FIAT_VERSION
-        description="The expected version of the fiat binary. If the version of the binary does not match this version, an error is raised.",
+        description="The expected version of the fiat binary. "
+        "If the version of the binary does not match this version, an error is raised.",
         exclude=True,
     )
 
@@ -234,8 +234,8 @@ class Settings(BaseSettings):
                 cwd=gettempdir(),
             )
 
-        # Capture everything after `$Rev:` until end of line
-        match = re.search(r"Build-Revision:\s*\$Rev:\s*(.+)", result.stdout)
+        # Capture everything after `Build-Revision: $Rev: v` until end of line
+        match = re.search(r"Build-Revision:\s*\$Rev:\s*v?(.+)", result.stdout)
         if not match:
             self._raise_version_mismatch("sfincs", self.sfincs_version, "unknown")
 
