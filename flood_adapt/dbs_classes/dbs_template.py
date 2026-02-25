@@ -2,7 +2,7 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Any, Optional, TypeVar
+from typing import Any, Iterator, Optional, TypeVar
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
@@ -349,6 +349,24 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         if not self._has_object(name):
             raise DoesNotExistError(name, self.display_name)
 
-    def __del__(self):
+    # Special python methods
+    def __del__(self) -> None:
+        """Warn if the database object is destroyed with unflushed changes, which could lead to data loss."""
         if self._mutated or self._deleted:
             logger.warning("Database object destroyed with unflushed changes.")
+
+    def __len__(self) -> int:
+        """Return the number of objects that currently exist in the database."""
+        return len(self._objects)
+
+    def __contains__(self, name: str) -> bool:
+        """Check if an object with the given name exists in the database."""
+        return self._has_object(name)
+
+    def __iter__(self) -> Iterator[T_OBJECTMODEL]:
+        """Iterate over stored objects."""
+        return iter(self._objects.values())
+
+    def items(self) -> Iterator[tuple[str, T_OBJECTMODEL]]:
+        """Iterate over stored objects as (name, object) pairs."""
+        return iter(self._objects.items())

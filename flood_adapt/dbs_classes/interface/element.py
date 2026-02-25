@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Iterator, TypeVar
 
 from flood_adapt.objects.object_model import Object
 
@@ -10,7 +11,11 @@ T_OBJECT_MODEL = TypeVar("T_OBJECT_MODEL", bound=Object)
 class AbstractDatabaseElement(ABC, Generic[T_OBJECT_MODEL]):
     input_path: Path
     output_path: Path
+
     _objects: dict[str, T_OBJECT_MODEL]
+    _mutated: set[str]
+    _deleted: set[str]
+    _last_modified: dict[str, datetime]
 
     @abstractmethod
     def __init__(self, database, standard_objects: list[str] | None = None) -> None: ...
@@ -48,3 +53,19 @@ class AbstractDatabaseElement(ABC, Generic[T_OBJECT_MODEL]):
 
     @abstractmethod
     def list_all(self) -> list[T_OBJECT_MODEL]: ...
+
+    # Special Python methods
+    @abstractmethod
+    def __del__(self) -> None: ...
+
+    @abstractmethod
+    def __len__(self) -> int: ...
+
+    @abstractmethod
+    def __contains__(self, name: str) -> bool: ...
+
+    @abstractmethod
+    def __iter__(self) -> Iterator[T_OBJECT_MODEL]: ...
+
+    @abstractmethod
+    def items(self) -> Iterator[tuple[str, T_OBJECT_MODEL]]: ...

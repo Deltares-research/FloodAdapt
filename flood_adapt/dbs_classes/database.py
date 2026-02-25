@@ -174,17 +174,29 @@ class Database(IDatabase):
         logger.info("Clearing database")
         for repo in self._repositories:
             repo.clear()
+        self.static.clear()
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
-        self.clear()
-        self.static.clear()
-
+        # clear singleton references
         self._instance = None
         self._init_done = False
-
         self.__class__._instance = None
-        self.__dict__.clear()
+
+        # clear paths
+        self.database_path = None
+        self.database_name = None
+        self.base_path = None
+        self.input_path = None
+        self.static_path = None
+        self.output_path = None
+
+        # clear site
+        self.site = None
+
+        # clear repositories
+        self.clear()
+
         gc.collect()
 
     def get_slr_scenarios(self) -> SlrScenariosModel:

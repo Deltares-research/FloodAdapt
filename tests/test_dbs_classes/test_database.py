@@ -122,7 +122,20 @@ def test_shutdown_AfterShutdown_VarsAreNone(settings):
     assert dbs.__class__._instance is None
     assert dbs._instance is None
     assert dbs._init_done is False
-    assert dbs.__dict__ == {}
+
+    # data
+    for repo in dbs._repositories:
+        assert len(repo) == 0
+    assert dbs.static._cached_data == {}
+    assert dbs.site is None
+
+    # paths
+    assert dbs.database_path is None
+    assert dbs.database_name is None
+    assert dbs.base_path is None
+    assert dbs.input_path is None
+    assert dbs.static_path is None
+    assert dbs.output_path is None
 
 
 def test_shutdown_AfterShutdown_CanReadNewDatabase(settings):
@@ -136,21 +149,18 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase(settings):
     # Assert
     assert dbs.__class__._instance is not None
     assert dbs._instance is not None
-    assert dbs._init_done
+    assert dbs._init_done is True
+
+    # data
+    assert dbs.site is not None
+
+    # paths
     assert dbs.database_path is not None
     assert dbs.database_name is not None
     assert dbs.base_path is not None
     assert dbs.input_path is not None
     assert dbs.static_path is not None
     assert dbs.output_path is not None
-    assert dbs.site is not None
-    assert dbs.static is not None
-    assert dbs.events is not None
-    assert dbs.scenarios is not None
-    assert dbs.strategies is not None
-    assert dbs.measures is not None
-    assert dbs.projections is not None
-    assert dbs.benefits is not None
 
 
 def test_cannot_delete_standard_objects(test_db: Database):
