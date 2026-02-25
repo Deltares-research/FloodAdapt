@@ -179,8 +179,10 @@ def create_z_linestrings_from_bfe(
     if gdf_rows_metric.empty or gdf_points_metric.empty:
         return gdf_lines
 
-    gdf_rows = gdf_rows_metric.to_crs(gdf_lines.crs)
-    gdf_points = gdf_points_metric.to_crs(gdf_lines.crs)
+    gdf_rows = gdf_rows_metric.to_crs(metric_crs)
+    gdf_points = gdf_points_metric.to_crs(metric_crs)
+    gdf_bfe = gdf_bfe.to_crs(metric_crs)
+
     gdf_join = _apply_bfe_sampling_to_points(
         gdf_points=gdf_points,
         gdf_bfe=gdf_bfe,

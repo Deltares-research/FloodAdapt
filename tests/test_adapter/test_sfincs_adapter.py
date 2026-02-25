@@ -1117,7 +1117,7 @@ class TestAddMeasure:
             assert all(
                 height == pytest.approx(expected_total_height, abs=0.2)
                 for height in added_heights
-            )
+            ), f"Height in file does not match height in polygon file.\n{added_heights=}, {expected_total_height=}"
 
         def read_weir_file(self, adapter: SfincsAdapter, floodwall_name: str):
             weir_file = adapter._model.get_config("weirfile")
