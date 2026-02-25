@@ -1286,6 +1286,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
   <li><a href="#flood_adapt.Settings.check_binary_versions" id="toc-flood_adapt.Settings.check_binary_versions" class="nav-link" data-scroll-target="#flood_adapt.Settings.check_binary_versions">check_binary_versions</a></li>
+  <li><a href="#flood_adapt.Settings.export_to_env" id="toc-flood_adapt.Settings.export_to_env" class="nav-link" data-scroll-target="#flood_adapt.Settings.export_to_env">export_to_env</a></li>
   <li><a href="#flood_adapt.Settings.get_fiat_version" id="toc-flood_adapt.Settings.get_fiat_version" class="nav-link" data-scroll-target="#flood_adapt.Settings.get_fiat_version">get_fiat_version</a></li>
   <li><a href="#flood_adapt.Settings.get_sfincs_version" id="toc-flood_adapt.Settings.get_sfincs_version" class="nav-link" data-scroll-target="#flood_adapt.Settings.get_sfincs_version">get_sfincs_version</a></li>
   <li><a href="#flood_adapt.Settings.read" id="toc-flood_adapt.Settings.read" class="nav-link" data-scroll-target="#flood_adapt.Settings.read">read</a></li>
@@ -1321,39 +1322,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="attributes" class="level2 doc-section doc-section-attributes">
 <h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
 <dl>
-<dt><code><span class="parameter-name"><strong>database_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>database_name</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None, <code>default</code> is None)</span></code></dt>
 <dd>
 <p>The name of the database. Alias: <code>DATABASE_NAME</code> (environment variable).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>database_root</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>database_root</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None, <code>default</code> is None)</span></code></dt>
 <dd>
 <p>The root directory of the database. Alias: <code>DATABASE_ROOT</code> (environment variable).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>delete_crashed_runs</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>delete_crashed_runs</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<a href="https://docs.python.org/3/library/functions.html#bool">bool</a>, <code>default</code> is False)</span></code></dt>
 <dd>
 <p>Whether to delete crashed/corrupted runs immediately after they are detected. Alias: <code>DELETE_CRASHED_RUNS</code> (environment variable).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>validate_allowed_forcings</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>validate_allowed_forcings</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<a href="https://docs.python.org/3/library/functions.html#bool">bool</a>, <code>default</code> is False)</span></code></dt>
 <dd>
 <p>Whether to validate the forcing types and sources against the allowed forcings in the event model. Alias: <code>VALIDATE_ALLOWED_FORCINGS</code> (environment variable).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>use_binaries</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>use_binaries</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<a href="https://docs.python.org/3/library/functions.html#bool">bool</a>, <code>default</code> is False)</span></code></dt>
 <dd>
 <p>Whether to validate the existence of the paths to the SFINCS and FIAT binaries. Alias: <code>USE_BINARIES</code> (environment variable).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>sfincs_bin_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>sfincs_bin_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None, <code>default</code> is None)</span></code></dt>
 <dd>
 <p>The path to the SFINCS binary. Alias: <code>SFINCS_BIN_PATH</code> (environment variable).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>sfincs_version</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>sfincs_version</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">str, default is '2.2.1-alpha col d'Eze'</span></code></dt>
 <dd>
 <p>The expected version of the SFINCS binary. Alias: <code>SFINCS_VERSION</code> (environment variable).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>fiat_bin_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>fiat_bin_path</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None, <code>default</code> is None)</span></code></dt>
 <dd>
 <p>The path to the FIAT binary. Alias: <code>FIAT_BIN_PATH</code> (environment variable).</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>fiat_version</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation"><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span></code></dt>
+<dt><code><span class="parameter-name"><strong>fiat_version</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">(<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <code>default</code> is '0.2.1')</span></code></dt>
 <dd>
 <p>The expected version of the FIAT binary. Alias: <code>FIAT_VERSION</code> (environment variable).</p>
 </dd>
@@ -1387,18 +1388,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Check that the versions of the binaries in the config match those expected.</td>
 </tr>
 <tr class="even">
+<td><a href="#flood_adapt.Settings.export_to_env">export_to_env</a></td>
+<td>Export all settings to environment variables using the aliases as keys.</td>
+</tr>
+<tr class="odd">
 <td><a href="#flood_adapt.Settings.get_fiat_version">get_fiat_version</a></td>
 <td>Get the version of the FIAT binary.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.Settings.get_sfincs_version">get_sfincs_version</a></td>
 <td>Get the version of the SFINCS binary.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.Settings.read">read</a></td>
 <td>Parse the configuration file and return the parsed settings.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.Settings.write">write</a></td>
 <td>Write the configuration settings to a .toml file.</td>
 </tr>
@@ -1409,9 +1414,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>Settings.check_binary_versions()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Check that the versions of the binaries in the config match those expected.</p>
 </section>
+<section id="flood_adapt.Settings.export_to_env" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.Settings.export_to_env">export_to_env</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Settings.export_to_env()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Export all settings to environment variables using the aliases as keys.</p>
+</section>
 <section id="flood_adapt.Settings.get_fiat_version" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.Settings.get_fiat_version">get_fiat_version</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Settings.get_fiat_version()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>Settings.get_fiat_version()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Get the version of the FIAT binary.</p>
 <section id="returns" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
@@ -1429,7 +1439,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.Settings.get_sfincs_version" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.Settings.get_sfincs_version">get_sfincs_version</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>Settings.get_sfincs_version()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Settings.get_sfincs_version()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Get the version of the SFINCS binary.</p>
 <section id="returns-1" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
@@ -1451,7 +1461,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.Settings.read" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.Settings.read">read</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Settings.read(toml_path: Path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Settings.read(toml_path: Path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Parse the configuration file and return the parsed settings.</p>
 <section id="parameters" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
@@ -1483,7 +1493,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.Settings.write" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.Settings.write">write</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Settings.write(toml_path: Path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Settings.write(toml_path: Path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Write the configuration settings to a .toml file.</p>
 <section id="parameters-1" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
