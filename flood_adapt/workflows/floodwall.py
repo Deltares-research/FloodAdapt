@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import shapely
 
-from flood_adapt import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
 
 logger = FloodAdaptLogging.getLogger(__name__)
 
