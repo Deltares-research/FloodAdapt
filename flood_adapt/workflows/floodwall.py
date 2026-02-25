@@ -95,7 +95,7 @@ def _apply_bfe_sampling_to_points(
         gdf_points,
         gdf_bfe[[bfe_field_name, "geometry"]],
         how="left",
-        predicate="within",
+        predicate="intersects",
     )
     # Ensure that each sampled point (line_id, vertex_idx) has at most one BFE value
     gdf_join = gdf_join.sort_values(["line_id", "vertex_idx"]).drop_duplicates(
