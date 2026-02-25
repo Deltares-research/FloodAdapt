@@ -26,12 +26,7 @@ class Object(BaseModel):
 
     @field_validator("name")
     def validate_name(cls, value: str) -> str:
-        if not len(value) > 0:
-            raise ValueError("Name must be at least one character long.")
-        if not re.match(r"^[A-Za-z0-9_-]+$", value):
-            raise ValueError(
-                "Name can only contain letters, numbers, underscores (_), and hyphens (-)."
-            )
+        cls._validate_name_format(value)
         return value
 
     @classmethod
@@ -76,6 +71,15 @@ class Object(BaseModel):
         This method should be overridden if the object has additional files.
         """
         pass
+
+    @staticmethod
+    def _validate_name_format(name: str) -> None:
+        if not len(name) > 0:
+            raise ValueError("Name must be at least one character long.")
+        if not re.match(r"^[A-Za-z0-9_-]+$", name):
+            raise ValueError(
+                "Name can only contain letters, numbers, underscores (_), and hyphens (-)."
+            )
 
     def __eq__(self, value):
         if not isinstance(value, self.__class__):

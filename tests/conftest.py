@@ -47,6 +47,17 @@ def create_snapshot():
     shutil.copytree(Settings().database_path, snapshot_dir)
 
 
+def _safe_remove(file_path, retries=5, delay=0.5):
+    """Safely remove a file with retries to handle transient file locks."""
+    for _ in range(retries):
+        try:
+            os.remove(file_path)
+            return
+        except PermissionError:
+            time.sleep(delay)
+    raise PermissionError(f"Could not delete file: {file_path}")
+
+
 def restore_db_from_snapshot():
     if not snapshot_dir.exists():
         raise FileNotFoundError("Snapshot path does not exist.")
