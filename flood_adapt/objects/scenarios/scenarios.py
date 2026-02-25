@@ -1,4 +1,4 @@
-from pydantic import ValidationInfo, field_validator
+from pydantic import field_validator
 
 from flood_adapt.objects.object_model import Object
 
@@ -25,7 +25,9 @@ class Scenario(Object):
 
     @field_validator("event", "projection", "strategy")
     @classmethod
-    def validate_non_empty(cls, value: str, info: ValidationInfo) -> str:
-        if not value:
-            raise ValueError(f"The '{info.field_name}' attribute must not be empty.")
+    def validate_names(
+        cls,
+        value: str,
+    ) -> str:
+        cls._validate_name_format(value)
         return value
