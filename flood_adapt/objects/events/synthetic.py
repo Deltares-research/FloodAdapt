@@ -31,9 +31,11 @@ class SyntheticEvent(Event):
         ForcingType.RAINFALL: [
             ForcingSource.CONSTANT,
             ForcingSource.SYNTHETIC,
+            ForcingSource.NETCDF,
         ],
         ForcingType.WIND: [
             ForcingSource.CONSTANT,
+            ForcingSource.NETCDF,
         ],
         ForcingType.WATERLEVEL: [
             ForcingSource.SYNTHETIC,
