@@ -1,7 +1,9 @@
-from pydantic import BaseModel, ValidationInfo, field_validator
+from pydantic import ValidationInfo, field_validator
+
+from flood_adapt.objects.object_model import Object
 
 
-class Scenario(BaseModel):
+class Scenario(Object):
     """BaseModel describing the expected variables and data types of a scenario.
 
     A scenario is a combination of an event, a projection, and a strategy, that all should be saved in the database.
