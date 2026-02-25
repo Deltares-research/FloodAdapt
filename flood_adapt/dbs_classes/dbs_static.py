@@ -310,3 +310,7 @@ class DbsStatic(IDbsStatic):
             / self._database.site.sfincs.cyclone_track_database.file
         ).as_posix()
         return CycloneTrackDatabase("ibtracs", file_name=database_file)
+
+    def clear(self):
+        """Clear the cache."""
+        self._cached_data.clear()

@@ -177,6 +177,9 @@ class Database(IDatabase):
 
     def shutdown(self):
         """Explicitly shut down the singleton and clear all references."""
+        self.clear()
+        self.static.clear()
+
         self._instance = None
         self._init_done = False
 

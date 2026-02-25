@@ -4,6 +4,8 @@ import os
 import platform
 import shutil
 import tempfile
+import time
+import warnings
 from datetime import datetime
 from pathlib import Path
 
@@ -46,40 +48,56 @@ def create_snapshot():
 
 
 def restore_db_from_snapshot():
-    """Restore the database directory from the snapshot."""
     if not snapshot_dir.exists():
-        raise FileNotFoundError(
-            "Snapshot path does not exist. Create a snapshot first."
-        )
+        raise FileNotFoundError("Snapshot path does not exist.")
+
+    failures = []
     seen_files = set()
     db_path = Settings().database_path
 
     for root, _, files in os.walk(snapshot_dir):
-        # Copy deleted/changed files from snapshot to database
         for file in files:
             snapshot_file = Path(root) / file
             relative_path = snapshot_file.relative_to(snapshot_dir)
             database_file = db_path / relative_path
             seen_files.add(database_file)
 
-            if not database_file.exists():
-                os.makedirs(os.path.dirname(database_file), exist_ok=True)
-                shutil.copy2(snapshot_file, database_file)
-            elif not filecmp.cmp(snapshot_file, database_file):
+            database_file.parent.mkdir(parents=True, exist_ok=True)
+            if not database_file.exists() or not filecmp.cmp(
+                snapshot_file, database_file
+            ):
                 shutil.copy2(snapshot_file, database_file)
 
     for root, dirs, files in os.walk(db_path, topdown=False):
-        # Remove created files from database
         for file in files:
             database_file = Path(root) / file
             if database_file not in seen_files:
-                os.remove(database_file)
+                if not _safe_delete(database_file):
+                    failures.append(database_file)
 
-        # Remove empty directories from the database
         for directory in dirs:
-            dir_path = os.path.join(root, directory)
-            if not os.listdir(dir_path):
-                os.rmdir(dir_path)
+            dir_path = Path(root) / directory
+            if not any(dir_path.iterdir()):
+                dir_path.rmdir()
+
+    if failures:
+        warnings.warn(
+            f"DB restore incomplete; {len(failures)} files could not be deleted",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+
+
+def _safe_delete(file_path, retries: int = 3, delay: float = 0.1) -> bool:
+    """Delete a file, retrying if it fails (e.g., due to file locks on Windows)."""
+    for _ in range(retries):
+        try:
+            file_path.unlink()
+            return True
+        except Exception as e:
+            logging.warning(f"Could not delete file {file_path}: {e}")
+            time.sleep(delay)
+    return False
 
 
 @pytest.fixture(scope="session", autouse=True)
