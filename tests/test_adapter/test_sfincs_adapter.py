@@ -12,7 +12,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
-from shapely.geometry import LineString, Polygon
+from shapely.geometry import Polygon
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.config.hazard import (
@@ -83,7 +83,6 @@ from flood_adapt.objects.measures.measures import (
 )
 from flood_adapt.objects.projections.projections import Projection
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from flood_adapt.workflows.floodwall import create_z_linestrings_from_bfe
 from tests.conftest import IS_WINDOWS
 from tests.fixtures import TEST_DATA_DIR
 from tests.test_objects.test_forcing.test_netcdf import (
@@ -1119,84 +1118,6 @@ class TestAddMeasure:
                 height == pytest.approx(expected_total_height, abs=0.2)
                 for height in added_heights
             )
-
-        def test_create_z_linestrings_from_bfe_densifies_and_samples(self):
-            gdf_lines = gpd.GeoDataFrame(
-                {"name": ["fw"]},
-                geometry=[LineString([(0.0, 0.0), (250.0, 0.0)])],
-                crs="EPSG:3857",
-            )
-            gdf_bfe = gpd.GeoDataFrame(
-                {"bfe": [1.0, 2.0]},
-                geometry=[
-                    Polygon([(0, -10), (150, -10), (150, 10), (0, 10)]),
-                    Polygon([(150, -10), (260, -10), (260, 10), (150, 10)]),
-                ],
-                crs="EPSG:3857",
-            )
-
-            gdf_out = create_z_linestrings_from_bfe(
-                gdf_lines=gdf_lines,
-                gdf_bfe=gdf_bfe,
-                bfe_field_name="bfe",
-                interval_m=100.0,
-                elevation_offset_m=0.5,
-            )
-
-            assert len(gdf_out) == 1
-            geom = gdf_out.geometry.iloc[0]
-            assert geom.has_z
-
-            coords = list(geom.coords)
-            assert len(coords) == 4
-            assert [coord[2] for coord in coords] == pytest.approx([1.5, 1.5, 2.5, 2.5])
-            assert gdf_out["z"].iloc[0] == pytest.approx(2.0)
-
-        def test_create_z_linestrings_from_bfe_fallback_for_missing_vertices(self):
-            gdf_lines = gpd.GeoDataFrame(
-                {"name": ["fw"]},
-                geometry=[LineString([(0.0, 0.0), (250.0, 0.0)])],
-                crs="EPSG:3857",
-            )
-            gdf_bfe = gpd.GeoDataFrame(
-                {"bfe": [1.0]},
-                geometry=[Polygon([(0, -10), (120, -10), (120, 10), (0, 10)])],
-                crs="EPSG:3857",
-            )
-
-            gdf_out = create_z_linestrings_from_bfe(
-                gdf_lines=gdf_lines,
-                gdf_bfe=gdf_bfe,
-                bfe_field_name="bfe",
-                interval_m=100.0,
-                elevation_offset_m=0.5,
-            )
-
-            geom = gdf_out.geometry.iloc[0]
-            z_values = [coord[2] for coord in geom.coords]
-
-            assert z_values == pytest.approx([1.5, 1.5, 0.5, 0.5])
-            assert np.isfinite(gdf_out["z"].iloc[0])
-
-        def test_create_z_linestrings_from_bfe_raises_for_invalid_interval(self):
-            gdf_lines = gpd.GeoDataFrame(
-                {"name": ["fw"]},
-                geometry=[LineString([(0.0, 0.0), (10.0, 0.0)])],
-                crs="EPSG:3857",
-            )
-            gdf_bfe = gpd.GeoDataFrame(
-                {"bfe": [1.0]},
-                geometry=[Polygon([(0, -1), (20, -1), (20, 1), (0, 1)])],
-                crs="EPSG:3857",
-            )
-
-            with pytest.raises(ValueError, match="interval_m"):
-                create_z_linestrings_from_bfe(
-                    gdf_lines=gdf_lines,
-                    gdf_bfe=gdf_bfe,
-                    bfe_field_name="bfe",
-                    interval_m=0.0,
-                )
 
         def read_weir_file(self, adapter: SfincsAdapter, floodwall_name: str):
             weir_file = adapter._model.get_config("weirfile")

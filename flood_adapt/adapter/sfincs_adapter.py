@@ -1405,12 +1405,10 @@ class SfincsAdapter(IHazardAdapter):
             logger.info("Using floodwall height relative to datum.")
             if "z" in gdf_floodwall.columns and gdf_floodwall["z"].notna().all():
                 heights = [
-                    float(
-                        us.UnitfulLength(
-                            value=float(height),
-                            units=self.database.site.gui.units.default_length_units,
-                        ).convert(us.UnitTypesLength("meters"))
-                    )
+                    us.UnitfulLength(
+                        value=float(height),
+                        units=self.database.site.gui.units.default_length_units,
+                    ).convert(us.UnitTypesLength.meters)
                     for height in gdf_floodwall["z"]
                 ]
                 gdf_floodwall["z"] = heights
@@ -1422,14 +1420,13 @@ class SfincsAdapter(IHazardAdapter):
                     f"Using uniform height of {floodwall.elevation} above datum."
                 )
                 gdf_floodwall["z"] = floodwall.elevation.convert(
-                    us.UnitTypesLength(us.UnitTypesLength.meters)
+                    us.UnitTypesLength.meters
                 )
-        else:
+        elif floodwall.elevation.type == VerticalReference.floodmap:
             if self.database.site.fiat.config.bfe is None:
                 raise ValueError(
                     "Base flood elevation (bfe) map is required to use 'floodmap' as reference for floodwalls."
                 )
-
             bfe_path = self.database.static_path.joinpath(
                 self.database.site.fiat.config.bfe.geom
             )
@@ -1449,10 +1446,16 @@ class SfincsAdapter(IHazardAdapter):
                 gdf_bfe=gdf_bfe,
                 bfe_field_name=bfe_field_name,
                 interval_m=interval,
-                elevation_offset_m=floodwall.elevation.convert(us.UnitTypesLength.meters),
+                elevation_offset_m=floodwall.elevation.convert(
+                    us.UnitTypesLength.meters
+                ),
             )
             logger.info(
                 f"Floodwall height is defined {floodwall.elevation} above Base Flood Elevation (BFE)."
+            )
+        else:
+            raise ValueError(
+                f"Unsupported floodwall elevation type: {floodwall.elevation.type}"
             )
 
         # par1 is the overflow coefficient for weirs

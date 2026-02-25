@@ -6,6 +6,10 @@ import numpy as np
 import pandas as pd
 import shapely
 
+from flood_adapt import FloodAdaptLogging
+
+logger = FloodAdaptLogging.getLogger(__name__)
+
 
 def _iter_line_geometries(geometry: shapely.Geometry):
     if geometry is None or geometry.is_empty:
@@ -71,9 +75,9 @@ def _to_z_linestring(
     fallback_z: float,
 ) -> tuple[shapely.LineString, float]:
     if len(line_points) < 2 or len(line_points) != len(line_z):
-        warnings.warn(
-            "Insufficient or mismatched points and Z values for line. Returning fallback geometry and Z."
-        )
+        msg = "Insufficient or mismatched points and Z values for line. Returning fallback geometry and Z."
+        warnings.warn(msg)
+        logger.warning(msg)
         return fallback_geometry, fallback_z
     z_coords = [
         (point.x, point.y, float(z_val)) for point, z_val in zip(line_points, line_z)
@@ -93,6 +97,10 @@ def _apply_bfe_sampling_to_points(
         how="left",
         predicate="within",
     )
+    # Ensure that each sampled point (line_id, vertex_idx) has at most one BFE value
+    gdf_join = gdf_join.sort_values(["line_id", "vertex_idx"]).drop_duplicates(
+        subset=["line_id", "vertex_idx"], keep="first"
+    )
     sampled_bfe = pd.to_numeric(gdf_join[bfe_field_name], errors="coerce")
     gdf_join["z"] = sampled_bfe + elevation_offset_m
 
@@ -108,7 +116,52 @@ def create_z_linestrings_from_bfe(
     interval_m: float = 100.0,
     elevation_offset_m: float = 0.0,
 ) -> gpd.GeoDataFrame:
-    """Densify lines by `interval_m` and convert to ZLineStrings using sampled BFE values."""
+    """
+    Densify input line geometries and construct 3D LineStrings using sampled BFE values.
+
+    The input line features are reprojected to a metric CRS, densified at a regular
+    spacing of ``interval_m``, and converted to point vertices. These vertices are
+    spatially joined to the provided BFE surface to sample base flood elevation
+    values from ``bfe_field_name``. The sampled BFE values, plus an optional
+    ``elevation_offset_m``, are used as Z-coordinates to build Z-enabled
+    LineStrings (x, y, z). A representative elevation value per line is also
+    computed and stored in the output.
+
+    Parameters
+    ----------
+    gdf_lines : geopandas.GeoDataFrame
+        GeoDataFrame containing the input line geometries to be densified and
+        converted to Z-enabled LineStrings. Must have a valid CRS.
+    gdf_bfe : geopandas.GeoDataFrame
+        GeoDataFrame providing the base flood elevation (BFE) data. Must contain
+        a geometry column and the attribute specified by ``bfe_field_name``,
+        and should be in the same CRS as ``gdf_lines`` (or a CRS that is
+        compatible with the spatial join used for sampling).
+    bfe_field_name : str
+        Name of the column in ``gdf_bfe`` that contains BFE values to be
+        sampled and used as Z-coordinates.
+    interval_m : float, optional
+        Target spacing, in meters, used to densify the input lines. Must be
+        strictly positive. Smaller values produce more vertices and smoother
+        Z-profiles, at the cost of additional computation.
+    elevation_offset_m : float, optional
+        Constant elevation offset in meters added to all sampled BFE values.
+        This value is also used as the fallback Z when no BFE value can be
+        sampled for a vertex or an entire line.
+
+    Returns
+    -------
+    geopandas.GeoDataFrame
+        A new GeoDataFrame containing densified, Z-enabled LineStrings as the
+        geometry column and a ``"z"`` column storing a representative elevation
+        per feature. The schema generally mirrors ``gdf_lines`` (minus internal
+        helper columns such as ``"line_id"``), and the index is reset.
+
+    Raises
+    ------
+    ValueError
+        If ``interval_m`` is less than or equal to zero.
+    """
     if interval_m <= 0:
         raise ValueError("interval_m must be larger than zero.")
 
