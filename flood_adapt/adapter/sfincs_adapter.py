@@ -1449,7 +1449,7 @@ class SfincsAdapter(IHazardAdapter):
                 gdf_bfe=gdf_bfe,
                 bfe_field_name=bfe_field_name,
                 interval_m=interval,
-                elevation_offset_m=floodwall.elevation.value,
+                elevation_offset_m=floodwall.elevation.convert(us.UnitTypesLength.meters),
             )
             logger.info(
                 f"Floodwall height is defined {floodwall.elevation} above Base Flood Elevation (BFE)."
