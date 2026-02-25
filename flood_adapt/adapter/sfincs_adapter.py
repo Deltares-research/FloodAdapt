@@ -1,3 +1,4 @@
+import gc
 import logging
 import math
 import os
@@ -1739,7 +1740,9 @@ class SfincsAdapter(IHazardAdapter):
     def _get_zsmax(self):
         """Read zsmax file and return absolute maximum water level over entire simulation."""
         self._model.read_results()
-        zsmax = self._model.results["zsmax"].max(dim="timemax")
+        zsmax = self._load_and_copy_results_dataset(
+            self._model.results["zsmax"].max(dim="timemax"), "zsmax"
+        )
 
         # Convert from meters to floodmap units
         floodmap_conversion = us.UnitfulLength(
@@ -1747,13 +1750,12 @@ class SfincsAdapter(IHazardAdapter):
         ).convert(self.settings.config.floodmap_units)
         zsmax = zsmax * floodmap_conversion
         zsmax.attrs["units"] = self.settings.config.floodmap_units.value
-
         return zsmax
 
     def _get_zs(self):
         """Read zsmax file and return absolute maximum water level over entire simulation."""
         self._model.read_results()
-        zs = self._model.results["zs"]
+        zs = self._load_and_copy_results_dataset(self._model.results["zs"], "zs")
 
         # Convert from meters to floodmap units
         floodmap_conversion = us.UnitfulLength(
@@ -2170,3 +2172,19 @@ class SfincsAdapter(IHazardAdapter):
             rp_maps = [rp_map.reshape(shape_orig) for rp_map in rp_maps]
 
         return rp_maps
+
+    def _load_and_copy_results_dataset(
+        self, dataset: xr.Dataset, result_name: str
+    ) -> xr.Dataset:
+        """Load a dataset from the model results and return a deep copy of it."""
+        # load to read in any lazy datasets
+        # copy to avoid keeping the file handle open for lazy loading
+        ds = dataset.load().copy(deep=True)
+        try:
+            # delete the dataset from the model results to mark it for garbage collection
+            del self._model.results[result_name]
+        except Exception:
+            pass
+        # force collect
+        gc.collect()
+        return ds
