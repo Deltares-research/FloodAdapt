@@ -69,6 +69,65 @@ quartodoc:
         - Settings
         - Site
 
+    - subtitle: "GUI"
+      package: flood_adapt.config
+      desc: Configuration settings for visualizations and the GUI
+      contents:
+        - GuiModel
+        - GuiUnitModel
+        - OutputLayers
+        - VisualizationLayer
+        - VisualizationLayers
+        - PlottingModel
+        - StandardObjectModel
+        - FloodMapLayer
+        - AggregationDmgLayer
+        - FootprintsDmgLayer
+        - BenefitsLayer
+        - SyntheticTideModel
+
+    - subtitle: "Hazard"
+      package: flood_adapt.config
+      desc: Configuration settings for hazard models
+      contents:
+        - Cstype
+        - CycloneTrackDatabaseModel
+        - DatumModel
+        - DemModel
+        - FloodFrequencyModel
+        - FloodModel
+        - ObsPointModel
+        - RiverModel
+        - SCSModel
+        - Scstype
+        - SlrScenariosModel
+        - WaterlevelReferenceModel
+
+    - subtitle: "Sfincs"
+      package: flood_adapt.config
+      desc: Configuration settings for Sfincs models
+      contents:
+        - SfincsConfigModel
+        - SfincsModel
+
+    - subtitle: "Impacts"
+      package: flood_adapt.config
+      desc: Configuration settings for impact models
+      contents:
+        - AggregationModel
+        - BenefitsModel
+        - EquityModel
+        - FloodmapType
+        - NoFootprintsModel
+        - RiskModel
+
+    - subtitle: "Fiat"
+      package: flood_adapt.config
+      desc: Configuration settings for Fiat models
+      contents:
+        - FiatConfigModel
+        - FiatModel
+
     - title: "Object models"
       package: flood_adapt.objects.object_model
       desc: "Object models in FloodAdapt are the components that are saved in the database. They define the configuration, input and output of the model kernels. The database stores Objects, and returns Objects when queried. "
@@ -179,6 +238,23 @@ quartodoc:
         - SviConfigModel
         - Basins
         - TideGaugeConfigModel
+        - TideGaugeSource
+
+    - subtitle: "Metrics configuration"
+      package: flood_adapt.database_builder
+      desc: "Settings for metrics and infographics in FloodAdapt."
+      contents:
+        - MetricModel
+        - BuildingsInfographicModel
+        - EventInfographicModel
+        - HomesInfographicModel
+        - RiskInfographicModel
+        - RoadsInfographicModel
+        - ImpactCategoriesModel
+        - FloodExceedanceModel
+        - TypeMapping
+        - FieldMapping
+        - SviModel
 
 website:
   title: "Flood Adapt Documentation"
