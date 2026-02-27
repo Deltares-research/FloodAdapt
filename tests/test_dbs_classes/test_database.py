@@ -11,6 +11,11 @@ from flood_adapt.misc.exceptions import IsStandardObjectError
 from flood_adapt.workflows.benefit_runner import Benefit, BenefitRunner
 
 
+@pytest.fixture(scope="module")
+def settings() -> Settings:
+    return Settings()
+
+
 def test_database_controller(test_db):
     assert isinstance(test_db.site, Site)
 
@@ -57,21 +62,20 @@ def test_projection_plot_slr(test_fa):
     assert Path(html_file_loc).is_file()
 
 
-def test_cleanup_NoInput_RemoveOutput():
+def test_cleanup_NoInput_RemoveOutput(settings):
     # Arrange
-    input_path = Settings().database_path / "input" / "scenarios" / "test123"
+    input_path = settings.database_path / "input" / "scenarios" / "test123"
     if input_path.exists():
         shutil.rmtree(input_path)
 
-    output_path = Settings().database_path / "output" / "scenarios" / "test123"
+    output_path = settings.database_path / "output" / "scenarios" / "test123"
     output_path.mkdir(parents=True, exist_ok=True)
 
     with open(output_path / "test123.txt", "w") as f:
         f.write("run finished")
 
     # Act
-    settings = Settings()
-    dbs = Database(settings.database_root, settings.database_name, settings=settings)
+    dbs = Database(settings.database_root, settings.database_name)
 
     # Assert
     assert not output_path.exists()
@@ -80,10 +84,10 @@ def test_cleanup_NoInput_RemoveOutput():
     dbs.shutdown()
 
 
-def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
+def test_cleanup_InputExists_RunNotFinished_OutputRemoved(settings):
     # Arrange
-    input_path = Settings().database_path / "input" / "scenarios"
-    output_path = Settings().database_path / "output" / "scenarios"
+    input_path = settings.database_path / "input" / "scenarios"
+    output_path = settings.database_path / "output" / "scenarios"
 
     scenario_name = listdir(input_path)[0]
     input_dir = input_path / scenario_name
@@ -97,8 +101,7 @@ def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
         f.write("run not finished")
 
     # Act
-    settings = Settings()
-    dbs = Database(settings.database_root, settings.database_name, settings=settings)
+    dbs = Database(settings.database_root, settings.database_name)
 
     # Assert
     assert input_dir.exists()
@@ -108,10 +111,9 @@ def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
     dbs.shutdown()
 
 
-def test_shutdown_AfterShutdown_VarsAreNone():
+def test_shutdown_AfterShutdown_VarsAreNone(settings):
     # Arrange
-    settings = Settings()
-    dbs = Database(settings.database_root, settings.database_name, settings=settings)
+    dbs = Database(settings.database_root, settings.database_name)
 
     # Act
     dbs.shutdown()
@@ -120,35 +122,45 @@ def test_shutdown_AfterShutdown_VarsAreNone():
     assert dbs.__class__._instance is None
     assert dbs._instance is None
     assert dbs._init_done is False
-    assert dbs.__dict__ == {}
+
+    # data
+    for repo in dbs._repositories:
+        assert len(repo) == 0
+    assert dbs.static._cached_data == {}
+    assert dbs.site is None
+
+    # paths
+    assert dbs.database_path is None
+    assert dbs.database_name is None
+    assert dbs.base_path is None
+    assert dbs.input_path is None
+    assert dbs.static_path is None
+    assert dbs.output_path is None
 
 
-def test_shutdown_AfterShutdown_CanReadNewDatabase():
+def test_shutdown_AfterShutdown_CanReadNewDatabase(settings):
     # Arrange
-    # Act
-    settings = Settings()
-    dbs = Database(settings.database_root, settings.database_name, settings=settings)
+    dbs = Database(settings.database_root, settings.database_name)
 
     # Act
     dbs.shutdown()
-    dbs = Database(settings.database_root, settings.database_name, settings=settings)
+    dbs = Database(settings.database_root, settings.database_name)
 
     # Assert
     assert dbs.__class__._instance is not None
     assert dbs._instance is not None
-    assert dbs._init_done
+    assert dbs._init_done is True
+
+    # data
+    assert dbs.site is not None
+
+    # paths
+    assert dbs.database_path is not None
+    assert dbs.database_name is not None
     assert dbs.base_path is not None
     assert dbs.input_path is not None
     assert dbs.static_path is not None
     assert dbs.output_path is not None
-    assert dbs.site is not None
-    assert dbs.static is not None
-    assert dbs.events is not None
-    assert dbs.scenarios is not None
-    assert dbs.strategies is not None
-    assert dbs.measures is not None
-    assert dbs.projections is not None
-    assert dbs.benefits is not None
 
 
 def test_cannot_delete_standard_objects(test_db: Database):

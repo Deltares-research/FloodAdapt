@@ -1,7 +1,7 @@
 from itertools import combinations
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.misc.exceptions import AlreadyExistsError, DatabaseError
+from flood_adapt.misc.exceptions import DatabaseError
 from flood_adapt.objects.measures.measures import MeasureType
 from flood_adapt.objects.strategies.strategies import Strategy
 
@@ -20,50 +20,11 @@ class DbsStrategy(DbsTemplate[Strategy]):
         strategy.initialize_measure_objects(measures)
         return strategy
 
-    def save(
-        self,
-        object_model: Strategy,
-        overwrite: bool = False,
-    ):
-        """Save an object in the database and all associated files.
+    def add(self, obj: Strategy, overwrite: bool = False) -> None:
+        self._assert_no_overlapping_measures(obj.measures)
+        super().add(obj, overwrite)
 
-        This saves the toml file and any additional files attached to the object.
-
-        Parameters
-        ----------
-        object_model : Object
-            object to be saved in the database
-        overwrite : bool, optional
-            whether to overwrite the object if it already exists in the
-            database, by default False
-
-        Raises
-        ------
-        DatabaseError
-            Raise error if name is already in use.
-        """
-        object_exists = object_model.name in self.summarize_objects()["name"]
-
-        # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
-        # don't want to overwrite, raise an error.
-        if overwrite and object_exists:
-            self.delete(object_model.name, toml_only=True)
-        elif not overwrite and object_exists:
-            raise AlreadyExistsError(object_model.name, self.display_name)
-
-        # Check if any measures overlap
-        self._check_overlapping_measures(object_model.measures)
-
-        # If the folder doesnt exist yet, make the folder and save the object
-        if not (self.input_path / object_model.name).exists():
-            (self.input_path / object_model.name).mkdir()
-
-        # Save the object and any additional files
-        object_model.save(
-            self.input_path / object_model.name / f"{object_model.name}.toml",
-        )
-
-    def _check_overlapping_measures(self, measures: list[str]):
+    def _assert_no_overlapping_measures(self, measures: list[str]):
         """Validate if the combination of impact measures can happen, since impact measures cannot affect the same properties.
 
         Raises
@@ -104,7 +65,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
                     counter += 1
             raise DatabaseError(msg)
 
-    def check_higher_level_usage(self, name: str) -> list[str]:
+    def used_by_higher_level(self, name: str) -> list[str]:
         """Check if a strategy is used in a scenario.
 
         Parameters
@@ -118,8 +79,8 @@ class DbsStrategy(DbsTemplate[Strategy]):
             list of scenarios that use the strategy
         """
         scenarios = [
-            self._database.scenarios.get(scn)
-            for scn in self._database.scenarios.summarize_objects()["name"]
+            self._database.scenarios.get(scn.name)
+            for scn in self._database.scenarios.list_all()
         ]
 
         used_in_scenario = [

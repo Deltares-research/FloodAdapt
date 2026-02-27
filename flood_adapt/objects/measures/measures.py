@@ -5,13 +5,17 @@ from typing import Any, Optional, TypeVar
 
 import geopandas as gpd
 import pyproj
-from pydantic import Field, field_serializer, field_validator, model_validator
+from pydantic import (
+    Field,
+    PrivateAttr,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 
 from flood_adapt.config.site import Site
 from flood_adapt.misc.utils import (
     path_exists_and_absolute,
-    resolve_filepath,
-    save_file_to_database,
 )
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.object_model import Object
@@ -145,6 +149,7 @@ class Measure(Object):
         min_length=1,
         description="Path to a polygon file, either absolute or relative to the measure path.",
     )
+    _gdf: Optional[gpd.GeoDataFrame] = PrivateAttr(default=None)
 
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
@@ -182,20 +187,32 @@ class Measure(Object):
             return None
         return Path(value).name
 
-    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+    def _post_load(
+        self, file_path: Path | str | os.PathLike, force: bool = False, **kwargs
+    ) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
         if self.polygon_file:
-            self.polygon_file = path_exists_and_absolute(
-                self.polygon_file, file_path
-            ).as_posix()
+            path = Path(self.polygon_file).name if force else self.polygon_file
+            self.polygon_file = path_exists_and_absolute(path, file_path).as_posix()
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.polygon_file:
-            Path(output_dir).mkdir(parents=True, exist_ok=True)
-            src_path = resolve_filepath("measures", self.name, self.polygon_file)
-            path = save_file_to_database(src_path, Path(output_dir))
-            # Update the shapefile path in the object so it is saved in the toml file as well
-            self.polygon_file = path.name
+            gdf = self.read_gdf()
+            if gdf is None:
+                raise ValueError(
+                    f"Cannot save measure {self.name}: `polygon_file` is set but no GeoDataFrame could be read from it."
+                )
+            filename = Path(self.polygon_file).name
+            file_path = Path(output_dir, filename)
+            gdf.to_file(file_path)
+
+    def read_gdf(self, reload: bool = False) -> gpd.GeoDataFrame | None:
+        """Read the polygon file as a GeoDataFrame if it exists."""
+        if self._gdf is not None and not reload:
+            return self._gdf
+        if self.polygon_file:
+            self._gdf = gpd.read_file(self.polygon_file)
+        return self._gdf
 
 
 class HazardMeasure(Measure):
