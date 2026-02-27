@@ -1060,7 +1060,7 @@ class TestAddMeasure:
                 ),
                 polygon_file=str(TEST_DATA_DIR / "seawall.geojson"),
             )
-            test_db.measures.save(floodwall)
+            test_db.measures.add(floodwall)
 
             bfe_value = 1.25
             test_db.site.fiat.config.bfe = mock.Mock(
