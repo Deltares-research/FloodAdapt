@@ -2,7 +2,7 @@
 __version__ = "2.0.3"
 
 from flood_adapt import adapter, database_builder, dbs_classes, objects
-from flood_adapt.config.config import Settings
+from flood_adapt.config.settings import Settings
 from flood_adapt.config.site import Site
 from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.exceptions import DatabaseError, FloodAdaptError

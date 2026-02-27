@@ -1022,6 +1022,16 @@ class FiatAdapter(IImpactAdapter):
             else:
                 path_ref = self.config_base_path.joinpath(self.config.bfe.geom)
                 height_reference = "geom"
+
+            # Check units of bfe
+            if self.config.bfe.units and (
+                self.database.site.gui.units.default_length_units
+                != self.config.bfe.units
+            ):
+                raise ValueError(
+                    f"Units of the BFE map ({self.config.bfe.units}) are different from the FIAT model units ({self.database.site.gui.units.default_length_units})!"
+                )
+
             # Use hydromt function
             self.model.exposure.raise_ground_floor_height(
                 raise_by=elevate.elevation.value,

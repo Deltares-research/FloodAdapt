@@ -1,6 +1,6 @@
 import pytest
 
-from flood_adapt.objects import Object
+from flood_adapt.objects.object_model import Object
 
 
 def test_name_length():

@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 import shutil
 import sys
-from flood_adapt import FloodAdapt
+from flood_adapt.flood_adapt import FloodAdapt
 
 def clean_database(database_dir: Path):
     EXCLUDES = [

@@ -1,4 +1,3 @@
-from flood_adapt.config.config import Settings
 from flood_adapt.config.fiat import (
     FiatConfigModel,
     FiatModel,
@@ -41,6 +40,7 @@ from flood_adapt.config.impacts import (
     NoFootprintsModel,
     RiskModel,
 )
+from flood_adapt.config.settings import Settings
 from flood_adapt.config.sfincs import (
     SfincsConfigModel,
     SfincsModel,

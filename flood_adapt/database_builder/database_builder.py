@@ -165,17 +165,20 @@ class SpatialJoinModel(BaseModel):
 
     Attributes
     ----------
-    name : Optional[str]
-        Name of the spatial join (optional).
     file : str
         Path to the file containing the spatial data to join.
     field_name : str
         Name of the field used for joining.
+    name : Optional[str]
+        Name of the spatial join (optional).
+    units : Optional[us.UnitfulLength]
+        Unit system for the spatial data (optional).
     """
 
-    name: Optional[str] = None
     file: str
     field_name: str
+    name: Optional[str] = None
+    units: Optional[us.UnitfulLength] = None
 
 
 class UnitSystems(str, Enum):
@@ -369,7 +372,7 @@ class ConfigModel(BaseModel):
     slr_scenarios : Optional[SlrScenariosModel]
         Sea level rise scenarios configuration.
     scs : Optional[SCSModel]
-        SCS model configuration.
+        SCS model configuration.x
     tide_gauge : Optional[TideGaugeConfigModel] #TODO Change name to gauge to cover inland cases?
         Tide gauge configuration.
     cyclones : Optional[bool]
@@ -1105,11 +1108,14 @@ class DatabaseBuilder:
         csv_path = fa_bfe_file.parent / "bfe.csv"
         buildings_joined.to_csv(csv_path, index=False)
 
+        # Update the units if provided
+
         # Save attributes
         return BFEModel(
             geom=fa_bfe_file.relative_to(self.static_path).as_posix(),
             table=csv_path.relative_to(self.static_path).as_posix(),
             field_name=self.config.bfe.field_name,
+            units=self.config.bfe.units,
         )
 
     @debug_timer
