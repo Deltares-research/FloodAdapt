@@ -376,15 +376,12 @@ class FloodWall(HazardMeasure):
         Type of selection. Should be "SelectionType.polygon" or "SelectionType.aggregation_area".
     polygon_file : Optional[str]
         Path to a polygon file, either absolute or relative to the measure path.
-    elevation : us.UnitfulLength
+    elevation : us.UnitfulLengthRefValue
         Height of the floodwall.
-    absolute_elevation : bool
-        TODO remove?
     """
 
     type: MeasureType = MeasureType.floodwall
-    elevation: us.UnitfulLength
-    absolute_elevation: Optional[bool] = False
+    elevation: us.UnitfulLengthRefValue
 
 
 class Pump(HazardMeasure):
@@ -405,8 +402,6 @@ class Pump(HazardMeasure):
         Path to a polygon file, either absolute or relative to the measure path.
     elevation : us.UnitfulLength
         Height of the floodwall.
-    absolute_elevation : bool
-        TODO remove?
     """
 
     type: MeasureType = MeasureType.pump

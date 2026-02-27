@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from flood_adapt.objects.forcing import unit_system as us
+
 
 class FloodmapType(str, Enum):
     """The accepted input for the variable floodmap in Site."""
@@ -73,21 +75,24 @@ class AggregationModel(BaseModel):
 
 
 class BFEModel(BaseModel):
-    """The accepted input for the variable bfe in Site.
+    """Class describing the base flood elevation (BFE) data in the database.
 
     Attributes
     ----------
     geom : str
-        TODO
-    table : Optional[str], default=None
-        TODO
+        The path relative to the database static folder where the BFE polygon map is located.
     field_name : str
-        TODO
+        This is the column name in the geom (and table) that has the BFE value.
+    units : Optional[us.UnitTypesLength], default=None
+        The units of the BFE values in the data.
+    table : Optional[str], default=None
+        To avoid resampling of the BFE for objects each time a predefined table with the BFE value for each object can be provided.
     """
 
     geom: str
-    table: Optional[str] = None
     field_name: str
+    units: Optional[us.UnitTypesLength] = None
+    table: Optional[str] = None
 
 
 class SVIModel(BaseModel):
