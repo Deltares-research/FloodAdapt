@@ -5,6 +5,8 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -573,6 +575,8 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -2667,58 +2671,6 @@ packages:
   - pytest-cov ; extra == 'test'
   - pytest-subtests ; extra == 'test'
   requires_python: '>=3.9'
-- pypi: ./
-  name: flood-adapt
-  version: 2.0.3
-  sha256: e97eeefd9021141ec5bef24f9b331f2b429b1a847e59c6d69079c587e4091bcc
-  requires_dist:
-  - cartopy
-  - cht-cyclones>=1.0.3,<2.0
-  - cht-meteo>=0.3.1,<1.0
-  - cht-observations>=0.2.1,<1.0
-  - cht-tide>=0.1.1,<1.0
-  - ffmpeg
-  - fiat-toolbox>=0.1.23,<0.2.0
-  - fiona>=1.0,<2.0
-  - geojson>=3.0,<4.0
-  - geopandas>=1.0,<2.0
-  - hydromt-fiat>=0.5.9,<1.0
-  - hydromt-sfincs[quadtree]>=1.2.2,<2.0
-  - numpy>=1.0,<2.0
-  - numpy-financial>=1.0,<2.0
-  - pandas>=2.0,<3.0
-  - plotly>=6.0,<6.3
-  - pydantic>=2.0,<3.0
-  - pydantic-settings>=2.0,<3.0
-  - pyogrio<1.0
-  - tomli>=2.0,<3.0
-  - tomli-w>=1.0,<2.0
-  - typing-extensions
-  - pytest>=8.0,<9.0 ; extra == 'dev'
-  - pytest-cov>=6.0,<7.0 ; extra == 'dev'
-  - pre-commit==3.8.0 ; extra == 'dev'
-  - ruff==0.5.5 ; extra == 'dev'
-  - typos==1.23.6 ; extra == 'dev'
-  - build>=1.2,<2.0 ; extra == 'build'
-  - twine>=6.0,<7.0 ; extra == 'build'
-  - pyinstaller==6.13.0 ; extra == 'build'
-  - pefile<2024.8.26 ; extra == 'build'
-  - jupyter>=1.0,<2.0 ; extra == 'docs'
-  - jupyter-cache>=1.0,<2.0 ; extra == 'docs'
-  - nbstripout>=0.8.0,<0.9 ; extra == 'docs'
-  - matplotlib>=3.0,<4.0 ; extra == 'docs'
-  - quartodoc>=0.11.0,<1.0 ; extra == 'docs'
-  - griffe<2.0 ; extra == 'docs'
-  - sphinx>=8.0,<9.0 ; extra == 'docs'
-  - sphinx-rtd-theme>=3.0,<4.0 ; extra == 'docs'
-  - regex>=2024.11,<2025.0 ; extra == 'docs'
-  - minio>=7.2.15,<8 ; extra == 'docs'
-  - python-dotenv>=1.0,<2.0 ; extra == 'docs'
-  - folium>=0.19.0,<1.0 ; extra == 'docs'
-  - mapclassify>=2.8.0,<3.0 ; extra == 'docs'
-  - contextily ; extra == 'docs'
-  requires_python: '>=3.10,<3.13'
-  editable: true
 - pypi: ./
   name: flood-adapt
   version: 2.0.3

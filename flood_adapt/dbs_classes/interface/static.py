@@ -27,6 +27,9 @@ class IDbsStatic(ABC):
     def get_model_grid(self): ...
 
     @abstractmethod
+    def get_existing_structures(self) -> gpd.GeoDataFrame: ...
+
+    @abstractmethod
     def get_obs_points(self) -> gpd.GeoDataFrame: ...
 
     @abstractmethod

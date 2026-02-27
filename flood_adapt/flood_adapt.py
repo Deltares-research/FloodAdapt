@@ -1095,6 +1095,16 @@ class FloodAdapt:
         """
         return self.database.static.get_model_grid()
 
+    def get_existing_structures(self) -> gpd.GeoDataFrame:
+        """Get the existing structures that are used in SFINCS.
+
+        Returns
+        -------
+        existing_structures : gpd.GeoDataFrame
+            gpd.GeoDataFrame with the existing structures
+        """
+        return self.database.static.get_existing_structures()
+
     def get_svi_map(
         self,
     ) -> gpd.GeoDataFrame | None:

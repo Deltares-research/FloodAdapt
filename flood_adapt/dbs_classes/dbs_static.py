@@ -117,6 +117,12 @@ class DbsStatic(IDbsStatic):
         return grid
 
     @cache_method_wrapper
+    def get_existing_structures(self) -> gpd.GeoDataFrame:
+        """Get existing structure geometries from model."""
+        structures = self.get_overland_sfincs_model().get_existing_structures()
+        return structures
+
+    @cache_method_wrapper
     def get_obs_points(self) -> Optional[gpd.GeoDataFrame]:
         """Get the observation points from the flood hazard model."""
         if self._database.site.sfincs.obs_point is None:

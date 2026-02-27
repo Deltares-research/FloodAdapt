@@ -435,6 +435,11 @@ class SfincsAdapter(IHazardAdapter):
             res = self._model.res[0]
         return res
 
+    def get_existing_structures(self) -> gpd.GeoDataFrame:
+        """Get existing structure geometries from model."""
+        structures = self._model.geoms["weir"]
+        return structures
+
     # Forcing properties
     @property
     def waterlevels(self) -> xr.Dataset | xr.DataArray | None:
