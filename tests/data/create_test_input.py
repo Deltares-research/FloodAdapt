@@ -86,12 +86,9 @@ def update_database_input(database_path: Path):
         The path to the database directory. This is the directory that contains the `input`, `static` and `output` directories.
 
     """
-    database = Database(database_path.parent, database_path.name)
-    input_dir = database.input_path
-    if input_dir.exists():
-        shutil.rmtree(input_dir)
-
-    input_dir.mkdir(parents=True)
+    # Clear existing input and output directories
+    shutil.rmtree(database_path / "input", ignore_errors=True)
+    shutil.rmtree(database_path / "output", ignore_errors=True)
     for obj_dir in [
         "events",
         "projections",
@@ -100,27 +97,33 @@ def update_database_input(database_path: Path):
         "scenarios",
         "benefits",
     ]:
-        (input_dir / obj_dir).mkdir()
+        (database_path / "input" / obj_dir).mkdir(parents=True, exist_ok=True)
+
+    # Initialize database
+    database = Database(database_path.parent, database_path.name)
 
     for event in create_events():
-        database.events.save(event)
+        database.events.add(event)
 
     for projection in create_projections():
-        database.projections.save(projection)
+        database.projections.add(projection)
 
     for measure in create_measures():
-        database.measures.save(measure)
+        database.measures.add(measure)
 
     for strategy in create_strategies():
-        database.strategies.save(strategy)
+        database.strategies.add(strategy)
 
     for scenario in create_scenarios():
-        database.scenarios.save(scenario)
+        database.scenarios.add(scenario)
 
     for benefit in create_benefits():
         runner = BenefitRunner(database, benefit)
         runner.create_benefit_scenarios()
-        database.benefits.save(benefit)
+        database.benefits.add(benefit)
+
+    # write to disk
+    database.flush()
 
     # Cleanup singleton
     database.shutdown()

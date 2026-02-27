@@ -1,3 +1,4 @@
+import gc
 import logging
 import math
 import os
@@ -67,6 +68,7 @@ from flood_adapt.objects.forcing.rainfall import (
     RainfallTrack,
 )
 from flood_adapt.objects.forcing.time_frame import TimeFrame
+from flood_adapt.objects.forcing.unit_system import VerticalReference
 from flood_adapt.objects.forcing.waterlevels import (
     WaterlevelCSV,
     WaterlevelGauged,
@@ -92,6 +94,7 @@ from flood_adapt.objects.projections.projections import (
     Projection,
 )
 from flood_adapt.objects.scenarios.scenarios import Scenario
+from flood_adapt.workflows.floodwall import create_z_linestrings_from_bfe
 
 logger = FloodAdaptLogging.getLogger("SfincsAdapter")
 
@@ -896,10 +899,7 @@ class SfincsAdapter(IHazardAdapter):
 
         TODO: make this robust and more efficient for bigger datasets.
         """
-        # Check if the scenario is a risk scenario
-        event: EventSet = self.database.events.get(scenario.event, load_all=True)
-        if not isinstance(event, EventSet):
-            raise ValueError("This function is only available for risk scenarios.")
+        event = self.database.events.get_event_set(scenario.event)
         logger.info("Calculating flood risk maps, this may take some time.")
 
         # Get the simulation paths and result path
@@ -949,6 +949,14 @@ class SfincsAdapter(IHazardAdapter):
             return_periods=floodmap_rp,
         )
 
+        # convert dem from dem units to floodmap units
+        dem_conversion = us.UnitfulLength(
+            value=1.0, units=self.settings.dem.units
+        ).convert(self.settings.config.floodmap_units)
+        dem = self._model.data_catalog.get_rasterdataset(
+            self.database.get_topobathy_path()
+        )
+
         # For each return period, save water level and flood depth maps
         for ii, rp in enumerate(floodmap_rp):
             # Prepare data array for the return period flood map
@@ -993,18 +1001,9 @@ class SfincsAdapter(IHazardAdapter):
                 tags={"units": self.settings.config.floodmap_units.value},
             )
 
-            # dem file for high resolution flood depth map
-            demfile = self.database.static_path / "dem" / self.settings.dem.filename
-            # convert dem from dem units to floodmap units
-            dem_conversion = us.UnitfulLength(
-                value=1.0, units=self.settings.dem.units
-            ).convert(self.settings.config.floodmap_units)
-
             # writing the geotiff to the scenario results folder
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
-                dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
                 floodmap_fn = result_path / f"RP_{rp:04d}_FloodMap.tif"
-
                 utils.downscale_floodmap(
                     zsmax=zs_rp_single,
                     dep=dem_conversion * dem,
@@ -1041,7 +1040,7 @@ class SfincsAdapter(IHazardAdapter):
 
         This means preprocessing and running the SFINCS model for each event in the event set, and then postprocessing the results.
         """
-        event_set: EventSet = self.database.events.get(scenario.event, load_all=True)
+        event_set: EventSet = self.database.events.get_event_set(scenario.event)
         total = len(event_set._events)
 
         for i, sub_event in enumerate(event_set._events):
@@ -1374,6 +1373,19 @@ class SfincsAdapter(IHazardAdapter):
         self._model.set_config("spwfile", output_spw_path.name)
 
     ### MEASURES ###
+
+    def _convert_z_column_to_meters(
+        self, gdf: gpd.GeoDataFrame, z_units: us.UnitTypesLength
+    ) -> gpd.GeoDataFrame:
+        gdf = gdf.copy()
+        gdf["z"] = [
+            us.UnitfulLength(value=float(z_val), units=z_units).convert(
+                us.UnitTypesLength.meters
+            )
+            for z_val in gdf["z"]
+        ]
+        return gdf
+
     def _add_measure_floodwall(self, floodwall: FloodWall):
         """Add floodwall to sfincs model.
 
@@ -1398,24 +1410,71 @@ class SfincsAdapter(IHazardAdapter):
         if (gdf_floodwall.geometry.type == "MultiLineString").any():
             gdf_floodwall = gdf_floodwall.explode()
 
-        try:
-            heights = [
-                float(
-                    us.UnitfulLength(
-                        value=float(height),
-                        units=self.database.site.gui.units.default_length_units,
-                    ).convert(us.UnitTypesLength("meters"))
+        if floodwall.elevation.type == VerticalReference.datum:
+            logger.info("Using floodwall height relative to datum.")
+            if "z" in gdf_floodwall.columns and gdf_floodwall["z"].notna().all():
+                gdf_floodwall = self._convert_z_column_to_meters(
+                    gdf_floodwall,
+                    self.database.site.gui.units.default_length_units,
                 )
-                for height in gdf_floodwall["z"]
-            ]
-            gdf_floodwall["z"] = heights
-            logger.info("Using floodwall height from shape file.")
-        except Exception:
-            logger.warning(
-                f"Could not use height data from file due to missing `z` column or missing values therein. Using uniform height of {floodwall.elevation} instead."
+                logger.info(
+                    f"'z' column with height data found in floodwall shapefile. Each segment will use the respective height above datum in {self.database.site.gui.units.default_length_units}."
+                )
+            else:
+                logger.warning(
+                    f"Using uniform height of {floodwall.elevation} above datum."
+                )
+                gdf_floodwall["z"] = floodwall.elevation.convert(
+                    us.UnitTypesLength.meters
+                )
+        elif floodwall.elevation.type == VerticalReference.floodmap:
+            if self.database.site.fiat.config.bfe is None:
+                raise ValueError(
+                    "Base flood elevation (bfe) map is required to use 'floodmap' as reference for floodwalls."
+                )
+            bfe_path = self.database.static_path.joinpath(
+                self.database.site.fiat.config.bfe.geom
             )
-            gdf_floodwall["z"] = floodwall.elevation.convert(
-                us.UnitTypesLength(us.UnitTypesLength.meters)
+            bfe_field_name = self.database.site.fiat.config.bfe.field_name
+            bfe_units = (
+                self.database.site.fiat.config.bfe.units
+                or self.database.site.gui.units.default_length_units
+            )
+
+            gdf_bfe = self._model.data_catalog.get_geodataframe(
+                bfe_path, geom=self._model.region, crs=self._model.crs
+            )
+
+            if bfe_field_name not in gdf_bfe.columns:
+                raise ValueError(
+                    f"BFE field '{bfe_field_name}' was not found in {bfe_path}."
+                )
+            interval = 100.0  # interval in meters to sample the floodwall linestrings for creating points with z values, can be adjusted if needed
+
+            # Convert floodwall elevation to BFE units
+            elevation_offset = floodwall.elevation.convert(bfe_units)
+            z_conversion = us.UnitfulLength(value=1.0, units=bfe_units).convert(
+                us.UnitTypesLength.meters
+            )
+
+            gdf_floodwall = create_z_linestrings_from_bfe(
+                gdf_lines=gdf_floodwall,
+                gdf_bfe=gdf_bfe,
+                bfe_field_name=bfe_field_name,
+                interval_m=interval,
+                elevation_offset=elevation_offset,
+                z_conversion=z_conversion,
+            )
+
+            if "z" in gdf_floodwall.columns:
+                gdf_floodwall = gdf_floodwall.drop(columns=["z"])
+
+            logger.info(
+                f"Floodwall height is defined {floodwall.elevation} above Base Flood Elevation (BFE)."
+            )
+        else:
+            raise ValueError(
+                f"Unsupported floodwall elevation type: {floodwall.elevation.type}"
             )
 
         # par1 is the overflow coefficient for weirs
@@ -1743,7 +1802,9 @@ class SfincsAdapter(IHazardAdapter):
     def _get_zsmax(self):
         """Read zsmax file and return absolute maximum water level over entire simulation."""
         self._model.read_results()
-        zsmax = self._model.results["zsmax"].max(dim="timemax")
+        zsmax = self._load_and_copy_results_dataset(
+            self._model.results["zsmax"].max(dim="timemax"), "zsmax"
+        )
 
         # Convert from meters to floodmap units
         floodmap_conversion = us.UnitfulLength(
@@ -1751,13 +1812,12 @@ class SfincsAdapter(IHazardAdapter):
         ).convert(self.settings.config.floodmap_units)
         zsmax = zsmax * floodmap_conversion
         zsmax.attrs["units"] = self.settings.config.floodmap_units.value
-
         return zsmax
 
     def _get_zs(self):
         """Read zsmax file and return absolute maximum water level over entire simulation."""
         self._model.read_results()
-        zs = self._model.results["zs"]
+        zs = self._load_and_copy_results_dataset(self._model.results["zs"], "zs")
 
         # Convert from meters to floodmap units
         floodmap_conversion = us.UnitfulLength(
@@ -2174,3 +2234,19 @@ class SfincsAdapter(IHazardAdapter):
             rp_maps = [rp_map.reshape(shape_orig) for rp_map in rp_maps]
 
         return rp_maps
+
+    def _load_and_copy_results_dataset(
+        self, dataset: xr.Dataset, result_name: str
+    ) -> xr.Dataset:
+        """Load a dataset from the model results and return a deep copy of it."""
+        # load to read in any lazy datasets
+        # copy to avoid keeping the file handle open for lazy loading
+        ds = dataset.load().copy(deep=True)
+        try:
+            # delete the dataset from the model results to mark it for garbage collection
+            del self._model.results[result_name]
+        except Exception:
+            pass
+        # force collect
+        gc.collect()
+        return ds

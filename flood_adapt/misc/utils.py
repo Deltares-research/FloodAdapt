@@ -209,7 +209,7 @@ def path_exists_and_absolute(
 ) -> Path:
     """Take a path which can be absolute or relative, and return an absolute path.
 
-    When the obj_path is relative, it is made absolute relative to the argument_path.
+    When the obj_path is relative, it is made absolute relative to the argument_path's parent.
     """
     obj_path = Path(obj_path)
     if obj_path.is_absolute():
