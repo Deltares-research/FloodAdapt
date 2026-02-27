@@ -1,7 +1,6 @@
-import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import geopandas as gpd
 import numpy as np
@@ -29,7 +28,10 @@ class IDatabase(ABC):
 
     @abstractmethod
     def __init__(
-        self, database_path: Union[str, os.PathLike], site_name: str
+        self,
+        database_root: Path | None,
+        database_name: str | None,
+        settings: Settings | None = None,
     ) -> None: ...
 
     @abstractmethod

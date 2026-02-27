@@ -902,4 +902,4 @@ if __name__ == "__main__":
     )
     settings.export_to_env()
     print(f"Updating database: {settings.database_path}")
-    update_database_input(settings.database_path)
+    update_database_input(settings)

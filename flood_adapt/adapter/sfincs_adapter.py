@@ -198,7 +198,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         settings = self.database._settings
 
-        match settings.get_scenario_execution_method():
+        match settings.get_scenario_execution_method(strict=strict):
             case ExecutionMethod.DOCKER:
                 logger.info(f"Running SFINCS in {path} using a Docker image.")
                 success = SFINCS_CONTAINER.run(path)
