@@ -136,13 +136,17 @@ def test_db_with_postprocessing_hooks(
             path.write_text(f'postprocessed {{scenario.name}}')
         """  # use double `{{}}` to allow the .format() to work without trying to format the inner {scenario.name}
     )
-    hooks = {}
+    from flood_adapt.config.database import PostProcessingHook
+
+    hooks = []
     for i in range(1, 3):
         rel_in_db = Path("postprocessing", f"postprocess_hook_{i}.py")
         abs_in_db = test_db.static_path / rel_in_db
         abs_in_db.parent.mkdir(parents=True, exist_ok=True)
         abs_in_db.write_text(HOOK_CODE.format(i=i))
-        hooks[f"postprocess_hook_{i}"] = rel_in_db.as_posix()
+        hooks.append(
+            PostProcessingHook(name=f"postprocess_hook_{i}", path=rel_in_db.as_posix())
+        )
 
     test_db.config.post_processing_hooks = hooks
     return test_db, [f"postprocess_{i}_ran.txt" for i in range(1, 3)]

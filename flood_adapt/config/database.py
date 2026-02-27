@@ -8,6 +8,21 @@ from pydantic import BaseModel, Field
 PostProcessingFunction = Callable[..., None]
 
 
+class PostProcessingHook(BaseModel):
+    """A post-processing hook definition.
+
+    Attributes
+    ----------
+    name : str
+        The name of the hook.
+    path : str
+        The file path to the hook relative to the database's static path.
+    """
+
+    name: str = Field(description="The name of the hook")
+    path: str = Field(description="File path relative to the database's static path")
+
+
 class DatabaseConfig(BaseModel):
     """The expected variables and data types of attributes of the DatabaseConfig class.
 
@@ -15,15 +30,15 @@ class DatabaseConfig(BaseModel):
 
     Attributes
     ----------
-    post_processing_hooks : dict[str, str] | None
-        Dictionary mapping post-processing hook names to their file paths relative to the database's static path. Defaults to None.
+    post_processing_hooks : list[PostProcessingHook] | None
+        List of post-processing hooks to run after scenario execution. Defaults to None.
     ignore_postprocess_errors : bool
         Whether to ignore errors raised in the post-processing hook. Defaults to False.
     """
 
-    post_processing_hooks: dict[str, str] | None = Field(
+    post_processing_hooks: list[PostProcessingHook] | None = Field(
         default=None,
-        description="Dictionary mapping post-processing hook names to their file paths relative to the database's static path. If None, no post-processing hooks will be run.",
+        description="List of post-processing hooks to run after scenario execution. If None, no post-processing hooks will be run.",
     )
     ignore_postprocess_errors: bool = Field(
         default=False,
@@ -37,19 +52,19 @@ class DatabaseConfig(BaseModel):
             return None
 
         hooks = {}
-        for name, rel_path in self.post_processing_hooks.items():
-            hook_path = static_path / rel_path
+        for hook in self.post_processing_hooks:
+            hook_path = static_path / hook.path
             if not hook_path.exists():
                 raise FileNotFoundError(
-                    f"Post-processing hook {name} not found: {hook_path}"
+                    f"Post-processing hook {hook.name} not found: {hook_path}"
                 )
 
             spec = importlib_util.spec_from_file_location(
-                f"fa_postprocess_hook_{name}", hook_path
+                f"fa_postprocess_hook_{hook.name}", hook_path
             )
             if spec is None or spec.loader is None:
                 raise ImportError(
-                    f"Could not load post-processing hook {name} from {hook_path}"
+                    f"Could not load post-processing hook {hook.name} from {hook_path}"
                 )
 
             module = importlib_util.module_from_spec(spec)
@@ -57,7 +72,7 @@ class DatabaseConfig(BaseModel):
 
             if not hasattr(module, "postprocess"):
                 raise AttributeError(
-                    f"Post-processing hook {name} at {hook_path} does not define `postprocess()`"
+                    f"Post-processing hook {hook.name} at {hook_path} does not define `postprocess()`"
                 )
 
             sig = inspect.signature(module.postprocess)
@@ -65,14 +80,14 @@ class DatabaseConfig(BaseModel):
 
             if len(params) != 3:
                 raise TypeError(
-                    f"Post-processing hook {name} at {hook_path} must accept exactly "
+                    f"Post-processing hook {hook.name} at {hook_path} must accept exactly "
                     f"3 arguments (Database, Scenario, Path), got {len(params)}"
                 )
 
             if sig.return_annotation not in (inspect.Signature.empty, None):
                 raise TypeError(
-                    f"Post-processing hook {name} at {hook_path} must return None"
+                    f"Post-processing hook {hook.name} at {hook_path} must return None"
                 )
 
-            hooks[name] = module.postprocess
+            hooks[hook.name] = module.postprocess
         return hooks
