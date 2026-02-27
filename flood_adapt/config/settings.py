@@ -1,3 +1,5 @@
+import enum
+import logging
 import re
 import subprocess
 from os import environ
@@ -15,6 +17,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from flood_adapt.misc.io import read_toml, write_toml
 
+logger = logging.getLogger(__name__)
+
+
+class ExecutionMethod(enum.Enum):
+    DOCKER = enum.auto()
+    BINARIES = enum.auto()
+
 
 class Settings(BaseSettings):
     """
@@ -27,7 +36,7 @@ class Settings(BaseSettings):
 
     Usage
     -----
-    from flood_adapt.config.config import Settings
+    from flood_adapt.config.settings import Settings
 
     One of the following:
 
@@ -99,6 +108,8 @@ class Settings(BaseSettings):
         description="Whether to validate the forcing types and sources against the allowed forcings in the event model.",
         exclude=True,
     )
+
+    # Binary settings
     use_binaries: bool = Field(
         alias="USE_BINARIES",  # environment variable: USE_BINARIES
         default=False,
@@ -117,9 +128,12 @@ class Settings(BaseSettings):
         default="2.2.1-alpha col d'Eze",
         alias="SFINCS_VERSION",  # environment variable: SFINCS_VERSION
         description="The expected version of the sfincs binary. "
-        "If the version of the binary does not match this version, an error is raised.",
+        "If the version of the binary does not match this version, an error is raised. "
+        "This is also used to pull the correct Docker image if using Docker for execution.",
         exclude=True,
+        min_length=1,
     )
+
     fiat_bin_path: Path | None = Field(
         default=None,
         alias="FIAT_BIN_PATH",  # environment variable: FIAT_BIN_PATH
@@ -129,12 +143,27 @@ class Settings(BaseSettings):
     fiat_version: str = Field(
         default="0.2.1",
         alias="FIAT_VERSION",  # environment variable: FIAT_VERSION
-        description="The expected version of the fiat binary. "
-        "If the version of the binary does not match this version, an error is raised.",
+        description="The expected version of FIAT. "
+        "If the version of the binary does not match this version, an error is raised. "
+        "This is also used to pull the correct Docker image if using Docker for execution.",
+        exclude=True,
+        min_length=1,
+    )
+    _binaries_validated: ClassVar[bool] = False
+
+    # Docker settings
+    manual_docker_containers: bool = Field(
+        default=False,
+        alias="MANUAL_DOCKER_CONTAINERS",  # environment variable: MANUAL_DOCKER_CONTAINERS
+        description="Whether to manually start and stop Docker containers for SFINCS and FIAT when initializing/destroying FloodAdapt. Useful to prevent unnecessary re-initialization during testing.",
         exclude=True,
     )
-
-    _binaries_validated: ClassVar[bool] = False
+    use_docker: bool = Field(
+        alias="USE_DOCKER",  # environment variable: USE_DOCKER
+        default=False,
+        description="Whether to use Docker containers for SFINCS and FIAT execution. If True, Docker must be installed and running. If False, local binaries will be used.",
+        exclude=True,
+    )
 
     @computed_field
     @property
@@ -297,6 +326,22 @@ class Settings(BaseSettings):
 
         Settings._binaries_validated = True
 
+    def get_scenario_execution_method(
+        self, strict: bool = False
+    ) -> ExecutionMethod | None:
+        if self.use_binaries:
+            return ExecutionMethod.BINARIES
+        elif self.use_docker:
+            return ExecutionMethod.DOCKER
+        else:
+            msg = "Could not determine scenario execution method, please check your configuration."
+            if strict:
+                raise RuntimeError(msg)
+            else:
+                logger.warning(msg)
+                return None
+
+    # IO
     @staticmethod
     def read(toml_path: Path) -> "Settings":
         """
@@ -343,6 +388,7 @@ class Settings(BaseSettings):
         )
         write_toml(data, toml_path)
 
+    # Helpers
     def _export_env_var(self, key: str, value: str | Path | bool | None) -> None:
         if isinstance(value, Path):
             environ[key] = value.as_posix()
@@ -355,7 +401,6 @@ class Settings(BaseSettings):
                 f"Unsupported type for environment variable {key}: {type(value)}"
             )
 
-    # Error helpers
     @staticmethod
     def _raise_exe_not_provided(model: str) -> NoReturn:
         raise ValueError(f"{model.upper()} binary path is not set.")

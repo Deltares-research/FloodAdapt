@@ -57,11 +57,14 @@ class FloodAdapt:
             The path to the database file.
         """
         self._settings = Settings(
-            DATABASE_ROOT=database_path.parent, DATABASE_NAME=database_path.name
+            DATABASE_ROOT=database_path.parent,
+            DATABASE_NAME=database_path.name,
         )
         self._settings.export_to_env()
         self.database = Database(
-            database_path=database_path.parent, database_name=database_path.name
+            database_root=database_path.parent,
+            database_name=database_path.name,
+            settings=self._settings,
         )
 
     # Measures
@@ -1338,3 +1341,11 @@ class FloodAdapt:
             )
 
         return animation_path
+
+    def cleanup(self):
+        self.database.cleanup()
+        self.database.static.stop_docker()
+
+    ## DOCKER
+    def __del__(self):
+        self.cleanup()

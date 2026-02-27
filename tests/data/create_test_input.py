@@ -73,7 +73,7 @@ from flood_adapt.workflows.benefit_runner import BenefitRunner
 DATA_DIR = Path(__file__).parent
 
 
-def update_database_input(database_path: Path):
+def update_database_input(settings: Settings):
     """
     Create the input directory for the FloodAdapt testing database.
 
@@ -82,10 +82,11 @@ def update_database_input(database_path: Path):
 
     Parameters
     ----------
-    database_path : Path
-        The path to the database directory. This is the directory that contains the `input`, `static` and `output` directories.
+    settings : Settings
+        The settings object containing the database path.
 
     """
+    database_path = settings.database_path
     # Clear existing input and output directories
     shutil.rmtree(database_path / "input", ignore_errors=True)
     shutil.rmtree(database_path / "output", ignore_errors=True)
@@ -899,5 +900,6 @@ if __name__ == "__main__":
         DATABASE_ROOT=args.database_root,
         DATABASE_NAME=args.database_name,
     )
+    settings.export_to_env()
     print(f"Updating database: {settings.database_path}")
-    update_database_input(settings.database_path)
+    update_database_input(settings)

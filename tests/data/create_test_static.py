@@ -55,11 +55,12 @@ from flood_adapt.objects.forcing.tide_gauge import (
 DATA_DIR = Path(__file__).parent
 
 
-def update_database_static(database_path: Path):
+def update_database_static(settings: Settings):
     """Create the config in the database.
 
     Possibly update the static data in the database.
     """
+    database_path = settings.database_path
     config_dir = database_path / "static" / "config"
     config_dir.mkdir(parents=True, exist_ok=True)
 
@@ -393,5 +394,6 @@ if __name__ == "__main__":
         DATABASE_ROOT=Path(args.database_root).resolve(),
         DATABASE_NAME=args.database_name,
     )
+    settings.export_to_env()
     print(f"Updating database: {settings.database_path}")
-    update_database_static(settings.database_path)
+    update_database_static(settings)

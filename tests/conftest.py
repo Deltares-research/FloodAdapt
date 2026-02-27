@@ -8,11 +8,18 @@ import time
 import warnings
 from datetime import datetime
 from pathlib import Path
+from typing import Generator
 
 import pytest
 from dotenv import load_dotenv
 
 from flood_adapt import __path__
+from flood_adapt.adapter.docker import (
+    HAS_DOCKER,
+    DockerContainer,
+    FiatContainer,
+    SfincsContainer,
+)
 from flood_adapt.config.settings import Settings
 from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -28,34 +35,242 @@ from tests.fixtures import dummy_time_model as dummy_time_model
 
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"
-logs_dir = Path(__file__).absolute().parent / "logs"
+logs_dir = Path(__file__).resolve().parent / "logs"
 src_dir = Path(
     *__path__
 ).resolve()  # __path__ is a list of paths to the package, but has only one element
-IS_WINDOWS = platform.system() == "Windows"
 
 #### DEBUGGING ####
 # To disable resetting the database after tests: set CLEAN = False
 # Only for debugging purposes, should always be set to true when pushing to github
 clean = True
 
+load_dotenv()
+IS_WINDOWS = platform.system() == "Windows"
+SETTINGS = Settings(
+    DATABASE_ROOT=src_dir.parents[1] / "Database",
+    DATABASE_NAME="charleston_test",
+    DELETE_CRASHED_RUNS=clean,
+    VALIDATE_ALLOWED_FORCINGS=True,
+    MANUAL_DOCKER_CONTAINERS=True,
+    USE_DOCKER=not IS_WINDOWS,
+    USE_BINARIES=IS_WINDOWS,
+)
+SETTINGS.export_to_env()
+execution_method = SETTINGS.get_scenario_execution_method(strict=False)
+CAN_EXECUTE_SCENARIOS = execution_method is not None
+if IS_WINDOWS and not CAN_EXECUTE_SCENARIOS:
+    raise RuntimeError(
+        "FloodAdapt must always be able to execute scenarios on Windows in the test environment"
+    )
 
-def create_snapshot():
+
+## AUTO USE FIXTURES ##
+@pytest.fixture(scope="session", autouse=True)
+def setup_settings():
+    return SETTINGS
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_logging():
+    """Session-wide setup and teardown for creating the initial snapshot."""
+    log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
+    logger = FloodAdaptLogging.getLogger()
+    logger.info(f"Logging test run to {log_path}")
+    start = datetime.now()
+
+    with FloodAdaptLogging.to_file(file_path=log_path, level=logging.DEBUG):
+        yield
+
+    end = datetime.now()
+    duration = end - start
+    logger.info("Finished test run.")
+    logger.info(f"Test run duration: {duration} (hh:mm:ss.ms)")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_database(setup_settings: Settings):
+    update_database_static(setup_settings)
+    update_database_input(setup_settings)
+    _create_snapshot()
+
+    yield
+
+    if clean:
+        restore_db_from_snapshot()
+    shutil.rmtree(snapshot_dir, ignore_errors=True)
+
+
+@pytest.fixture(scope="session", autouse=HAS_DOCKER)
+def setup_docker_containers(
+    setup_settings: Settings,
+) -> Generator[tuple[SfincsContainer, FiatContainer], None, None]:
+    logger = FloodAdaptLogging.getLogger()
+    logger.info("Setting up Docker containers for testing.")
+    sfincs = SfincsContainer(setup_settings.sfincs_version)
+    sfincs.start(setup_settings.database_path)
+
+    fiat = FiatContainer(setup_settings.fiat_version)
+    fiat.start(setup_settings.database_path)
+
+    yield sfincs, fiat
+
+    sfincs.stop()
+    fiat.stop()
+    logger.info(
+        f"Docker containers initialized: {DockerContainer.CONTAINERS_INITIALIZED}"
+    )
+    logger.info("Finished tearing down Docker containers.")
+
+
+## GENERAL FIXTURES ##
+@pytest.fixture
+def test_data_dir():
+    return Path(__file__).parent / "data"
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item):
+    test_name = item.name
+    logger = FloodAdaptLogging.getLogger()
+    logger.info(f"\nStarting test: {test_name}\n")
+
+
+def make_db_fixture(scope):
+    """
+    Generate a fixture that is used for testing in general.
+
+    Parameters
+    ----------
+    scope : str
+        The scope of the fixture (e.g., "function", "class", "module", "package", "session")
+
+    Returns
+    -------
+    _db_fixture : pytest.fixture
+        The database fixture used for testing
+    """
+    if scope not in ["function", "class", "module", "package", "session"]:
+        raise ValueError(f"Invalid fixture scope: {scope}")
+
+    @pytest.fixture(scope=scope)
+    def _db_fixture():
+        """
+        Fixture for setting up and tearing down the database once per scope.
+
+        Every test session:
+            1) Create a snapshot of the database
+            2) Run all tests
+            3) Restore the database from the snapshot
+
+        Every scope:
+            1) Initialize database controller
+            2) Perform all tests in scope
+            3) Restore the database from the snapshot
+
+        Usage
+        ----------
+        To access the fixture in a test , you need to:
+            1) pass the fixture name as an argument to the test function
+            2) directly use as a the database object:
+                def test_some_test(test_db):
+                    something = test_db.get_something()
+                    some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
+                    assert ...
+        """
+        # Setup
+        fa = FloodAdapt(SETTINGS.database_path)
+
+        # Perform tests
+        yield fa.database
+
+        # Teardown
+        fa.database.shutdown()
+        if clean:
+            restore_db_from_snapshot()
+
+    return _db_fixture
+
+
+def make_fa_fixture(scope):
+    """
+    Generate a fixture that is used for testing in general.
+
+    Parameters
+    ----------
+    scope : str
+        The scope of the fixture (e.g., "function", "class", "module", "package", "session")
+
+    Returns
+    -------
+    _db_fixture : pytest.fixture
+        The database fixture used for testing
+    """
+    if scope not in ["function", "class", "module", "package", "session"]:
+        raise ValueError(f"Invalid fixture scope: {scope}")
+
+    @pytest.fixture(scope=scope)
+    def _db_fixture():
+        """
+        Fixture for setting up and tearing down the database once per scope.
+
+        Every test session:
+            1) Create a snapshot of the database
+            2) Run all tests
+            3) Restore the database from the snapshot
+
+        Every scope:
+            1) Initialize database controller
+            2) Perform all tests in scope
+            3) Restore the database from the snapshot
+
+        Usage
+        ----------
+        To access the fixture in a test , you need to:
+            1) pass the fixture name as an argument to the test function
+            2) directly use as a the database object:
+                def test_some_test(test_db):
+                    something = test_db.get_something()
+                    some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
+                    assert ...
+        """
+        # Setup
+        fa = FloodAdapt(SETTINGS.database_path)
+
+        # Perform tests
+        yield fa
+
+        # Teardown
+        fa.database.shutdown()
+        if clean:
+            restore_db_from_snapshot()
+
+    return _db_fixture
+
+
+# NOTE: to access the contents the fixtures in the test functions,
+# the fixture name needs to be passed as an argument to the test function.
+# the first line of your test needs to initialize the yielded variables:
+# 'dbs = test_db_...'
+test_db = make_db_fixture("function")
+test_db_class = make_db_fixture("class")
+test_db_module = make_db_fixture("module")
+test_db_package = make_db_fixture("package")
+test_db_session = make_db_fixture("session")
+
+test_fa = make_fa_fixture("function")
+test_fa_class = make_fa_fixture("class")
+test_fa_module = make_fa_fixture("module")
+test_fa_package = make_fa_fixture("package")
+test_fa_session = make_fa_fixture("session")
+
+
+## HELPER FUNCTIONS ##
+def _create_snapshot():
     """Create a snapshot of the database directory."""
     if snapshot_dir.exists():
         shutil.rmtree(snapshot_dir)
-    shutil.copytree(Settings().database_path, snapshot_dir)
-
-
-def _safe_remove(file_path, retries=5, delay=0.5):
-    """Safely remove a file with retries to handle transient file locks."""
-    for _ in range(retries):
-        try:
-            os.remove(file_path)
-            return
-        except PermissionError:
-            time.sleep(delay)
-    raise PermissionError(f"Could not delete file: {file_path}")
+    shutil.copytree(SETTINGS.database_path, snapshot_dir)
 
 
 def restore_db_from_snapshot():
@@ -109,179 +324,3 @@ def _safe_delete(file_path, retries: int = 3, delay: float = 0.1) -> bool:
             logging.warning(f"Could not delete file {file_path}: {e}")
             time.sleep(delay)
     return False
-
-
-@pytest.fixture(scope="session", autouse=True)
-def session_setup_teardown():
-    """Session-wide setup and teardown for creating the initial snapshot."""
-    load_dotenv()
-
-    settings = Settings(
-        DATABASE_ROOT=src_dir.parents[1] / "Database",
-        DATABASE_NAME="charleston_test",
-        DELETE_CRASHED_RUNS=clean,
-        VALIDATE_ALLOWED_FORCINGS=True,
-        USE_BINARIES=IS_WINDOWS,
-    )
-    settings.export_to_env()
-
-    log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
-    FloodAdaptLogging(
-        file_path=log_path,
-        level=logging.DEBUG,
-        ignore_warnings=[DeprecationWarning],
-    )
-
-    update_database_static(settings.database_path)
-    update_database_input(settings.database_path)
-    create_snapshot()
-
-    yield
-
-    if clean:
-        restore_db_from_snapshot()
-    shutil.rmtree(snapshot_dir, ignore_errors=True)
-
-
-def make_db_fixture(scope):
-    """
-    Generate a fixture that is used for testing in general.
-
-    Parameters
-    ----------
-    scope : str
-        The scope of the fixture (e.g., "function", "class", "module", "package", "session")
-
-    Returns
-    -------
-    _db_fixture : pytest.fixture
-        The database fixture used for testing
-    """
-    if scope not in ["function", "class", "module", "package", "session"]:
-        raise ValueError(f"Invalid fixture scope: {scope}")
-
-    @pytest.fixture(scope=scope)
-    def _db_fixture():
-        """
-        Fixture for setting up and tearing down the database once per scope.
-
-        Every test session:
-            1) Create a snapshot of the database
-            2) Run all tests
-            3) Restore the database from the snapshot
-
-        Every scope:
-            1) Initialize database controller
-            2) Perform all tests in scope
-            3) Restore the database from the snapshot
-
-        Usage
-        ----------
-        To access the fixture in a test , you need to:
-            1) pass the fixture name as an argument to the test function
-            2) directly use as a the database object:
-                def test_some_test(test_db):
-                    something = test_db.get_something()
-                    some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
-                    assert ...
-        """
-        # Setup
-        fa = FloodAdapt(Settings().database_path)
-
-        # Perform tests
-        yield fa.database
-
-        # Teardown
-        fa.database.shutdown()
-        if clean:
-            restore_db_from_snapshot()
-
-    return _db_fixture
-
-
-# NOTE: to access the contents the fixtures in the test functions,
-# the fixture name needs to be passed as an argument to the test function.
-# the first line of your test needs to initialize the yielded variables:
-# 'dbs = test_db_...'
-
-
-test_db = make_db_fixture("function")
-test_db_class = make_db_fixture("class")
-test_db_module = make_db_fixture("module")
-test_db_package = make_db_fixture("package")
-test_db_session = make_db_fixture("session")
-
-
-def make_fa_fixture(scope):
-    """
-    Generate a fixture that is used for testing in general.
-
-    Parameters
-    ----------
-    scope : str
-        The scope of the fixture (e.g., "function", "class", "module", "package", "session")
-
-    Returns
-    -------
-    _db_fixture : pytest.fixture
-        The database fixture used for testing
-    """
-    if scope not in ["function", "class", "module", "package", "session"]:
-        raise ValueError(f"Invalid fixture scope: {scope}")
-
-    @pytest.fixture(scope=scope)
-    def _db_fixture():
-        """
-        Fixture for setting up and tearing down the database once per scope.
-
-        Every test session:
-            1) Create a snapshot of the database
-            2) Run all tests
-            3) Restore the database from the snapshot
-
-        Every scope:
-            1) Initialize database controller
-            2) Perform all tests in scope
-            3) Restore the database from the snapshot
-
-        Usage
-        ----------
-        To access the fixture in a test , you need to:
-            1) pass the fixture name as an argument to the test function
-            2) directly use as a the database object:
-                def test_some_test(test_db):
-                    something = test_db.get_something()
-                    some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
-                    assert ...
-        """
-        # Setup
-        fa = FloodAdapt(Settings().database_path)
-
-        # Perform tests
-        yield fa
-
-        # Teardown
-        fa.database.shutdown()
-        if clean:
-            restore_db_from_snapshot()
-
-    return _db_fixture
-
-
-test_fa = make_fa_fixture("function")
-test_fa_class = make_fa_fixture("class")
-test_fa_module = make_fa_fixture("module")
-test_fa_package = make_fa_fixture("package")
-test_fa_session = make_fa_fixture("session")
-
-
-@pytest.fixture
-def test_data_dir():
-    return Path(__file__).parent / "data"
-
-
-@pytest.hookimpl(tryfirst=True)
-def pytest_runtest_setup(item):
-    test_name = item.name
-    logger = FloodAdaptLogging.getLogger()
-    logger.info(f"\nStarting test: {test_name}\n")

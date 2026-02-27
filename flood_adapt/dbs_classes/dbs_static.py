@@ -5,11 +5,11 @@ import geopandas as gpd
 import pandas as pd
 from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
+from flood_adapt.adapter.docker import FiatContainer, SfincsContainer
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
-from flood_adapt.config.settings import Settings
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
@@ -38,9 +38,23 @@ class DbsStatic(IDbsStatic):
     _cached_data: dict[str, Any] = {}
     _database: IDatabase
 
-    def __init__(self, database: IDatabase):
+    _fiat_container: FiatContainer
+    _sfincs_container: SfincsContainer
+
+    def __init__(
+        self,
+        database: IDatabase,
+    ) -> None:
         """Initialize any necessary attributes."""
         self._database = database
+        self._settings = database._settings
+
+        # Note that Python objects to interact with the containers are initialized here.
+        # not the Docker containers themselves.
+        # The containers are initialized by calling the ``start_docker`` method.
+        # The containers are destroyed by calling the ``stop_docker`` method.
+        self._fiat_container = FiatContainer(version=self._settings.fiat_version)
+        self._sfincs_container = SfincsContainer(version=self._settings.sfincs_version)
 
     def load_static_data(self):
         """Read data into the cache.
@@ -174,6 +188,8 @@ class DbsStatic(IDbsStatic):
         list
             List of scenario names
         """
+        if self._database.site.sfincs.slr_scenarios is None:
+            raise ConfigError("No sea level rise scenarios defined in the site config.")
         input_file = self._database.static_path.joinpath(
             self._database.site.sfincs.slr_scenarios.file
         )
@@ -268,7 +284,9 @@ class DbsStatic(IDbsStatic):
             / "templates"
             / self._database.site.sfincs.config.overland_model.name
         )
-        with SfincsAdapter(model_root=overland_path) as overland_model:
+        with SfincsAdapter(
+            model_root=overland_path, container=self._sfincs_container
+        ) as overland_model:
             return overland_model
 
     def get_offshore_sfincs_model(self) -> SfincsAdapter:
@@ -281,7 +299,9 @@ class DbsStatic(IDbsStatic):
             / "templates"
             / self._database.site.sfincs.config.offshore_model.name
         )
-        with SfincsAdapter(model_root=offshore_path) as offshore_model:
+        with SfincsAdapter(
+            model_root=offshore_path, container=self._sfincs_container
+        ) as offshore_model:
             return offshore_model
 
     def get_fiat_model(self) -> FiatAdapter:
@@ -289,14 +309,24 @@ class DbsStatic(IDbsStatic):
         if self._database.site.fiat is None:
             raise ConfigError("No FIAT model defined in the site configuration.")
         template_path = self._database.static_path / "templates" / "fiat"
+
         with FiatAdapter(
             model_root=template_path,
             config=self._database.site.fiat.config,
-            exe_path=Settings().fiat_bin_path,
-            delete_crashed_runs=Settings().delete_crashed_runs,
+            exe_path=self._settings.fiat_bin_path,
+            delete_crashed_runs=self._settings.delete_crashed_runs,
             config_base_path=self._database.static_path,
+            container=self._fiat_container,
         ) as fm:
             return fm
+
+    def get_fiat_container(self) -> FiatContainer:
+        """Get the Docker container for FIAT, if defined."""
+        return self._fiat_container
+
+    def get_sfincs_container(self) -> SfincsContainer:
+        """Get the Docker container for SFINCS, if defined."""
+        return self._sfincs_container
 
     @cache_method_wrapper
     def get_cyclone_track_database(self) -> CycloneTrackDatabase:
@@ -314,3 +344,17 @@ class DbsStatic(IDbsStatic):
     def clear(self):
         """Clear the cache."""
         self._cached_data.clear()
+
+    def start_docker(self) -> None:
+        if self._settings.manual_docker_containers:
+            return
+
+        self._sfincs_container.start(self._database.base_path)
+        self._fiat_container.start(self._database.base_path)
+
+    def stop_docker(self) -> None:
+        if self._settings.manual_docker_containers:
+            return
+
+        self._sfincs_container.stop()
+        self._fiat_container.stop()
