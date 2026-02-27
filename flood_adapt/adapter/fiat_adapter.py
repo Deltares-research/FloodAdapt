@@ -22,9 +22,9 @@ from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.adapter.docker import DockerContainer
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
-from flood_adapt.config.config import ExecutionMethod
 from flood_adapt.config.fiat import FiatConfigModel
 from flood_adapt.config.impacts import FloodmapType
+from flood_adapt.config.settings import ExecutionMethod
 from flood_adapt.misc.io import read_toml, write_toml
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (

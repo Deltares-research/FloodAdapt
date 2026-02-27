@@ -1,4 +1,5 @@
 import logging
+import re
 import subprocess
 from abc import ABC
 from pathlib import Path
@@ -203,19 +204,33 @@ class DockerContainer(ABC):
 
 
 class SfincsContainer(DockerContainer):
-    def __init__(self, version_tag: str = "latest"):
+    def __init__(self, version: str = "latest"):
+        """Initialize a python wrapper for a Docker container for SFINCS execution.
+
+        Parameters
+        ----------
+        version : str
+            Version of SFINCS to use. Should be in the format "x.y.z" or "latest". The version is used to pull the correct Docker image.
+        """
         super().__init__(
             name="sfincs",
-            container_image=f"deltares/sfincs-cpu:{version_tag}",
+            container_image=f"deltares/sfincs-cpu:{_get_docker_tag_for_sfincs_version(version)}",
             command=["sfincs"],
         )
 
 
 class FiatContainer(DockerContainer):
-    def __init__(self, version_tag: str = "latest"):
+    def __init__(self, version: str = "latest"):
+        """Initialize a python wrapper for a Docker container for FIAT execution.
+
+        Parameters
+        ----------
+        version : str
+            Version of FIAT to use. Should be in the format "x.y.z" or "latest". The version is used to pull the correct Docker image.
+        """
         super().__init__(
             name="fiat",
-            container_image=f"deltares/fiat:{version_tag}",
+            container_image=f"deltares/fiat:{_get_docker_tag_for_fiat_version(version)}",
             command=[
                 "pixi",
                 "run",
@@ -229,3 +244,68 @@ class FiatContainer(DockerContainer):
                 "settings.toml",
             ],
         )
+
+
+# Mapping from SFINCS version to Docker image tag, based on the available tags at https://hub.docker.com/r/deltares/sfincs-cpu/tags
+SFINCS_BIN_VERSION_TO_DOCKER_TAG: dict[str, str] = {
+    "latest": "latest",
+    "2.3.0": "sfincs-v2.3.0-mt-Faber-Release",
+    "2.2.0": "sfincs-v2.2.0-col-dEze-Release",
+    "2.1.1": "sfincs-v2.1.1-Dollerup-Release",
+}
+
+# Mapping from FIAT version to Docker image tag, based on the available tags at https://hub.docker.com/r/deltares/fiat/tags
+FIAT_BIN_VERSION_TO_DOCKER_TAG: dict[str, str] = {
+    "latest": "latest",
+    "0.2.1": "v0.2.1",
+}
+
+
+def _get_docker_tag_for_sfincs_version(sfincs_version: str) -> str:
+    normalized = _normalize_sfincs_version(sfincs_version)
+
+    if normalized == "latest":
+        return "latest"
+
+    try:
+        return SFINCS_BIN_VERSION_TO_DOCKER_TAG[normalized]
+    except KeyError:
+        raise ValueError(
+            f"No Docker image found for SFINCS version {sfincs_version}. ({normalized}) "
+            f"Supported versions are: {list(SFINCS_BIN_VERSION_TO_DOCKER_TAG)}"
+        )
+
+
+def _get_docker_tag_for_fiat_version(fiat_version: str) -> str:
+    normalized = _normalize_fiat_version(fiat_version)
+    if normalized in FIAT_BIN_VERSION_TO_DOCKER_TAG:
+        return FIAT_BIN_VERSION_TO_DOCKER_TAG[normalized]
+    else:
+        raise ValueError(
+            f"No Docker image found for FIAT version {fiat_version}. ({normalized}) "
+            f"Supported versions are: {list(FIAT_BIN_VERSION_TO_DOCKER_TAG.keys())}"
+        )
+
+
+def _normalize_sfincs_version(version: str) -> str:
+    version = version.strip()
+    if version == "latest":
+        return "latest"
+
+    match = re.search(r"(\d+\.\d+\.\d+)", version)
+    if not match:
+        raise ValueError(f"Could not parse SFINCS version from '{version}'")
+
+    return match.group(1)
+
+
+def _normalize_fiat_version(version: str) -> str:
+    version = version.strip()
+    if version == "latest":
+        return "latest"
+
+    match = re.search(r"(\d+\.\d+\.\d+)", version)
+    if not match:
+        raise ValueError(f"Could not parse FIAT version from '{version}'")
+
+    return match.group(1)

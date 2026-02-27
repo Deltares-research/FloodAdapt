@@ -53,10 +53,8 @@ class DbsStatic(IDbsStatic):
         # not the Docker containers themselves.
         # The containers are initialized by calling the ``start_docker`` method.
         # The containers are destroyed by calling the ``stop_docker`` method.
-        self._fiat_container = FiatContainer(version_tag=self._settings.fiat_docker_tag)
-        self._sfincs_container = SfincsContainer(
-            version_tag=self._settings.sfincs_docker_tag
-        )
+        self._fiat_container = FiatContainer(version=self._settings.fiat_version)
+        self._sfincs_container = SfincsContainer(version=self._settings.sfincs_version)
 
     def load_static_data(self):
         """Read data into the cache.

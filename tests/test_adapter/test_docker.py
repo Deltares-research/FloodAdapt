@@ -10,7 +10,7 @@ from flood_adapt.adapter.docker import (
     FiatContainer,
     SfincsContainer,
 )
-from flood_adapt.config.config import Settings
+from flood_adapt.config.settings import Settings
 
 
 @pytest.mark.parametrize("container_class", [FiatContainer, SfincsContainer])
@@ -38,9 +38,9 @@ class TestDockerContainer:
         container_class: type[FiatContainer | SfincsContainer], setup_settings: Settings
     ) -> DockerContainer:
         if container_class == FiatContainer:
-            return FiatContainer(version_tag=setup_settings.fiat_docker_tag)
+            return FiatContainer(version=setup_settings.fiat_version)
         else:
-            return SfincsContainer(version_tag=setup_settings.sfincs_docker_tag)
+            return SfincsContainer(version=setup_settings.sfincs_version)
 
     @pytest.fixture
     def running_container(

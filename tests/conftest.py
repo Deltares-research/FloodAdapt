@@ -107,10 +107,10 @@ def setup_docker_containers(
 ) -> Generator[tuple[SfincsContainer, FiatContainer], None, None]:
     logger = FloodAdaptLogging.getLogger()
     logger.info("Setting up Docker containers for testing.")
-    sfincs = SfincsContainer(setup_settings.sfincs_docker_tag)
+    sfincs = SfincsContainer(setup_settings.sfincs_version)
     sfincs.start(setup_settings.database_path)
 
-    fiat = FiatContainer(setup_settings.fiat_docker_tag)
+    fiat = FiatContainer(setup_settings.fiat_version)
     fiat.start(setup_settings.database_path)
 
     yield sfincs, fiat
