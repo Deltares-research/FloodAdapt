@@ -163,10 +163,12 @@ class Event(Object):
 
         return True
 
-    def _post_load(self, file_path: Path | str | os.PathLike, **kwargs) -> None:
+    def _post_load(
+        self, file_path: Path | str | os.PathLike, force: bool = False, **kwargs
+    ) -> None:
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
         for forcing in self.get_forcings():
-            forcing._post_load(file_path, **kwargs)
+            forcing._post_load(file_path=file_path, force=force, **kwargs)
 
     @staticmethod
     def _parse_forcing_from_dict(

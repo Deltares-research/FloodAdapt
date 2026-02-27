@@ -650,14 +650,14 @@ class DatabaseBuilder:
                 name=self._no_measures_strategy_name,
                 measures=[],
             )
-            db.strategies.save(strategy)
+            db.strategies.add(strategy)
             # Create current projection
             projection = Projection(
                 name=self._current_projection_name,
                 physical_projection=PhysicalProjection(),
                 socio_economic_change=SocioEconomicChange(),
             )
-            db.projections.save(projection)
+            db.projections.add(projection)
             # Check prob set
             if self._probabilistic_set_name is not None:
                 path_toml = (
@@ -672,6 +672,7 @@ class DatabaseBuilder:
                     raise ValueError(
                         f"Provided probabilistic event set '{self._probabilistic_set_name}' is not valid. Error: {e}"
                     )
+            db.flush()
 
     ### TEMPLATE READERS ###
     @debug_timer
