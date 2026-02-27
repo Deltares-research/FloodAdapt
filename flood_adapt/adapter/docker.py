@@ -203,19 +203,19 @@ class DockerContainer(ABC):
 
 
 class SfincsContainer(DockerContainer):
-    def __init__(self):
+    def __init__(self, version_tag: str = "latest"):
         super().__init__(
             name="sfincs",
-            container_image="deltares/sfincs-cpu:latest",
+            container_image=f"deltares/sfincs-cpu:{version_tag}",
             command=["sfincs"],
         )
 
 
 class FiatContainer(DockerContainer):
-    def __init__(self):
+    def __init__(self, version_tag: str = "latest"):
         super().__init__(
             name="fiat",
-            container_image="deltares/fiat:latest",
+            container_image=f"deltares/fiat:{version_tag}",
             command=[
                 "pixi",
                 "run",
@@ -229,7 +229,3 @@ class FiatContainer(DockerContainer):
                 "settings.toml",
             ],
         )
-
-
-FIAT_CONTAINER = FiatContainer()
-SFINCS_CONTAINER = SfincsContainer()

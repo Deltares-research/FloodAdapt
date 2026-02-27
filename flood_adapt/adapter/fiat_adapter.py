@@ -20,7 +20,7 @@ from fiat_toolbox.spatial_output.footprints import Footprints
 from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.adapter.docker import FIAT_CONTAINER
+from flood_adapt.adapter.docker import DockerContainer
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.config import ExecutionMethod
 from flood_adapt.config.fiat import FiatConfigModel
@@ -101,6 +101,7 @@ class FiatAdapter(IImpactAdapter):
         exe_path: Optional[os.PathLike] = None,
         delete_crashed_runs: bool = True,
         config_base_path: Optional[os.PathLike] = None,
+        container: Optional[DockerContainer] = None,
     ) -> None:
         # TODO should exe_path and delete_crashed_runs be part of the config?
         # Load FIAT template
@@ -111,6 +112,7 @@ class FiatAdapter(IImpactAdapter):
         self._model_root = model_root.resolve().as_posix()
         self.fiat_columns = _FIAT_COLUMNS
         self.impact_columns = _IMPACT_COLUMNS  # columns of FA impact output
+        self.container = container
 
     @property
     def model(self) -> FiatModel:
@@ -310,6 +312,8 @@ class FiatAdapter(IImpactAdapter):
             Whether to delete files from crashed runs. If not provided, defaults to `self.delete_crashed_runs`.
         strict : bool, optional
             Whether to raise an error if the FIAT model fails to run. Defaults to True.
+        container: Optional[DockerContainer], optional
+            A DockerContainer instance to use for running the model. Must be provided if using Docker execution.
 
         Returns
         -------
@@ -330,8 +334,12 @@ class FiatAdapter(IImpactAdapter):
         fiat_log = path / "fiat.log"
         match settings.get_scenario_execution_method(strict=strict):
             case ExecutionMethod.DOCKER:
+                if self.container is None:
+                    raise ValueError(
+                        "A DockerContainer instance must be provided for Docker execution."
+                    )
                 logger.info(f"Running FIAT in {path} using a Docker image.")
-                success = FIAT_CONTAINER.run(path)
+                success = self.container.run(path)
             case ExecutionMethod.BINARIES:
                 exe = exe_path or self.exe_path
                 with cd(path):

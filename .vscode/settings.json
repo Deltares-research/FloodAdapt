@@ -58,4 +58,11 @@
         "projectKey": "deltares_floodadapt"
     },
     "python.analysis.typeCheckingMode": "basic",
+    "python-envs.pythonProjects": [
+        {
+            "path": ".",
+            "envManager": "renan-r-santos.pixi-code:pixi",
+            "packageManager": "renan-r-santos.pixi-code:pixi"
+        }
+    ],
 }

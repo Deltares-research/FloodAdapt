@@ -1,12 +1,11 @@
 import logging
 from pathlib import Path
+from typing import Generator
 
 import pytest
 
 from flood_adapt.adapter.docker import (
-    FIAT_CONTAINER,
     HAS_DOCKER,
-    SFINCS_CONTAINER,
     DockerContainer,
     FiatContainer,
     SfincsContainer,
@@ -18,28 +17,50 @@ from flood_adapt.config.config import Settings
 @pytest.mark.skipif(not HAS_DOCKER, reason="Docker is not available")
 class TestDockerContainer:
     @pytest.fixture(scope="class", autouse=True)
-    def pause_containers(self, setup_settings: Settings):
-        """Stop all session scoped running containers for the duration of the class tests, then restart them afterward."""
+    def pause_containers(
+        self,
+        setup_docker_containers: tuple[SfincsContainer, FiatContainer],
+        setup_settings: Settings,
+    ) -> Generator[None, None, None]:
+        """Pause the Docker containers after setup and unpause them after tests."""
+        SFINCS_CONTAINER, FIAT_CONTAINER = setup_docker_containers
+
         SFINCS_CONTAINER.stop()
         FIAT_CONTAINER.stop()
 
         yield
 
-        SFINCS_CONTAINER.start(setup_settings.database_path)
-        FIAT_CONTAINER.start(setup_settings.database_path)
+        SFINCS_CONTAINER.start(root_dir=setup_settings.database_path)
+        FIAT_CONTAINER.start(root_dir=setup_settings.database_path)
+
+    @staticmethod
+    def create_container(
+        container_class: type[FiatContainer | SfincsContainer], setup_settings: Settings
+    ) -> DockerContainer:
+        if container_class == FiatContainer:
+            return FiatContainer(version_tag=setup_settings.fiat_docker_tag)
+        else:
+            return SfincsContainer(version_tag=setup_settings.sfincs_docker_tag)
 
     @pytest.fixture
     def running_container(
-        self, tmp_path: Path, container_class: type[FiatContainer | SfincsContainer]
+        self,
+        tmp_path: Path,
+        container_class: type[FiatContainer | SfincsContainer],
+        setup_settings: Settings,
     ):
-        c = container_class()
+        c = self.create_container(container_class, setup_settings)
         c.start(root_dir=tmp_path)
         yield c
         c.stop()
 
     @pytest.fixture
-    def container(self, container_class: type[FiatContainer | SfincsContainer]):
-        yield container_class()
+    def container(
+        self,
+        container_class: type[FiatContainer | SfincsContainer],
+        setup_settings: Settings,
+    ):
+        yield self.create_container(container_class, setup_settings)
 
     def test_start_and_stop(
         self,

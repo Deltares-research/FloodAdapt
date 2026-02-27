@@ -29,7 +29,7 @@ from hydromt_sfincs.quadtree import QuadtreeGrid
 from matplotlib import animation
 from shapely.affinity import translate
 
-from flood_adapt.adapter.docker import SFINCS_CONTAINER
+from flood_adapt.adapter.docker import DockerContainer
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.config.config import ExecutionMethod
 from flood_adapt.config.site import Site
@@ -117,7 +117,7 @@ class SfincsAdapter(IHazardAdapter):
     ###############
 
     ### HAZARD ADAPTER METHODS ###
-    def __init__(self, model_root: Path):
+    def __init__(self, model_root: Path, container: DockerContainer | None = None):
         """Load overland sfincs model based on a root directory.
 
         Parameters
@@ -133,6 +133,7 @@ class SfincsAdapter(IHazardAdapter):
             logger=self._setup_sfincs_logger(model_root),
         )
         self._model.read()
+        self.container = container
 
     def read(self, path: Path):
         """Read the sfincs model from the current model root."""
@@ -201,8 +202,12 @@ class SfincsAdapter(IHazardAdapter):
 
         match settings.get_scenario_execution_method(strict=strict):
             case ExecutionMethod.DOCKER:
+                if self.container is None:
+                    raise RuntimeError(
+                        "Docker execution method selected but no container provided. Please provide a DockerContainer instance to the SfincsAdapter or change the execution method in the settings."
+                    )
                 logger.info(f"Running SFINCS in {path} using a Docker image.")
-                success = SFINCS_CONTAINER.run(path)
+                success = self.container.run(path)
             case ExecutionMethod.BINARIES:
                 with cd(path):
                     logger.info(f"Running SFINCS in {path} using a binary executable.")

@@ -8,16 +8,17 @@ import time
 import warnings
 from datetime import datetime
 from pathlib import Path
+from typing import Generator
 
 import pytest
 from dotenv import load_dotenv
 
 from flood_adapt import __path__
 from flood_adapt.adapter.docker import (
-    FIAT_CONTAINER,
     HAS_DOCKER,
-    SFINCS_CONTAINER,
     DockerContainer,
+    FiatContainer,
+    SfincsContainer,
 )
 from flood_adapt.config.config import Settings
 from flood_adapt.flood_adapt import FloodAdapt
@@ -101,17 +102,21 @@ def setup_test_database(setup_settings: Settings):
 
 
 @pytest.fixture(scope="session", autouse=HAS_DOCKER)
-def setup_docker_containers(setup_settings: Settings):
+def setup_docker_containers(
+    setup_settings: Settings,
+) -> Generator[tuple[SfincsContainer, FiatContainer], None, None]:
     logger = FloodAdaptLogging.getLogger()
     logger.info("Setting up Docker containers for testing.")
+    sfincs = SfincsContainer(setup_settings.sfincs_docker_tag)
+    sfincs.start(setup_settings.database_path)
 
-    SFINCS_CONTAINER.start(setup_settings.database_path)
-    FIAT_CONTAINER.start(setup_settings.database_path)
+    fiat = FiatContainer(setup_settings.fiat_docker_tag)
+    fiat.start(setup_settings.database_path)
 
-    yield
+    yield sfincs, fiat
 
-    SFINCS_CONTAINER.stop()
-    FIAT_CONTAINER.stop()
+    sfincs.stop()
+    fiat.stop()
     logger.info(
         f"Docker containers initialized: {DockerContainer.CONTAINERS_INITIALIZED}"
     )

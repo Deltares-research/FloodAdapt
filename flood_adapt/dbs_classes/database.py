@@ -126,6 +126,7 @@ class Database(IDatabase):
         # Initialize the different database objects
         self._initialize_repositories()
         self.load()
+        self.static.start_docker()
 
         # Delete any unfinished/crashed scenario output after initialization
         self.cleanup()
@@ -586,7 +587,7 @@ class Database(IDatabase):
 
     def cleanup(self) -> None:
         """
-        Remove corrupted scenario output.
+        Remove any corrupted scenario output.
 
         This method removes any scenario output that:
             - is corrupted due to unfinished runs

@@ -11,6 +11,7 @@ from pydantic import (
     Field,
     computed_field,
     field_serializer,
+    field_validator,
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -108,6 +109,8 @@ class Settings(BaseSettings):
         description="Whether to validate the forcing types and sources against the allowed forcings in the event model.",
         exclude=True,
     )
+
+    # Binary settings
     use_binaries: bool = Field(
         alias="USE_BINARIES",  # environment variable: USE_BINARIES
         default=False,
@@ -128,7 +131,9 @@ class Settings(BaseSettings):
         description="The expected version of the sfincs binary. "
         "If the version of the binary does not match this version, an error is raised.",
         exclude=True,
+        min_length=1,
     )
+
     fiat_bin_path: Path | None = Field(
         default=None,
         alias="FIAT_BIN_PATH",  # environment variable: FIAT_BIN_PATH
@@ -141,9 +146,11 @@ class Settings(BaseSettings):
         description="The expected version of the fiat binary. "
         "If the version of the binary does not match this version, an error is raised.",
         exclude=True,
+        min_length=1,
     )
-
     _binaries_validated: ClassVar[bool] = False
+
+    # Docker settings
     manual_docker_containers: bool = Field(
         default=False,
         alias="MANUAL_DOCKER_CONTAINERS",  # environment variable: MANUAL_DOCKER_CONTAINERS
@@ -155,6 +162,20 @@ class Settings(BaseSettings):
         default=False,
         description="Whether to use Docker containers for SFINCS and FIAT execution. If True, Docker must be installed and running. If False, local binaries will be used.",
         exclude=True,
+    )
+    sfincs_docker_tag: str = Field(
+        default="sfincs-v2.2.0-col-dEze-Release",
+        alias="SFINCS_DOCKER_TAG",  # environment variable: SFINCS_DOCKER_TAG
+        description="The version tag of the SFINCS Docker image to use when using Docker execution. "
+        "Choose from https://hub.docker.com/r/deltares/sfincs-cpu/tags",
+        min_length=1,
+    )
+    fiat_docker_tag: str = Field(
+        default="v0.2.1",
+        alias="FIAT_DOCKER_TAG",  # environment variable: FIAT_DOCKER_TAG
+        description="The version tag of the FIAT Docker image to use when using Docker execution. "
+        "Choose from https://hub.docker.com/r/deltares/fiat/tags",
+        min_length=1,
     )
 
     @computed_field
@@ -206,6 +227,31 @@ class Settings(BaseSettings):
         elif not self.fiat_bin_path.exists():
             self._raise_exe_not_exists("fiat", self.fiat_bin_path)
         return self
+
+    @field_validator("sfincs_docker_tag")
+    def _validate_sfincs_docker_tag(cls, tag: str) -> str:
+        """Validate the SFINCS Docker tag."""
+        # Pattern: sfincs-v<major>.<minor>.<patch>[-<additional-info>]
+        pattern = r"^sfincs-v\d+\.\d+\.\d+(-[a-zA-Z0-9-]+)?$"
+        if not re.match(pattern, tag):
+            raise ValueError(
+                f"Invalid SFINCS Docker tag '{tag}'. "
+                "Expected format like 'sfincs-v2.2.0-col-dEze-Release'."
+                "Choose from https://hub.docker.com/r/deltares/sfincs-cpu/tags"
+            )
+        return tag
+
+    @field_validator("fiat_docker_tag")
+    def _validate_fiat_docker_tag(cls, tag: str) -> str:
+        """Validate the FIAT Docker tag."""
+        # Pattern: v<major>.<minor>.<patch>
+        pattern = r"^v\d+\.\d+\.\d+$"
+        if not re.match(pattern, tag):
+            raise ValueError(
+                f"Invalid FIAT Docker tag '{tag}'. Expected format like 'v0.2.1'."
+                "Choose from https://hub.docker.com/r/deltares/fiat/tags"
+            )
+        return tag
 
     @field_serializer("database_root", "database_path")
     def serialize_path(self, path: Path) -> str:
