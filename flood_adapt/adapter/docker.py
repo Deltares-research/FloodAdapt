@@ -210,7 +210,8 @@ class SfincsContainer(DockerContainer):
         Parameters
         ----------
         version : str
-            Version of SFINCS to use. Should be in the format "x.y.z" or "latest". The version is used to pull the correct Docker image.
+            Version of SFINCS to use. Should be a str with a sub str in the format "x.y.z" or "latest".
+            The version is used to pull the correct Docker image.
         """
         super().__init__(
             name="sfincs",
@@ -226,7 +227,8 @@ class FiatContainer(DockerContainer):
         Parameters
         ----------
         version : str
-            Version of FIAT to use. Should be in the format "x.y.z" or "latest". The version is used to pull the correct Docker image.
+            Version of FIAT to use. Should be a str with a sub str in the format "x.y.z" or "latest".
+            The version is used to pull the correct Docker image.
         """
         super().__init__(
             name="fiat",
@@ -264,13 +266,9 @@ FIAT_BIN_VERSION_TO_DOCKER_TAG: dict[str, str] = {
 
 def _get_docker_tag_for_sfincs_version(sfincs_version: str) -> str:
     normalized = _normalize_sfincs_version(sfincs_version)
-
-    if normalized == "latest":
-        return "latest"
-
-    try:
+    if normalized in SFINCS_BIN_VERSION_TO_DOCKER_TAG:
         return SFINCS_BIN_VERSION_TO_DOCKER_TAG[normalized]
-    except KeyError:
+    else:
         raise ValueError(
             f"No Docker image found for SFINCS version {sfincs_version}. ({normalized}) "
             f"Supported versions are: {list(SFINCS_BIN_VERSION_TO_DOCKER_TAG)}"
