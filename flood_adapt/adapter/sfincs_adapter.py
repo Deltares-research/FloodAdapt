@@ -1456,6 +1456,9 @@ class SfincsAdapter(IHazardAdapter):
 
             # Convert floodwall elevation to BFE units
             elevation_offset = floodwall.elevation.convert(bfe_units)
+            z_conversion = us.UnitfulLength(value=1.0, units=bfe_units).convert(
+                us.UnitTypesLength.meters
+            )
 
             gdf_floodwall = create_z_linestrings_from_bfe(
                 gdf_lines=gdf_floodwall,
@@ -1463,13 +1466,11 @@ class SfincsAdapter(IHazardAdapter):
                 bfe_field_name=bfe_field_name,
                 interval_m=interval,
                 elevation_offset=elevation_offset,
+                z_conversion=z_conversion,
             )
 
-            # Convert the z column from BFE units to meters
-            gdf_floodwall = self._convert_z_column_to_meters(
-                gdf_floodwall,
-                bfe_units,
-            )
+            if "z" in gdf_floodwall.columns:
+                gdf_floodwall = gdf_floodwall.drop(columns=["z"])
 
             logger.info(
                 f"Floodwall height is defined {floodwall.elevation} above Base Flood Elevation (BFE)."

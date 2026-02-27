@@ -85,6 +85,23 @@ def _to_z_linestring(
     return shapely.LineString(z_coords), float(np.mean(line_z))
 
 
+def _scale_z_geometry(
+    geometry: shapely.Geometry, z_conversion: float
+) -> shapely.Geometry:
+    if geometry is None or geometry.is_empty:
+        return geometry
+    if geometry.geom_type == "LineString":
+        coords = list(geometry.coords)
+        if not coords or len(coords[0]) < 3:
+            return geometry
+        scaled = [(x, y, z * z_conversion) for x, y, z in coords]
+        return shapely.LineString(scaled)
+    if geometry.geom_type == "MultiLineString":
+        lines = [_scale_z_geometry(line, z_conversion) for line in geometry.geoms]
+        return shapely.MultiLineString(lines)
+    return geometry
+
+
 def _apply_bfe_sampling_to_points(
     gdf_points: gpd.GeoDataFrame,
     gdf_bfe: gpd.GeoDataFrame,
@@ -115,6 +132,7 @@ def create_z_linestrings_from_bfe(
     bfe_field_name: str,
     interval_m: float = 100.0,
     elevation_offset: float = 0.0,
+    z_conversion: float | None = None,
 ) -> gpd.GeoDataFrame:
     """
     Densify input line geometries and construct 3D LineStrings using sampled BFE values.
@@ -148,6 +166,10 @@ def create_z_linestrings_from_bfe(
         Constant elevation offset (in the same units as the BFE values) added
         to all sampled BFE values. This value is also used as the fallback Z
         when no BFE value can be sampled for a vertex or an entire line.
+    z_conversion : float, optional
+        Factor applied to all sampled Z values (including the elevation offset)
+        before building Z-enabled geometries. Use this to convert heights to
+        target units.
 
     Returns
     -------
@@ -211,4 +233,10 @@ def create_z_linestrings_from_bfe(
     gdf_out = gdf_rows.drop(columns=["line_id"]).copy()
     gdf_out.geometry = z_geometries
     gdf_out["z"] = representative_z
+
+    if z_conversion is not None:
+        gdf_out.geometry = gdf_out.geometry.apply(
+            lambda geom: _scale_z_geometry(geom, z_conversion)
+        )
+        gdf_out["z"] = gdf_out["z"] * z_conversion
     return gdf_out.reset_index(drop=True)
