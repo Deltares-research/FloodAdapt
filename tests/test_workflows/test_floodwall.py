@@ -15,7 +15,7 @@ def test_create_z_linestrings_from_bfe_densifies_and_samples():
     gdf_bfe = gpd.GeoDataFrame(
         {"bfe": [1.0, 2.0]},
         geometry=[
-            Polygon([(0, -10), (150, -10), (150, 10), (0, 10)]),
+            Polygon([(-10, -10), (150, -10), (150, 10), (-10, 10)]),
             Polygon([(150, -10), (260, -10), (260, 10), (150, 10)]),
         ],
         crs="EPSG:3857",
@@ -47,7 +47,7 @@ def test_create_z_linestrings_from_bfe_fallback_for_missing_vertices():
     )
     gdf_bfe = gpd.GeoDataFrame(
         {"bfe": [1.0]},
-        geometry=[Polygon([(0, -10), (120, -10), (120, 10), (0, 10)])],
+        geometry=[Polygon([(-10, -10), (120, -10), (120, 10), (-10, 10)])],
         crs="EPSG:3857",
     )
 
