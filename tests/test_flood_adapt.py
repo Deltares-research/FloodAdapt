@@ -219,6 +219,10 @@ class TestStatic:
         assert len(types) == 3
         assert all(t in types for t in expected_types)
 
+    def test_existing_structures(self, test_fa: FloodAdapt):
+        structures = test_fa.get_existing_structures()
+        assert isinstance(structures, gpd.GeoDataFrame)
+
 
 class TestBenefits:
     @pytest.mark.skip(reason="fix this test")
