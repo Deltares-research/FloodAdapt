@@ -1,4 +1,5 @@
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
 
@@ -122,24 +123,32 @@ def test_run_on_all_scn_quadtree(test_db_qt: IDatabase, scn_name: str):
 
 
 @pytest.fixture
-def test_db_with_postprocessing_hook(test_db: IDatabase) -> tuple[IDatabase, str]:
-    HOOK_CODE = """\
-def postprocess(database, scenario, results_path):
-    path = results_path / "postprocess_ran.txt"
-    path.write_text(f"postprocessed {scenario.name}")
-"""
-    rel_in_db = Path("postprocessing", "postprocess_hook.py")
-    abs_in_db = test_db.base_path / rel_in_db
-    abs_in_db.parent.mkdir(parents=True, exist_ok=True)
-    abs_in_db.write_text(HOOK_CODE)
-    test_db.config.post_processing_hook = rel_in_db.as_posix()
-    return test_db, "postprocess_ran.txt"
+def test_db_with_postprocessing_hooks(
+    test_db: IDatabase,
+) -> tuple[IDatabase, list[str]]:
+    HOOK_CODE = dedent(
+        """\
+        def postprocess(database, scenario, results_path):
+            path = results_path / 'postprocess_{i}_ran.txt'
+            path.write_text(f'postprocessed {{scenario.name}}')
+        """  # use double `{{}}` to allow the .format() to work without trying to format the inner {scenario.name}
+    )
+    hooks = {}
+    for i in range(1, 3):
+        rel_in_db = Path("postprocessing", f"postprocess_hook_{i}.py")
+        abs_in_db = test_db.static_path / rel_in_db
+        abs_in_db.parent.mkdir(parents=True, exist_ok=True)
+        abs_in_db.write_text(HOOK_CODE.format(i=i))
+        hooks[f"postprocess_hook_{i}"] = rel_in_db.as_posix()
+
+    test_db.config.post_processing_hooks = hooks
+    return test_db, [f"postprocess_{i}_ran.txt" for i in range(1, 3)]
 
 
 def test_postprocessing_hook_execution(
-    test_db_with_postprocessing_hook: tuple[IDatabase, str],
+    test_db_with_postprocessing_hooks: tuple[IDatabase, list[str]],
 ):
-    test_db, marker_filename = test_db_with_postprocessing_hook
+    test_db, created_files = test_db_with_postprocessing_hooks
     # Run the post-processing hook directly
     scn = Scenario(
         name="test_scenario",
@@ -149,7 +158,12 @@ def test_postprocessing_hook_execution(
     )
     runner = ScenarioRunner(test_db, scenario=scn)
     runner.results_path.mkdir(parents=True, exist_ok=True)  # Ensure results path exists
-    runner._run_postprocessing_hook()
+    runner._run_postprocessing_hooks()
 
     # Check that the post-processing hook created the expected file
-    assert (runner.results_path / marker_filename).exists()
+    assert all((runner.results_path / rel_path).exists() for rel_path in created_files)
+
+    # Check that scenario.name was written correctly
+    for marker_filename in created_files:
+        content = (runner.results_path / marker_filename).read_text()
+        assert f"postprocessed {scn.name}" in content

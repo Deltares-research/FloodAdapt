@@ -2,7 +2,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from flood_adapt.config.config import Settings
+from flood_adapt.config.settings import Settings
 
 
 class TopLevelDir(str, Enum):

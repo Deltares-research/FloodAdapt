@@ -11,7 +11,6 @@ import shapely
 from pydantic import ValidationError
 from shapely import Polygon
 
-from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import (
     DatumModel,
     DemModel,
@@ -29,6 +28,7 @@ from flood_adapt.config.impacts import (
     RiskModel,
     SVIModel,
 )
+from flood_adapt.config.settings import Settings
 from flood_adapt.database_builder.database_builder import (
     Basins,
     ConfigModel,

@@ -10,7 +10,7 @@ from pydantic import (
     model_validator,
 )
 
-from flood_adapt.config.config import Settings
+from flood_adapt.config.settings import Settings
 from flood_adapt.objects.forcing.forcing import (
     ForcingSource,
     ForcingType,

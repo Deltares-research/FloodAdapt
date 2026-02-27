@@ -7,7 +7,7 @@ from typing import Callable, Optional
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.config.config import Settings
+from flood_adapt.config.settings import Settings
 from flood_adapt.misc.utils import modified_environ
 
 DEFAULT_EXE_PATHS = {

@@ -1,17 +1,14 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 import geopandas as gpd
 import numpy as np
 
-from flood_adapt.config.database import DatabaseConfig
+from flood_adapt.config.database import DatabaseConfig, PostProcessingFunction
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
-from flood_adapt.objects.scenarios.scenarios import Scenario
-
-PostProcessingFunction = Callable[["IDatabase", Scenario, Path], None]
 
 
 class IDatabase(ABC):
@@ -84,9 +81,9 @@ class IDatabase(ABC):
         pass
 
     @abstractmethod
-    def get_postprocessing_hook(
+    def get_postprocessing_hooks(
         self, reload: bool = False
-    ) -> PostProcessingFunction | None:
+    ) -> dict[str, PostProcessingFunction] | None:
         pass
 
     @abstractmethod
