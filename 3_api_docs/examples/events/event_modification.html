@@ -1324,7 +1324,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(database_path<span class="op">=</span>DATA_DIR <span class="op">/</span> <span class="st">"examples"</span> <span class="op">/</span> <span class="st">"charleston_test"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>2026-02-25 11:18:58 AM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples</code></pre>
+<pre><code>2026-02-27 11:12:40 AM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples
+2026-02-27 11:12:40 AM - FloodAdapt.Database - INFO - Loading database into memory</code></pre>
 </div>
 </div>
 <section id="analyze-the-effect-of-different-rainfall-forcings" class="level2">
@@ -1389,12 +1390,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. Now the events can be used as the components for scenario creation. Similar to how the rainfall forcings are used to create various events</span></span>
 <span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="co"># For more information on how to create scenarios, see the scenario creation example</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="2">
-<pre><code>['database_manipulation_event',
+<pre><code>['event_set',
+ 'test_set',
+ 'database_manipulation_event',
  'database_manipulation_event_rainfall_constant',
- 'database_manipulation_event_rainfall_csv',
  'database_manipulation_event_rainfall_synthetic',
- 'event_set',
- 'test_set']</code></pre>
+ 'database_manipulation_event_rainfall_csv']</code></pre>
 </div>
 </div>
 </section>
@@ -1431,11 +1432,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>edited_event <span class="op">=</span> fa.get_event(event_name)</span>
 <span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Description after `Edit`:"</span>, edited_event.description)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Initial: ['database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_synthetic', 'event_set', 'test_set']
-Names after `Copy`: ['database_manipulation_event', 'database_manipulation_event_copy', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_constant_copy', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_csv_copy', 'database_manipulation_event_rainfall_synthetic', 'database_manipulation_event_rainfall_synthetic_copy', 'event_set', 'event_set_copy', 'test_set', 'test_set_copy']
-Names after `Delete`: ['database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_csv', 'database_manipulation_event_rainfall_synthetic', 'event_set', 'test_set']
+<pre><code>Initial: ['event_set', 'test_set', 'database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_synthetic', 'database_manipulation_event_rainfall_csv']
+Names after `Copy`: ['event_set', 'test_set', 'database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_synthetic', 'database_manipulation_event_rainfall_csv', 'event_set_copy', 'test_set_copy', 'database_manipulation_event_copy', 'database_manipulation_event_rainfall_constant_copy', 'database_manipulation_event_rainfall_synthetic_copy', 'database_manipulation_event_rainfall_csv_copy']
+Names after `Delete`: ['event_set', 'test_set', 'database_manipulation_event', 'database_manipulation_event_rainfall_constant', 'database_manipulation_event_rainfall_synthetic', 'database_manipulation_event_rainfall_csv']
 Description before `Edit`: Some event description
-Description after `Edit`: Updated description</code></pre>
+Description after `Edit`: Some event description</code></pre>
 </div>
 </div>
 
