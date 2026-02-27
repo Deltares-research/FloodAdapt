@@ -1066,6 +1066,7 @@ class TestAddMeasure:
             test_db.site.fiat.config.bfe = mock.Mock(
                 geom="dummy_bfe.geojson",
                 field_name="bfe",
+                units=us.UnitTypesLength.meters,
             )
 
             measure_gdf = TestAddMeasure.get_measure_gdf(

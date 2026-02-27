@@ -1377,6 +1377,18 @@ class SfincsAdapter(IHazardAdapter):
 
     ### MEASURES ###
 
+    def _convert_z_column_to_meters(
+        self, gdf: gpd.GeoDataFrame, z_units: us.UnitTypesLength
+    ) -> gpd.GeoDataFrame:
+        gdf = gdf.copy()
+        gdf["z"] = [
+            us.UnitfulLength(value=float(z_val), units=z_units).convert(
+                us.UnitTypesLength.meters
+            )
+            for z_val in gdf["z"]
+        ]
+        return gdf
+
     def _add_measure_floodwall(self, floodwall: FloodWall):
         """Add floodwall to sfincs model.
 
@@ -1404,16 +1416,12 @@ class SfincsAdapter(IHazardAdapter):
         if floodwall.elevation.type == VerticalReference.datum:
             logger.info("Using floodwall height relative to datum.")
             if "z" in gdf_floodwall.columns and gdf_floodwall["z"].notna().all():
-                heights = [
-                    us.UnitfulLength(
-                        value=float(height),
-                        units=self.database.site.gui.units.default_length_units,
-                    ).convert(us.UnitTypesLength.meters)
-                    for height in gdf_floodwall["z"]
-                ]
-                gdf_floodwall["z"] = heights
+                gdf_floodwall = self._convert_z_column_to_meters(
+                    gdf_floodwall,
+                    self.database.site.gui.units.default_length_units,
+                )
                 logger.info(
-                    "'z' column with height data found in shapefile. Each segment will use the respective height above datum."
+                    f"'z' column with height data found in floodwall shapefile. Each segment will use the respective height above datum in {self.database.site.gui.units.default_length_units}."
                 )
             else:
                 logger.warning(
@@ -1431,6 +1439,10 @@ class SfincsAdapter(IHazardAdapter):
                 self.database.site.fiat.config.bfe.geom
             )
             bfe_field_name = self.database.site.fiat.config.bfe.field_name
+            bfe_units = (
+                self.database.site.fiat.config.bfe.units
+                or self.database.site.gui.units.default_length_units
+            )
 
             gdf_bfe = self._model.data_catalog.get_geodataframe(
                 bfe_path, geom=self._model.region, crs=self._model.crs
@@ -1441,15 +1453,24 @@ class SfincsAdapter(IHazardAdapter):
                     f"BFE field '{bfe_field_name}' was not found in {bfe_path}."
                 )
             interval = 100.0  # interval in meters to sample the floodwall linestrings for creating points with z values, can be adjusted if needed
+
+            # Convert floodwall elevation to BFE units
+            elevation_offset = floodwall.elevation.convert(bfe_units)
+
             gdf_floodwall = create_z_linestrings_from_bfe(
                 gdf_lines=gdf_floodwall,
                 gdf_bfe=gdf_bfe,
                 bfe_field_name=bfe_field_name,
                 interval_m=interval,
-                elevation_offset_m=floodwall.elevation.convert(
-                    us.UnitTypesLength.meters
-                ),
+                elevation_offset=elevation_offset,
             )
+
+            # Convert the z column from BFE units to meters
+            gdf_floodwall = self._convert_z_column_to_meters(
+                gdf_floodwall,
+                bfe_units,
+            )
+
             logger.info(
                 f"Floodwall height is defined {floodwall.elevation} above Base Flood Elevation (BFE)."
             )

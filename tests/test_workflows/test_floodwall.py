@@ -26,7 +26,7 @@ def test_create_z_linestrings_from_bfe_densifies_and_samples():
         gdf_bfe=gdf_bfe,
         bfe_field_name="bfe",
         interval_m=100.0,
-        elevation_offset_m=0.5,
+        elevation_offset=0.5,
     )
 
     assert len(gdf_out) == 1
@@ -56,7 +56,7 @@ def test_create_z_linestrings_from_bfe_fallback_for_missing_vertices():
         gdf_bfe=gdf_bfe,
         bfe_field_name="bfe",
         interval_m=100.0,
-        elevation_offset_m=0.5,
+        elevation_offset=0.5,
     )
 
     geom = gdf_out.geometry.iloc[0]

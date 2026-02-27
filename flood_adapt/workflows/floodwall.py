@@ -89,7 +89,7 @@ def _apply_bfe_sampling_to_points(
     gdf_points: gpd.GeoDataFrame,
     gdf_bfe: gpd.GeoDataFrame,
     bfe_field_name: str,
-    elevation_offset_m: float,
+    elevation_offset: float,
 ) -> gpd.GeoDataFrame:
     gdf_join = gpd.sjoin(
         gdf_points,
@@ -102,9 +102,9 @@ def _apply_bfe_sampling_to_points(
         subset=["line_id", "vertex_idx"], keep="first"
     )
     sampled_bfe = pd.to_numeric(gdf_join[bfe_field_name], errors="coerce")
-    gdf_join["z"] = sampled_bfe + elevation_offset_m
+    gdf_join["z"] = sampled_bfe + elevation_offset
 
-    gdf_join.loc[sampled_bfe.isna(), "z"] = elevation_offset_m
+    gdf_join.loc[sampled_bfe.isna(), "z"] = elevation_offset
 
     return gdf_join.sort_values(["line_id", "vertex_idx"])
 
@@ -114,7 +114,7 @@ def create_z_linestrings_from_bfe(
     gdf_bfe: gpd.GeoDataFrame,
     bfe_field_name: str,
     interval_m: float = 100.0,
-    elevation_offset_m: float = 0.0,
+    elevation_offset: float = 0.0,
 ) -> gpd.GeoDataFrame:
     """
     Densify input line geometries and construct 3D LineStrings using sampled BFE values.
@@ -123,7 +123,7 @@ def create_z_linestrings_from_bfe(
     spacing of ``interval_m``, and converted to point vertices. These vertices are
     spatially joined to the provided BFE surface to sample base flood elevation
     values from ``bfe_field_name``. The sampled BFE values, plus an optional
-    ``elevation_offset_m``, are used as Z-coordinates to build Z-enabled
+    ``elevation_offset``, are used as Z-coordinates to build Z-enabled
     LineStrings (x, y, z). A representative elevation value per line is also
     computed and stored in the output.
 
@@ -144,10 +144,10 @@ def create_z_linestrings_from_bfe(
         Target spacing, in meters, used to densify the input lines. Must be
         strictly positive. Smaller values produce more vertices and smoother
         Z-profiles, at the cost of additional computation.
-    elevation_offset_m : float, optional
-        Constant elevation offset in meters added to all sampled BFE values.
-        This value is also used as the fallback Z when no BFE value can be
-        sampled for a vertex or an entire line.
+    elevation_offset : float, optional
+        Constant elevation offset (in the same units as the BFE values) added
+        to all sampled BFE values. This value is also used as the fallback Z
+        when no BFE value can be sampled for a vertex or an entire line.
 
     Returns
     -------
@@ -187,7 +187,7 @@ def create_z_linestrings_from_bfe(
         gdf_points=gdf_points,
         gdf_bfe=gdf_bfe,
         bfe_field_name=bfe_field_name,
-        elevation_offset_m=elevation_offset_m,
+        elevation_offset=elevation_offset,
     )
 
     z_by_line = {}
@@ -196,7 +196,7 @@ def create_z_linestrings_from_bfe(
             line_points=list(group.geometry),
             line_z=list(group.z),
             fallback_geometry=None,
-            fallback_z=elevation_offset_m,
+            fallback_z=elevation_offset,
         )
         z_by_line[line_id] = (z_geom, z_val)
 
@@ -204,7 +204,7 @@ def create_z_linestrings_from_bfe(
     representative_z = []
 
     for row in gdf_rows.itertuples(index=False):
-        geom, z_val = z_by_line.get(row.line_id, (row.geometry, elevation_offset_m))
+        geom, z_val = z_by_line.get(row.line_id, (row.geometry, elevation_offset))
         z_geometries.append(geom)
         representative_z.append(z_val)
 
