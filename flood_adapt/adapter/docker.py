@@ -251,6 +251,7 @@ SFINCS_BIN_VERSION_TO_DOCKER_TAG: dict[str, str] = {
     "latest": "latest",
     "2.3.0": "sfincs-v2.3.0-mt-Faber-Release",
     "2.2.0": "sfincs-v2.2.0-col-dEze-Release",
+    "2.2.1": "sfincs-v2.2.0-col-dEze-Release",
     "2.1.1": "sfincs-v2.1.1-Dollerup-Release",
 }
 
