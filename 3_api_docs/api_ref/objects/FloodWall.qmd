@@ -28,10 +28,6 @@ The expected variables and data types of the "floodwall" hazard measure.
 
 :   Path to a polygon file, either absolute or relative to the measure path.
 
-<code>[**elevation**]{.parameter-name} [:]{.parameter-annotation-sep} [[us](`flood_adapt.objects.forcing.unit_system`).[UnitfulLength](`flood_adapt.objects.forcing.unit_system.UnitfulLength`)]{.parameter-annotation}</code>
+<code>[**elevation**]{.parameter-name} [:]{.parameter-annotation-sep} [[us](`flood_adapt.objects.forcing.unit_system`).[UnitfulLengthRefValue](`flood_adapt.objects.forcing.unit_system.UnitfulLengthRefValue`)]{.parameter-annotation}</code>
 
 :   Height of the floodwall.
-
-<code>[**absolute_elevation**]{.parameter-name} [:]{.parameter-annotation-sep} [[bool](`bool`)]{.parameter-annotation}</code>
-
-:   TODO remove?
