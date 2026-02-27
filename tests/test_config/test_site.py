@@ -6,17 +6,17 @@ from pydantic import BaseModel
 from pydantic_core import ValidationError
 
 import flood_adapt.objects.forcing.unit_system as us
-from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import (
     AsciiStr,
     DemModel,
     RiverModel,
 )
+from flood_adapt.config.settings import Settings
 from flood_adapt.config.site import (
     SfincsModel,
     Site,
 )
-from flood_adapt.objects.forcing import TideGauge
+from flood_adapt.objects.forcing.tide_gauge import TideGauge
 from tests.data.create_test_static import create_site_config
 
 

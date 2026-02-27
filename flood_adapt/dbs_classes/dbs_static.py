@@ -9,7 +9,7 @@ from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
-from flood_adapt.config.config import Settings
+from flood_adapt.config.settings import Settings
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError

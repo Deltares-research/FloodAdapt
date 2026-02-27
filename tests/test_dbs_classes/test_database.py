@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from flood_adapt.config.config import Settings
+from flood_adapt.config.settings import Settings
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.misc.exceptions import IsStandardObjectError

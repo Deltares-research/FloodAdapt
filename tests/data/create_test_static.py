@@ -2,8 +2,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Optional
 
-from flood_adapt import unit_system as us
-from flood_adapt.config.config import Settings
 from flood_adapt.config.fiat import (
     FiatConfigModel,
     FiatModel,
@@ -42,11 +40,13 @@ from flood_adapt.config.impacts import (
     RiskModel,
     SVIModel,
 )
+from flood_adapt.config.settings import Settings
 from flood_adapt.config.sfincs import (
     SfincsConfigModel,
     SfincsModel,
 )
 from flood_adapt.config.site import Site, StandardObjectModel
+from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.tide_gauge import (
     TideGauge,
     TideGaugeSource,

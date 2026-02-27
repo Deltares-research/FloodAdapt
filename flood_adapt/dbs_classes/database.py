@@ -12,6 +12,7 @@ from geopandas import GeoDataFrame
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.config.database import DatabaseConfig, PostProcessingFunction
 from flood_adapt.config.hazard import SlrScenariosModel
 from flood_adapt.config.impacts import FloodmapType
 from flood_adapt.config.site import Site
@@ -25,6 +26,7 @@ from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
+from flood_adapt.misc.io import read_toml
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.utils import finished_file_exists
 from flood_adapt.objects.events.event_set import EventSet
@@ -53,6 +55,7 @@ class Database(IDatabase):
     static_path: Path
     output_path: Path
 
+    config: DatabaseConfig
     site: Site
 
     events: DbsEvent
@@ -115,6 +118,13 @@ class Database(IDatabase):
         self.static_path = self.base_path / "static"
         self.output_path = self.base_path / "output"
 
+        # Load the configuration files
+        db_config_path = self.static_path / "config" / "database.toml"
+        if db_config_path.exists():
+            cfg = read_toml(db_config_path)
+            self.config = DatabaseConfig(**cfg)
+        else:
+            self.config = DatabaseConfig()
         # Read site configuration
         self.read_site()
 
@@ -619,6 +629,25 @@ class Database(IDatabase):
             # If the scenario is finished, delete the simulation folders depending on `save_simulation`
             elif finished_file_exists(_dir):
                 self._delete_simulations(_dir.name, overland, fiat, offshore)
+
+    def get_postprocessing_hooks(
+        self, reload: bool = False
+    ) -> dict[str, PostProcessingFunction] | None:
+        """Get the post-processing hook functions if configured.
+
+        Returns
+        -------
+        dict[str, PostProcessingFunction] | None
+            The post-processing hook functions, with their names as keys.
+            None if not configured.
+        """
+        if not reload and hasattr(self, "_postprocessing_hooks"):
+            return self._postprocessing_hooks
+
+        self._postprocessing_hooks = self.config.load_postprocess_hooks(
+            self.static_path
+        )
+        return self._postprocessing_hooks
 
     def _delete_simulations(
         self,

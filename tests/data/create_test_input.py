@@ -4,9 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from flood_adapt import unit_system as us
-from flood_adapt.config.config import Settings
 from flood_adapt.config.hazard import RiverModel
+from flood_adapt.config.settings import Settings
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.objects.benefits.benefits import (
     Benefit,
@@ -26,6 +25,7 @@ from flood_adapt.objects.events.hurricane import (
 from flood_adapt.objects.events.synthetic import (
     SyntheticEvent,
 )
+from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,

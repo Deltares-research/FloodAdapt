@@ -1,11 +1,11 @@
-import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import geopandas as gpd
 import numpy as np
 
+from flood_adapt.config.database import DatabaseConfig, PostProcessingFunction
 from flood_adapt.config.site import Site
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
@@ -17,7 +17,9 @@ class IDatabase(ABC):
     output_path: Path
     static_path: Path
 
+    config: DatabaseConfig
     site: Site
+
     static: IDbsStatic
     events: AbstractDatabaseElement
     scenarios: AbstractDatabaseElement
@@ -27,12 +29,7 @@ class IDatabase(ABC):
     benefits: AbstractDatabaseElement
 
     @abstractmethod
-    def __init__(
-        self, database_path: Union[str, os.PathLike], site_name: str
-    ) -> None: ...
-
-    @abstractmethod
-    def read_site(self, site_name: str) -> Site:
+    def read_site(self, site_name: str) -> None:
         pass
 
     @abstractmethod
@@ -81,6 +78,12 @@ class IDatabase(ABC):
 
     @abstractmethod
     def has_run_hazard(self, scenario_name: str) -> None:
+        pass
+
+    @abstractmethod
+    def get_postprocessing_hooks(
+        self, reload: bool = False
+    ) -> dict[str, PostProcessingFunction] | None:
         pass
 
     @abstractmethod

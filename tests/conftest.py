@@ -13,7 +13,7 @@ import pytest
 from dotenv import load_dotenv
 
 from flood_adapt import __path__
-from flood_adapt.config.config import Settings
+from flood_adapt.config.settings import Settings
 from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.log import FloodAdaptLogging
 from tests.data.create_test_input import update_database_input

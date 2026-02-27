@@ -1,3 +1,6 @@
+from pathlib import Path
+from textwrap import dedent
+
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
@@ -120,3 +123,54 @@ def test_run_on_all_scn_quadtree(test_db_qt: IDatabase, scn_name: str):
     runner = ScenarioRunner(test_db_qt, scenario=scn)
     runner.run()
     assert runner.has_run_check()
+
+
+@pytest.fixture
+def test_db_with_postprocessing_hooks(
+    test_db: IDatabase,
+) -> tuple[IDatabase, list[str]]:
+    HOOK_CODE = dedent(
+        """\
+        def postprocess(database, scenario, results_path):
+            path = results_path / 'postprocess_{i}_ran.txt'
+            path.write_text(f'postprocessed {{scenario.name}}')
+        """  # use double `{{}}` to allow the .format() to work without trying to format the inner {scenario.name}
+    )
+    from flood_adapt.config.database import PostProcessingHook
+
+    hooks = []
+    for i in range(1, 3):
+        rel_in_db = Path("postprocessing", f"postprocess_hook_{i}.py")
+        abs_in_db = test_db.static_path / rel_in_db
+        abs_in_db.parent.mkdir(parents=True, exist_ok=True)
+        abs_in_db.write_text(HOOK_CODE.format(i=i))
+        hooks.append(
+            PostProcessingHook(name=f"postprocess_hook_{i}", path=rel_in_db.as_posix())
+        )
+
+    test_db.config.post_processing_hooks = hooks
+    return test_db, [f"postprocess_{i}_ran.txt" for i in range(1, 3)]
+
+
+def test_postprocessing_hook_execution(
+    test_db_with_postprocessing_hooks: tuple[IDatabase, list[str]],
+):
+    test_db, created_files = test_db_with_postprocessing_hooks
+    # Run the post-processing hook directly
+    scn = Scenario(
+        name="test_scenario",
+        event="event",
+        projection="current",
+        strategy="no_measures",
+    )
+    runner = ScenarioRunner(test_db, scenario=scn)
+    runner.results_path.mkdir(parents=True, exist_ok=True)  # Ensure results path exists
+    runner._run_postprocessing_hooks()
+
+    # Check that the post-processing hook created the expected file
+    assert all((runner.results_path / rel_path).exists() for rel_path in created_files)
+
+    # Check that scenario.name was written correctly
+    for marker_filename in created_files:
+        content = (runner.results_path / marker_filename).read_text()
+        assert f"postprocessed {scn.name}" in content

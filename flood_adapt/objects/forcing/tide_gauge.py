@@ -8,7 +8,7 @@ import requests
 from noaa_coops.station import COOPSAPIError
 from pydantic import BaseModel, model_validator
 
-from flood_adapt.config import Settings
+from flood_adapt.config.settings import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.time_frame import TimeFrame
