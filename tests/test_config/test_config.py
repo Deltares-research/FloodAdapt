@@ -2,24 +2,13 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Any, Callable, Generator
 
 import pytest
 from pydantic import ValidationError
 
 from flood_adapt.config.settings import Settings
 from flood_adapt.misc.utils import modified_environ
-
-DEFAULT_EXE_PATHS = {
-    "windows": {
-        "sfincs": Path("win-64/sfincs/sfincs.exe"),
-        "fiat": Path("win-64/fiat/fiat.exe"),
-    },
-    "linux": {
-        "sfincs": Path("linux-64/sfincs/bin/sfincs"),
-        "fiat": Path("linux-64/fiat/fiat"),
-    },
-}
 
 
 @pytest.fixture(autouse=True)
@@ -44,24 +33,6 @@ def isolated_settings_env(monkeypatch):
 
 
 @pytest.fixture
-def dummy_db(tmp_path: Path) -> Callable[..., tuple[Path, str]]:
-    def _create(system: str = "windows", name: str = "test") -> tuple[Path, str]:
-        system = system.lower()
-        root = tmp_path
-
-        for exe in DEFAULT_EXE_PATHS[system].values():
-            path = root / "system" / exe
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.touch(mode=0o755)
-
-        (root / name / "input").mkdir(parents=True)
-        (root / name / "static").mkdir(parents=True)
-        return root, name
-
-    return _create
-
-
-@pytest.fixture
 def fake_binaries(tmp_path: Path) -> tuple[Path, Path]:
     def make(name: str) -> Path:
         if sys.platform == "win32":
@@ -74,7 +45,9 @@ def fake_binaries(tmp_path: Path) -> tuple[Path, Path]:
 
 
 @pytest.fixture
-def mock_subprocess_run(monkeypatch):
+def mock_subprocess_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> Generator[Callable[..., None], Any, None]:
     expected_sfincs_output = (
         "------------ Welcome to SFINCS ------------\n"
         "\n"
@@ -107,271 +80,257 @@ def mock_subprocess_run(monkeypatch):
     subprocess.run = orig_run
 
 
-class TestSettings:
-    def assert_settings(
-        self,
-        settings: Settings,
-        root: Path,
-        name: str,
-        sfincs: Optional[Path] = None,
-        fiat: Optional[Path] = None,
-    ):
-        assert settings.database_root == root
-        assert settings.database_name == name
-        assert settings.database_path == root / name
-        if sfincs is not None:
-            assert settings.sfincs_bin_path == sfincs
-        if fiat is not None:
-            assert settings.fiat_bin_path == fiat
+def test_init_from_args(tmp_path: Path):
+    name = "test"
+    (tmp_path / name / "input").mkdir(parents=True)
+    (tmp_path / name / "static").mkdir(parents=True)
+    s = Settings(DATABASE_ROOT=tmp_path, DATABASE_NAME=name)
+    assert s.database_root == tmp_path
+    assert s.database_name == name
+    assert s.database_path == tmp_path / name
 
-    @pytest.mark.parametrize("system", ["windows", "linux"])
-    def test_init_from_args(self, system, dummy_db):
-        root, name = dummy_db(system)
-        s = Settings(DATABASE_ROOT=root, DATABASE_NAME=name)
-        self.assert_settings(s, root, name)
 
-    def test_env_used_when_args_missing(self, dummy_db):
-        root, name = dummy_db()
-        with modified_environ(DATABASE_ROOT=str(root), DATABASE_NAME=name):
-            s = Settings()
-        self.assert_settings(s, root, name)
+def test_env_used_when_args_missing(tmp_path: Path):
+    name = "test"
+    (tmp_path / name / "input").mkdir(parents=True)
+    (tmp_path / name / "static").mkdir(parents=True)
+    with modified_environ(DATABASE_ROOT=str(tmp_path), DATABASE_NAME=name):
+        s = Settings()
+    assert s.database_root == tmp_path
+    assert s.database_name == name
+    assert s.database_path == tmp_path / name
 
-    def test_args_override_env(self, dummy_db):
-        root, name = dummy_db()
-        with modified_environ(DATABASE_ROOT="wrong", DATABASE_NAME="wrong"):
-            s = Settings(DATABASE_ROOT=root, DATABASE_NAME=name)
-        self.assert_settings(s, root, name)
 
-    def test_default_db_name_is_first_non_system_dir(self, tmp_path):
-        root = tmp_path
-        (root / "system").mkdir()
-        (root / "b_site" / "input").mkdir(parents=True)
-        (root / "b_site" / "static").mkdir()
-        (root / "a_site" / "input").mkdir(parents=True)
-        (root / "a_site" / "static").mkdir()
+def test_args_override_env(tmp_path: Path):
+    name = "test"
+    (tmp_path / name / "input").mkdir(parents=True)
+    (tmp_path / name / "static").mkdir(parents=True)
+    with modified_environ(DATABASE_ROOT="wrong", DATABASE_NAME="wrong"):
+        s = Settings(DATABASE_ROOT=tmp_path, DATABASE_NAME=name)
+    assert s.database_root == tmp_path
+    assert s.database_name == name
+    assert s.database_path == tmp_path / name
 
-        s = Settings(DATABASE_ROOT=root)
-        assert s.database_name in {"a_site", "b_site"}
-        assert s.database_path.exists()
 
-    def test_invalid_root_raises(self):
-        with pytest.raises(ValidationError, match="does not exist"):
-            Settings(DATABASE_ROOT=Path("nope"), DATABASE_NAME="x")
+def test_invalid_root_raises():
+    with pytest.raises(ValidationError, match="is not a directory"):
+        Settings(DATABASE_ROOT=Path("not-a-directory"), DATABASE_NAME="x")
 
-    def test_invalid_db_name_raises(self, dummy_db):
-        root, _ = dummy_db()
-        with pytest.raises(ValidationError, match="does not exist"):
-            Settings(DATABASE_ROOT=root, DATABASE_NAME="missing")
 
-    def test_missing_input_folder_raises(self, tmp_path):
-        root = tmp_path
-        (root / "site" / "static").mkdir(parents=True)
-        with pytest.raises(ValidationError, match="input folder"):
-            Settings(DATABASE_ROOT=root, DATABASE_NAME="site")
+def test_invalid_db_name_raises(tmp_path: Path):
+    with pytest.raises(ValidationError, match=r"Database .* at .* does not exist\."):
+        Settings(DATABASE_ROOT=tmp_path, DATABASE_NAME="missing")
 
-    def test_missing_static_folder_raises(self, tmp_path):
-        root = tmp_path
-        (root / "site" / "input").mkdir(parents=True)
-        with pytest.raises(ValidationError, match="static folder"):
-            Settings(DATABASE_ROOT=root, DATABASE_NAME="site")
 
-    def test_missing_sfincs_binary_raises(self, dummy_db):
-        root, name = dummy_db()
-        with pytest.raises(ValidationError, match="SFINCS binary"):
-            Settings(
-                DATABASE_ROOT=root,
-                DATABASE_NAME=name,
-                USE_BINARIES=True,
-            )
+def test_missing_input_folder_raises(tmp_path: Path):
+    name = "test"
+    (tmp_path / name / "static").mkdir(parents=True)
+    with pytest.raises(ValidationError, match="input folder"):
+        Settings(DATABASE_ROOT=tmp_path, DATABASE_NAME=name)
 
-    def test_missing_fiat_binary_raises(
-        self, dummy_db, fake_binaries, mock_subprocess_run
-    ):
-        root, name = dummy_db()
-        sfincs, _ = fake_binaries
-        mock_subprocess_run()
-        with pytest.raises(ValidationError, match="FIAT binary"):
-            Settings(
-                DATABASE_ROOT=root,
-                DATABASE_NAME=name,
-                SFINCS_BIN_PATH=sfincs,
-                FIAT_BIN_PATH=None,
-                USE_BINARIES=True,
-            )
 
-    def test_binary_validation_is_idempotent(
-        self, dummy_db, fake_binaries, mock_subprocess_run
-    ):
-        root, name = dummy_db()
-        mock_subprocess_run()
-        sfincs, fiat = fake_binaries
+def test_missing_static_folder_raises(tmp_path: Path):
+    name = "test"
+    (tmp_path / name / "input").mkdir(parents=True)
+    with pytest.raises(ValidationError, match="static folder"):
+        Settings(DATABASE_ROOT=tmp_path, DATABASE_NAME=name)
 
-        s = Settings(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs,
-            FIAT_BIN_PATH=fiat,
+
+def test_missing_sfincs_binary_raises(
+    fake_binaries: tuple[Path, Path],
+    mock_subprocess_run: Callable[..., None],
+):
+    mock_subprocess_run()
+    with pytest.raises(ValidationError, match="SFINCS binary path is not set."):
+        Settings(
+            USE_BINARIES=True,
+            SFINCS_BIN_PATH=None,
+            FIAT_BIN_PATH=fake_binaries[1],
+        )
+
+
+def test_missing_fiat_binary_raises(
+    fake_binaries: tuple[Path, Path],
+    mock_subprocess_run: Callable[..., None],
+):
+    mock_subprocess_run()
+    with pytest.raises(ValidationError, match="FIAT binary path is not set."):
+        Settings(
+            SFINCS_BIN_PATH=fake_binaries[0],
+            FIAT_BIN_PATH=None,
             USE_BINARIES=True,
         )
 
-        assert not Settings._binaries_validated
+
+def test_binary_validation_is_idempotent(
+    fake_binaries: tuple[Path, Path],
+    mock_subprocess_run: Callable[..., None],
+):
+    mock_subprocess_run()
+    sfincs, fiat = fake_binaries
+
+    s = Settings(
+        SFINCS_BIN_PATH=sfincs,
+        FIAT_BIN_PATH=fiat,
+        USE_BINARIES=True,
+    )
+
+    assert not Settings._binaries_validated
+    s.check_binary_versions()
+    assert Settings._binaries_validated
+
+
+def test_export_to_env_roundtrip(tmp_path: Path):
+    root1, name1 = tmp_path, "test1"
+    root2, name2 = tmp_path, "test2"
+    (tmp_path / name1 / "input").mkdir(parents=True)
+    (tmp_path / name1 / "static").mkdir(parents=True)
+    (tmp_path / name2 / "input").mkdir(parents=True)
+    (tmp_path / name2 / "static").mkdir(parents=True)
+
+    with modified_environ(DATABASE_ROOT=str(root1), DATABASE_NAME=name1):
+        s1 = Settings()
+        s2 = Settings(DATABASE_ROOT=root2, DATABASE_NAME=name2)
+        s2.export_to_env()
+        s3 = Settings()
+
+    assert s1 != s2
+    assert s3 == s2
+
+
+def test_false_booleans_persisted():
+    Settings(
+        DELETE_CRASHED_RUNS=False,
+        VALIDATE_ALLOWED_FORCINGS=False,
+        USE_BINARIES=False,
+    ).export_to_env()
+
+    s = Settings()
+    assert os.getenv("DELETE_CRASHED_RUNS") == "False"
+    assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "False"
+    assert os.getenv("USE_BINARIES") == "False"
+    assert s.delete_crashed_runs is False
+    assert s.validate_allowed_forcings is False
+    assert s.use_binaries is False
+
+
+def test_true_booleans_persisted(
+    fake_binaries: tuple[Path, Path],
+    mock_subprocess_run: Callable[..., None],
+):
+    mock_subprocess_run()
+    sfincs, fiat = fake_binaries
+    Settings(
+        SFINCS_BIN_PATH=sfincs,
+        FIAT_BIN_PATH=fiat,
+        DELETE_CRASHED_RUNS=True,
+        VALIDATE_ALLOWED_FORCINGS=True,
+        USE_BINARIES=True,
+    ).export_to_env()
+
+    s = Settings()
+    assert os.getenv("DELETE_CRASHED_RUNS") == "True"
+    assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "True"
+    assert os.getenv("USE_BINARIES") == "True"
+    assert s.delete_crashed_runs is True
+    assert s.validate_allowed_forcings is True
+    assert s.use_binaries is True
+
+
+def test_get_sfincs_version_success(
+    fake_binaries: tuple[Path, Path],
+    mock_subprocess_run: Callable[..., None],
+):
+    mock_subprocess_run()
+    sfincs, fiat = fake_binaries
+
+    s = Settings(
+        SFINCS_BIN_PATH=sfincs,
+        FIAT_BIN_PATH=fiat,
+        USE_BINARIES=True,
+    )
+    assert s.get_sfincs_version() == "2.2.1-alpha col d'Eze"
+
+
+def test_get_sfincs_version_no_match_regex(
+    fake_binaries: tuple[Path, Path],
+    mock_subprocess_run: Callable[..., None],
+):
+    mock_subprocess_run(sfincs_output="some other output without a version")
+    sfincs, fiat = fake_binaries
+
+    s = Settings(
+        SFINCS_BIN_PATH=sfincs,
+        FIAT_BIN_PATH=fiat,
+        USE_BINARIES=True,
+    )
+    with pytest.raises(ValueError, match=r"version mismatch"):
+        s.get_sfincs_version()
+
+
+def test_get_fiat_version_success(
+    fake_binaries: tuple[Path, Path],
+    mock_subprocess_run: Callable[..., None],
+):
+    mock_subprocess_run()
+    sfincs, fiat = fake_binaries
+
+    s = Settings(
+        SFINCS_BIN_PATH=sfincs,
+        FIAT_BIN_PATH=fiat,
+        USE_BINARIES=True,
+    )
+    assert s.get_fiat_version() == "0.2.1"
+
+
+def test_get_fiat_version_no_match_regex(
+    fake_binaries: tuple[Path, Path],
+    mock_subprocess_run: Callable[..., None],
+):
+    mock_subprocess_run(fiat_output="some other output without a version")
+    sfincs, fiat = fake_binaries
+    s = Settings(
+        SFINCS_BIN_PATH=sfincs,
+        FIAT_BIN_PATH=fiat,
+        USE_BINARIES=True,
+    )
+    with pytest.raises(ValueError, match=r"version mismatch"):
+        s.get_fiat_version()
+
+
+def test_check_binary_versions_invalid_sfincs(
+    fake_binaries: tuple[Path, Path],
+    mock_subprocess_run: Callable[..., None],
+):
+    mock_subprocess_run(sfincs_output="invalid sfincs version output")
+    sfincs, fiat = fake_binaries
+
+    s = Settings(
+        SFINCS_BIN_PATH=sfincs,
+        FIAT_BIN_PATH=fiat,
+        USE_BINARIES=True,
+    )
+    with pytest.raises(ValueError, match=r"SFINCS version mismatch"):
         s.check_binary_versions()
-        assert Settings._binaries_validated
 
-    def test_export_to_env_roundtrip(self, dummy_db):
-        r1, n1 = dummy_db(name="a")
-        r2, n2 = dummy_db(name="b")
 
-        with modified_environ(DATABASE_ROOT=str(r1), DATABASE_NAME=n1):
-            s1 = Settings()
-            s2 = Settings(DATABASE_ROOT=r2, DATABASE_NAME=n2)
-            s2.export_to_env()
-            s3 = Settings()
+def test_check_binary_versions_invalid_fiat(
+    fake_binaries: tuple[Path, Path],
+    mock_subprocess_run: Callable[..., None],
+):
+    mock_subprocess_run(fiat_output="invalid fiat version output")
+    sfincs, fiat = fake_binaries
 
-        assert s1 != s2
-        assert s3 == s2
+    s = Settings(
+        SFINCS_BIN_PATH=sfincs,
+        FIAT_BIN_PATH=fiat,
+        USE_BINARIES=True,
+    )
+    with pytest.raises(ValueError, match=r"FIAT version mismatch"):
+        s.check_binary_versions()
 
-    def test_false_booleans_not_persisted(self, dummy_db):
-        root, name = dummy_db()
-        s = Settings(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            DELETE_CRASHED_RUNS=False,
-            VALIDATE_ALLOWED_FORCINGS=False,
-            USE_BINARIES=False,
-        )
-        s.export_to_env()
 
-        assert os.getenv("DELETE_CRASHED_RUNS") == "False"
-        assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "False"
-        assert os.getenv("USE_BINARIES") == "False"
-
-        s = Settings()
-        assert s.delete_crashed_runs is False
-        assert s.validate_allowed_forcings is False
-        assert s.use_binaries is False
-
-    def test_true_booleans_persisted(
-        self, dummy_db, fake_binaries, mock_subprocess_run
-    ):
-        root, name = dummy_db()
-        mock_subprocess_run()
-        sfincs, fiat = fake_binaries
-        s = Settings(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs,
-            FIAT_BIN_PATH=fiat,
-            DELETE_CRASHED_RUNS=True,
-            VALIDATE_ALLOWED_FORCINGS=True,
-            USE_BINARIES=True,
-        )
-        s.export_to_env()
-
-        assert os.getenv("DELETE_CRASHED_RUNS") == "True"
-        assert os.getenv("VALIDATE_ALLOWED_FORCINGS") == "True"
-        assert os.getenv("USE_BINARIES") == "True"
-
-        s = Settings()
-        assert s.delete_crashed_runs is True
-        assert s.validate_allowed_forcings is True
-        assert s.use_binaries is True
-
-    def test_get_sfincs_version_success(
-        self, dummy_db, fake_binaries, mock_subprocess_run
-    ):
-        root, name = dummy_db()
-        mock_subprocess_run()
-        sfincs, fiat = fake_binaries
-
-        s = Settings(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs,
-            FIAT_BIN_PATH=fiat,
-            USE_BINARIES=True,
-        )
-        assert s.get_sfincs_version() == "v2.2.1-alpha col d'Eze"
-
-    def test_get_sfincs_version_no_match_regex(
-        self, dummy_db, fake_binaries, mock_subprocess_run
-    ):
-        root, name = dummy_db()
-        mock_subprocess_run(sfincs_output="some other output without a version")
-        sfincs, fiat = fake_binaries
-
-        s = Settings(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs,
-            FIAT_BIN_PATH=fiat,
-            USE_BINARIES=True,
-        )
-        with pytest.raises(ValueError, match=r"version mismatch"):
-            s.get_sfincs_version()
-
-    def test_get_fiat_version_success(
-        self, dummy_db, fake_binaries, mock_subprocess_run
-    ):
-        root, name = dummy_db()
-        mock_subprocess_run()
-        sfincs, fiat = fake_binaries
-
-        s = Settings(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs,
-            FIAT_BIN_PATH=fiat,
-            USE_BINARIES=True,
-        )
-        assert s.get_fiat_version() == "0.2.1"
-
-    def test_get_fiat_version_no_match_regex(
-        self, dummy_db, fake_binaries, mock_subprocess_run
-    ):
-        root, name = dummy_db()
-        mock_subprocess_run(fiat_output="some other output without a version")
-        sfincs, fiat = fake_binaries
-        s = Settings(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs,
-            FIAT_BIN_PATH=fiat,
-            USE_BINARIES=True,
-        )
-        with pytest.raises(ValueError, match=r"version mismatch"):
-            s.get_fiat_version()
-
-    def test_check_binary_versions_invalid_sfincs(
-        self, dummy_db, fake_binaries, mock_subprocess_run
-    ):
-        root, name = dummy_db()
-        mock_subprocess_run(sfincs_output="invalid sfincs version output")
-        sfincs, fiat = fake_binaries
-
-        s = Settings(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs,
-            FIAT_BIN_PATH=fiat,
-            USE_BINARIES=True,
-        )
-        with pytest.raises(ValueError, match=r"SFINCS version mismatch"):
-            s.check_binary_versions()
-
-    def test_check_binary_versions_invalid_fiat(
-        self, dummy_db, fake_binaries, mock_subprocess_run
-    ):
-        root, name = dummy_db()
-        mock_subprocess_run(fiat_output="invalid fiat version output")
-        sfincs, fiat = fake_binaries
-
-        s = Settings(
-            DATABASE_ROOT=root,
-            DATABASE_NAME=name,
-            SFINCS_BIN_PATH=sfincs,
-            FIAT_BIN_PATH=fiat,
-            USE_BINARIES=True,
-        )
-        with pytest.raises(ValueError, match=r"FIAT version mismatch"):
-            s.check_binary_versions()
+def test_database_path_raises_when_not_set():
+    s = Settings()
+    with pytest.raises(ValueError, match=r"database_root or database_name is not set"):
+        _ = s.database_path
