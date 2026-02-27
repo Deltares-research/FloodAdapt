@@ -327,13 +327,13 @@ class FiatAdapter(IImpactAdapter):
         FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
 
         settings = self.database._settings
+        fiat_log = path / "fiat.log"
         match settings.get_scenario_execution_method(strict=strict):
             case ExecutionMethod.DOCKER:
                 logger.info(f"Running FIAT in {path} using a Docker image.")
                 success = FIAT_CONTAINER.run(path)
             case ExecutionMethod.BINARIES:
                 exe = exe_path or self.exe_path
-                fiat_log = path / "fiat.log"
                 with cd(path):
                     with FloodAdaptLogging.to_file(file_path=fiat_log):
                         logger.info(
