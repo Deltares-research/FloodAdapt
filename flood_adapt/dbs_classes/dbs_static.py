@@ -117,9 +117,11 @@ class DbsStatic(IDbsStatic):
         return grid
 
     @cache_method_wrapper
-    def get_existing_structures(self) -> gpd.GeoDataFrame:
+    def get_existing_structures(self) -> dict[str, Optional[gpd.GeoDataFrame]]:
         """Get existing structure geometries from model."""
-        structures = self.get_overland_sfincs_model().get_existing_structures()
+        structures = {}
+        structures["weirs"] = self.get_overland_sfincs_model().weirs
+        structures["drainage"] = self.get_overland_sfincs_model().drainage
         return structures
 
     @cache_method_wrapper
