@@ -130,8 +130,6 @@ def test_shutdown_AfterShutdown_VarsAreNone(settings):
     assert dbs.site is None
 
     # paths
-    assert dbs.database_path is None
-    assert dbs.database_name is None
     assert dbs.base_path is None
     assert dbs.input_path is None
     assert dbs.static_path is None
@@ -155,8 +153,6 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase(settings):
     assert dbs.site is not None
 
     # paths
-    assert dbs.database_path is not None
-    assert dbs.database_name is not None
     assert dbs.base_path is not None
     assert dbs.input_path is not None
     assert dbs.static_path is not None

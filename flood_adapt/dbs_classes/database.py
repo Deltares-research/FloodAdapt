@@ -200,8 +200,6 @@ class Database(IDatabase):
         self.__class__._instance = None
 
         # clear paths
-        self.database_path = None
-        self.database_name = None
         self.base_path = None
         self.input_path = None
         self.static_path = None
