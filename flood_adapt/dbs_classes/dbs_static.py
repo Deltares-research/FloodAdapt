@@ -13,6 +13,9 @@ from flood_adapt.config.settings import Settings
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
 from flood_adapt.misc.exceptions import ConfigError, DatabaseError
+from flood_adapt.misc.log import FloodAdaptLogging
+
+logger = FloodAdaptLogging.getLogger(__name__)
 
 
 def cache_method_wrapper(func: Callable) -> Callable:
@@ -67,6 +70,7 @@ class DbsStatic(IDbsStatic):
         list[gpd.GeoDataFrame]
             list of gpd.GeoDataFrames with the polygons defining the aggregation areas
         """
+        logger.info("Reading aggregation areas.")
         aggregation_areas = {}
         for aggr_dict in self._database.site.fiat.config.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
@@ -100,6 +104,7 @@ class DbsStatic(IDbsStatic):
     @cache_method_wrapper
     def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get the model boundary from the SFINCS model."""
+        logger.info("Reading model boundary.")
         bnd = self.get_overland_sfincs_model().get_model_boundary()
         bnd = bnd[["geometry"]]
         return bnd
@@ -113,6 +118,7 @@ class DbsStatic(IDbsStatic):
         QuadtreeGrid
             The model grid
         """
+        logger.info("Reading model grid.")
         grid = self.get_overland_sfincs_model().get_model_grid()
         return grid
 
@@ -121,6 +127,7 @@ class DbsStatic(IDbsStatic):
         """Get the observation points from the flood hazard model."""
         if self._database.site.sfincs.obs_point is None:
             return None
+        logger.info("Reading observation points.")
 
         names = []
         descriptions = []
@@ -163,6 +170,7 @@ class DbsStatic(IDbsStatic):
         full_path = self._database.static_path / path
         if not full_path.is_file():
             raise DatabaseError(f"File {full_path} not found")
+        logger.info(f"Reading static map from {full_path}.")
         return gpd.read_file(full_path, engine="pyogrio").to_crs(4326)
 
     @cache_method_wrapper
@@ -177,6 +185,7 @@ class DbsStatic(IDbsStatic):
         input_file = self._database.static_path.joinpath(
             self._database.site.sfincs.slr_scenarios.file
         )
+        logger.info(f"Reading sea level rise scenario names from {input_file}.")
         df = pd.read_csv(input_file)
         names = df.columns[2:].to_list()
         return names
@@ -192,6 +201,10 @@ class DbsStatic(IDbsStatic):
         pd.DataFrame
             Table with values
         """
+        logger.info(
+            f"Reading green infrastructure table for measure type '{measure_type}'."
+        )
+
         # Read file from database
         df = pd.read_csv(
             self._database.static_path.joinpath(
@@ -228,6 +241,7 @@ class DbsStatic(IDbsStatic):
         gpd.GeoDataFrame
             building footprints with all the FIAT columns
         """
+        logger.info("Reading building footprints from the FIAT model.")
         return self.get_fiat_model().get_buildings()
 
     @cache_method_wrapper
@@ -239,6 +253,7 @@ class DbsStatic(IDbsStatic):
         list
             _description_
         """
+        logger.info("Reading property types from the FIAT model.")
         return self.get_fiat_model().get_property_types()
 
     def get_hazard_models(self) -> list[IHazardAdapter]:
@@ -309,6 +324,7 @@ class DbsStatic(IDbsStatic):
             / "cyclone_track_database"
             / self._database.site.sfincs.cyclone_track_database.file
         ).as_posix()
+        logger.info(f"Reading cyclone track database from {database_file}.")
         return CycloneTrackDatabase("ibtracs", file_name=database_file)
 
     def clear(self):
