@@ -1106,9 +1106,7 @@ class FloodAdapt:
             gpd.GeoDataFrames with the SVI map, None if not available
         """
         if self.database.site.fiat.config.svi:
-            return self.database.static.get_static_map(
-                self.database.site.fiat.config.svi.geom
-            )
+            return self.get_static_map(self.database.site.fiat.config.svi.geom)
         else:
             return None
 
