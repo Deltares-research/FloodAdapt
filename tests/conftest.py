@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
+from _pytest.fixtures import FixtureFunctionDefinition
 from dotenv import load_dotenv
 
 from flood_adapt import __path__
@@ -21,6 +22,7 @@ from flood_adapt.adapter.docker import (
     SfincsContainer,
 )
 from flood_adapt.config.settings import Settings
+from flood_adapt.dbs_classes.database import Database
 from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.log import FloodAdaptLogging
 from tests.data.create_test_input import update_database_input
@@ -67,12 +69,12 @@ if IS_WINDOWS and not CAN_EXECUTE_SCENARIOS:
 
 ## AUTO USE FIXTURES ##
 @pytest.fixture(scope="session", autouse=True)
-def setup_settings():
+def setup_settings() -> Settings:
     return SETTINGS
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_logging():
+def setup_logging() -> Generator[None]:
     """Session-wide setup and teardown for creating the initial snapshot."""
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     logger = FloodAdaptLogging.getLogger()
@@ -89,7 +91,7 @@ def setup_logging():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_test_database(setup_settings: Settings):
+def setup_test_database(setup_settings: Settings) -> Generator[None]:
     update_database_static(setup_settings)
     update_database_input(setup_settings)
     _create_snapshot()
@@ -101,42 +103,47 @@ def setup_test_database(setup_settings: Settings):
     shutil.rmtree(snapshot_dir, ignore_errors=True)
 
 
-@pytest.fixture(scope="session", autouse=HAS_DOCKER)
+@pytest.fixture(scope="session")
 def setup_docker_containers(
     setup_settings: Settings,
-) -> Generator[tuple[SfincsContainer, FiatContainer], None, None]:
+) -> Generator[tuple[SfincsContainer | None, FiatContainer | None]]:
+    """Session-wide setup and teardown for Docker containers."""
     logger = FloodAdaptLogging.getLogger()
-    logger.info("Setting up Docker containers for testing.")
-    sfincs = SfincsContainer(setup_settings.sfincs_version)
-    sfincs.start(setup_settings.database_path)
+    sfincs, fiat = None, None
 
-    fiat = FiatContainer(setup_settings.fiat_version)
-    fiat.start(setup_settings.database_path)
+    if HAS_DOCKER:
+        logger.info("Setting up Docker containers for testing.")
+        sfincs = SfincsContainer(setup_settings.sfincs_version)
+        sfincs.start(setup_settings.database_path)
+
+        fiat = FiatContainer(setup_settings.fiat_version)
+        fiat.start(setup_settings.database_path)
 
     yield sfincs, fiat
 
-    sfincs.stop()
-    fiat.stop()
-    logger.info(
-        f"Docker containers initialized: {DockerContainer.CONTAINERS_INITIALIZED}"
-    )
-    logger.info("Finished tearing down Docker containers.")
+    if HAS_DOCKER and fiat and sfincs:
+        sfincs.stop()
+        fiat.stop()
+        logger.info(
+            f"Docker containers initialized: {DockerContainer.CONTAINERS_INITIALIZED}"
+        )
+        logger.info("Finished tearing down Docker containers.")
 
 
 ## GENERAL FIXTURES ##
 @pytest.fixture
-def test_data_dir():
+def test_data_dir() -> Path:
     return Path(__file__).parent / "data"
 
 
 @pytest.hookimpl(tryfirst=True)
-def pytest_runtest_setup(item):
+def pytest_runtest_setup(item) -> None:
     test_name = item.name
     logger = FloodAdaptLogging.getLogger()
     logger.info(f"\nStarting test: {test_name}\n")
 
 
-def make_db_fixture(scope):
+def make_db_fixture(scope) -> FixtureFunctionDefinition:
     """
     Generate a fixture that is used for testing in general.
 
@@ -154,7 +161,9 @@ def make_db_fixture(scope):
         raise ValueError(f"Invalid fixture scope: {scope}")
 
     @pytest.fixture(scope=scope)
-    def _db_fixture():
+    def _db_fixture(
+        setup_docker_containers: tuple[SfincsContainer | None, FiatContainer | None],
+    ) -> Generator[Database]:
         """
         Fixture for setting up and tearing down the database once per scope.
 
@@ -180,6 +189,13 @@ def make_db_fixture(scope):
         """
         # Setup
         fa = FloodAdapt(SETTINGS.database_path)
+
+        # Inject Docker containers into the database controller for testing
+        sfincs, fiat = setup_docker_containers
+        if sfincs:
+            fa.database.static._sfincs_container = sfincs
+        if fiat:
+            fa.database.static._fiat_container = fiat
 
         # Perform tests
         yield fa.database
@@ -192,7 +208,7 @@ def make_db_fixture(scope):
     return _db_fixture
 
 
-def make_fa_fixture(scope):
+def make_fa_fixture(scope) -> FixtureFunctionDefinition:
     """
     Generate a fixture that is used for testing in general.
 
@@ -210,9 +226,11 @@ def make_fa_fixture(scope):
         raise ValueError(f"Invalid fixture scope: {scope}")
 
     @pytest.fixture(scope=scope)
-    def _db_fixture():
+    def _fa_fixture(
+        setup_docker_containers: tuple[SfincsContainer | None, FiatContainer | None],
+    ) -> Generator[FloodAdapt]:
         """
-        Fixture for setting up and tearing down the database once per scope.
+        Fixture for setting up and tearing down the FloodAdapt class once per scope.
 
         Every test session:
             1) Create a snapshot of the database
@@ -237,6 +255,13 @@ def make_fa_fixture(scope):
         # Setup
         fa = FloodAdapt(SETTINGS.database_path)
 
+        # Inject Docker containers into the database controller for testing
+        sfincs, fiat = setup_docker_containers
+        if sfincs:
+            fa.database.static._sfincs_container = sfincs
+        if fiat:
+            fa.database.static._fiat_container = fiat
+
         # Perform tests
         yield fa
 
@@ -245,7 +270,7 @@ def make_fa_fixture(scope):
         if clean:
             restore_db_from_snapshot()
 
-    return _db_fixture
+    return _fa_fixture
 
 
 # NOTE: to access the contents the fixtures in the test functions,
@@ -266,14 +291,14 @@ test_fa_session = make_fa_fixture("session")
 
 
 ## HELPER FUNCTIONS ##
-def _create_snapshot():
+def _create_snapshot() -> None:
     """Create a snapshot of the database directory."""
     if snapshot_dir.exists():
         shutil.rmtree(snapshot_dir)
     shutil.copytree(SETTINGS.database_path, snapshot_dir)
 
 
-def restore_db_from_snapshot():
+def restore_db_from_snapshot() -> None:
     if not snapshot_dir.exists():
         raise FileNotFoundError("Snapshot path does not exist.")
 
