@@ -221,7 +221,7 @@ class TestStatic:
 
     def test_existing_structures(self, test_fa: FloodAdapt):
         structures = test_fa.get_existing_structures()
-        assert isinstance(structures, gpd.GeoDataFrame)
+        assert isinstance(structures["weirs"], gpd.GeoDataFrame)
 
 
 class TestBenefits:
