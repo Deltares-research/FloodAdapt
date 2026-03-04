@@ -8,7 +8,6 @@ import time
 import warnings
 from datetime import datetime
 from pathlib import Path
-from typing import Generator
 
 import pytest
 from _pytest.fixtures import FixtureFunctionDefinition
@@ -74,7 +73,7 @@ def setup_settings() -> Settings:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_logging() -> Generator[None]:
+def setup_logging() -> None:
     """Session-wide setup and teardown for creating the initial snapshot."""
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     logger = FloodAdaptLogging.getLogger()
@@ -91,7 +90,7 @@ def setup_logging() -> Generator[None]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_test_database(setup_settings: Settings) -> Generator[None]:
+def setup_test_database(setup_settings: Settings) -> None:
     update_database_static(setup_settings)
     update_database_input(setup_settings)
     _create_snapshot()
@@ -106,7 +105,7 @@ def setup_test_database(setup_settings: Settings) -> Generator[None]:
 @pytest.fixture(scope="session")
 def setup_docker_containers(
     setup_settings: Settings,
-) -> Generator[tuple[SfincsContainer | None, FiatContainer | None]]:
+) -> tuple[SfincsContainer | None, FiatContainer | None]:
     """Session-wide setup and teardown for Docker containers."""
     logger = FloodAdaptLogging.getLogger()
     sfincs, fiat = None, None
@@ -163,7 +162,7 @@ def make_db_fixture(scope) -> FixtureFunctionDefinition:
     @pytest.fixture(scope=scope)
     def _db_fixture(
         setup_docker_containers: tuple[SfincsContainer | None, FiatContainer | None],
-    ) -> Generator[Database]:
+    ) -> Database:
         """
         Fixture for setting up and tearing down the database once per scope.
 
@@ -228,7 +227,7 @@ def make_fa_fixture(scope) -> FixtureFunctionDefinition:
     @pytest.fixture(scope=scope)
     def _fa_fixture(
         setup_docker_containers: tuple[SfincsContainer | None, FiatContainer | None],
-    ) -> Generator[FloodAdapt]:
+    ) -> FloodAdapt:
         """
         Fixture for setting up and tearing down the FloodAdapt class once per scope.
 

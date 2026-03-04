@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
@@ -21,7 +20,7 @@ class TestDockerContainer:
         self,
         setup_docker_containers: tuple[SfincsContainer, FiatContainer],
         setup_settings: Settings,
-    ) -> Generator[None, None, None]:
+    ) -> None:
         """Pause the Docker containers after setup and unpause them after tests."""
         SFINCS_CONTAINER, FIAT_CONTAINER = setup_docker_containers
 
