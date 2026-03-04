@@ -264,8 +264,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         self._deleted.clear()
         self._last_modified.clear()
         self.standard_objects.clear()
-        del self.input_path
-        del self.output_path
 
     ## Query / Info methods
     def summarize_objects(self) -> dict[str, list[Any]]:
