@@ -126,6 +126,9 @@ def test_shutdown_AfterShutdown_VarsAreNone(settings):
     # data
     for repo in dbs._repositories:
         assert len(repo) == 0
+        assert not hasattr(repo, "input_path")
+        assert not hasattr(repo, "output_path")
+        assert repo.standard_objects == []
     assert dbs.static._cached_data == {}
     assert dbs.site is None
 
@@ -151,6 +154,10 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase(settings):
 
     # data
     assert dbs.site is not None
+    for repo in dbs._repositories:
+        assert repo.input_path is not None
+        assert repo.output_path is not None
+        assert isinstance(repo.standard_objects, list)
 
     # paths
     assert dbs.base_path is not None
