@@ -1373,8 +1373,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the FloodAdapt instance</span></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(settings.database_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>2026-02-27 05:40:26 PM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples
-2026-02-27 05:40:26 PM - FloodAdapt.Database - INFO - Loading database into memory</code></pre>
+<pre><code>2026-03-04 01:43:56 PM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples
+2026-03-04 01:43:56 PM - FloodAdapt.Database - INFO - Loading database into memory</code></pre>
 </div>
 </div>
 </section>
@@ -1476,7 +1476,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <meta name=&quot;viewport&quot; content=&quot;width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; />
             <style>
-                #map_edd726c35e3819d9e4463d9bedb90938 {
+                #map_360136413d0527413bd05386a57c6266 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -1529,14 +1529,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <body>
     
     
-            <div class=&quot;folium-map&quot; id=&quot;map_edd726c35e3819d9e4463d9bedb90938&quot; ></div>
+            <div class=&quot;folium-map&quot; id=&quot;map_360136413d0527413bd05386a57c6266&quot; ></div>
         
 </body>
 <script>
     
     
-            var map_edd726c35e3819d9e4463d9bedb90938 = L.map(
-                &quot;map_edd726c35e3819d9e4463d9bedb90938&quot;,
+            var map_360136413d0527413bd05386a57c6266 = L.map(
+                &quot;map_360136413d0527413bd05386a57c6266&quot;,
                 {
                     center: [32.785635380401445, -79.9433587261437],
                     crs: L.CRS.EPSG3857,
@@ -1548,13 +1548,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
                 }
             );
-            L.control.scale().addTo(map_edd726c35e3819d9e4463d9bedb90938);
+            L.control.scale().addTo(map_360136413d0527413bd05386a57c6266);
 
             
 
         
     
-            var tile_layer_00e14e7be37705bdd6884de0a0b4db73 = L.tileLayer(
+            var tile_layer_bd566e76e0634c0214a8aa514354f67c = L.tileLayer(
                 &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
                 {
   &quot;minZoom&quot;: 0,
@@ -1571,28 +1571,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             );
         
     
-            tile_layer_00e14e7be37705bdd6884de0a0b4db73.addTo(map_edd726c35e3819d9e4463d9bedb90938);
+            tile_layer_bd566e76e0634c0214a8aa514354f67c.addTo(map_360136413d0527413bd05386a57c6266);
         
     
-            map_edd726c35e3819d9e4463d9bedb90938.fitBounds(
+            map_360136413d0527413bd05386a57c6266.fitBounds(
                 [[32.769555352706625, -79.96242766295042], [32.801715408096264, -79.92428978933698]],
                 {}
             );
         
     
-        function geo_json_f4be220652df6b517d5ec05c0e333d61_styler(feature) {
+        function geo_json_ce50aadd0f988d785dfadd2f5e254356_styler(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.5, &quot;weight&quot;: 2};
             }
         }
-        function geo_json_f4be220652df6b517d5ec05c0e333d61_highlighter(feature) {
+        function geo_json_ce50aadd0f988d785dfadd2f5e254356_highlighter(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.75};
             }
         }
-        function geo_json_f4be220652df6b517d5ec05c0e333d61_pointToLayer(feature, latlng) {
+        function geo_json_ce50aadd0f988d785dfadd2f5e254356_pointToLayer(feature, latlng) {
             var opts = {
   &quot;stroke&quot;: true,
   &quot;color&quot;: &quot;#3388ff&quot;,
@@ -1610,46 +1610,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   &quot;radius&quot;: 2,
 };
             
-            let style = geo_json_f4be220652df6b517d5ec05c0e333d61_styler(feature)
+            let style = geo_json_ce50aadd0f988d785dfadd2f5e254356_styler(feature)
             Object.assign(opts, style)
             
             return new L.CircleMarker(latlng, opts)
         }
 
-        function geo_json_f4be220652df6b517d5ec05c0e333d61_onEachFeature(feature, layer) {
+        function geo_json_ce50aadd0f988d785dfadd2f5e254356_onEachFeature(feature, layer) {
 
             layer.on({
                 mouseout: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                            geo_json_f4be220652df6b517d5ec05c0e333d61.resetStyle(e.target);
+                            geo_json_ce50aadd0f988d785dfadd2f5e254356.resetStyle(e.target);
                     }
                 },
                 mouseover: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                        const highlightStyle = geo_json_f4be220652df6b517d5ec05c0e333d61_highlighter(e.target.feature)
+                        const highlightStyle = geo_json_ce50aadd0f988d785dfadd2f5e254356_highlighter(e.target.feature)
                         e.target.setStyle(highlightStyle);
                     }
                 },
             });
         };
-        var geo_json_f4be220652df6b517d5ec05c0e333d61 = L.geoJson(null, {
-                onEachFeature: geo_json_f4be220652df6b517d5ec05c0e333d61_onEachFeature,
+        var geo_json_ce50aadd0f988d785dfadd2f5e254356 = L.geoJson(null, {
+                onEachFeature: geo_json_ce50aadd0f988d785dfadd2f5e254356_onEachFeature,
             
-                style: geo_json_f4be220652df6b517d5ec05c0e333d61_styler,
-                pointToLayer: geo_json_f4be220652df6b517d5ec05c0e333d61_pointToLayer,
+                style: geo_json_ce50aadd0f988d785dfadd2f5e254356_styler,
+                pointToLayer: geo_json_ce50aadd0f988d785dfadd2f5e254356_pointToLayer,
             ...{
 }
         });
 
-        function geo_json_f4be220652df6b517d5ec05c0e333d61_add (data) {
-            geo_json_f4be220652df6b517d5ec05c0e333d61
+        function geo_json_ce50aadd0f988d785dfadd2f5e254356_add (data) {
+            geo_json_ce50aadd0f988d785dfadd2f5e254356
                 .addData(data);
         }
-            geo_json_f4be220652df6b517d5ec05c0e333d61_add({&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;features&quot;: [{&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.96242766295042, 32.78909640883882], [-79.95576222911224, 32.78324916123054], [-79.94590897909052, 32.77515983512822], [-79.93675125259975, 32.77048133500943], [-79.93020173935003, 32.769555352706625], [-79.9279992481687, 32.77018892058612], [-79.92428978933698, 32.77930205181672], [-79.9244057099255, 32.78631901415039], [-79.9274776055205, 32.79377393017178], [-79.92968009670182, 32.799035847596095], [-79.93124502464644, 32.801715408096264]]], &quot;type&quot;: &quot;MultiLineString&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
+            geo_json_ce50aadd0f988d785dfadd2f5e254356_add({&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;features&quot;: [{&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.96242766295042, 32.78909640883882], [-79.95576222911224, 32.78324916123054], [-79.94590897909052, 32.77515983512822], [-79.93675125259975, 32.77048133500943], [-79.93020173935003, 32.769555352706625], [-79.9279992481687, 32.77018892058612], [-79.92428978933698, 32.77930205181672], [-79.9244057099255, 32.78631901415039], [-79.9274776055205, 32.79377393017178], [-79.92968009670182, 32.799035847596095], [-79.93124502464644, 32.801715408096264]]], &quot;type&quot;: &quot;MultiLineString&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
 
         
     
-    geo_json_f4be220652df6b517d5ec05c0e333d61.bindTooltip(
+    geo_json_ce50aadd0f988d785dfadd2f5e254356.bindTooltip(
     function(layer){
     let div = L.DomUtil.create('div');
     
@@ -1684,7 +1684,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 });
                      
     
-            geo_json_f4be220652df6b517d5ec05c0e333d61.addTo(map_edd726c35e3819d9e4463d9bedb90938);
+            geo_json_ce50aadd0f988d785dfadd2f5e254356.addTo(map_360136413d0527413bd05386a57c6266);
         
 </script>
 </html>" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen="" webkitallowfullscreen="" mozallowfullscreen=""></iframe></div></div>
@@ -1777,7 +1777,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <meta name=&quot;viewport&quot; content=&quot;width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; />
             <style>
-                #map_40656ef459821ea9f1c9a7ed0874b066 {
+                #map_e9d7f486321f13bf9e0b8edf7c87b6ef {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -1830,14 +1830,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <body>
     
     
-            <div class=&quot;folium-map&quot; id=&quot;map_40656ef459821ea9f1c9a7ed0874b066&quot; ></div>
+            <div class=&quot;folium-map&quot; id=&quot;map_e9d7f486321f13bf9e0b8edf7c87b6ef&quot; ></div>
         
 </body>
 <script>
     
     
-            var map_40656ef459821ea9f1c9a7ed0874b066 = L.map(
-                &quot;map_40656ef459821ea9f1c9a7ed0874b066&quot;,
+            var map_e9d7f486321f13bf9e0b8edf7c87b6ef = L.map(
+                &quot;map_e9d7f486321f13bf9e0b8edf7c87b6ef&quot;,
                 {
                     center: [32.7720047172163, -79.9392402303062],
                     crs: L.CRS.EPSG3857,
@@ -1849,13 +1849,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
                 }
             );
-            L.control.scale().addTo(map_40656ef459821ea9f1c9a7ed0874b066);
+            L.control.scale().addTo(map_e9d7f486321f13bf9e0b8edf7c87b6ef);
 
             
 
         
     
-            var tile_layer_01042124d498605e464c6313aa5dc357 = L.tileLayer(
+            var tile_layer_83166e65da22e68264792d291f0dcc4b = L.tileLayer(
                 &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
                 {
   &quot;minZoom&quot;: 0,
@@ -1872,28 +1872,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             );
         
     
-            tile_layer_01042124d498605e464c6313aa5dc357.addTo(map_40656ef459821ea9f1c9a7ed0874b066);
+            tile_layer_83166e65da22e68264792d291f0dcc4b.addTo(map_e9d7f486321f13bf9e0b8edf7c87b6ef);
         
     
-            map_40656ef459821ea9f1c9a7ed0874b066.fitBounds(
+            map_e9d7f486321f13bf9e0b8edf7c87b6ef.fitBounds(
                 [[32.769891964939895, -79.94275509838587], [32.7741174694927, -79.93572536222652]],
                 {}
             );
         
     
-        function geo_json_a54504b09a3016b23051835dc884aa33_styler(feature) {
+        function geo_json_ce11d41408edf68b8e4ad93770ad34d0_styler(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.5, &quot;weight&quot;: 2};
             }
         }
-        function geo_json_a54504b09a3016b23051835dc884aa33_highlighter(feature) {
+        function geo_json_ce11d41408edf68b8e4ad93770ad34d0_highlighter(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.75};
             }
         }
-        function geo_json_a54504b09a3016b23051835dc884aa33_pointToLayer(feature, latlng) {
+        function geo_json_ce11d41408edf68b8e4ad93770ad34d0_pointToLayer(feature, latlng) {
             var opts = {
   &quot;stroke&quot;: true,
   &quot;color&quot;: &quot;#3388ff&quot;,
@@ -1911,46 +1911,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   &quot;radius&quot;: 2,
 };
             
-            let style = geo_json_a54504b09a3016b23051835dc884aa33_styler(feature)
+            let style = geo_json_ce11d41408edf68b8e4ad93770ad34d0_styler(feature)
             Object.assign(opts, style)
             
             return new L.CircleMarker(latlng, opts)
         }
 
-        function geo_json_a54504b09a3016b23051835dc884aa33_onEachFeature(feature, layer) {
+        function geo_json_ce11d41408edf68b8e4ad93770ad34d0_onEachFeature(feature, layer) {
 
             layer.on({
                 mouseout: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                            geo_json_a54504b09a3016b23051835dc884aa33.resetStyle(e.target);
+                            geo_json_ce11d41408edf68b8e4ad93770ad34d0.resetStyle(e.target);
                     }
                 },
                 mouseover: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                        const highlightStyle = geo_json_a54504b09a3016b23051835dc884aa33_highlighter(e.target.feature)
+                        const highlightStyle = geo_json_ce11d41408edf68b8e4ad93770ad34d0_highlighter(e.target.feature)
                         e.target.setStyle(highlightStyle);
                     }
                 },
             });
         };
-        var geo_json_a54504b09a3016b23051835dc884aa33 = L.geoJson(null, {
-                onEachFeature: geo_json_a54504b09a3016b23051835dc884aa33_onEachFeature,
+        var geo_json_ce11d41408edf68b8e4ad93770ad34d0 = L.geoJson(null, {
+                onEachFeature: geo_json_ce11d41408edf68b8e4ad93770ad34d0_onEachFeature,
             
-                style: geo_json_a54504b09a3016b23051835dc884aa33_styler,
-                pointToLayer: geo_json_a54504b09a3016b23051835dc884aa33_pointToLayer,
+                style: geo_json_ce11d41408edf68b8e4ad93770ad34d0_styler,
+                pointToLayer: geo_json_ce11d41408edf68b8e4ad93770ad34d0_pointToLayer,
             ...{
 }
         });
 
-        function geo_json_a54504b09a3016b23051835dc884aa33_add (data) {
-            geo_json_a54504b09a3016b23051835dc884aa33
+        function geo_json_ce11d41408edf68b8e4ad93770ad34d0_add (data) {
+            geo_json_ce11d41408edf68b8e4ad93770ad34d0
                 .addData(data);
         }
-            geo_json_a54504b09a3016b23051835dc884aa33_add({&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;features&quot;: [{&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.94275509838587, 32.77306721830996], [-79.93572536222652, 32.7741174694927], [-79.93697444757714, 32.769891964939895], [-79.94275509838587, 32.77306721830996]]], &quot;type&quot;: &quot;Polygon&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
+            geo_json_ce11d41408edf68b8e4ad93770ad34d0_add({&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;features&quot;: [{&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.94275509838587, 32.77306721830996], [-79.93572536222652, 32.7741174694927], [-79.93697444757714, 32.769891964939895], [-79.94275509838587, 32.77306721830996]]], &quot;type&quot;: &quot;Polygon&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
 
         
     
-    geo_json_a54504b09a3016b23051835dc884aa33.bindTooltip(
+    geo_json_ce11d41408edf68b8e4ad93770ad34d0.bindTooltip(
     function(layer){
     let div = L.DomUtil.create('div');
     
@@ -1985,7 +1985,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 });
                      
     
-            geo_json_a54504b09a3016b23051835dc884aa33.addTo(map_40656ef459821ea9f1c9a7ed0874b066);
+            geo_json_ce11d41408edf68b8e4ad93770ad34d0.addTo(map_e9d7f486321f13bf9e0b8edf7c87b6ef);
         
 </script>
 </html>" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen="" webkitallowfullscreen="" mozallowfullscreen=""></iframe></div></div>
@@ -2005,6 +2005,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="30" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a df with all strategies</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(fa.get_measures())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2026-03-04 01:43:58 PM - FloodAdapt.flood_adapt.dbs_classes.dbs_static - INFO - Reading aggregation areas.</code></pre>
+</div>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <div>
 
@@ -2026,7 +2029,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>seawall_12ft</td>
 <td>12ft Seawall</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-02-27 17:40:28.480293</td>
+<td>2026-03-04 13:43:58.499791</td>
 <td>id ...</td>
 </tr>
 <tr class="even">
@@ -2034,7 +2037,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Pump</td>
 <td>Pump</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-02-27 17:40:28.488339</td>
+<td>2026-03-04 13:43:58.509896</td>
 <td>ge...</td>
 </tr>
 <tr class="odd">
@@ -2042,7 +2045,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>green_infrastructure_storage</td>
 <td>Storage through green infrastructure</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-02-27 17:40:28.500148</td>
+<td>2026-03-04 13:43:58.519742</td>
 <td>ge...</td>
 </tr>
 <tr class="even">
@@ -2050,7 +2053,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>total_storage_aggregation_area</td>
 <td>Total Storage through green infrastructure in ...</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-02-27 17:40:28.502160</td>
+<td>2026-03-04 13:43:58.521758</td>
 <td>name ...</td>
 </tr>
 <tr class="odd">
@@ -2058,7 +2061,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>w_square</td>
 <td>Water Square</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-02-27 17:40:28.512006</td>
+<td>2026-03-04 13:43:58.531554</td>
 <td>ge...</td>
 </tr>
 <tr class="even">
@@ -2066,7 +2069,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>elevate_homes_2ft</td>
 <td>Elevate all residential buildings in aggregati...</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-02-27 17:40:28.598431</td>
+<td>2026-03-04 13:43:58.617088</td>
 <td>id ...</td>
 </tr>
 <tr class="odd">
@@ -2074,7 +2077,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>buyout_all_buildings</td>
 <td>Buyout all buildings in a specific area.</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-02-27 17:40:28.600446</td>
+<td>2026-03-04 13:43:58.619110</td>
 <td>name ...</td>
 </tr>
 <tr class="even">
@@ -2082,7 +2085,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>floodproof_all_com</td>
 <td>Floodproofing all commercial buildings.</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-02-27 17:40:28.602467</td>
+<td>2026-03-04 13:43:58.622476</td>
 <td>None</td>
 </tr>
 </tbody>
@@ -2097,37 +2100,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>If we want to edit small parts of a measure, it is easier to copy an existing measure and edit the copy. This way we do not have to create a new measure from scratch.</p>
 <p>A measure can be copied in the database by using the <code>copy_measure()</code> method of the <code>FloodAdapt</code> class. This method takes three arguments: the name of the measure to be copied and the name and description of the new measure. Let’s copy the measure we just created, having in mind that we want to make a measure for flood-proofing residential buildings.</p>
 <div id="32" class="cell" data-execution_count="14">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy measure</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>fa.copy_measure(</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    old_name<span class="op">=</span><span class="st">"floodproof_all_com"</span>,</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    new_name<span class="op">=</span><span class="st">"floodproof_all_res"</span>,</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    new_description<span class="op">=</span><span class="st">"Floodproofing all residential buildings."</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy measure</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>fa.copy_measure(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    old_name<span class="op">=</span><span class="st">"floodproof_all_com"</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    new_name<span class="op">=</span><span class="st">"floodproof_all_res"</span>,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    new_description<span class="op">=</span><span class="st">"Floodproofing all residential buildings."</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can see that now a new measure with name “floodproof_all_res” has been created in the database. However, the actual attributes of the measure are still the same as the original measure.</p>
 <div id="34" class="cell" data-execution_count="15">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect Measure</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>floodproof_res <span class="op">=</span> fa.get_measure(<span class="st">"floodproof_all_res"</span>)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>floodproof_res</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect Measure</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>floodproof_res <span class="op">=</span> fa.get_measure(<span class="st">"floodproof_all_res"</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>floodproof_res</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="15">
 <pre><code>FloodProof(name='floodproof_all_res', description='Floodproofing all residential buildings.', type=&lt;MeasureType.floodproof_properties: 'floodproof_properties'&gt;, selection_type=&lt;SelectionType.all: 'all'&gt;, polygon_file=None, aggregation_area_type=None, aggregation_area_name=None, property_type='commercial', elevation=UnitfulLength(value=2.00, units=feet))</code></pre>
 </div>
 </div>
 <p>We can directly edit the relevant attributes of the measure object. In this case, we want to change the type to “residential”.</p>
 <div id="36" class="cell" data-execution_count="16">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Edit attributes</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>floodproof_res.property_type <span class="op">=</span> <span class="st">"residential"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Edit attributes</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>floodproof_res.property_type <span class="op">=</span> <span class="st">"residential"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Then using the <code>save_measure()</code> method of the <code>FloodAdapt</code> class, we can save the changes to the database. This method takes a two arguments which are the <code>Measure</code> object and an optional boolean <code>overwrite</code>. The <code>name</code> field of the measure object provided will be used to identify which measure is going to be updated in the database, with the given Measure object attributes.</p>
 <div id="38" class="cell" data-execution_count="17">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save updates</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>fa.save_measure(floodproof_res, overwrite<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save updates</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>fa.save_measure(floodproof_res, overwrite<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Now we can verify that the measure has been updated in the database. The property type is now “residential”.</p>
 <div id="40" class="cell" data-execution_count="18">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify updates</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>floodproof_res <span class="op">=</span> fa.get_measure(<span class="st">"floodproof_all_res"</span>)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>floodproof_res.property_type</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify updates</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>floodproof_res <span class="op">=</span> fa.get_measure(<span class="st">"floodproof_all_res"</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>floodproof_res.property_type</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
 <pre><code>'residential'</code></pre>
 </div>
@@ -2141,20 +2144,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Note:</strong> All measures of a strategy need to be saved in the database before you can save the strategy itself.</p>
 </blockquote>
 <div id="42" class="cell" data-execution_count="19">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a strategy object</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>strategy <span class="op">=</span> Strategy(</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"pump_greening_flood_proof"</span>,</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    description<span class="op">=</span><span class="st">"Strategy with pump, greening and floodproofing"</span>,</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    measures<span class="op">=</span>[pump.name, greening.name, flood_proof.name],</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the strategy</span></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>fa.save_strategy(strategy)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a strategy object</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>strategy <span class="op">=</span> Strategy(</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"pump_greening_flood_proof"</span>,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    description<span class="op">=</span><span class="st">"Strategy with pump, greening and floodproofing"</span>,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    measures<span class="op">=</span>[pump.name, greening.name, flood_proof.name],</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the strategy</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>fa.save_strategy(strategy)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Using the <code>get_strategies()</code> method of the <code>FloodAdapt</code> class, we can check that the strategies have been saved to the database.</p>
 <div id="44" class="cell" data-execution_count="20">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a df with all strategies</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(fa.get_strategies())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a df with all strategies</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(fa.get_strategies())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="20">
 <div>
 
@@ -2175,14 +2178,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>no_measures</td>
 <td></td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-02-27 17:17:52.157263</td>
+<td>2026-03-04 13:21:08.894650</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">1</th>
 <td>pump_greening_flood_proof</td>
 <td>Strategy with pump, greening and floodproofing</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-02-27 17:40:29.215387</td>
+<td>2026-03-04 13:43:59.349569</td>
 </tr>
 </tbody>
 </table>
@@ -2191,9 +2194,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div id="45" class="cell" data-execution_count="21">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect strategy</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>strategy <span class="op">=</span> fa.get_strategy(<span class="st">"pump_greening_flood_proof"</span>)</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>strategy</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect strategy</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>strategy <span class="op">=</span> fa.get_strategy(<span class="st">"pump_greening_flood_proof"</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>strategy</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <pre><code>Strategy(name='pump_greening_flood_proof', description='Strategy with pump, greening and floodproofing', measures=['Pump', 'green_infrastructure_storage', 'floodproof_all_com'])</code></pre>
 </div>
@@ -2204,37 +2207,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>If we want to edit small parts of a strategy, it is easier to copy an existing strategy and edit the copy. This way we do not have to create a new strategy from scratch.</p>
 <p>A strategy can be copied in the database by using the <code>copy_strategy()</code> method of the <code>FloodAdapt</code> class. This method takes three arguments: the name of the strategy to be copied and the name and description of the new strategy. Let’s copy the strategy we just created, having in mind that we want to remove the greening from the strategy and add a floodwall instead.</p>
 <div id="47" class="cell" data-execution_count="22">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy strategy</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>fa.copy_strategy(</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    old_name<span class="op">=</span><span class="st">"pump_greening_flood_proof"</span>, </span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    new_name<span class="op">=</span><span class="st">"pump_floodwall_flood_proof"</span>, </span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    new_description<span class="op">=</span><span class="st">"Strategy with pump, flodwall and floodproofing."</span>,</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy strategy</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>fa.copy_strategy(</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    old_name<span class="op">=</span><span class="st">"pump_greening_flood_proof"</span>, </span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    new_name<span class="op">=</span><span class="st">"pump_floodwall_flood_proof"</span>, </span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    new_description<span class="op">=</span><span class="st">"Strategy with pump, flodwall and floodproofing."</span>,</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can see that now a new strategy with name “pump_floodwall_flood_proof” has been created in the database. However, the actual attributes of the strtaegy are still the same as the original srtategy.</p>
 <div id="49" class="cell" data-execution_count="23">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect strategy2</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>strategy_2 <span class="op">=</span> fa.get_strategy(<span class="st">"pump_floodwall_flood_proof"</span>)</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>strategy_2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect strategy2</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>strategy_2 <span class="op">=</span> fa.get_strategy(<span class="st">"pump_floodwall_flood_proof"</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>strategy_2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="23">
 <pre><code>Strategy(name='pump_floodwall_flood_proof', description='Strategy with pump, flodwall and floodproofing.', measures=['Pump', 'green_infrastructure_storage', 'floodproof_all_com'])</code></pre>
 </div>
 </div>
 <p>We can directly edit the relevant attributes of the measure object. In this case, we want to change the type to “residential”.</p>
 <div id="51" class="cell" data-execution_count="24">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>strategy_2.measures.remove(greening.name)  <span class="co"># Remove greening</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>strategy_2.measures.append(floodwall.name) <span class="co"># Add floodwall</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>strategy_2.measures.remove(greening.name)  <span class="co"># Remove greening</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>strategy_2.measures.append(floodwall.name) <span class="co"># Add floodwall</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Then using the <code>save_strategy(name, overwrite=True)</code> method of the <code>FloodAdapt</code> class, we can save the changes to the database. This method takes a single argument which is a <code>Strategy</code> object. The <code>name</code> field of the Strategy object provided will be used to identify which strategy is going to be updated in the database, with the given Strategy object attributes.</p>
 <div id="53" class="cell" data-execution_count="25">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save updates</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>fa.save_strategy(strategy_2, overwrite<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save updates</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>fa.save_strategy(strategy_2, overwrite<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Now we can verify that the strategy has been updated in the database.</p>
 <div id="55" class="cell" data-execution_count="26">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify updates</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>strategy_2 <span class="op">=</span> fa.get_strategy(<span class="st">"pump_floodwall_flood_proof"</span>)</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>strategy_2.measures</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify updates</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>strategy_2 <span class="op">=</span> fa.get_strategy(<span class="st">"pump_floodwall_flood_proof"</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>strategy_2.measures</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="26">
 <pre><code>['Pump', 'floodproof_all_com', 'seawall_12ft']</code></pre>
 </div>
