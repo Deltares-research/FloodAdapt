@@ -5,7 +5,6 @@ To build the environment, manage dependencies and run tasks, FloodAdapt uses [Pi
 
 Before continuing the installation process, make sure you have access to all required private repositories by ensuring you are in the Teams `FloodAdaptUsers` in the [Deltares](https://github.com/orgs/Deltares/teams/floodadaptusers) and [Deltares-research](https://github.com/orgs/Deltares-research/teams/floodadaptusers) organizations.
 
-## Windows
 Then run these commands to install FloodAdapt:
 ```bash
 git clone https://github.com/Deltares-research/FloodAdapt.git
@@ -13,15 +12,32 @@ cd FloodAdapt
 pixi install
 ```
 
-## Linux
-Linux is not supported at the moment, but will be supported in the near future.
-
 # Build database
 
 Before you can do anything with FloodAdapt, a database is required. More in-depth information on how to set it up can be found in the [examples](docs/4_system_setup/index.qmd).
 Creating a database is quite complex and is meant for domain experts.
 If you would like to use FloodAdapt, but cannot setup a database, please contact `FloodAdapt@deltares.nl`
 
+## Setting up scenario execution method
+
+In order to run scenarios in FloodAdapt, it is required to configure the scenario execution method.
+
+On Windows, binaries for SFINCS and Delft-Fiat are available. Make sure to check the expected binary versions in the [``Settings``](https://deltares-research.github.io/FloodAdapt/3_api_docs/api_ref/Settings.html) class of the backend.
+On any other operating system, we will use Docker (https://www.docker.com/products/docker-desktop/).
+
+Binaries
+- SFINCS: https://download.deltares.nl/sfincs
+- Delft-FIAT: https://download.deltares.nl/delft-fiat
+
+Docker images
+- SFINCS: https://hub.docker.com/r/deltares/sfincs-cpu
+- Delft-FIAT: https://hub.docker.com/r/deltares/fiat
+
+The method can be configured manually via the ``Settings`` class, and via the ``.env`` file described above by adding one of these lines: ``USE_DOCKER=True`` and ``USE_BINARIES=True``.
+
+If you are using binaries, you also must add: ``SFINCS_BIN_PATH=C:\\abs\\path\\to\\sfincs.exe`` and ``FIAT_BIN_PATH=C:\\abs\\path\\to\\fiat.exe``
+
+For more information about the ``Settings`` class and the ``.env`` file it mirrors, please have a look at the [backend documentation](https://deltares-research.github.io/FloodAdapt/3_api_docs/api_ref/Settings.html)
 
 # Developing FloodAdapt
 
@@ -44,34 +60,6 @@ python scripts/my_script.py
 ...
 ```
 
-# FloodAdapt in scripts or as a dependency
-
-FloodAdapt uses a database to store, handle and organize input files, output files and static data. This database needs to be configured the first time you want to use FloodAdapt. Which is done via [`flood_adapt/config.py`](flood_adapt/config.py) which contains the `Settings` class to set and validate environment variables, specific to your system.
-
-To initialize FloodAdapt and configure the database, add the following lines to the top of your script / initialize function to validate and set the environment variables:
-```python
-from pathlib import Path
-from flood_adapt import Settings
-
-# Usually ends in `Database` and can contain multiple sites
-root = Path("path/to/your/database/root")
-
-# Specifies which site to use
-name = "database_name"
-
-# Define the paths to the model kernel binaries
-sfincs_bin = Path("path/to/your/sfincs/bin.exe")
-fiat_bin = Path("path/to/your/fiat/bin.exe")
-
-# Validate and set environment variables
-Settings(
-    DATABASE_ROOT=root,
-    DATABASE_NAME=name,
-    SFINCS_BIN_PATH=sfincs_bin,
-    FIAT_BIN_PATH=fiat_path,
-    USE_BINARIES=True,
-)
-```
 
 ## Running the tests
 
