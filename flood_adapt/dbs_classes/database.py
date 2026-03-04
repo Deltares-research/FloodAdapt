@@ -628,6 +628,9 @@ class Database(IDatabase):
                 shutil.rmtree(_dir, ignore_errors=True)
             # If the scenario is finished, delete the simulation folders depending on `save_simulation`
             elif finished_file_exists(_dir):
+                logger.info(
+                    f"Cleaning up simulation folders of scenario: {_dir.name} depending on 'save_simulation'."
+                )
                 self._delete_simulations(_dir.name, overland, fiat, offshore)
 
     def get_postprocessing_hooks(
