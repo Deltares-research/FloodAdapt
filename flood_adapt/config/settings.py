@@ -27,7 +27,7 @@ class Settings(BaseSettings):
 
     Usage
     -----
-    from flood_adapt.config.config import Settings
+    from flood_adapt.config.settings import Settings
 
     One of the following:
 
