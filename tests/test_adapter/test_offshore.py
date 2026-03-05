@@ -25,7 +25,7 @@ from flood_adapt.objects.forcing.wind import (
     WindMeteo,
 )
 from flood_adapt.objects.scenarios.scenarios import Scenario
-from tests.conftest import IS_WINDOWS
+from tests.conftest import CAN_EXECUTE_SCENARIOS
 from tests.test_adapter.test_sfincs_adapter import mock_meteohandler_read
 
 __all__ = ["mock_meteohandler_read"]
@@ -72,8 +72,8 @@ def setup_offshore_scenario(test_db: IDatabase):
 
 
 @pytest.mark.skipif(
-    not IS_WINDOWS,
-    reason="Only run on windows where we have a working sfincs binary",
+    not CAN_EXECUTE_SCENARIOS,
+    reason="Only run when we can execute scenarios. Requires either a working sfincs binary, or a working docker setup",
 )
 class TestOffshoreSfincsHandler:
     @pytest.mark.skip(

@@ -647,7 +647,9 @@ class DatabaseBuilder:
         ):
             logger.info("Creating `no measures` strategy and `current` projection.")
             # Create database instance
-            db = Database(self.root.parent, self.config.name)
+            db = Database(
+                database_root=self.root.parent, database_name=self.config.name
+            )
             # Create no measures strategy
             strategy = Strategy(
                 name=self._no_measures_strategy_name,

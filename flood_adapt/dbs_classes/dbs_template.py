@@ -2,7 +2,7 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Any, Iterator, Optional, TypeVar
+from typing import Any, Iterator, TypeVar
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
@@ -26,9 +26,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
     _object_class: type[T_OBJECTMODEL]
     _higher_lvl_object: str
 
-    def __init__(
-        self, database: IDatabase, standard_objects: Optional[list[str]] = None
-    ):
+    def __init__(self, database: IDatabase, standard_objects: list[str] | None = None):
         """Initialize any necessary attributes."""
         self._objects: dict[str, T_OBJECTMODEL] = {}
         self._mutated: set[str] = set()
@@ -38,7 +36,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         self._database = database
         self.input_path = database.input_path / self.dir_name
         self.output_path = database.output_path / self.dir_name
-        self.standard_objects = standard_objects
+        self.standard_objects = standard_objects or []
 
     ## Public
     ## IO
@@ -265,6 +263,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         self._mutated.clear()
         self._deleted.clear()
         self._last_modified.clear()
+        self.standard_objects.clear()
 
     ## Query / Info methods
     def summarize_objects(self) -> dict[str, list[Any]]:
@@ -312,9 +311,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECTMODEL]):
         bool
             True if the object is a standard object, False otherwise
         """
-        if self.standard_objects:
-            return name in self.standard_objects
-        return False
+        return name in self.standard_objects
 
     def _has_object(self, name: str) -> bool:
         """Check if an object with the given name exists in the database."""

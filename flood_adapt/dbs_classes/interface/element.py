@@ -11,6 +11,7 @@ T_OBJECT_MODEL = TypeVar("T_OBJECT_MODEL", bound=Object)
 class AbstractDatabaseElement(ABC, Generic[T_OBJECT_MODEL]):
     input_path: Path
     output_path: Path
+    standard_objects: list[str]
 
     _objects: dict[str, T_OBJECT_MODEL]
     _mutated: set[str]

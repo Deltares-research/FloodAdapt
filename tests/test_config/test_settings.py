@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Callable, Generator
+from typing import Callable
 
 import pytest
 from pydantic import ValidationError
@@ -45,9 +45,7 @@ def fake_binaries(tmp_path: Path) -> tuple[Path, Path]:
 
 
 @pytest.fixture
-def mock_subprocess_run(
-    monkeypatch: pytest.MonkeyPatch,
-) -> Generator[Callable[..., None], Any, None]:
+def mock_subprocess_run(monkeypatch: pytest.MonkeyPatch) -> Callable[..., None]:
     expected_sfincs_output = (
         "------------ Welcome to SFINCS ------------\n"
         "\n"

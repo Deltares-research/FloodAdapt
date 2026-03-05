@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import contextily as ctx
 import geopandas as gpd
@@ -29,8 +29,9 @@ from hydromt_sfincs.quadtree import QuadtreeGrid
 from matplotlib import animation
 from shapely.affinity import translate
 
+from flood_adapt.adapter.docker import DockerContainer
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
-from flood_adapt.config.settings import Settings
+from flood_adapt.config.settings import ExecutionMethod
 from flood_adapt.config.site import Site
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.misc.path_builder import (
@@ -118,7 +119,7 @@ class SfincsAdapter(IHazardAdapter):
     ###############
 
     ### HAZARD ADAPTER METHODS ###
-    def __init__(self, model_root: Path):
+    def __init__(self, model_root: Path, container: DockerContainer | None = None):
         """Load overland sfincs model based on a root directory.
 
         Parameters
@@ -134,6 +135,7 @@ class SfincsAdapter(IHazardAdapter):
             logger=self._setup_sfincs_logger(model_root),
         )
         self._model.read()
+        self.container = container
 
     def read(self, path: Path):
         """Read the sfincs model from the current model root."""
@@ -178,7 +180,7 @@ class SfincsAdapter(IHazardAdapter):
         """Check if the model has been run."""
         return self.run_completed(scenario)
 
-    def execute(self, path: Path, strict: bool = True) -> bool:
+    def execute(self, path: Path, strict: bool = True, **kwargs: Any) -> bool:
         """
         Run the sfincs executable in the specified path.
 
@@ -198,27 +200,37 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
-        sfincs_bin = Settings().sfincs_bin_path
-        if not sfincs_bin or not sfincs_bin.exists():
-            raise FileNotFoundError(
-                f"SFINCS binary not found at {sfincs_bin}. Please check your settings."
-            )
+        settings = self.database._settings
 
-        with cd(path):
-            logger.info(f"Running SFINCS in {path}")
-            process = subprocess.run(
-                sfincs_bin.as_posix(),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-            self.sfincs_logger.info(process.stdout)
-            logger.debug(process.stdout)
+        match settings.get_scenario_execution_method(strict=strict):
+            case ExecutionMethod.DOCKER:
+                if self.container is None:
+                    raise RuntimeError(
+                        "Docker execution method selected but no container provided. Please provide a DockerContainer instance to the SfincsAdapter or change the execution method in the settings."
+                    )
+                logger.info(f"Running SFINCS in {path} using a Docker image.")
+                success = self.container.run(path)
+            case ExecutionMethod.BINARIES:
+                with cd(path):
+                    logger.info(f"Running SFINCS in {path} using a binary executable.")
+                    process = subprocess.run(
+                        settings.sfincs_bin_path.as_posix(),
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                    )
+                    self.sfincs_logger.info(process.stdout)
+                    logger.debug(process.stdout)
+                    success = process.returncode == 0
+            case _:
+                raise RuntimeError(
+                    "SFINCS execution method not configured properly. Choose to validate binaries or use Docker. See ``Settings``."
+                )
 
         self._cleanup_simulation_folder(path)
 
-        if process.returncode != 0:
-            if Settings().delete_crashed_runs:
+        if not success:
+            if settings.delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
                 for subdir, dirs, files in os.walk(path, topdown=False):
                     for file in files:
@@ -228,12 +240,20 @@ class SfincsAdapter(IHazardAdapter):
                     if not os.listdir(subdir):
                         shutil.rmtree(subdir, ignore_errors=True)
 
+            msg = "SFINCS model failed to run."
+            sfincs_log = [
+                h
+                for h in self.sfincs_logger.handlers
+                if isinstance(h, logging.FileHandler)
+            ]
+            if sfincs_log:
+                sfincs_log = sfincs_log[0].baseFilename
+                msg += f" See {sfincs_log} for details."
+            logger.error(msg)
             if strict:
-                raise RuntimeError(f"SFINCS model failed to run in {path}.")
-            else:
-                logger.error(f"SFINCS model failed to run in {path}.")
+                raise RuntimeError(msg)
 
-        return process.returncode == 0
+        return success
 
     def run(self, scenario: Scenario):
         """Run the whole workflow (Preprocess, process and postprocess) for a given scenario."""

@@ -6,7 +6,7 @@ import geopandas as gpd
 import numpy as np
 
 from flood_adapt.config.database import DatabaseConfig, PostProcessingFunction
-from flood_adapt.config.site import Site
+from flood_adapt.config.settings import Settings
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
 
@@ -18,7 +18,6 @@ class IDatabase(ABC):
     static_path: Path
 
     config: DatabaseConfig
-    site: Site
 
     static: IDbsStatic
     events: AbstractDatabaseElement
@@ -28,64 +27,57 @@ class IDatabase(ABC):
     projections: AbstractDatabaseElement
     benefits: AbstractDatabaseElement
 
-    @abstractmethod
-    def read_site(self, site_name: str) -> None:
-        pass
+    _settings: Settings
 
     @abstractmethod
-    def get_outputs(self) -> dict[str, Any]:
-        pass
+    def __init__(
+        self,
+        database_root: Path | None,
+        database_name: str | None,
+        settings: Settings | None = None,
+    ) -> None: ...
 
     @abstractmethod
-    def get_topobathy_path(self) -> str:
-        pass
+    def read_site(self, site_name: str) -> None: ...
 
     @abstractmethod
-    def get_index_path(self) -> str:
-        pass
+    def get_outputs(self) -> dict[str, Any]: ...
 
     @abstractmethod
-    def get_depth_conversion(self) -> float:
-        pass
+    def get_topobathy_path(self) -> str: ...
+
+    @abstractmethod
+    def get_index_path(self) -> str: ...
+
+    @abstractmethod
+    def get_depth_conversion(self) -> float: ...
 
     @abstractmethod
     def get_max_water_level(
         self, scenario_name: str, return_period: Optional[int] = None
-    ) -> np.ndarray:
-        pass
+    ) -> np.ndarray: ...
 
     @abstractmethod
-    def get_building_footprints(self, scenario_name: str) -> gpd.GeoDataFrame:
-        pass
+    def get_building_footprints(self, scenario_name: str) -> gpd.GeoDataFrame: ...
 
     @abstractmethod
-    def get_roads(self, scenario_name: str) -> gpd.GeoDataFrame:
-        pass
+    def get_roads(self, scenario_name: str) -> gpd.GeoDataFrame: ...
 
     @abstractmethod
-    def get_aggregation(self, scenario_name: str) -> dict[str, gpd.GeoDataFrame]:
-        pass
+    def get_aggregation(self, scenario_name: str) -> dict[str, gpd.GeoDataFrame]: ...
 
     @abstractmethod
     def get_aggregation_benefits(
         self, benefit_name: str
-    ) -> dict[str, gpd.GeoDataFrame]:
-        pass
+    ) -> dict[str, gpd.GeoDataFrame]: ...
 
     @abstractmethod
-    def get_object_list(self, object_type: str) -> dict[str, Any]:
-        pass
-
-    @abstractmethod
-    def has_run_hazard(self, scenario_name: str) -> None:
-        pass
+    def has_run_hazard(self, scenario_name: str) -> None: ...
 
     @abstractmethod
     def get_postprocessing_hooks(
         self, reload: bool = False
-    ) -> dict[str, PostProcessingFunction] | None:
-        pass
+    ) -> dict[str, PostProcessingFunction] | None: ...
 
     @abstractmethod
-    def cleanup(self) -> None:
-        pass
+    def cleanup(self) -> None: ...
