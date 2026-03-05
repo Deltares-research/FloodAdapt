@@ -22,14 +22,14 @@ If you would like to use FloodAdapt, but cannot setup a database, please contact
 
 In order to run scenarios in FloodAdapt, it is required to configure the scenario execution method.
 
-On Windows, binaries for SFINCS and Delft-Fiat are available. Make sure to check the expected binary versions in the [``Settings``](https://deltares-research.github.io/FloodAdapt/3_api_docs/api_ref/Settings.html) class of the backend.
+On Windows, binaries for SFINCS and Delft-FIAT are available. Make sure to check the expected binary versions in the [``Settings``](https://deltares-research.github.io/FloodAdapt/3_api_docs/api_ref/Settings.html) class of the backend.
 On any other operating system, we will use Docker (https://www.docker.com/products/docker-desktop/).
 
-Binaries
+### Binaries
 - SFINCS: https://download.deltares.nl/sfincs
 - Delft-FIAT: https://download.deltares.nl/delft-fiat
 
-Docker images
+### Docker images
 - SFINCS: https://hub.docker.com/r/deltares/sfincs-cpu
 - Delft-FIAT: https://hub.docker.com/r/deltares/fiat
 
