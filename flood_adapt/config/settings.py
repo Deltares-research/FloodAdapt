@@ -1,3 +1,4 @@
+import logging
 import re
 import subprocess
 from os import environ
@@ -14,6 +15,9 @@ from pydantic import (
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from flood_adapt.misc.io import read_toml, write_toml
+from flood_adapt.misc.log import FloodAdaptLogging
+
+logger = FloodAdaptLogging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -60,6 +64,8 @@ class Settings(BaseSettings):
         The path to the FIAT binary. Alias: `FIAT_BIN_PATH` (environment variable).
     fiat_version : str, default is '0.2.1'
         The expected version of the FIAT binary. Alias: `FIAT_VERSION` (environment variable).
+    log_level : str, default is 'INFO'
+        The logging level for the application. Alias: `LOG_LEVEL` (environment variable).
 
     Properties
     ----------
@@ -133,6 +139,13 @@ class Settings(BaseSettings):
         "If the version of the binary does not match this version, an error is raised.",
         exclude=True,
     )
+    log_level: str = Field(
+        default="INFO",
+        alias="LOG_LEVEL",  # environment variable: LOG_LEVEL
+        description="The logging level for the application. "
+        "Should be one of 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'.",
+        exclude=True,
+    )
 
     _binaries_validated: ClassVar[bool] = False
 
@@ -184,6 +197,17 @@ class Settings(BaseSettings):
             self._raise_exe_not_provided("fiat")
         elif not self.fiat_bin_path.exists():
             self._raise_exe_not_exists("fiat", self.fiat_bin_path)
+        return self
+
+    @model_validator(mode="after")
+    def _set_log_level(self) -> Self:
+        level = logging._nameToLevel.get(self.log_level)
+        if level is None:
+            logger.warning(
+                f"Invalid log level '{self.log_level}' specified. Defaulting to 'INFO'."
+            )
+            level = logging.INFO
+        FloodAdaptLogging.set_global_level(level)
         return self
 
     @field_serializer("database_root", "database_path")

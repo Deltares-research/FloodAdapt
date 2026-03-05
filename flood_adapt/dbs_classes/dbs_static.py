@@ -28,7 +28,12 @@ def cache_method_wrapper(func: Callable) -> Callable:
         )
         if args_key in self._cached_data[func.__name__]:
             return self._cached_data[func.__name__][args_key]
-
+        msg = f"Cache miss for {func.__name__}"
+        if args:
+            msg += f", {args=}"
+        if kwargs:
+            msg += f", {kwargs=}"
+        logger.debug(msg)
         result = func(self, *args, **kwargs)
         self._cached_data[func.__name__][args_key] = result
 
@@ -50,6 +55,7 @@ class DbsStatic(IDbsStatic):
 
         This is used to read data from the database and store it in the cache.
         """
+        logger.info("Loading static data...")
         self.get_aggregation_areas()
         self.get_model_boundary()
         self.get_model_grid()
@@ -179,7 +185,18 @@ class DbsStatic(IDbsStatic):
         if not full_path.is_file():
             raise DatabaseError(f"File {full_path} not found")
         logger.info(f"Reading static map from {full_path}.")
-        return gpd.read_file(full_path, engine="pyogrio").to_crs(4326)
+        gdf = gpd.read_file(full_path, engine="pyogrio")
+        if gdf.crs is None:
+            logger.debug(
+                f"CRS of the map {full_path} is not defined. Setting it to EPSG:4326."
+            )
+            gdf = gdf.set_crs(epsg=4326)
+        elif gdf.crs.to_epsg() != 4326:
+            logger.debug(
+                f"CRS of the map {full_path} is {gdf.crs}, but it should be EPSG:4326. Reprojecting the map to EPSG:4326."
+            )
+            gdf = gdf.to_crs(epsg=4326)
+        return gdf
 
     @cache_method_wrapper
     def get_slr_scn_names(self) -> list:
