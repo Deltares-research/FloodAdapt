@@ -455,6 +455,29 @@ class SfincsAdapter(IHazardAdapter):
             res = self._model.res[0]
         return res
 
+    ### STRUCTURES/GEOMETRIES ###
+    @property
+    def weirs(self) -> gpd.GeoDataFrame | None:
+        """Get weir structure geometries from model.
+
+        Returns
+        -------
+        gpd.GeoDataFrame | None
+            GeoDataFrame with weir geometries if present, otherwise None.
+        """
+        return self._model.geoms.get("weir")
+
+    @property
+    def drainage(self) -> gpd.GeoDataFrame | None:
+        """Get drainage structure geometries from model.
+
+        Returns
+        -------
+        gpd.GeoDataFrame | None
+            GeoDataFrame with drainage geometries if present, otherwise None.
+        """
+        return self._model.geoms.get("drn")
+
     # Forcing properties
     @property
     def waterlevels(self) -> xr.Dataset | xr.DataArray | None:
