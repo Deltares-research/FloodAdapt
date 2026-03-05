@@ -129,12 +129,15 @@ class DbsStatic(IDbsStatic):
         return grid
 
     @cache_method_wrapper
-    def get_existing_structures(self) -> dict[str, Optional[gpd.GeoDataFrame]]:
+    def get_existing_structures(self) -> dict[str, gpd.GeoDataFrame | None]:
         """Get existing structure geometries from model."""
-        structures = {}
-        structures["weirs"] = self.get_overland_sfincs_model().weirs
-        structures["drainage"] = self.get_overland_sfincs_model().drainage
-        return structures
+        overland = self.get_overland_sfincs_model()
+        return {
+            "weirs": overland.weirs.copy() if overland.weirs is not None else None,
+            "drainage": overland.drainage.copy()
+            if overland.drainage is not None
+            else None,
+        }
 
     @cache_method_wrapper
     def get_obs_points(self) -> Optional[gpd.GeoDataFrame]:
