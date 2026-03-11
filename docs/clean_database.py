@@ -27,9 +27,7 @@ def clean_database(database_dir: Path):
             print(f"Removed directory: {dir_path}")
 
     # Validate
-    settings = Settings(DATABASE_ROOT=database_dir.parent, DATABASE_NAME=database_dir.name)
-    settings.export_to_env()
-    FloodAdapt(settings.database_path)
+    FloodAdapt(database_dir)
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
