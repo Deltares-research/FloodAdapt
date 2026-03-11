@@ -1373,8 +1373,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the FloodAdapt instance</span></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>fa <span class="op">=</span> FloodAdapt(settings.database_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>2026-03-08 11:00:55 AM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples
-2026-03-08 11:00:55 AM - FloodAdapt.Database - INFO - Loading database into memory</code></pre>
+<pre><code>2026-03-11 09:43:15 AM - FloodAdapt.Database - INFO - Initializing database to charleston_test at d:\a\floodadapt\floodadapt\docs\_data\examples
+2026-03-11 09:43:15 AM - FloodAdapt.Database - INFO - Loading database into memory</code></pre>
 </div>
 </div>
 </section>
@@ -1476,7 +1476,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <meta name=&quot;viewport&quot; content=&quot;width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; />
             <style>
-                #map_f4148c3a2f1815680e3c525a57f809e7 {
+                #map_4a45e0840cef08048838a13e7f1c649f {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -1529,14 +1529,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <body>
     
     
-            <div class=&quot;folium-map&quot; id=&quot;map_f4148c3a2f1815680e3c525a57f809e7&quot; ></div>
+            <div class=&quot;folium-map&quot; id=&quot;map_4a45e0840cef08048838a13e7f1c649f&quot; ></div>
         
 </body>
 <script>
     
     
-            var map_f4148c3a2f1815680e3c525a57f809e7 = L.map(
-                &quot;map_f4148c3a2f1815680e3c525a57f809e7&quot;,
+            var map_4a45e0840cef08048838a13e7f1c649f = L.map(
+                &quot;map_4a45e0840cef08048838a13e7f1c649f&quot;,
                 {
                     center: [32.785635380401445, -79.9433587261437],
                     crs: L.CRS.EPSG3857,
@@ -1548,13 +1548,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
                 }
             );
-            L.control.scale().addTo(map_f4148c3a2f1815680e3c525a57f809e7);
+            L.control.scale().addTo(map_4a45e0840cef08048838a13e7f1c649f);
 
             
 
         
     
-            var tile_layer_647465529483d08de549dbec767f3a20 = L.tileLayer(
+            var tile_layer_133fd21f81e09421172d6af01220f7a4 = L.tileLayer(
                 &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
                 {
   &quot;minZoom&quot;: 0,
@@ -1571,28 +1571,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             );
         
     
-            tile_layer_647465529483d08de549dbec767f3a20.addTo(map_f4148c3a2f1815680e3c525a57f809e7);
+            tile_layer_133fd21f81e09421172d6af01220f7a4.addTo(map_4a45e0840cef08048838a13e7f1c649f);
         
     
-            map_f4148c3a2f1815680e3c525a57f809e7.fitBounds(
+            map_4a45e0840cef08048838a13e7f1c649f.fitBounds(
                 [[32.769555352706625, -79.96242766295042], [32.801715408096264, -79.92428978933698]],
                 {}
             );
         
     
-        function geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_styler(feature) {
+        function geo_json_58800462b2828ca593f5a9b853aae931_styler(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.5, &quot;weight&quot;: 2};
             }
         }
-        function geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_highlighter(feature) {
+        function geo_json_58800462b2828ca593f5a9b853aae931_highlighter(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.75};
             }
         }
-        function geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_pointToLayer(feature, latlng) {
+        function geo_json_58800462b2828ca593f5a9b853aae931_pointToLayer(feature, latlng) {
             var opts = {
   &quot;stroke&quot;: true,
   &quot;color&quot;: &quot;#3388ff&quot;,
@@ -1610,46 +1610,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   &quot;radius&quot;: 2,
 };
             
-            let style = geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_styler(feature)
+            let style = geo_json_58800462b2828ca593f5a9b853aae931_styler(feature)
             Object.assign(opts, style)
             
             return new L.CircleMarker(latlng, opts)
         }
 
-        function geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_onEachFeature(feature, layer) {
+        function geo_json_58800462b2828ca593f5a9b853aae931_onEachFeature(feature, layer) {
 
             layer.on({
                 mouseout: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                            geo_json_775b55e572cb7a0cd93d164cc7e1b7e5.resetStyle(e.target);
+                            geo_json_58800462b2828ca593f5a9b853aae931.resetStyle(e.target);
                     }
                 },
                 mouseover: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                        const highlightStyle = geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_highlighter(e.target.feature)
+                        const highlightStyle = geo_json_58800462b2828ca593f5a9b853aae931_highlighter(e.target.feature)
                         e.target.setStyle(highlightStyle);
                     }
                 },
             });
         };
-        var geo_json_775b55e572cb7a0cd93d164cc7e1b7e5 = L.geoJson(null, {
-                onEachFeature: geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_onEachFeature,
+        var geo_json_58800462b2828ca593f5a9b853aae931 = L.geoJson(null, {
+                onEachFeature: geo_json_58800462b2828ca593f5a9b853aae931_onEachFeature,
             
-                style: geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_styler,
-                pointToLayer: geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_pointToLayer,
+                style: geo_json_58800462b2828ca593f5a9b853aae931_styler,
+                pointToLayer: geo_json_58800462b2828ca593f5a9b853aae931_pointToLayer,
             ...{
 }
         });
 
-        function geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_add (data) {
-            geo_json_775b55e572cb7a0cd93d164cc7e1b7e5
+        function geo_json_58800462b2828ca593f5a9b853aae931_add (data) {
+            geo_json_58800462b2828ca593f5a9b853aae931
                 .addData(data);
         }
-            geo_json_775b55e572cb7a0cd93d164cc7e1b7e5_add({&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;features&quot;: [{&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.96242766295042, 32.78909640883882], [-79.95576222911224, 32.78324916123054], [-79.94590897909052, 32.77515983512822], [-79.93675125259975, 32.77048133500943], [-79.93020173935003, 32.769555352706625], [-79.9279992481687, 32.77018892058612], [-79.92428978933698, 32.77930205181672], [-79.9244057099255, 32.78631901415039], [-79.9274776055205, 32.79377393017178], [-79.92968009670182, 32.799035847596095], [-79.93124502464644, 32.801715408096264]]], &quot;type&quot;: &quot;MultiLineString&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
+            geo_json_58800462b2828ca593f5a9b853aae931_add({&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;features&quot;: [{&quot;bbox&quot;: [-79.96242766295042, 32.769555352706625, -79.92428978933698, 32.801715408096264], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.96242766295042, 32.78909640883882], [-79.95576222911224, 32.78324916123054], [-79.94590897909052, 32.77515983512822], [-79.93675125259975, 32.77048133500943], [-79.93020173935003, 32.769555352706625], [-79.9279992481687, 32.77018892058612], [-79.92428978933698, 32.77930205181672], [-79.9244057099255, 32.78631901415039], [-79.9274776055205, 32.79377393017178], [-79.92968009670182, 32.799035847596095], [-79.93124502464644, 32.801715408096264]]], &quot;type&quot;: &quot;MultiLineString&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
 
         
     
-    geo_json_775b55e572cb7a0cd93d164cc7e1b7e5.bindTooltip(
+    geo_json_58800462b2828ca593f5a9b853aae931.bindTooltip(
     function(layer){
     let div = L.DomUtil.create('div');
     
@@ -1684,7 +1684,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 });
                      
     
-            geo_json_775b55e572cb7a0cd93d164cc7e1b7e5.addTo(map_f4148c3a2f1815680e3c525a57f809e7);
+            geo_json_58800462b2828ca593f5a9b853aae931.addTo(map_4a45e0840cef08048838a13e7f1c649f);
         
 </script>
 </html>" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen="" webkitallowfullscreen="" mozallowfullscreen=""></iframe></div></div>
@@ -1777,7 +1777,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <meta name=&quot;viewport&quot; content=&quot;width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; />
             <style>
-                #map_464ba21a5b691b8339de8346502bbcee {
+                #map_831704777e831ec72513f602c2d86bc0 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -1830,14 +1830,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <body>
     
     
-            <div class=&quot;folium-map&quot; id=&quot;map_464ba21a5b691b8339de8346502bbcee&quot; ></div>
+            <div class=&quot;folium-map&quot; id=&quot;map_831704777e831ec72513f602c2d86bc0&quot; ></div>
         
 </body>
 <script>
     
     
-            var map_464ba21a5b691b8339de8346502bbcee = L.map(
-                &quot;map_464ba21a5b691b8339de8346502bbcee&quot;,
+            var map_831704777e831ec72513f602c2d86bc0 = L.map(
+                &quot;map_831704777e831ec72513f602c2d86bc0&quot;,
                 {
                     center: [32.7720047172163, -79.9392402303062],
                     crs: L.CRS.EPSG3857,
@@ -1849,13 +1849,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
                 }
             );
-            L.control.scale().addTo(map_464ba21a5b691b8339de8346502bbcee);
+            L.control.scale().addTo(map_831704777e831ec72513f602c2d86bc0);
 
             
 
         
     
-            var tile_layer_7138b6fece6798dc2bf5d326af1d1bdc = L.tileLayer(
+            var tile_layer_6e6153ca09fc889b8bb4395f41202e0e = L.tileLayer(
                 &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
                 {
   &quot;minZoom&quot;: 0,
@@ -1872,28 +1872,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             );
         
     
-            tile_layer_7138b6fece6798dc2bf5d326af1d1bdc.addTo(map_464ba21a5b691b8339de8346502bbcee);
+            tile_layer_6e6153ca09fc889b8bb4395f41202e0e.addTo(map_831704777e831ec72513f602c2d86bc0);
         
     
-            map_464ba21a5b691b8339de8346502bbcee.fitBounds(
+            map_831704777e831ec72513f602c2d86bc0.fitBounds(
                 [[32.769891964939895, -79.94275509838587], [32.7741174694927, -79.93572536222652]],
                 {}
             );
         
     
-        function geo_json_538406367037504c60e6fb80f8cf9662_styler(feature) {
+        function geo_json_d316cac9c8258af43e85130b4bfc6f48_styler(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.5, &quot;weight&quot;: 2};
             }
         }
-        function geo_json_538406367037504c60e6fb80f8cf9662_highlighter(feature) {
+        function geo_json_d316cac9c8258af43e85130b4bfc6f48_highlighter(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.75};
             }
         }
-        function geo_json_538406367037504c60e6fb80f8cf9662_pointToLayer(feature, latlng) {
+        function geo_json_d316cac9c8258af43e85130b4bfc6f48_pointToLayer(feature, latlng) {
             var opts = {
   &quot;stroke&quot;: true,
   &quot;color&quot;: &quot;#3388ff&quot;,
@@ -1911,46 +1911,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   &quot;radius&quot;: 2,
 };
             
-            let style = geo_json_538406367037504c60e6fb80f8cf9662_styler(feature)
+            let style = geo_json_d316cac9c8258af43e85130b4bfc6f48_styler(feature)
             Object.assign(opts, style)
             
             return new L.CircleMarker(latlng, opts)
         }
 
-        function geo_json_538406367037504c60e6fb80f8cf9662_onEachFeature(feature, layer) {
+        function geo_json_d316cac9c8258af43e85130b4bfc6f48_onEachFeature(feature, layer) {
 
             layer.on({
                 mouseout: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                            geo_json_538406367037504c60e6fb80f8cf9662.resetStyle(e.target);
+                            geo_json_d316cac9c8258af43e85130b4bfc6f48.resetStyle(e.target);
                     }
                 },
                 mouseover: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                        const highlightStyle = geo_json_538406367037504c60e6fb80f8cf9662_highlighter(e.target.feature)
+                        const highlightStyle = geo_json_d316cac9c8258af43e85130b4bfc6f48_highlighter(e.target.feature)
                         e.target.setStyle(highlightStyle);
                     }
                 },
             });
         };
-        var geo_json_538406367037504c60e6fb80f8cf9662 = L.geoJson(null, {
-                onEachFeature: geo_json_538406367037504c60e6fb80f8cf9662_onEachFeature,
+        var geo_json_d316cac9c8258af43e85130b4bfc6f48 = L.geoJson(null, {
+                onEachFeature: geo_json_d316cac9c8258af43e85130b4bfc6f48_onEachFeature,
             
-                style: geo_json_538406367037504c60e6fb80f8cf9662_styler,
-                pointToLayer: geo_json_538406367037504c60e6fb80f8cf9662_pointToLayer,
+                style: geo_json_d316cac9c8258af43e85130b4bfc6f48_styler,
+                pointToLayer: geo_json_d316cac9c8258af43e85130b4bfc6f48_pointToLayer,
             ...{
 }
         });
 
-        function geo_json_538406367037504c60e6fb80f8cf9662_add (data) {
-            geo_json_538406367037504c60e6fb80f8cf9662
+        function geo_json_d316cac9c8258af43e85130b4bfc6f48_add (data) {
+            geo_json_d316cac9c8258af43e85130b4bfc6f48
                 .addData(data);
         }
-            geo_json_538406367037504c60e6fb80f8cf9662_add({&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;features&quot;: [{&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.94275509838587, 32.77306721830996], [-79.93572536222652, 32.7741174694927], [-79.93697444757714, 32.769891964939895], [-79.94275509838587, 32.77306721830996]]], &quot;type&quot;: &quot;Polygon&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
+            geo_json_d316cac9c8258af43e85130b4bfc6f48_add({&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;features&quot;: [{&quot;bbox&quot;: [-79.94275509838587, 32.769891964939895, -79.93572536222652, 32.7741174694927], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[-79.94275509838587, 32.77306721830996], [-79.93572536222652, 32.7741174694927], [-79.93697444757714, 32.769891964939895], [-79.94275509838587, 32.77306721830996]]], &quot;type&quot;: &quot;Polygon&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {&quot;id&quot;: 1}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
 
         
     
-    geo_json_538406367037504c60e6fb80f8cf9662.bindTooltip(
+    geo_json_d316cac9c8258af43e85130b4bfc6f48.bindTooltip(
     function(layer){
     let div = L.DomUtil.create('div');
     
@@ -1985,7 +1985,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 });
                      
     
-            geo_json_538406367037504c60e6fb80f8cf9662.addTo(map_464ba21a5b691b8339de8346502bbcee);
+            geo_json_d316cac9c8258af43e85130b4bfc6f48.addTo(map_831704777e831ec72513f602c2d86bc0);
         
 </script>
 </html>" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen="" webkitallowfullscreen="" mozallowfullscreen=""></iframe></div></div>
@@ -2006,7 +2006,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a df with all strategies</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(fa.get_measures())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>2026-03-08 11:00:57 AM - FloodAdapt.flood_adapt.dbs_classes.dbs_static - INFO - Reading aggregation areas.</code></pre>
+<pre><code>2026-03-11 09:43:18 AM - FloodAdapt.flood_adapt.dbs_classes.dbs_static - INFO - Reading aggregation areas.</code></pre>
 </div>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <div>
@@ -2029,7 +2029,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>seawall_12ft</td>
 <td>12ft Seawall</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-03-08 11:00:57.418520</td>
+<td>2026-03-11 09:43:17.969559</td>
 <td>id ...</td>
 </tr>
 <tr class="even">
@@ -2037,7 +2037,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Pump</td>
 <td>Pump</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-03-08 11:00:57.428576</td>
+<td>2026-03-11 09:43:17.977725</td>
 <td>ge...</td>
 </tr>
 <tr class="odd">
@@ -2045,7 +2045,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>green_infrastructure_storage</td>
 <td>Storage through green infrastructure</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-03-08 11:00:57.441201</td>
+<td>2026-03-11 09:43:17.988788</td>
 <td>ge...</td>
 </tr>
 <tr class="even">
@@ -2053,7 +2053,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>total_storage_aggregation_area</td>
 <td>Total Storage through green infrastructure in ...</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-03-08 11:00:57.443229</td>
+<td>2026-03-11 09:43:17.990799</td>
 <td>name ...</td>
 </tr>
 <tr class="odd">
@@ -2061,7 +2061,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>w_square</td>
 <td>Water Square</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-03-08 11:00:57.454296</td>
+<td>2026-03-11 09:43:18.000862</td>
 <td>ge...</td>
 </tr>
 <tr class="even">
@@ -2069,7 +2069,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>elevate_homes_2ft</td>
 <td>Elevate all residential buildings in aggregati...</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-03-08 11:00:57.547738</td>
+<td>2026-03-11 09:43:18.087790</td>
 <td>id ...</td>
 </tr>
 <tr class="odd">
@@ -2077,7 +2077,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>buyout_all_buildings</td>
 <td>Buyout all buildings in a specific area.</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-03-08 11:00:57.550088</td>
+<td>2026-03-11 09:43:18.089806</td>
 <td>name ...</td>
 </tr>
 <tr class="even">
@@ -2085,7 +2085,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>floodproof_all_com</td>
 <td>Floodproofing all commercial buildings.</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-03-08 11:00:57.552106</td>
+<td>2026-03-11 09:43:18.093468</td>
 <td>None</td>
 </tr>
 </tbody>
@@ -2178,14 +2178,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>no_measures</td>
 <td></td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-03-08 10:32:47.725402</td>
+<td>2026-03-11 09:16:21.236526</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">1</th>
 <td>pump_greening_flood_proof</td>
 <td>Strategy with pump, greening and floodproofing</td>
 <td>D:\a\FloodAdapt\FloodAdapt\docs\_data\examples...</td>
-<td>2026-03-08 11:00:58.310933</td>
+<td>2026-03-11 09:43:18.739609</td>
 </tr>
 </tbody>
 </table>
