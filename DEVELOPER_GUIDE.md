@@ -33,9 +33,13 @@ On any other operating system, we will use Docker (https://www.docker.com/produc
 - SFINCS: https://hub.docker.com/r/deltares/sfincs-cpu
 - Delft-FIAT: https://hub.docker.com/r/deltares/fiat
 
-The method can be configured manually via the ``Settings`` class, and via the ``.env`` file described above by adding one of these lines: ``USE_DOCKER=True`` and ``USE_BINARIES=True``.
+The method can be configured manually via the ``Settings`` class or via a ``.env`` file in the project root.
+When using the ``.env`` file, set exactly one of the following lines to choose the execution method:
+- ``USE_DOCKER=True`` to run scenarios using Docker.
+- ``USE_BINARIES=True`` to run scenarios using local binaries.
+Do not set both flags at the same time; this is not supported.
 
-If you are using binaries, you also must add: ``SFINCS_BIN_PATH=C:\\abs\\path\\to\\sfincs.exe`` and ``FIAT_BIN_PATH=C:\\abs\\path\\to\\fiat.exe``
+If you are using binaries (i.e. ``USE_BINARIES=True``), you also must add: ``SFINCS_BIN_PATH=C:\\abs\\path\\to\\sfincs.exe`` and ``FIAT_BIN_PATH=C:\\abs\\path\\to\\fiat.exe``
 
 For more information about the ``Settings`` class and the ``.env`` file it mirrors, please have a look at the [backend documentation](https://deltares-research.github.io/FloodAdapt/3_api_docs/api_ref/Settings.html)
 
