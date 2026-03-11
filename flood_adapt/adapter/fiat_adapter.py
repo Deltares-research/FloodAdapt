@@ -378,9 +378,10 @@ class FiatAdapter(IImpactAdapter):
 
                     if not os.listdir(subdir):
                         shutil.rmtree(subdir, ignore_errors=True)
-
-            msg = f"FIAT model failed to run. See {fiat_log} for details."
-            logger.error(msg)
+            msg = "FIAT model failed to run."
+            logger.error(f"{msg} Contents of FIAT log file {fiat_log}:")
+            for log in fiat_log.read_text().splitlines():
+                logger.error(log)
             if strict:
                 raise RuntimeError(msg)
 
