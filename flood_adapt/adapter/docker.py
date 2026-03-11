@@ -1,10 +1,11 @@
-import logging
 import re
 import subprocess
 from abc import ABC
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
+from flood_adapt.misc.log import FloodAdaptLogging
+
+logger = FloodAdaptLogging.getLogger(__name__)
 
 try:
     subprocess.run(
@@ -82,9 +83,9 @@ class DockerContainer(ABC):
                 f"stdout:\n{process.stdout}. "
                 f"stderr:\n{process.stderr}. "
             )
-            logger.error(
-                msg
-                + "Attempting to stop any existing container with the same name and retrying... "
+            logger.error(msg)
+            logger.warning(
+                "Attempting to stop any existing container with the same name and retrying... "
             )
             self._force_remove_container()
             retry = subprocess.run(
@@ -93,7 +94,7 @@ class DockerContainer(ABC):
                 capture_output=True,
             )
             if retry.returncode != 0:
-                msg += (
+                msg = (
                     f"Retry also failed with code {retry.returncode}. "
                     f"retry stdout:\n{retry.stdout}. "
                     f"retry stderr:\n{retry.stderr}. "
@@ -101,6 +102,11 @@ class DockerContainer(ABC):
                 logger.error(msg)
                 raise RuntimeError(msg)
 
+            logger.info(
+                f"Retry succeeded. Container `{self.name}` started successfully after removing existing container with the same name."
+            )
+
+        logger.info(f"Container `{self.name}` started successfully.")
         self._root_dir = root_dir
         self._container_created = True
         DockerContainer.CONTAINERS_INITIALIZED += 1
