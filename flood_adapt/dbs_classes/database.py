@@ -135,7 +135,8 @@ class Database(IDatabase):
         # Initialize the different database objects
         self._initialize_repositories()
         self.load()
-        self.static.start_docker()
+        if self._settings.use_docker:
+            self.static.start_docker()
 
         self._init_done = True
 
