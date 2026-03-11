@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
 import geopandas as gpd
 import numpy as np
@@ -1094,6 +1094,10 @@ class FloodAdapt:
             QuadtreeGrid with the model grid
         """
         return self.database.static.get_model_grid()
+
+    def get_existing_structures(self) -> dict[str, Optional[gpd.GeoDataFrame]]:
+        """Get existing structure geometries from model."""
+        return self.database.static.get_existing_structures()
 
     def get_svi_map(
         self,

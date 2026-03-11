@@ -31,7 +31,8 @@ dependencies = [
     "cht-meteo                  >=0.3.1,<1.0",
     "cht-observations           >=0.2.1,<1.0",
     "cht-tide                   >=0.1.1,<1.0",
-    "ffmpeg",
+    "ffmpeg                     >=1.0,<2.0",
+    "contextily                 >=1.0,<2.0",
     "fiat-toolbox               >=0.1.23,<0.2.0",
     "fiona                      >=1.0,<2.0",
     "geojson                    >=3.0,<4.0",
@@ -79,7 +80,6 @@ docs = [
     "python-dotenv      >=1.0,<2.0",
     "folium             >=0.19.0,<1.0",
     "mapclassify        >=2.8.0,<3.0",
-    "contextily"
 ]
 
 [project.urls]
