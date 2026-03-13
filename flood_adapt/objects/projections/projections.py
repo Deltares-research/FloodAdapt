@@ -88,9 +88,9 @@ class SocioEconomicChange(BaseModel):
                 if force
                 else self.new_development_shapefile
             )
-            self.new_development_shapefile = path_exists_and_absolute(
-                path, file_path
-            ).as_posix()
+            self.new_development_shapefile = str(
+                path_exists_and_absolute(path, file_path)
+            )
 
     def read_gdf(self, reload: bool = False) -> gpd.GeoDataFrame | None:
         if self._gdf is not None and not reload:

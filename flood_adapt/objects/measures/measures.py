@@ -193,7 +193,7 @@ class Measure(Object):
         """Post-load hook, called at the end of `load_file`, to perform any additional loading steps after loading from file."""
         if self.polygon_file:
             path = Path(self.polygon_file).name if force else self.polygon_file
-            self.polygon_file = path_exists_and_absolute(path, file_path).as_posix()
+            self.polygon_file = str(path_exists_and_absolute(path, file_path))
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.polygon_file:
