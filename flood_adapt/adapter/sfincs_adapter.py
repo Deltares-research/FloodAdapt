@@ -246,12 +246,13 @@ class SfincsAdapter(IHazardAdapter):
                 for h in self.sfincs_logger.handlers
                 if isinstance(h, logging.FileHandler)
             ]
-            logger.error(f"{msg}")
-            if sfincs_log:
-                logger.error(f"Contents of SFINCS log file {sfincs_log}:")
-                sfincs_log = sfincs_log[0].baseFilename
-                for line in Path(sfincs_log).read_text().splitlines():
-                    logger.error(line)
+            logger.error(msg)
+            for handler in sfincs_log:
+                logger.error(f"Contents of SFINCS log file {handler.baseFilename}:")
+                sfincs_log = Path(handler.baseFilename)
+                if sfincs_log.exists():
+                    for line in (sfincs_log).read_text().splitlines():
+                        logger.error(line)
 
             if strict:
                 raise RuntimeError(msg)

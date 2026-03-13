@@ -331,7 +331,6 @@ class FiatAdapter(IImpactAdapter):
         FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
 
         settings = self.database._settings
-        fiat_log = path / "hydromt_fiat.log"
         match settings.get_scenario_execution_method(strict=strict):
             case ExecutionMethod.DOCKER:
                 if self.container is None:
@@ -340,8 +339,11 @@ class FiatAdapter(IImpactAdapter):
                     )
                 logger.info(f"Running FIAT in {path} using a Docker image.")
                 success = self.container.run(path)
+                # Docker container Delft-FIAT writes to fiat.log
+                fiat_log = path / "fiat.log"
             case ExecutionMethod.BINARIES:
                 exe = exe_path or self.exe_path
+                fiat_log = path / "hydromt_fiat.log"
                 with cd(path):
                     with FloodAdaptLogging.to_file(file_path=fiat_log):
                         logger.info(
@@ -379,9 +381,10 @@ class FiatAdapter(IImpactAdapter):
                     if not os.listdir(subdir):
                         shutil.rmtree(subdir, ignore_errors=True)
             msg = "FIAT model failed to run."
-            logger.error(f"{msg} Contents of FIAT log file {fiat_log}:")
-            for log in fiat_log.read_text().splitlines():
-                logger.error(log)
+            if fiat_log.exists():
+                logger.error(f"{msg} Contents of FIAT log file {fiat_log}:")
+                for log in fiat_log.read_text().splitlines():
+                    logger.error(log)
             if strict:
                 raise RuntimeError(msg)
 
