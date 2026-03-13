@@ -331,7 +331,7 @@ class FiatAdapter(IImpactAdapter):
         FiatAdapter._normalize_paths_in_toml(path / "settings.toml")
 
         settings = self.database._settings
-        fiat_log = path / "fiat.log"
+        fiat_log = path / "hydromt_fiat.log"
         match settings.get_scenario_execution_method(strict=strict):
             case ExecutionMethod.DOCKER:
                 if self.container is None:
