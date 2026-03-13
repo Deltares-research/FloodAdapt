@@ -42,7 +42,6 @@ def test_save_with_new_development_areas_also_saves_shapefile(
 
     loaded = Projection.load_file(toml_path)
     assert loaded == test_projection
-    assert (
-        loaded.socio_economic_change.new_development_shapefile
-        == expected_new_path.as_posix()
+    assert loaded.socio_economic_change.new_development_shapefile == str(
+        expected_new_path
     )
