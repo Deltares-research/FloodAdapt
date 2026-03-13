@@ -5,6 +5,8 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -201,7 +203,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ce/a9/a780cc66f86335a6019f557a8aaca8fbb970728f0efd2430d15ff1beae0e/google_crc32c-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/63/be/cab685fb32ad0c246b41c97f436bb5a9558dc1877d40c105d08785a008f1/hydromt_fiat-0.5.9-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/77/12/dd13f653d23f6b9362dbb984a99b24ceebc63df2fa510679cd4fe8f652b7/hydromt_fiat-0.5.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2e/28/1f3479391f1e5c325275b64f8d46e780bdeb9c4cadfded3c9e9cd3d74c98/hydromt_sfincs-1.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/42/77/de194443bf38daed9452139e960c632b0ef9f9a5dd9ce605fdf18ca9f1b1/id-1.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0e/61/66938bbb5fc52dbdf84594873d5b51fb1f7c7794e9c0f5bd885f30bc507b/idna-3.11-py3-none-any.whl
@@ -450,7 +452,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/df/c0/87c2073e0c72515bb8733d4eef7b21548e8d189f094b5dad20b0ecaf64f6/google_crc32c-1.8.0-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/63/be/cab685fb32ad0c246b41c97f436bb5a9558dc1877d40c105d08785a008f1/hydromt_fiat-0.5.9-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/77/12/dd13f653d23f6b9362dbb984a99b24ceebc63df2fa510679cd4fe8f652b7/hydromt_fiat-0.5.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2e/28/1f3479391f1e5c325275b64f8d46e780bdeb9c4cadfded3c9e9cd3d74c98/hydromt_sfincs-1.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/42/77/de194443bf38daed9452139e960c632b0ef9f9a5dd9ce605fdf18ca9f1b1/id-1.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0e/61/66938bbb5fc52dbdf84594873d5b51fb1f7c7794e9c0f5bd885f30bc507b/idna-3.11-py3-none-any.whl
@@ -579,6 +581,8 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -802,7 +806,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/63/be/cab685fb32ad0c246b41c97f436bb5a9558dc1877d40c105d08785a008f1/hydromt_fiat-0.5.9-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/77/12/dd13f653d23f6b9362dbb984a99b24ceebc63df2fa510679cd4fe8f652b7/hydromt_fiat-0.5.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2e/28/1f3479391f1e5c325275b64f8d46e780bdeb9c4cadfded3c9e9cd3d74c98/hydromt_sfincs-1.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b8/58/40fbbcefeda82364720eba5cf2270f98496bdfa19ea75b4cccae79c698e6/identify-2.6.16-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0e/61/66938bbb5fc52dbdf84594873d5b51fb1f7c7794e9c0f5bd885f30bc507b/idna-3.11-py3-none-any.whl
@@ -1158,7 +1162,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/f7/ee601eac9f8bdcd2b8ec5a8bf9efcf63d300987593321da334bd239e690d/hydromt-0.10.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/63/be/cab685fb32ad0c246b41c97f436bb5a9558dc1877d40c105d08785a008f1/hydromt_fiat-0.5.9-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/77/12/dd13f653d23f6b9362dbb984a99b24ceebc63df2fa510679cd4fe8f652b7/hydromt_fiat-0.5.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2e/28/1f3479391f1e5c325275b64f8d46e780bdeb9c4cadfded3c9e9cd3d74c98/hydromt_sfincs-1.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b8/58/40fbbcefeda82364720eba5cf2270f98496bdfa19ea75b4cccae79c698e6/identify-2.6.16-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0e/61/66938bbb5fc52dbdf84594873d5b51fb1f7c7794e9c0f5bd885f30bc507b/idna-3.11-py3-none-any.whl
@@ -2676,7 +2680,7 @@ packages:
 - pypi: ./
   name: flood-adapt
   version: 2.0.3
-  sha256: e5d6709cbefd8a75e6c79d42d3b7238bb81b70a17d6b11efce290f146ba8df32
+  sha256: eb2fc4fe969181572286ed47b9a4b7e90e1fe33dd3285d7fc93b14811d908fdb
   requires_dist:
   - cartopy
   - cht-cyclones>=1.0.3,<2.0
@@ -2689,59 +2693,7 @@ packages:
   - fiona>=1.0,<2.0
   - geojson>=3.0,<4.0
   - geopandas>=1.0,<2.0
-  - hydromt-fiat>=0.5.9,<1.0
-  - hydromt-sfincs[quadtree]>=1.2.2,<2.0
-  - numpy>=1.0,<2.0
-  - numpy-financial>=1.0,<2.0
-  - pandas>=2.0,<3.0
-  - plotly>=6.0,<6.3
-  - pydantic>=2.0,<3.0
-  - pydantic-settings>=2.0,<3.0
-  - pyogrio<1.0
-  - tomli>=2.0,<3.0
-  - tomli-w>=1.0,<2.0
-  - typing-extensions
-  - pytest>=8.0,<9.0 ; extra == 'dev'
-  - pytest-cov>=6.0,<7.0 ; extra == 'dev'
-  - pre-commit==3.8.0 ; extra == 'dev'
-  - ruff==0.5.5 ; extra == 'dev'
-  - typos==1.23.6 ; extra == 'dev'
-  - build>=1.2,<2.0 ; extra == 'build'
-  - twine>=6.0,<7.0 ; extra == 'build'
-  - pyinstaller==6.13.0 ; extra == 'build'
-  - pefile<2024.8.26 ; extra == 'build'
-  - jupyter>=1.0,<2.0 ; extra == 'docs'
-  - jupyter-cache>=1.0,<2.0 ; extra == 'docs'
-  - nbstripout>=0.8.0,<0.9 ; extra == 'docs'
-  - matplotlib>=3.0,<4.0 ; extra == 'docs'
-  - quartodoc>=0.11.0,<1.0 ; extra == 'docs'
-  - griffe<2.0 ; extra == 'docs'
-  - sphinx>=8.0,<9.0 ; extra == 'docs'
-  - sphinx-rtd-theme>=3.0,<4.0 ; extra == 'docs'
-  - regex>=2024.11,<2025.0 ; extra == 'docs'
-  - minio>=7.2.15,<8 ; extra == 'docs'
-  - python-dotenv>=1.0,<2.0 ; extra == 'docs'
-  - folium>=0.19.0,<1.0 ; extra == 'docs'
-  - mapclassify>=2.8.0,<3.0 ; extra == 'docs'
-  requires_python: '>=3.10,<3.13'
-  editable: true
-- pypi: ./
-  name: flood-adapt
-  version: 2.0.3
-  sha256: e5d6709cbefd8a75e6c79d42d3b7238bb81b70a17d6b11efce290f146ba8df32
-  requires_dist:
-  - cartopy
-  - cht-cyclones>=1.0.3,<2.0
-  - cht-meteo>=0.3.1,<1.0
-  - cht-observations>=0.2.1,<1.0
-  - cht-tide>=0.1.1,<1.0
-  - ffmpeg>=1.0,<2.0
-  - contextily>=1.0,<2.0
-  - fiat-toolbox>=0.1.23,<0.2.0
-  - fiona>=1.0,<2.0
-  - geojson>=3.0,<4.0
-  - geopandas>=1.0,<2.0
-  - hydromt-fiat>=0.5.9,<1.0
+  - hydromt-fiat>=0.5.10,<1.0
   - hydromt-sfincs[quadtree]>=1.2.2,<2.0
   - numpy>=1.0,<2.0
   - numpy-financial>=1.0,<2.0
@@ -3428,10 +3380,10 @@ packages:
   - pytest-timeout ; extra == 'test'
   - xugrid ; extra == 'test'
   requires_python: '>=3.9'
-- pypi: https://files.pythonhosted.org/packages/63/be/cab685fb32ad0c246b41c97f436bb5a9558dc1877d40c105d08785a008f1/hydromt_fiat-0.5.9-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/77/12/dd13f653d23f6b9362dbb984a99b24ceebc63df2fa510679cd4fe8f652b7/hydromt_fiat-0.5.10-py3-none-any.whl
   name: hydromt-fiat
-  version: 0.5.9
-  sha256: 2b4ab422c8664c4963c486f9b88e073531d34b5a8c69e47ccd0ee8a341dda20c
+  version: 0.5.10
+  sha256: fa03170c582c078bd4dd7ca32728028dc5f9572ac80523823f32ca5b445a9e88
   requires_dist:
   - hydromt<1.0
   - geopandas
