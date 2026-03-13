@@ -337,10 +337,11 @@ class FiatAdapter(IImpactAdapter):
                     raise ValueError(
                         "A DockerContainer instance must be provided for Docker execution."
                     )
+                # Docker container Delft-FIAT writes to output/fiat.log, but doesnt create the dir for some reason
+                fiat_log = path / "output" / "fiat.log"
+                fiat_log.parent.mkdir(parents=True, exist_ok=True)
                 logger.info(f"Running FIAT in {path} using a Docker image.")
                 success = self.container.run(path)
-                # Docker container Delft-FIAT writes to fiat.log
-                fiat_log = path / "fiat.log"
             case ExecutionMethod.BINARIES:
                 exe = exe_path or self.exe_path
                 fiat_log = path / "hydromt_fiat.log"
