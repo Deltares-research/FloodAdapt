@@ -2731,7 +2731,7 @@ packages:
 - pypi: ./
   name: flood-adapt
   version: 2.0.3
-  sha256: 227d2a297594bc56d1c749dd9ee6492f7e5285960b46a14de2408d37aef51380
+  sha256: 2a3cdd6ad91fb51562656b0a8d7b93cf3ee49a9426241c49566b26bbdbd99529
   requires_dist:
   - cartopy
   - cht-cyclones>=1.0.3,<2.0
@@ -2778,7 +2778,7 @@ packages:
   - python-dotenv>=1.0,<2.0 ; extra == 'docs'
   - folium>=0.19.0,<1.0 ; extra == 'docs'
   - mapclassify>=2.8.0,<3.0 ; extra == 'docs'
-  requires_python: '>=3.10,<3.13'
+  requires_python: '>=3.11,<3.13'
 - pypi: https://files.pythonhosted.org/packages/b5/a8/5f764f333204db0390362a4356d03a43626997f26818a0e9396f1b3bd8c9/folium-0.20.0-py2.py3-none-any.whl
   name: folium
   version: 0.20.0
