@@ -21,7 +21,7 @@ classifiers = [
     "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
     "Topic :: Scientific/Engineering :: Hydrology",
 ]
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.11,<3.13"
 
 # Any package below will be taken from pypi.
 # These are ignored if any packages is also defined in the section: [tool.pixi.dependencies]
@@ -37,8 +37,8 @@ dependencies = [
     "fiona                      >=1.0,<2.0",
     "geojson                    >=3.0,<4.0",
     "geopandas                  >=1.0,<2.0",
-    "hydromt-fiat               >=0.5.9,<1.0",
-    "hydromt-sfincs[quadtree]   >=1.2.2,<2.0",
+    "hydromt-fiat               >=1.0.0.dev0",
+    "hydromt-sfincs[quadtree]   >=2.0.0-dev",
     "numpy                      >=1.0,<2.0",
     "numpy-financial            >=1.0,<2.0",
     "pandas                     >=2.0,<3.0",
@@ -106,6 +106,12 @@ markers = [
 ]
 testpaths = ["tests"]
 
+# [tool.uv.sources]
+# # https://pixi.prefix.dev/latest/python/pyproject_toml/#development-dependencies-with-tooluvsources
+# # https://docs.astral.sh/uv/concepts/projects/dependencies#dependency-sources
+# hydromt-sfincs = { path = "../hydromt_sfincs"}
+# hydromt_fiat = { path = "../hydromt_fiat" }
+
 ### pixi ###
 [tool.pixi.workspace]
 name = "flood-adapt"
@@ -118,9 +124,13 @@ ffmpeg = "*"
 
 [tool.pixi.feature.build.pypi-dependencies]
 flood-adapt = { path = "." }
+hydromt-sfincs = { path = "../hydromt_sfincs" }
+hydromt-fiat = { path = "../hydromt_fiat" }
 
 [tool.pixi.feature.editable.pypi-dependencies]
 flood-adapt = { path = ".", editable = true }
+hydromt-sfincs = { path = "../hydromt_sfincs", editable = true }
+hydromt-fiat = { path = "../hydromt_fiat", editable = true }
 
 [tool.pixi.environments]
 default = { features = ["dev", "docs", "editable"] }
