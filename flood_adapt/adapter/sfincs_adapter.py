@@ -1,5 +1,4 @@
 import gc
-import logging
 import math
 import os
 import shutil
@@ -23,7 +22,7 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel as HydromtSfincsModel
-from hydromt_sfincs.quadtree import QuadtreeGrid
+from hydromt_sfincs.components.quadtree.quadtree import SfincsQuadtreeGrid
 
 # import cartopy.crs as ccrs
 from matplotlib import animation
@@ -131,19 +130,18 @@ class SfincsAdapter(IHazardAdapter):
         self._model = HydromtSfincsModel(
             root=model_root.resolve().as_posix(),
             mode="r",
-            logger=self._setup_sfincs_logger(model_root),
         )
         self._model.read()
 
     def read(self, path: Path):
         """Read the sfincs model from the current model root."""
-        if Path(self._model.root).resolve() != Path(path).resolve():
-            self._model.set_root(root=path.as_posix(), mode="r")
+        if self.root != Path(path).resolve():
+            self._model.root.set(path=path, mode="r")
         self._model.read()
 
     def write(self, path_out: Union[str, os.PathLike], overwrite: bool = True):
         """Write the sfincs model configuration to a directory."""
-        root = self.get_model_root()
+        root = self.root
         if not isinstance(path_out, Path):
             path_out = Path(path_out).resolve()
 
@@ -155,23 +153,13 @@ class SfincsAdapter(IHazardAdapter):
 
         write_mode = "w+" if overwrite else "w"
         with cd(path_out):
-            self._model.set_root(root=path_out.as_posix(), mode=write_mode)
+            self._model.root.set(path=path_out, mode=write_mode)
             self._model.write()
-
-    def close_files(self):
-        """Close all open files and clean up file handles."""
-        for _logger in [logger, self.sfincs_logger]:
-            if hasattr(_logger, "handlers"):
-                for handler in _logger.handlers:
-                    if isinstance(handler, logging.FileHandler):
-                        handler.close()
-                        _logger.removeHandler(handler)
 
     def __enter__(self) -> "SfincsAdapter":
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> bool:
-        self.close_files()
         return False
 
     def has_run(self, scenario: Scenario) -> bool:
@@ -212,7 +200,6 @@ class SfincsAdapter(IHazardAdapter):
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            self.sfincs_logger.info(process.stdout)
             logger.debug(process.stdout)
 
         self._cleanup_simulation_folder(path)
@@ -261,9 +248,7 @@ class SfincsAdapter(IHazardAdapter):
 
         sim_path = self._get_simulation_path(scenario=scenario, sub_event=event)
         sim_path.mkdir(parents=True, exist_ok=True)
-        template_path = (
-            self.database.static.get_overland_sfincs_model().get_model_root()
-        )
+        template_path = self.database.static.get_overland_sfincs_model().root
 
         with SfincsAdapter(model_root=template_path) as model:
             model._load_scenario_objects(scenario, event)
@@ -323,9 +308,9 @@ class SfincsAdapter(IHazardAdapter):
     def set_timing(self, time: TimeFrame):
         """Set model reference times."""
         logger.info(f"Setting timing for the SFINCS model: `{time}`")
-        self._model.set_config("tref", time.start_time)
-        self._model.set_config("tstart", time.start_time)
-        self._model.set_config("tstop", time.end_time)
+        self._model.config.set("tref", time.start_time)
+        self._model.config.set("tstart", time.start_time)
+        self._model.config.set("tstop", time.end_time)
 
     def add_forcing(self, forcing: IForcing):
         """Get forcing data and add it."""
@@ -375,7 +360,7 @@ class SfincsAdapter(IHazardAdapter):
                 logger.info(
                     f"Adding projected sea level rise `{phys_projection.sea_level_rise}`"
                 )
-                self.waterlevels += phys_projection.sea_level_rise.convert(
+                self.waterlevels.data += phys_projection.sea_level_rise.convert(
                     us.UnitTypesLength.meters
                 )
 
@@ -384,25 +369,37 @@ class SfincsAdapter(IHazardAdapter):
                 logger.info(
                     f"Adding projected rainfall multiplier `{phys_projection.rainfall_multiplier}`"
                 )
-                self.rainfall *= phys_projection.rainfall_multiplier
+                self.rainfall.data *= phys_projection.rainfall_multiplier
 
     ### GETTERS ###
+    @property
+    def root(self) -> Path:
+        """Return the model root path."""
+        return self._model.root.path
+
+    @property
+    def time(self) -> TimeFrame:
+        """Return the model time frame."""
+        t0 = self._model.config.get("tstart")
+        t1 = self._model.config.get("tstop")
+        return TimeFrame(start_time=t0, end_time=t1)
+
+    @property
+    def boundary(self) -> gpd.GeoSeries:
+        """Return the model boundary as a GeoSeries."""
+        return self._model.region[["geometry"]].boundary
+
     def get_model_time(self) -> TimeFrame:
         t0, t1 = self._model.get_model_time()
         return TimeFrame(start_time=t0, end_time=t1)
 
-    def get_model_root(self) -> Path:
-        return Path(self._model.root)
-
     def get_mask(self) -> xr.DataArray:
         """Get mask with inactive cells from model."""
-        mask = self._model.mask
-        return mask
+        return self._model.mask.data
 
     def get_bedlevel(self) -> xr.DataArray:
         """Get bed level from model."""
-        self._model.read_results()
-        zb = self._model.results["zb"]
+        zb = self._model.output.data["zb"]
         # Convert bed level from meters to floodmap units
         conversion = us.UnitfulLength(
             value=1.0, units=us.UnitTypesLength.meters
@@ -411,28 +408,27 @@ class SfincsAdapter(IHazardAdapter):
         zb.attrs["units"] = self.settings.config.floodmap_units.value
         return zb
 
-    def get_model_boundary(self) -> gpd.GeoDataFrame:
+    def get_model_boundary(self) -> gpd.GeoSeries:
         """Get bounding box from model."""
-        boundary = self._model.region[["geometry"]]
-        return boundary
+        return self._model.region[["geometry"]].boundary
 
-    def get_model_grid(self) -> QuadtreeGrid:
+    def get_model_grid(self) -> SfincsQuadtreeGrid:
         """Get grid from model.
 
         Returns
         -------
-        QuadtreeGrid
+        SfincsQuadtreeGrid
             QuadtreeGrid with the model grid
         """
-        return self._model.quadtree
+        return self._model.quadtree_grid
 
     def get_finest_res(self) -> float:
         """Get the finest resolution of the model grid."""
         if self._model.grid_type == "quadtree":
-            res0 = self._model.quadtree.dx
-            res = res0 / 2**self._model.quadtree.nr_refinement_levels
+            res0 = self._model.quadtree_grid.data.attrs["dx"]
+            res = res0 / 2 ** self._model.quadtree_grid.data.attrs["nr_levels"]
         else:
-            res = self._model.res[0]
+            res = self._model.grid.dx
         return res
 
     ### STRUCTURES/GEOMETRIES ###
@@ -445,7 +441,7 @@ class SfincsAdapter(IHazardAdapter):
         gpd.GeoDataFrame | None
             GeoDataFrame with weir geometries if present, otherwise None.
         """
-        return self._model.geoms.get("weir")
+        return self._model.weirs.data
 
     @property
     def drainage(self) -> gpd.GeoDataFrame | None:
@@ -456,89 +452,30 @@ class SfincsAdapter(IHazardAdapter):
         gpd.GeoDataFrame | None
             GeoDataFrame with drainage geometries if present, otherwise None.
         """
-        return self._model.geoms.get("drn")
+        return self._model.drainage_structures.data
 
     # Forcing properties
     @property
-    def waterlevels(self) -> xr.Dataset | xr.DataArray | None:
-        return self._model.forcing.get("bzs")
-
-    @waterlevels.setter
-    def waterlevels(self, waterlevels: xr.Dataset | xr.DataArray):
-        if self.waterlevels is None or self.waterlevels.size == 0:
-            raise ValueError("No water level forcing found in the model.")
-        self._model.forcing["bzs"] = waterlevels
+    def waterlevels(self) -> xr.Dataset:
+        return self._model.water_level.data
 
     @property
-    def discharge(self) -> xr.Dataset | xr.DataArray | None:
-        return self._model.forcing.get("dis")
-
-    @discharge.setter
-    def discharge(self, discharge: xr.Dataset | xr.DataArray):
-        if self.discharge is None or self.discharge.size == 0:
-            raise ValueError("No discharge forcing found in the model.")
-        self._model.forcing["dis"] = discharge
+    def discharge(self) -> xr.Dataset:
+        return self._model.discharge_points.data
 
     @property
-    def rainfall(self) -> xr.Dataset | xr.DataArray | None:
-        names = ["precip", "precip_2d"]
-        in_model = [name for name in names if name in self._model.forcing]
-        if len(in_model) == 0:
-            return None
-        elif len(in_model) == 1:
-            return self._model.forcing[in_model[0]]
-        else:
-            raise ValueError("Multiple rainfall forcings found in the model.")
-
-    @rainfall.setter
-    def rainfall(self, rainfall: xr.Dataset | xr.DataArray):
-        if self.rainfall is None or self.rainfall.size == 0:
-            raise ValueError("No rainfall forcing found in the model.")
-        elif "precip_2d" in self._model.forcing:
-            self._model.forcing["precip_2d"] = rainfall
-        elif "precip" in self._model.forcing:
-            self._model.forcing["precip"] = rainfall
-        else:
-            raise ValueError("Unsupported rainfall forcing in the model.")
+    def rainfall(self) -> xr.Dataset | xr.DataArray:
+        d = self._model.precipitation.data
+        if isinstance(d, xr.DataArray):
+            return d.to_dataset()
+        return d
 
     @property
-    def wind(self) -> xr.Dataset | xr.DataArray | None:
-        wind_names = ["wnd", "wind_2d", "wind", "wind10_u", "wind10_v"]
-        wind_in_model = [name for name in wind_names if name in self._model.forcing]
-        if len(wind_in_model) == 0:
-            return None
-        elif len(wind_in_model) == 1:
-            return self._model.forcing[wind_in_model[0]]
-        elif len(wind_in_model) == 2:
-            if not ("wind10_u" in wind_in_model and "wind10_v" in wind_in_model):
-                raise ValueError(
-                    "Multiple wind forcings found in the model. Both should be wind10_u and wind10_v or a singular wind forcing."
-                )
-            return xr.Dataset(
-                {
-                    "wind10_u": self._model.forcing["wind10_u"],
-                    "wind10_v": self._model.forcing["wind10_v"],
-                }
-            )
-        else:
-            raise ValueError("Multiple wind forcings found in the model.")
-
-    @wind.setter
-    def wind(self, wind: xr.Dataset | xr.DataArray):
-        if (not self.wind) or (self.wind.size == 0):
-            raise ValueError("No wind forcing found in the model.")
-
-        elif "wind_2d" in self._model.forcing:
-            self._model.forcing["wind_2d"] = wind
-        elif "wind" in self._model.forcing:
-            self._model.forcing["wind"] = wind
-        elif "wnd" in self._model.forcing:
-            self._model.forcing["wnd"] = wind
-        elif "wind10_u" in self._model.forcing and "wind10_v" in self._model.forcing:
-            self._model.forcing["wind10_u"] = wind["wind10_u"]
-            self._model.forcing["wind10_v"] = wind["wind10_v"]
-        else:
-            raise ValueError("Unsupported wind forcing in the model.")
+    def wind(self) -> xr.Dataset:
+        d = self._model.wind.data
+        if isinstance(d, xr.DataArray):
+            return d.to_dataset()
+        return d
 
     ### OUTPUT ###
     def run_completed(self, scenario: Scenario) -> bool:
@@ -1089,22 +1026,31 @@ class SfincsAdapter(IHazardAdapter):
 
     def _ensure_no_existing_forcings(self):
         """Check for existing forcings in the model and raise an error if any are found."""
-        all_forcings = {
+        forcings: dict[str, xr.Dataset | xr.DataArray] = {
             "waterlevel": self.waterlevels,
             "rainfall": self.rainfall,
             "wind": self.wind,
             "discharge": self.discharge,
         }
-        contains_forcings = ", ".join(
-            [
-                f"{name.capitalize()}"
-                for name, forcing in all_forcings.items()
-                if forcing is not None
-            ]
-        )
-        if contains_forcings:
+        contains = {
+            name: forcing
+            for name, forcing in forcings.items()
+            if len(forcing.sizes) > 0 and not (forcing == 0).all()
+        }
+
+        if contains:
+            logger.error(
+                f"Existing forcings found in the SFINCS template model: {contains}"
+            )
+            for name, forcing in contains.items():
+                if len(forcing.sizes) > 0:
+                    logger.error(f"- {name.capitalize()}.")
+                    logger.error(forcing)
             raise ValueError(
-                f"{contains_forcings} forcing(s) should not exists in the SFINCS template model. Remove it from the SFINCS model located at: {self.get_model_root()}. For more information on SFINCS and its input files, see the SFINCS documentation at: `https://sfincs.readthedocs.io/en/latest/input.html`"
+                f"{contains} forcing(s) should not exists in the SFINCS template model. "
+                f"Remove it from the SFINCS model located at: {self.root}. "
+                f"For more information on SFINCS and its input files, see the SFINCS "
+                f"documentation at: `https://sfincs.readthedocs.io/en/latest/input.html`"
             )
 
     ### FORCING ###
@@ -1126,7 +1072,7 @@ class SfincsAdapter(IHazardAdapter):
         time_frame = self.get_model_time()
         if isinstance(wind, WindConstant):
             # HydroMT function: set wind forcing from constant magnitude and direction
-            self._model.setup_wind_forcing(
+            self._model.wind.create_uniform(
                 timeseries=None,
                 magnitude=wind.speed.convert(us.UnitTypesVelocity.mps),
                 direction=wind.direction.value,
@@ -1141,9 +1087,7 @@ class SfincsAdapter(IHazardAdapter):
             df.to_csv(tmp_path)
 
             # HydroMT function: set wind forcing from timeseries
-            self._model.setup_wind_forcing(
-                timeseries=tmp_path, magnitude=None, direction=None
-            )
+            self._model.wind.create_uniform(timeseries=tmp_path)
         elif isinstance(wind, WindMeteo):
             ds = MeteoHandler(
                 dir=self.database.static_path / "meteo",
@@ -1153,7 +1097,7 @@ class SfincsAdapter(IHazardAdapter):
             # data already in metric units so no conversion needed
 
             # HydroMT function: set wind forcing from grid
-            self._model.setup_wind_forcing_from_grid(wind=ds)
+            self._model.wind.create(wind=ds)
         elif isinstance(wind, WindTrack):
             # data already in metric units so no conversion needed
             self._add_forcing_spw(wind)
@@ -1164,7 +1108,7 @@ class SfincsAdapter(IHazardAdapter):
                 us.UnitTypesVelocity.mps
             )
             ds *= conversion
-            self._model.setup_wind_forcing_from_grid(wind=ds)
+            self._model.wind.create(wind=ds)
         elif isinstance(wind, WindCSV):
             df = wind.to_dataframe(time_frame=time_frame)
 
@@ -1177,7 +1121,7 @@ class SfincsAdapter(IHazardAdapter):
             df.to_csv(tmp_path)
 
             # HydroMT function: set wind forcing from timeseries
-            self._model.setup_wind_forcing(
+            self._model.wind.create_uniform(
                 timeseries=tmp_path,
                 magnitude=None,
                 direction=None,
@@ -1198,7 +1142,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         time_frame = self.get_model_time()
         if isinstance(rainfall, RainfallConstant):
-            self._model.setup_precip_forcing(
+            self._model.precipitation.create_uniform(
                 timeseries=None,
                 magnitude=rainfall.intensity.convert(us.UnitTypesIntensity.mm_hr),
             )
@@ -1212,7 +1156,7 @@ class SfincsAdapter(IHazardAdapter):
             tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
             df.to_csv(tmp_path)
 
-            self._model.setup_precip_forcing(timeseries=tmp_path)
+            self._model.precipitation.create_uniform(timeseries=tmp_path)
         elif isinstance(rainfall, RainfallSynthetic):
             df = rainfall.to_dataframe(time_frame=time_frame)
 
@@ -1229,7 +1173,7 @@ class SfincsAdapter(IHazardAdapter):
             tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
             df.to_csv(tmp_path)
 
-            self._model.setup_precip_forcing(timeseries=tmp_path)
+            self._model.precipitation.create_uniform(timeseries=tmp_path)
         elif isinstance(rainfall, RainfallMeteo):
             ds = MeteoHandler(
                 dir=self.database.static_path / "meteo",
@@ -1237,7 +1181,7 @@ class SfincsAdapter(IHazardAdapter):
                 lon=self.database.site.lon,
             ).read(time_frame)
             # MeteoHandler always return metric so no conversion needed
-            self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
+            self._model.precipitation.create(precip=ds, cumulative_input=False)
         elif isinstance(rainfall, RainfallTrack):
             # data already in metric units so no conversion needed
             self._add_forcing_spw(rainfall)
@@ -1248,7 +1192,7 @@ class SfincsAdapter(IHazardAdapter):
                 us.UnitTypesIntensity.mm_hr
             )
             ds *= conversion
-            self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
+            self._model.precipitation.create(precip=ds, cumulative_input=False)
         else:
             logger.warning(
                 f"Unsupported rainfall forcing type: {rainfall.__class__.__name__}"
@@ -1379,7 +1323,7 @@ class SfincsAdapter(IHazardAdapter):
                 "Track files should be in one of [spw, ddb_cyc] file format and must have [.spw, .cyc] extension."
             )
 
-        sim_path = self.get_model_root()
+        sim_path = self.root
         logger.info(f"Adding spiderweb forcing to Sfincs model: {sim_path.name}")
 
         # prevent SameFileError
@@ -1393,7 +1337,7 @@ class SfincsAdapter(IHazardAdapter):
             os.remove(output_spw_path)
         shutil.copy2(forcing.path, output_spw_path)
 
-        self._model.set_config("spwfile", output_spw_path.name)
+        self._model.config.set("spwfile", output_spw_path.name)
 
     ### MEASURES ###
 
@@ -1425,9 +1369,10 @@ class SfincsAdapter(IHazardAdapter):
 
         # HydroMT function: get geodataframe from filename
         gdf_floodwall = self._model.data_catalog.get_geodataframe(
-            polygon_file, geom=self._model.region, crs=self._model.crs
+            polygon_file, geom=self._model.region
         )
-
+        if gdf_floodwall is None or gdf_floodwall.empty:
+            raise ValueError(f"No valid geometry found for floodwall: {floodwall.name}")
         # Add floodwall attributes to geodataframe
         gdf_floodwall["name"] = floodwall.name
         if (gdf_floodwall.geometry.type == "MultiLineString").any():
@@ -1465,8 +1410,10 @@ class SfincsAdapter(IHazardAdapter):
             )
 
             gdf_bfe = self._model.data_catalog.get_geodataframe(
-                bfe_path, geom=self._model.region, crs=self._model.crs
+                bfe_path, geom=self._model.region
             )
+            if gdf_bfe is None or gdf_bfe.empty:
+                raise ValueError(f"No valid geometry found in BFE file: {bfe_path}")
 
             if bfe_field_name not in gdf_bfe.columns:
                 raise ValueError(
@@ -1504,7 +1451,7 @@ class SfincsAdapter(IHazardAdapter):
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall
-        self._model.setup_structures(structures=gdf_floodwall, stype="weir", merge=True)
+        self._model.weirs.create(locations=gdf_floodwall, merge=True)
 
     def _add_measure_greeninfra(self, green_infrastructure: GreenInfrastructure):
         # HydroMT function: get geodataframe from filename
@@ -1540,14 +1487,17 @@ class SfincsAdapter(IHazardAdapter):
         gdf_green_infra = self._model.data_catalog.get_geodataframe(
             polygon_file,
             geom=self._model.region,
-            crs=self._model.crs,
         )
+        if gdf_green_infra is None or gdf_green_infra.empty:
+            raise ValueError(
+                f"No valid geometry found for green infrastructure measure: {green_infrastructure.name}"
+            )
 
         # Make sure no multipolygons are there
         gdf_green_infra = gdf_green_infra.explode()
 
         # HydroMT function: create storage volume
-        self._model.setup_storage_volume(
+        self._model.storage_volume.create(
             storage_locs=gdf_green_infra,
             volume=green_infrastructure.volume.convert(us.UnitTypesVolume.m3),
             merge=True,
@@ -1564,12 +1514,14 @@ class SfincsAdapter(IHazardAdapter):
         polygon_file = resolve_filepath(ObjectDir.measure, pump.name, pump.polygon_file)
         # HydroMT function: get geodataframe from filename
         gdf_pump = self._model.data_catalog.get_geodataframe(
-            polygon_file, geom=self._model.region, crs=self._model.crs
+            polygon_file, geom=self._model.region
         )
+        if gdf_pump is None or gdf_pump.empty:
+            raise ValueError(f"No valid geometry found for pump: {pump.name}")
 
         # HydroMT function: create floodwall
-        self._model.setup_drainage_structures(
-            structures=gdf_pump,
+        self._model.drainage_structures.create(
+            locations=gdf_pump,
             stype="pump",
             discharge=pump.discharge.convert(us.UnitTypesDischarge.cms),
             merge=True,
@@ -1592,7 +1544,7 @@ class SfincsAdapter(IHazardAdapter):
             )
             return
 
-        model_rivers = self._read_river_locations()
+        model_rivers = self._model.discharge_points.read_discharge_points()
         if model_rivers.empty:
             logger.warning(
                 "Cannot add discharge forcing: No rivers defined in the sfincs model."
@@ -1639,7 +1591,7 @@ class SfincsAdapter(IHazardAdapter):
         df = df.rename(columns={df.columns[0]: river_inds[0]})
 
         # HydroMT function: set discharge forcing from time series and river coordinates
-        self._model.setup_discharge_forcing(
+        self._model.discharge_points.create(
             locations=river_gdf,
             timeseries=df,
             merge=True,
@@ -1648,7 +1600,7 @@ class SfincsAdapter(IHazardAdapter):
     def _turn_off_bnd_press_correction(self):
         """Turn off the boundary pressure correction in the sfincs model."""
         logger.info("Turning off boundary pressure correction in the offshore model")
-        self._model.set_config("pavbnd", -9999)
+        self._model.config.set("pavbnd", -9999)
 
     def _set_waterlevel_forcing(self, df_ts: pd.DataFrame):
         """
@@ -1665,7 +1617,7 @@ class SfincsAdapter(IHazardAdapter):
 
         """
         # Determine bnd points from reference overland model
-        gdf_locs = self._read_waterlevel_boundary_locations()
+        gdf_locs = self._model.water_level.read_boundary_points()
 
         if len(df_ts.columns) == 1:
             # Go from 1 timeseries to timeseries for all boundary points
@@ -1682,9 +1634,7 @@ class SfincsAdapter(IHazardAdapter):
         df_ts -= sfincs_overland_reference_height
 
         # HydroMT function: set waterlevel forcing from time series
-        self._model.set_forcing_1d(
-            name="bzs", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
-        )
+        self._model.water_level.set(df=df_ts, gdf=gdf_locs, merge=False)
 
     # OFFSHORE
     def _add_pressure_forcing_from_grid(self, ds: xr.DataArray):
@@ -1698,7 +1648,7 @@ class SfincsAdapter(IHazardAdapter):
             - spatial_ref: CRS
         """
         logger.info("Adding pressure forcing to the offshore model")
-        self._model.setup_pressure_forcing_from_grid(press=ds)
+        self._model.pressure.create(press=ds)
 
     def _add_bzs_from_bca(self, event: Event, physical_projection: PhysicalProjection):
         # ONLY offshore models
@@ -1708,8 +1658,8 @@ class SfincsAdapter(IHazardAdapter):
 
         logger.info("Adding water level forcing to the offshore model")
         sb = SfincsBoundary()
-        sb.read_flow_boundary_points(self.get_model_root() / "sfincs.bnd")
-        sb.read_astro_boundary_conditions(self.get_model_root() / "sfincs.bca")
+        sb.read_flow_boundary_points(self.root / "sfincs.bnd")
+        sb.read_astro_boundary_conditions(self.root / "sfincs.bca")
 
         times = pd.date_range(
             start=event.time.start_time,
@@ -1741,12 +1691,10 @@ class SfincsAdapter(IHazardAdapter):
                 wl_df[bnd_ii + 1] = tide_ii
 
         # Determine bnd points from reference overland model
-        gdf_locs = self._read_waterlevel_boundary_locations()
+        gdf_locs = self._model.water_level.read_boundary_points()
 
         # HydroMT function: set waterlevel forcing from time series
-        self._model.set_forcing_1d(
-            name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
-        )
+        self._model.water_level.set(df=wl_df, gdf=gdf_locs, merge=False)
 
     ### PRIVATE GETTERS ###
     def _get_result_path(self, scenario: Scenario) -> Path:
@@ -1824,10 +1772,12 @@ class SfincsAdapter(IHazardAdapter):
 
     def _get_zsmax(self):
         """Read zsmax file and return absolute maximum water level over entire simulation."""
-        self._model.read_results()
-        zsmax = self._load_and_copy_results_dataset(
-            self._model.results["zsmax"].max(dim="timemax"), "zsmax"
-        )
+        self._model.output.read()
+        if "zsmax" not in self._model.output.data:
+            raise ValueError("zsmax variable not found in model output.")
+        zsmax = self._model.output.data["zsmax"]
+
+        zsmax = self._load_and_copy_results_dataset(zsmax.max(dim="timemax"), "zsmax")
 
         # Convert from meters to floodmap units
         floodmap_conversion = us.UnitfulLength(
@@ -1839,8 +1789,10 @@ class SfincsAdapter(IHazardAdapter):
 
     def _get_zs(self):
         """Read zsmax file and return absolute maximum water level over entire simulation."""
-        self._model.read_results()
-        zs = self._load_and_copy_results_dataset(self._model.results["zs"], "zs")
+        self._model.output.read()
+        if "zs" not in self._model.output.data:
+            raise ValueError("zs variable not found in model output.")
+        zs = self._load_and_copy_results_dataset(self._model.output.data["zs"], "zs")
 
         # Convert from meters to floodmap units
         floodmap_conversion = us.UnitfulLength(
@@ -1856,23 +1808,21 @@ class SfincsAdapter(IHazardAdapter):
         Names are allocated from the site.toml.
         See also add_obs_points() above.
         """
-        self._model.read_results()
-        da = self._model.results["point_zs"]
-        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.to_numpy())
+        points = self._model.observation_points.data
+        ds: xr.Dataset = self._model.output.data["zs"]
+        df = ds.to_dataframe()
 
+        # get station names from site.toml
         names = []
         descriptions = []
-        # get station names from site.toml
         if self.settings.obs_point is not None:
-            obs_points = self.settings.obs_point
-            for pt in obs_points:
-                names.append(pt.name)
-                descriptions.append(pt.description)
+            names = [pt.name for pt in self.settings.obs_point]
+            descriptions = [pt.description for pt in self.settings.obs_point]
 
         pt_df = pd.DataFrame({"Name": names, "Description": descriptions})
         gdf = gpd.GeoDataFrame(
             pt_df,
-            geometry=gpd.points_from_xy(da.point_x.values, da.point_y.values),
+            geometry=points.geometry,
             crs=self._model.crs,
         )
         return df, gdf
@@ -2030,46 +1980,6 @@ class SfincsAdapter(IHazardAdapter):
             hmin=0.01,
         )
         return hmax
-
-    def _read_river_locations(self) -> gpd.GeoDataFrame:
-        path = self.get_model_root() / "sfincs.src"
-        lines = []
-        if path.exists():
-            with open(path) as f:
-                lines = f.readlines()
-        coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
-        points = [shapely.Point(coord) for coord in coords]
-
-        return gpd.GeoDataFrame({"geometry": points}, crs=self._model.crs)
-
-    def _read_waterlevel_boundary_locations(self) -> gpd.GeoDataFrame:
-        path = self.get_model_root() / "sfincs.bnd"
-        lines = []
-        if path.exists():
-            with open(path) as f:
-                lines = f.readlines()
-
-        coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
-        points = [shapely.Point(coord) for coord in coords]
-
-        return gpd.GeoDataFrame({"geometry": points}, crs=self._model.crs)
-
-    def _setup_sfincs_logger(self, model_root: Path) -> logging.Logger:
-        """Initialize the logger for the SFINCS model."""
-        # Create a logger for the SFINCS model manually
-        sfincs_logger = logging.getLogger("SfincsModel")
-        for handler in sfincs_logger.handlers[:]:
-            sfincs_logger.removeHandler(handler)
-
-        # Add a file handler
-        file_handler = logging.FileHandler(
-            filename=model_root.resolve() / "sfincs_model.log",
-            mode="w",
-        )
-        sfincs_logger.setLevel(logging.DEBUG)
-        sfincs_logger.addHandler(file_handler)
-        self.sfincs_logger = sfincs_logger
-        return sfincs_logger
 
     def _cleanup_simulation_folder(
         self,
@@ -2267,7 +2177,7 @@ class SfincsAdapter(IHazardAdapter):
         ds = dataset.load().copy(deep=True)
         try:
             # delete the dataset from the model results to mark it for garbage collection
-            del self._model.results[result_name]
+            del self._model.output.data[result_name]
         except Exception:
             pass
         # force collect

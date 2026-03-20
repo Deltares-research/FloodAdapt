@@ -30,9 +30,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
     template_path: Path
 
     def __init__(self, scenario: Scenario, event: Event) -> None:
-        self.template_path = (
-            self.database.static.get_offshore_sfincs_model().get_model_root()
-        )
+        self.template_path = self.database.static.get_offshore_sfincs_model().root
         self.scenario = scenario
         if isinstance(event, EventSet):
             raise ValueError(

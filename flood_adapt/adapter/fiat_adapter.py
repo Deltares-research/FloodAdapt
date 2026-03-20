@@ -18,7 +18,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.footprints import Footprints
 from fiat_toolbox.utils import extract_variables, matches_pattern, replace_pattern
-from hydromt_fiat.fiat import FiatModel
+from hydromt_fiat.fiat import FIATModel as HydromtFiatModel
 
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.config.fiat import FiatConfigModel
@@ -86,7 +86,7 @@ class FiatAdapter(IImpactAdapter):
     # TODO deal with all the relative paths for the files used
     # TODO IImpactAdapter and general Adapter class should NOT use the database
 
-    _model: Optional[FiatModel] = None
+    _model: Optional[HydromtFiatModel] = None
     config: Optional[FiatConfigModel] = None
     exe_path: Optional[os.PathLike] = None
     fiat_columns: FiatColumns
@@ -111,10 +111,10 @@ class FiatAdapter(IImpactAdapter):
         self.impact_columns = _IMPACT_COLUMNS  # columns of FA impact output
 
     @property
-    def model(self) -> FiatModel:
-        """Lazily load and cache the FiatModel."""
+    def model(self) -> HydromtFiatModel:
+        """Lazily load and cache the HydromtFiatModel."""
         if self._model is None:
-            self._model = FiatModel(root=self._model_root, mode="r")
+            self._model = HydromtFiatModel(root=self._model_root, mode="r")
             self._model.read()
         return self._model
 
@@ -1192,26 +1192,26 @@ class FiatAdapter(IImpactAdapter):
             )
 
         # check if polygon file is used, then get the absolute path
-        if measure.polygon_file:
-            polygon_file = resolve_filepath(
-                object_dir=ObjectDir.measure,
-                obj_name=measure.name,
-                path=measure.polygon_file,
-            ).as_posix()
-        else:
-            polygon_file = None
+        # if measure.polygon_file:
+        #     polygon_file = resolve_filepath(
+        #         object_dir=ObjectDir.measure,
+        #         obj_name=measure.name,
+        #         path=measure.polygon_file,
+        #     ).as_posix()
+        # else:
+        #     polygon_file = None
 
         # use the hydromt-fiat method to the ids
-        ids = self.model.exposure.get_object_ids(
-            selection_type=measure.selection_type,
-            property_type=measure.property_type,
-            non_building_names=self.config.non_building_names,
-            aggregation=measure.aggregation_area_type,
-            aggregation_area_name=measure.aggregation_area_name,
-            polygon_file=polygon_file,
-        )
-
-        return ids
+        # ids = self.model.exposure_geoms.get_object_ids(
+        #     selection_type=measure.selection_type,
+        #     property_type=measure.property_type,
+        #     non_building_names=self.config.non_building_names,
+        #     aggregation=measure.aggregation_area_type,
+        #     aggregation_area_name=measure.aggregation_area_name,
+        #     polygon_file=polygon_file,
+        # )
+        # TODO: implement for hydromt v1
+        return []
 
     # POST-PROCESSING METHODS
 

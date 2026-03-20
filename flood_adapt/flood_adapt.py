@@ -7,7 +7,7 @@ import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
-from hydromt_sfincs.quadtree import QuadtreeGrid
+from hydromt_sfincs.components.quadtree.quadtree import SfincsQuadtreeGrid
 
 from flood_adapt.adapter import SfincsAdapter
 from flood_adapt.config.settings import Settings
@@ -1085,12 +1085,12 @@ class FloodAdapt:
 
     def get_model_grid(
         self,
-    ) -> QuadtreeGrid:
+    ) -> SfincsQuadtreeGrid:
         """Get the model grid that is used in SFINCS.
 
         Returns
         -------
-        grid : QuadtreeGrid
+        grid : SfincsQuadtreeGrid
             QuadtreeGrid with the model grid
         """
         return self.database.static.get_model_grid()

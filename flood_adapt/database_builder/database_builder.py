@@ -16,8 +16,9 @@ import numpy as np
 import pandas as pd
 import rioxarray as rxr
 import xarray as xr
-from hydromt_fiat import FiatModel as HydromtFiatModel
-from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
+
+# from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
+from hydromt_fiat.fiat import FIATModel as HydromtFiatModel
 from hydromt_sfincs import SfincsModel as HydromtSfincsModel
 from hydromt_sfincs.workflows.downscaling import make_index_cog
 from pydantic import BaseModel, Field, model_validator
@@ -1026,7 +1027,10 @@ class DatabaseBuilder:
                 )  # TODO check if this is correct
             else:
                 polygon = Polygon(region.boundary.to_numpy()[0])
-            footprints = get_buildings_from_osm(polygon)
+
+            # TODO: implement ``get_buildings_from_osm``
+            # footprints = get_buildings_from_osm(polygon)
+            footprints = gpd.GeoDataFrame(polygon)
             footprints["BF_FID"] = np.arange(1, len(footprints) + 1)
             footprints = footprints[["BF_FID", "geometry"]]
             path = self._join_building_footprints(footprints, "BF_FID")
