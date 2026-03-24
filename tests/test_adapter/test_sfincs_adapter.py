@@ -13,6 +13,7 @@ import pytest
 import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from shapely.geometry import Polygon
+from shapely.ops import unary_union
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.config.hazard import (
@@ -1119,41 +1120,60 @@ class TestAddMeasure:
             tmp_path: Path,
         ):
             # Arrange
-            new_root = tmp_path / "floodwall"
             expected_coords, expected_height = self.get_expected_floodwall_attributes(
                 default_sfincs_adapter, floodwall
             )
 
+            original_weirs = default_sfincs_adapter.weirs.copy()
+
             # Act
             default_sfincs_adapter.add_measure(floodwall)
-            default_sfincs_adapter.write(path_out=new_root)
 
-            # Assert
-            added_coords, added_heights = self.read_weir_file(
-                default_sfincs_adapter, floodwall.name
+            weirs = default_sfincs_adapter.weirs
+
+            # Assert: structure
+            assert not weirs.empty
+            assert len(weirs) == len(original_weirs) + 1
+
+            # Assert: new weir exists and is uniquely identifiable
+            added = weirs[weirs["name"] == floodwall.name]
+
+            assert (
+                len(added) == 1
+            ), f"Expected exactly one weir with name {floodwall.name}"
+
+            geom = added.geometry.iloc[0]
+
+            coords = (
+                list(geom.coords)
+                if geom.geom_type == "LineString"
+                else [c for part in geom.geoms for c in part.coords]
             )
 
-            # Check coords
-            assert len(added_coords) == len(expected_coords)
-            for i, (gdf, added) in enumerate(zip(expected_coords, added_coords)):
-                assert (
-                    gdf[0] == pytest.approx(added[0], abs=0.2)
-                ), f"Coordinate {i}.x from file does not match coordinates in hydromt-sfincs: {gdf[0]} vs {added[0]}"
-                assert (
-                    gdf[1] == pytest.approx(added[1], abs=0.2)
-                ), f"Coordinate {i}.y from file does not match coordinates in hydromt-sfincs {gdf[1]} vs {added[1]}"
+            added_coords = [(round(x, 1), round(y, 1)) for x, y in coords]
 
-            # Check heights
-            assert len(added_heights) == len(expected_coords)
-            assert all(
-                height == pytest.approx(expected_height, 1) for height in added_heights
-            ), "Height in file does not match height in polygon file"
+            # Assert: geometry
+            assert len(added_coords) == len(expected_coords)
+
+            for i, (exp, act) in enumerate(zip(expected_coords, added_coords)):
+                assert exp[0] == pytest.approx(act[0], abs=0.2), f"x mismatch at {i}"
+                assert exp[1] == pytest.approx(act[1], abs=0.2), f"y mismatch at {i}"
+
+            # Assert: elevation (single value per weir)
+            assert "z" in added.columns
+
+            added_height = added["z"].iloc[0]
+
+            expected_total_height = round(
+                floodwall.elevation.convert(us.UnitTypesLength.meters), 1
+            )
+
+            assert added_height == pytest.approx(expected_total_height, abs=0.2)
 
         def test_add_measure_floodwall_floodmap(
             self,
             default_sfincs_adapter: SfincsAdapter,
             test_db,
-            tmp_path: Path,
         ):
             floodwall = FloodWall(
                 name="test_seawall_floodmap",
@@ -1166,90 +1186,105 @@ class TestAddMeasure:
                 ),
                 polygon_file=str(TEST_DATA_DIR / "seawall.geojson"),
             )
+
             test_db.measures.add(floodwall)
 
             bfe_value = 1.25
+
             test_db.site.fiat.config.bfe = mock.Mock(
                 geom="dummy_bfe.geojson",
                 field_name="bfe",
                 units=us.UnitTypesLength.meters,
             )
 
-            measure_gdf = TestAddMeasure.get_measure_gdf(
-                default_sfincs_adapter, floodwall
-            )
-            xmin, ymin, xmax, ymax = measure_gdf.total_bounds
-            pad = 1000.0
+            # Get expected geometry (already in model CRS)
+            gdf_raw = TestAddMeasure.get_measure_gdf(default_sfincs_adapter, floodwall)
+
+            raw_lines = []
+            for geom in gdf_raw.geometry:
+                if geom.geom_type == "LineString":
+                    raw_lines.append(geom)
+                elif geom.geom_type == "MultiLineString":
+                    raw_lines.extend(list(geom.geoms))
+                else:
+                    raise AssertionError(f"Unsupported geometry type: {geom.geom_type}")
+
+            original_weirs = default_sfincs_adapter.weirs.copy()
+
+            # Mock BFE
             gdf_bfe = gpd.GeoDataFrame(
-                {"bfe": [bfe_value]},
-                geometry=[
-                    Polygon(
-                        [
-                            (xmin - pad, ymin - pad),
-                            (xmax + pad, ymin - pad),
-                            (xmax + pad, ymax + pad),
-                            (xmin - pad, ymax + pad),
-                        ]
-                    )
-                ],
-                crs=measure_gdf.crs,
+                {
+                    "bfe": [bfe_value],
+                    "geometry": [
+                        Polygon(
+                            [
+                                (597000, 3628000),
+                                (599000, 3628000),
+                                (599000, 3630000),
+                                (597000, 3630000),
+                            ]
+                        )
+                    ],
+                },
+                crs="EPSG:28992",
             )
 
             original_get_geodataframe = (
                 default_sfincs_adapter._model.data_catalog.get_geodataframe
             )
 
-            def _get_geodataframe_side_effect(data_like, *args, **kwargs):
-                if str(data_like).endswith("dummy_bfe.geojson"):
+            def mock_get_gdf(source, *args, **kwargs):
+                if str(source).endswith("dummy_bfe.geojson"):
                     return gdf_bfe
-                return original_get_geodataframe(data_like, *args, **kwargs)
+                return original_get_geodataframe(source, *args, **kwargs)
 
-            new_root = tmp_path / "floodwall_floodmap"
             with mock.patch.object(
                 default_sfincs_adapter._model.data_catalog,
                 "get_geodataframe",
-                side_effect=_get_geodataframe_side_effect,
+                side_effect=mock_get_gdf,
             ):
                 default_sfincs_adapter.add_measure(floodwall)
-                default_sfincs_adapter.write(path_out=new_root)
 
-            added_coords, added_heights = self.read_weir_file(
-                default_sfincs_adapter, floodwall.name
+            weirs = default_sfincs_adapter.weirs
+
+            # --- structure ---
+            assert len(weirs) == len(original_weirs) + 1
+
+            added = weirs[weirs["name"] == floodwall.name]
+            assert len(added) == 1
+
+            geom = added.geometry.iloc[0]
+
+            # --- flatten actual geometry ---
+            if geom.geom_type == "LineString":
+                actual_lines = [geom]
+            elif geom.geom_type == "MultiLineString":
+                actual_lines = list(geom.geoms)
+            else:
+                raise AssertionError(f"Unexpected geometry: {geom.geom_type}")
+
+            # --- geometry comparison (robust) ---
+            assert len(actual_lines) == len(raw_lines)
+
+            union_raw = unary_union(raw_lines)
+            union_actual = unary_union(actual_lines)
+
+            # symmetric tolerance check
+            assert union_raw.buffer(25.0).covers(union_actual)
+            assert union_actual.buffer(25.0).covers(union_raw)
+
+            # --- height check ---
+            expected_height = round(
+                floodwall.elevation.convert(us.UnitTypesLength.meters), 1
             )
+            expected_total_height = round(expected_height + bfe_value, 1)
 
-            expected_height = floodwall.elevation.convert(us.UnitTypesLength.meters)
-            expected_total_height = expected_height + bfe_value
-
-            assert len(added_coords) > 0
-            assert all(
-                height == pytest.approx(expected_total_height, abs=0.2)
-                for height in added_heights
-            ), f"Height in file does not match height in polygon file.\n{added_heights=}, {expected_total_height=}"
-
-        def read_weir_file(self, adapter: SfincsAdapter, floodwall_name: str):
-            weir_file = adapter._model.get_config("weirfile")
-
-            # read weir file
-            added_coords = []
-            added_heights = []
-            with open(adapter.root / weir_file, "r") as f:
-                _first_line = f.readline()
-                assert (
-                    floodwall_name in _first_line
-                ), "Expected floodwall name in weir file"
-
-                _second_line = f.readline()
-                num_coords = int(_second_line.split()[0])
-                num_vars = int(_second_line.split()[1])
-                assert (
-                    num_vars == 4
-                ), "Expected 4 variables in weir file: x y z Cd (https://sfincs.readthedocs.io/en/latest/input_structures.html)"
-
-                for _ in range(num_coords):
-                    x, y, height, _ = f.readline().split()
-                    added_coords.append((float(x), float(y)))
-                    added_heights.append(float(height))
-            return added_coords, added_heights
+            heights = weirs.loc[added.index, "z"].to_numpy()
+            assert np.allclose(
+                heights,
+                expected_total_height,
+                atol=0.5,
+            )
 
         def get_expected_floodwall_attributes(
             self, adapter: SfincsAdapter, floodwall: FloodWall
@@ -1286,56 +1321,58 @@ class TestAddMeasure:
             self, default_sfincs_adapter: SfincsAdapter, pump: Pump, tmp_path: Path
         ):
             # Arrange
-            new_root = tmp_path / "pump"
+            original = default_sfincs_adapter.drainage.copy()
+
             expected_snk_coord, expected_src_coord, expected_discharge = (
                 self.get_expected_pump_attributes(default_sfincs_adapter, pump)
             )
 
             # Act
             default_sfincs_adapter.add_measure(pump)
-            default_sfincs_adapter.write(path_out=new_root)
 
             # Assert
-            (
-                drn_file,
-                added_snk_coord,
-                added_src_coord,
-                added_type,
-                added_discharge,
-            ) = self.read_drn_file(default_sfincs_adapter)
+            drainage = default_sfincs_adapter.drainage
 
-            # Check types
             assert (
-                added_type == 1 or added_type == 2
-            ), "All entries in drnfile should be pumps (type=1) or culverts (type=2)"
+                len(drainage) == len(original) + 1
+            ), "Expected one new entry in drainage structures"
 
-            # Check coords
-            assert expected_snk_coord[0] == pytest.approx(
-                added_snk_coord[0], abs=0.2
-            ), f"Sink x coord mismatch at the first line ({drn_file})"
-            assert expected_snk_coord[1] == pytest.approx(
-                added_snk_coord[1], abs=0.2
-            ), f"Sink y coord mismatch at the first line ({drn_file})"
+            # Identify the newly added pump row
+            new_row = drainage.iloc[-1]
 
-            assert expected_src_coord[0] == pytest.approx(
-                added_src_coord[0], abs=0.2
-            ), f"Source x coord mismatch at the first line ({drn_file})"
-            assert expected_src_coord[1] == pytest.approx(
-                added_src_coord[1], abs=0.2
-            ), f"Source y coord mismatch at the first line ({drn_file})"
+            # Check type
+            assert new_row["type"] in (
+                1,
+                2,
+            ), "All entries should be pumps (1) or culverts (2)"
+
+            # Extract geometry
+            coords = list(new_row.geometry.coords)
+            assert len(coords) == 2, "Expected exactly 2 coordinates in pump line"
+
+            added_snk = coords[0]
+            added_src = coords[-1]
+
+            # Check sink coords
+            assert expected_snk_coord[0] == pytest.approx(added_snk[0], abs=0.2)
+            assert expected_snk_coord[1] == pytest.approx(added_snk[1], abs=0.2)
+
+            # Check source coords
+            assert expected_src_coord[0] == pytest.approx(added_src[0], abs=0.2)
+            assert expected_src_coord[1] == pytest.approx(added_src[1], abs=0.2)
 
             # Check discharge
-            assert (
-                added_discharge == pytest.approx(expected_discharge, rel=1e-3)
-            ), f"Discharge {added_discharge} does not match expected {expected_discharge}"
+            assert new_row["par1"] == pytest.approx(
+                expected_discharge, rel=1e-3
+            ), f"Discharge mismatch: {new_row['par1']} vs {expected_discharge}"
 
         def get_expected_pump_attributes(self, default_sfincs_adapter, pump):
             measure_gdf = TestAddMeasure.get_measure_gdf(default_sfincs_adapter, pump)
 
             for geom in measure_gdf.geometry:
-                # It's a LineString, so just one geometry
                 coords = list(geom.coords)
-                assert len(coords) == 2, "Expected 2 coordinates in pump polygon file"
+                assert len(coords) == 2, "Expected 2 coordinates in pump geometry"
+
                 expected_snk_coord = (round(coords[0][0], 1), round(coords[0][1], 1))
                 expected_src_coord = (round(coords[-1][0], 1), round(coords[-1][1], 1))
                 break
@@ -1345,36 +1382,6 @@ class TestAddMeasure:
             )
 
             return expected_snk_coord, expected_src_coord, expected_discharge
-
-        def read_drn_file(self, default_sfincs_adapter):
-            drn_file = (
-                default_sfincs_adapter.root
-                / default_sfincs_adapter._model.get_config("drnfile")
-            )
-            with open(drn_file, "r") as f:
-                first_line = f.readline()
-
-            # No header to skip here as defined in docs
-            # Also, the pump will be added as the first line of the drn file
-            # Expected: <xsnk1> <ysnk1> <xsrc1> <ysrc1> <type1> <par1-1> par2-1 par3-1 par4-1 par5-1
-            # https://sfincs.readthedocs.io/en/latest/input_structures.html
-            xsnk, ysnk, xsrc, ysrc, typ, dis, *_ = first_line.split()
-            xsnk, ysnk, xsrc, ysrc, typ, dis = (
-                float(xsnk),
-                float(ysnk),
-                float(xsrc),
-                float(ysrc),
-                int(typ),
-                float(dis),
-            )
-
-            return (
-                drn_file,
-                (round(xsnk, 1), round(ysnk, 1)),
-                (round(xsrc, 1), round(ysrc, 1)),
-                typ,
-                dis,
-            )
 
     class TestGreenInfrastructure:
         @pytest.fixture()

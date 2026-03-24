@@ -62,10 +62,21 @@ def _build_line_and_point_frames(
 
             line_id += 1
 
-    return (
-        gpd.GeoDataFrame(line_records, crs=gdf_metric.crs),
-        gpd.GeoDataFrame(point_records, crs=gdf_metric.crs),
-    )
+        if not line_records:
+            gdf_lines = gpd.GeoDataFrame(
+                columns=list(gdf_metric.columns), crs=gdf_metric.crs
+            )
+        else:
+            gdf_lines = gpd.GeoDataFrame(line_records, crs=gdf_metric.crs)
+
+        if not point_records:
+            gdf_points = gpd.GeoDataFrame(
+                columns=["line_id", "vertex_idx", "geometry"], crs=gdf_metric.crs
+            )
+        else:
+            gdf_points = gpd.GeoDataFrame(point_records, crs=gdf_metric.crs)
+
+        return gdf_lines, gdf_points
 
 
 def _to_z_linestring(
