@@ -3,7 +3,6 @@ from copy import copy
 from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
-from typing import Tuple
 from unittest import mock
 
 import geopandas as gpd
@@ -353,16 +352,6 @@ def spw_file() -> Path:
     return spw_file
 
 
-def _dataset_is_empty(ds: xr.Dataset | xr.DataArray) -> bool:
-    if isinstance(ds, xr.DataArray):
-        return ds.size == 0 or (ds.to_numpy() == 0).all()
-
-    if isinstance(ds, xr.Dataset):
-        if not ds.data_vars:
-            return True
-        return all((da.to_numpy() == 0).all() for da in ds.data_vars.values())
-
-
 def _assert_timeseries_equal(
     ds: xr.Dataset | xr.DataArray,
     expected: np.ndarray,
@@ -421,20 +410,20 @@ class TestAddForcing:
                     [speed_value, direction_value],
                 ]
             )
-            assert not _dataset_is_empty(default_sfincs_adapter.wind)
+            assert default_sfincs_adapter.wind is not None
             _assert_timeseries_equal(default_sfincs_adapter.wind, expected)
 
         def test_add_forcing_wind_synthetic(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_wind: WindSynthetic
         ):
             # Arrange
-            assert _dataset_is_empty(default_sfincs_adapter.wind)
+            assert default_sfincs_adapter.wind is None
 
             # Act
             default_sfincs_adapter.add_forcing(synthetic_wind)
 
             # Assert
-            assert not _dataset_is_empty(default_sfincs_adapter.wind)
+            assert default_sfincs_adapter.wind is not None
             expected = synthetic_wind.to_dataframe(
                 default_sfincs_adapter.get_model_time()
             )
@@ -449,13 +438,13 @@ class TestAddForcing:
         ):
             # Arrange
             forcing = WindMeteo()
-            assert _dataset_is_empty(default_sfincs_adapter.wind)
+            assert default_sfincs_adapter.wind is None
 
             # Act
             default_sfincs_adapter.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(default_sfincs_adapter.wind)
+            assert default_sfincs_adapter.wind is not None
 
         def test_add_forcing_wind_from_netcdf(
             self, test_db: IDatabase, default_sfincs_adapter: SfincsAdapter
@@ -479,7 +468,7 @@ class TestAddForcing:
             default_sfincs_adapter.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(default_sfincs_adapter.wind)
+            assert default_sfincs_adapter.wind is not None
 
         def test_add_forcing_wind_from_track_cyc(
             self, test_db, tmp_path, default_sfincs_adapter: SfincsAdapter
@@ -503,7 +492,7 @@ class TestAddForcing:
 
             # Assert
             spw_name = track_file.with_suffix(".spw").name
-            assert _dataset_is_empty(default_sfincs_adapter.wind)
+            assert default_sfincs_adapter.wind is None
             assert default_sfincs_adapter._model.config.get("spwfile") == spw_name
             assert (default_sfincs_adapter.root / spw_name).exists()
 
@@ -527,7 +516,7 @@ class TestAddForcing:
         def test_add_forcing_wind_csv(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_wind: WindSynthetic
         ):
-            assert _dataset_is_empty(default_sfincs_adapter.wind)
+            assert default_sfincs_adapter.wind is None
 
             tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
             t0, t1 = default_sfincs_adapter._model.get_model_time()
@@ -540,7 +529,7 @@ class TestAddForcing:
 
             default_sfincs_adapter.add_forcing(forcing)
 
-            assert not _dataset_is_empty(default_sfincs_adapter.wind)
+            assert default_sfincs_adapter.wind is not None
 
             actual = default_sfincs_adapter.wind["wind"]
 
@@ -560,7 +549,7 @@ class TestAddForcing:
             default_sfincs_adapter.add_forcing(wind)
 
             # Assert
-            assert _dataset_is_empty(default_sfincs_adapter.wind)
+            assert default_sfincs_adapter.wind is None
 
     class TestRainfall:
         def test_add_forcing_rainfall_constant(
@@ -568,7 +557,7 @@ class TestAddForcing:
         ):
             # Arrange
             adapter = sfincs_adapter_with_dummy_scn
-            assert _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is None
 
             forcing = RainfallConstant(
                 intensity=us.UnitfulIntensity(
@@ -579,7 +568,7 @@ class TestAddForcing:
             adapter.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is not None
             expected_value = forcing.intensity.convert(us.UnitTypesIntensity.mm_hr)
             actual = adapter.rainfall.as_numpy()["precip"]
             assert actual.shape[0] == len(adapter.rainfall.time)
@@ -592,7 +581,7 @@ class TestAddForcing:
         ):
             # Arrange
             adapter = sfincs_adapter_with_dummy_scn
-            assert _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is None
             tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
             time_frame = adapter.get_model_time()
             synthetic_rainfall.to_dataframe(time_frame).to_csv(tmp_path)
@@ -602,7 +591,7 @@ class TestAddForcing:
             adapter.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is not None
             conversion = us.UnitfulIntensity(value=1.0, units=forcing.units).convert(
                 us.UnitTypesIntensity.mm_hr
             )
@@ -618,13 +607,13 @@ class TestAddForcing:
         ):
             # Arrange
             adapter = sfincs_adapter_with_dummy_scn
-            assert _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is None
 
             # Act
             adapter.add_forcing(synthetic_rainfall)
 
             # Assert
-            assert not _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is not None
             time_frame = adapter.get_model_time()
             conversion = us.UnitfulIntensity(
                 value=1.0, units=synthetic_rainfall.timeseries.peak_value.units
@@ -643,21 +632,21 @@ class TestAddForcing:
         ):
             # Arrange
             adapter = sfincs_adapter_with_dummy_scn
-            assert _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is None
             forcing = RainfallMeteo()
 
             # Act
             adapter.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is not None
 
         def test_add_forcing_rainfall_netcdf(
             self, test_db: IDatabase, sfincs_adapter_with_dummy_scn: SfincsAdapter
         ):
             # Arrange
             adapter = sfincs_adapter_with_dummy_scn
-            assert _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is None
             path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
 
             time = time_model_2_hr_timestep()
@@ -675,7 +664,7 @@ class TestAddForcing:
             adapter.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is not None
 
         def test_add_forcing_rainfall_track_cyc(
             self, test_db, default_sfincs_adapter: SfincsAdapter
@@ -729,14 +718,14 @@ class TestAddForcing:
             adapter.add_forcing(rainfall)
 
             # Assert
-            assert _dataset_is_empty(adapter.rainfall)
+            assert adapter.rainfall is None
 
     class TestDischarge:
         def test_add_forcing_discharge_constant(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
         ):
             # Arrange
-            assert _dataset_is_empty(default_sfincs_adapter.discharge)
+            assert default_sfincs_adapter.discharge is None
             river = synthetic_discharge.river
             forcing = DischargeConstant(
                 river=river,
@@ -749,7 +738,7 @@ class TestAddForcing:
             default_sfincs_adapter.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(default_sfincs_adapter.discharge)
+            assert default_sfincs_adapter.discharge is not None
             time_frame = default_sfincs_adapter.get_model_time()
             conversion = us.UnitfulDischarge(
                 value=1.0, units=forcing.discharge.units
@@ -763,7 +752,7 @@ class TestAddForcing:
             self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
         ):
             # Arrange
-            assert _dataset_is_empty(default_sfincs_adapter.discharge)
+            assert default_sfincs_adapter.discharge is None
             tmp_path = Path(tempfile.gettempdir()) / "discharge.csv"
             time_frame = default_sfincs_adapter.get_model_time()
             synthetic_discharge.to_dataframe(time_frame).to_csv(tmp_path)
@@ -774,7 +763,7 @@ class TestAddForcing:
             default_sfincs_adapter.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(default_sfincs_adapter.discharge)
+            assert default_sfincs_adapter.discharge is not None
             conversion = us.UnitfulDischarge(value=1.0, units=forcing.units).convert(
                 us.UnitTypesDischarge.cms
             )
@@ -789,14 +778,14 @@ class TestAddForcing:
             self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
         ):
             # Arrange
-            assert _dataset_is_empty(default_sfincs_adapter.discharge)
+            assert default_sfincs_adapter.discharge is None
             default_sfincs_adapter.set_timing(TimeFrame())
 
             # Act
             default_sfincs_adapter.add_forcing(synthetic_discharge)
 
             # Assert
-            assert not _dataset_is_empty(default_sfincs_adapter.discharge)
+            assert default_sfincs_adapter.discharge is not None
             time_frame = default_sfincs_adapter.get_model_time()
             conversion = us.UnitfulDischarge(
                 value=1.0, units=synthetic_discharge.timeseries.peak_value.units
@@ -818,7 +807,7 @@ class TestAddForcing:
             default_sfincs_adapter.add_forcing(discharge)
 
             # Assert
-            assert _dataset_is_empty(default_sfincs_adapter.discharge)
+            assert default_sfincs_adapter.discharge is None
 
         def test_set_discharge_forcing_incorrect_rivers_raises(
             self,
@@ -885,8 +874,8 @@ class TestAddForcing:
             dis_after = default_sfincs_adapter.discharge
 
             # Assert
-            assert _dataset_is_empty(dis_before)
-            assert not _dataset_is_empty(dis_after)
+            assert dis_before is None
+            assert dis_after is not None
 
         def test_set_discharge_forcing_mismatched_coordinates(
             self, test_db, synthetic_discharge, default_sfincs_adapter: SfincsAdapter
@@ -941,7 +930,7 @@ class TestAddForcing:
             self, adapter_with_datum: SfincsAdapter, synthetic_waterlevels
         ):
             # Arrange
-            assert _dataset_is_empty(adapter_with_datum.waterlevels)
+            assert adapter_with_datum.waterlevels is None
             tmp_path = Path(tempfile.gettempdir()) / "waterlevels.csv"
             time_frame = adapter_with_datum.get_model_time()
             synthetic_waterlevels.to_dataframe(time_frame).to_csv(tmp_path)
@@ -961,7 +950,7 @@ class TestAddForcing:
             adapter_with_datum.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(adapter_with_datum.waterlevels)
+            assert adapter_with_datum.waterlevels is not None
             actual = adapter_with_datum.waterlevels["bzs"].isel(index=0).as_numpy()
             np.testing.assert_allclose(actual, expected, rtol=1e-2)
 
@@ -971,7 +960,7 @@ class TestAddForcing:
             synthetic_waterlevels: WaterlevelSynthetic,
         ):
             # Arrange
-            assert _dataset_is_empty(adapter_with_datum.waterlevels)
+            assert adapter_with_datum.waterlevels is None
             time_frame = adapter_with_datum.get_model_time()
             conversion = us.UnitfulLength(
                 value=1.0, units=synthetic_waterlevels.surge.timeseries.peak_value.units
@@ -994,7 +983,7 @@ class TestAddForcing:
             adapter_with_datum.add_forcing(synthetic_waterlevels)
 
             # Assert
-            assert not _dataset_is_empty(adapter_with_datum.waterlevels)
+            assert adapter_with_datum.waterlevels is not None
             actual = adapter_with_datum.waterlevels["bzs"].isel(index=0).as_numpy()
             np.testing.assert_allclose(actual, expected, rtol=1e-2)
 
@@ -1002,7 +991,7 @@ class TestAddForcing:
             self, adapter_with_datum: SfincsAdapter
         ):
             # Arrange
-            assert _dataset_is_empty(adapter_with_datum.waterlevels)
+            assert adapter_with_datum.waterlevels is None
             time_frame = adapter_with_datum.get_model_time()
             forcing = WaterlevelGauged()
 
@@ -1030,7 +1019,7 @@ class TestAddForcing:
             adapter_with_datum.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(adapter_with_datum.waterlevels)
+            assert adapter_with_datum.waterlevels is not None
             actual = (
                 adapter_with_datum.waterlevels["bzs"]
                 .isel(index=0)  # pick first bnd point since all are equal anyways
@@ -1044,7 +1033,7 @@ class TestAddForcing:
             adapter_with_datum: SfincsAdapter,
         ):
             # Arrange
-            assert _dataset_is_empty(adapter_with_datum.waterlevels)
+            assert adapter_with_datum.waterlevels is None
             adapter_with_datum._turn_off_bnd_press_correction = mock.Mock()
             adapter_with_datum._scenario = mock.Mock()
             adapter_with_datum._event = mock.Mock()
@@ -1064,7 +1053,7 @@ class TestAddForcing:
             adapter_with_datum.add_forcing(forcing)
 
             # Assert
-            assert not _dataset_is_empty(adapter_with_datum.waterlevels)
+            assert adapter_with_datum.waterlevels is not None
             actual = (
                 adapter_with_datum.waterlevels["bzs"]
                 .isel(index=0)  # pick first bnd point since all are equal anyways
@@ -1083,7 +1072,7 @@ class TestAddForcing:
             default_sfincs_adapter.add_forcing(waterlevels)
 
             # Assert
-            assert _dataset_is_empty(default_sfincs_adapter.waterlevels)
+            assert default_sfincs_adapter.waterlevels is None
 
 
 class TestAddMeasure:
@@ -1212,21 +1201,26 @@ class TestAddMeasure:
             original_weirs = default_sfincs_adapter.weirs.copy()
 
             # Mock BFE
+            # Get the floodwall extent in model CRS to build a covering BFE polygon
+            bounds = gdf_raw.total_bounds  # minx, miny, maxx, maxy
+            minx, miny, maxx, maxy = bounds
+            # Add a buffer so the polygon fully covers the line
+            buf = 500
             gdf_bfe = gpd.GeoDataFrame(
                 {
                     "bfe": [bfe_value],
                     "geometry": [
                         Polygon(
                             [
-                                (597000, 3628000),
-                                (599000, 3628000),
-                                (599000, 3630000),
-                                (597000, 3630000),
+                                (minx - buf, miny - buf),
+                                (maxx + buf, miny - buf),
+                                (maxx + buf, maxy + buf),
+                                (minx - buf, maxy + buf),
                             ]
                         )
                     ],
                 },
-                crs="EPSG:28992",
+                crs=gdf_raw.crs,  # same CRS as the floodwall geometry
             )
 
             original_get_geodataframe = (
@@ -1458,7 +1452,7 @@ class TestAddProjection:
         )
 
         adapter.add_forcing(rainfall)
-        rainfall_before = adapter._model.forcing["precip"]
+        rainfall_before = adapter._model.precipitation.data.copy()
         dummy_projection.physical_projection.rainfall_multiplier = 2
 
         rainfall_expected = (
@@ -1467,7 +1461,7 @@ class TestAddProjection:
 
         # Act
         adapter.add_projection(dummy_projection)
-        rainfall_after = adapter._model.forcing["precip"]
+        rainfall_after = adapter._model.precipitation.data
 
         # Assert
         assert rainfall_expected.equals(rainfall_after)
@@ -1564,14 +1558,10 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
 
     # Act
     adapter = SfincsAdapter(COPY_PATH)
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(
+        ValueError, match=r"Forcing\(s\) should not exists in the SFINCS template model"
+    ):
         adapter._ensure_no_existing_forcings()
-
-    # Assert
-    assert (
-        f"{forcing.type.capitalize()} forcing(s) should not exists in the SFINCS template model. Remove it from the SFINCS model located at:"
-        in str(e.value)
-    )
 
 
 @pytest.mark.skipif(
@@ -1653,7 +1643,7 @@ class TestPostProcessing:
         self,
         test_db_class: IDatabase,
         test_event_all_synthetic_class,
-    ) -> Tuple[SfincsAdapter, Scenario]:
+    ) -> tuple[SfincsAdapter, Scenario]:
         """
         Prepare the database and SfincsAdapter for the test.
 
@@ -1724,7 +1714,7 @@ class TestPostProcessing:
     @pytest.mark.integration
     def test_write_geotiff(
         self,
-        adapter_preprocess_process_scenario_class: Tuple[SfincsAdapter, Scenario],
+        adapter_preprocess_process_scenario_class: tuple[SfincsAdapter, Scenario],
     ):
         # Arrange
         adapter, scn = adapter_preprocess_process_scenario_class

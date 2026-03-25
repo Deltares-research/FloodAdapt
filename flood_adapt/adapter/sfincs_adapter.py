@@ -127,10 +127,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         self.settings = self.database.site.sfincs
         self.units = self.database.site.gui.units
-        self._model = HydromtSfincsModel(
-            root=model_root.resolve().as_posix(),
-            mode="r",
-        )
+        self._model = HydromtSfincsModel(root=model_root.resolve().as_posix(), mode="r")
         self._model.read()
 
     def read(self, path: Path):
@@ -139,7 +136,7 @@ class SfincsAdapter(IHazardAdapter):
             self._model.root.set(path=path, mode="r")
         self._model.read()
 
-    def write(self, path_out: Union[str, os.PathLike], overwrite: bool = True):
+    def write(self, path_out: Union[str, os.PathLike]):
         """Write the sfincs model configuration to a directory."""
         root = self.root
         if not isinstance(path_out, Path):
@@ -151,9 +148,8 @@ class SfincsAdapter(IHazardAdapter):
         if root != path_out:
             shutil.copytree(root, path_out, dirs_exist_ok=True)
 
-        write_mode = "w+" if overwrite else "w"
         with cd(path_out):
-            self._model.root.set(path=path_out, mode=write_mode)
+            self._model.root.set(path=path_out, mode="r+")
             self._model.write()
 
     def __enter__(self) -> "SfincsAdapter":
@@ -360,7 +356,7 @@ class SfincsAdapter(IHazardAdapter):
                 logger.info(
                     f"Adding projected sea level rise `{phys_projection.sea_level_rise}`"
                 )
-                self.waterlevels.data += phys_projection.sea_level_rise.convert(
+                self.waterlevels += phys_projection.sea_level_rise.convert(
                     us.UnitTypesLength.meters
                 )
 
@@ -369,7 +365,7 @@ class SfincsAdapter(IHazardAdapter):
                 logger.info(
                     f"Adding projected rainfall multiplier `{phys_projection.rainfall_multiplier}`"
                 )
-                self.rainfall.data *= phys_projection.rainfall_multiplier
+                self.rainfall *= phys_projection.rainfall_multiplier
 
     ### GETTERS ###
     @property
@@ -455,27 +451,62 @@ class SfincsAdapter(IHazardAdapter):
         return self._model.drainage_structures.data
 
     # Forcing properties
+    @staticmethod
+    def _data_is_empty(data: xr.Dataset | xr.DataArray | gpd.GeoDataFrame) -> bool:
+        if data is None:
+            return True
+        if isinstance(data, xr.DataArray):
+            return data.size == 0
+        if isinstance(data, xr.Dataset):
+            if len(data.data_vars) == 0:
+                return True
+            # waterlevels is never fully empty, it always has the size of nr bnd points with values 0
+            return bool((data == 0).to_dataarray().all())
+        if isinstance(data, gpd.GeoDataFrame):
+            return data.empty
+        return True
+
     @property
-    def waterlevels(self) -> xr.Dataset:
+    def waterlevels(self) -> xr.Dataset | None:
+        if self._data_is_empty(self._model.water_level.data):
+            return None
         return self._model.water_level.data
 
+    @waterlevels.setter
+    def waterlevels(self, data: xr.Dataset):
+        self._model.water_level.set_timeseries(data)
+
     @property
-    def discharge(self) -> xr.Dataset:
+    def discharge(self) -> xr.Dataset | None:
+        if self._data_is_empty(self._model.discharge_points.data):
+            return None
         return self._model.discharge_points.data
 
-    @property
-    def rainfall(self) -> xr.Dataset | xr.DataArray:
-        d = self._model.precipitation.data
-        if isinstance(d, xr.DataArray):
-            return d.to_dataset()
-        return d
+    @discharge.setter
+    def discharge(self, data: xr.Dataset):
+        self._model.discharge_points.set_timeseries(data)
 
     @property
-    def wind(self) -> xr.Dataset:
-        d = self._model.wind.data
-        if isinstance(d, xr.DataArray):
-            return d.to_dataset()
-        return d
+    def rainfall(self) -> xr.Dataset | xr.DataArray | None:
+        if self._data_is_empty(self._model.precipitation.data):
+            return None
+        return self._model.precipitation.data
+
+    @rainfall.setter
+    def rainfall(self, data: xr.Dataset | xr.DataArray):
+        self._model.precipitation.clear()
+        self._model.precipitation.set(data=data)
+
+    @property
+    def wind(self) -> xr.Dataset | xr.DataArray | None:
+        if self._data_is_empty(self._model.wind.data):
+            return None
+        return self._model.wind.data
+
+    @wind.setter
+    def wind(self, data: xr.Dataset | xr.DataArray):
+        self._model.wind.clear()
+        self._model.wind.set(data=data)
 
     ### OUTPUT ###
     def run_completed(self, scenario: Scenario) -> bool:
@@ -826,7 +857,7 @@ class SfincsAdapter(IHazardAdapter):
         )
 
         # Add locations to SFINCS file
-        self._model.setup_observation_points(locations=gdf, merge=False)
+        self._model.observation_points.create(locations=gdf, merge=False)
 
     def get_wl_df_from_offshore_his_results(self) -> pd.DataFrame:
         """Create a pd.Dataframe with waterlevels from the offshore model at the bnd locations of the overland model.
@@ -1026,16 +1057,14 @@ class SfincsAdapter(IHazardAdapter):
 
     def _ensure_no_existing_forcings(self):
         """Check for existing forcings in the model and raise an error if any are found."""
-        forcings: dict[str, xr.Dataset | xr.DataArray] = {
+        forcings: dict[str, xr.Dataset | xr.DataArray | None] = {
             "waterlevel": self.waterlevels,
             "rainfall": self.rainfall,
             "wind": self.wind,
             "discharge": self.discharge,
         }
         contains = {
-            name: forcing
-            for name, forcing in forcings.items()
-            if len(forcing.sizes) > 0 and not (forcing == 0).all()
+            name: forcing for name, forcing in forcings.items() if forcing is not None
         }
 
         if contains:
@@ -1043,11 +1072,10 @@ class SfincsAdapter(IHazardAdapter):
                 f"Existing forcings found in the SFINCS template model: {contains}"
             )
             for name, forcing in contains.items():
-                if len(forcing.sizes) > 0:
-                    logger.error(f"- {name.capitalize()}.")
-                    logger.error(forcing)
+                logger.error(f"- {name.capitalize()}.")
+                logger.error(forcing)
             raise ValueError(
-                f"{contains} forcing(s) should not exists in the SFINCS template model. "
+                f"Forcing(s) should not exists in the SFINCS template model: {contains}. "
                 f"Remove it from the SFINCS model located at: {self.root}. "
                 f"For more information on SFINCS and its input files, see the SFINCS "
                 f"documentation at: `https://sfincs.readthedocs.io/en/latest/input.html`"
@@ -1436,8 +1464,8 @@ class SfincsAdapter(IHazardAdapter):
                 z_conversion=z_conversion,
             )
 
-            if "z" in gdf_floodwall.columns:
-                gdf_floodwall = gdf_floodwall.drop(columns=["z"])
+            # if "z" in gdf_floodwall.columns:
+            #     gdf_floodwall = gdf_floodwall.drop(columns=["z"])
 
             logger.info(
                 f"Floodwall height is defined {floodwall.elevation} above Base Flood Elevation (BFE)."
