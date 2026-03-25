@@ -2,7 +2,7 @@ import logging
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import geopandas as gpd
 import pandas as pd
@@ -181,17 +181,17 @@ class TestDataBaseBuilder:
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
         builder.read_template_fiat_model()
-        builder.fiat_model = Mock(wraps=builder.fiat_model)
 
-        mock_df = pd.DataFrame({"geometry": [shapely.geometry.Point(0, 0)]})
-        mock_exposure_geoms = MagicMock()
-        mock_exposure_geoms.__getitem__.return_value = (
-            mock_df  # Simulate dictionary-like behavior
+        # Override with point geometries to simulate non-footprint exposure
+        mock_gdf = gpd.GeoDataFrame(
+            {"object_id": [1], "geometry": [shapely.geometry.Point(0, 0)]},
+            crs="EPSG:4326",
         )
-
-        builder.fiat_model.exposure.exposure_geoms = mock_exposure_geoms
-        builder.fiat_model.exposure.exposure_db.columns = ["not BF_FID"]
-        builder.fiat_model.exposure.geom_names = ["buildings"]
+        builder.fiat_model.exposure_geoms.set(mock_gdf, name="buildings")
+        builder._fiat_spatial_joins = {
+            "aggregation_areas": [],
+            "additional_attributes": [],
+        }
         # Act
         footprints = builder.create_footprints()
 
@@ -215,7 +215,7 @@ class TestDataBaseBuilder:
 
         # Assert
         expected_file = (
-            Path(builder.fiat_model.root)
+            builder.fiat_model.root.path
             / "exposure"
             / "building_footprints"
             / "building_footprints.gpkg"
@@ -231,7 +231,11 @@ class TestDataBaseBuilder:
         builder = DatabaseBuilder(mock_config)
         builder.read_template_fiat_model()
 
-        del builder.fiat_model.exposure.exposure_db["BF_FID"]
+        # Remove BF_FID column from exposure data to trigger OSM path
+        for name, gdf in list(builder.fiat_model.exposure_geoms.data.items()):
+            if "BF_FID" in gdf.columns:
+                gdf = gdf.drop(columns=["BF_FID"])
+                builder.fiat_model.exposure_geoms.set(gdf, name=name)
 
         # Act
         footprints = builder.create_footprints()
@@ -250,25 +254,27 @@ class TestDataBaseBuilder:
 
         builder = DatabaseBuilder(mock_config)
         builder.read_template_fiat_model()
-        builder.fiat_model = Mock(wraps=builder.fiat_model)
-        builder.fiat_model.exposure.exposure_db = pd.DataFrame(columns=["BF_FID"])
-        builder.fiat_model.exposure.exposure_geoms = [
-            gpd.GeoDataFrame(
-                {"object_id": [1], "geometry": [shapely.geometry.Point(0, 0)]},
-                geometry="geometry",
-            )
-        ]
-        builder.fiat_model.exposure.geom_names = ["buildings"]
-        builder.fiat_model.spatial_joins = {
+
+        # Set up exposure with BF_FID column and point geometry
+        mock_gdf = gpd.GeoDataFrame(
+            {
+                "object_id": [1],
+                "BF_FID": [1],
+                "geometry": [shapely.geometry.Point(0, 0)],
+            },
+            crs="EPSG:4326",
+        )
+        builder.fiat_model.exposure_geoms.set(mock_gdf, name="buildings")
+        builder._fiat_spatial_joins = {
+            "aggregation_areas": [],
             "additional_attributes": [
                 {
                     "name": "BF_FID",
                     "file": "exposure/building_footprints/building_footprints.gpkg",
                 }
-            ]
+            ],
         }
         fiat_path = builder.static_path / "templates" / "fiat"
-        builder.fiat_model.root = fiat_path
         (fiat_path / "exposure/building_footprints").mkdir(parents=True, exist_ok=True)
         (fiat_path / "exposure/building_footprints/building_footprints.gpkg").touch()
 
@@ -288,18 +294,16 @@ class TestDataBaseBuilder:
 
         builder = DatabaseBuilder(mock_config)
         builder.read_template_fiat_model()
-        builder.fiat_model = Mock(wraps=builder.fiat_model)
-        builder.fiat_model.exposure.exposure_db = pd.DataFrame(columns=["object_id"])
-        builder.fiat_model.exposure.exposure_geoms = [
-            gpd.GeoDataFrame(
-                {
-                    "object_id": [1],
-                    "geometry": [Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])],
-                },
-                geometry="geometry",
-            )
-        ]
-        builder.fiat_model.exposure.geom_names = ["buildings"]
+
+        # Set up exposure with polygon geometry (already footprints)
+        mock_gdf = gpd.GeoDataFrame(
+            {
+                "object_id": [1],
+                "geometry": [Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])],
+            },
+            crs="EPSG:4326",
+        )
+        builder.fiat_model.exposure_geoms.set(mock_gdf, name="buildings")
 
         # Act
         footprints = builder.create_footprints()
@@ -349,13 +353,13 @@ class TestDataBaseBuilder:
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
         builder.read_template_fiat_model()
-        builder.fiat_model.spatial_joins["aggregation_areas"] = None
+        builder._fiat_spatial_joins["aggregation_areas"] = []
 
         # Act
         areas = builder.create_aggregation_areas()
 
         # Assert
-        expected_region = Path(builder.fiat_model.root).joinpath(
+        expected_region = builder.fiat_model.root.path.joinpath(
             "aggregation_areas", "region.geojson"
         )
         expected_areas = [
@@ -375,7 +379,7 @@ class TestDataBaseBuilder:
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
         builder.read_template_fiat_model()
-        builder.fiat_model.spatial_joins = {
+        builder._fiat_spatial_joins = {
             "aggregation_areas": [
                 {
                     "name": "aggr_lvl_1",
@@ -469,7 +473,13 @@ class TestDataBaseBuilder:
         mock_config.fiat_buildings_name = "buildings"
         builder = DatabaseBuilder(mock_config)
         builder.read_template_fiat_model()
-        del builder.fiat_model.exposure.exposure_db["SVI"]
+
+        # Remove SVI column from exposure data if present
+        for name, gdf in list(builder.fiat_model.exposure_geoms.data.items()):
+            if "SVI" in gdf.columns:
+                gdf = gdf.drop(columns=["SVI"])
+                builder.fiat_model.exposure_geoms.set(gdf, name=name)
+
         # Act
         svi = builder.create_svi()
 
@@ -482,7 +492,7 @@ class TestDataBaseBuilder:
             field_name="SVI",
         )
         assert svi is not None
-        assert "SVI" in builder.fiat_model.exposure.exposure_db.columns
+        assert "SVI" in builder._get_fiat_exposure_db().columns
         assert expected_svi_path.exists()
         assert svi == expected_svi
 

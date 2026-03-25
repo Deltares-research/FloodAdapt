@@ -1,0 +1,75 @@
+region:
+  uri: sfincs_region.geojson
+  data_type: GeoDataFrame
+  driver: pyogrio
+
+observations:
+  uri: sfincs_data/observations.csv
+  data_type: GeoDataFrame
+  driver:
+    name: geodataframe_table
+  metadata:
+    crs: 4326
+
+discharge:
+  uri: sfincs_data/discharge.csv
+  data_type: DataFrame
+  driver:
+    name: pandas
+    options:
+      index_col: 0
+      parse_dates: true
+
+wind:
+  uri: sfincs_data/wind.csv
+  data_type: DataFrame
+  driver:
+    name: pandas
+    options:
+      index_col: 0
+      parse_dates: true
+
+weir:
+  uri: sfincs_data/weir.geojson
+  data_type: GeoDataFrame
+  driver: pyogrio
+
+drainage:
+  uri: sfincs_data/drainage.geojson
+  data_type: GeoDataFrame
+  driver: pyogrio
+
+observation_lines:
+  uri: sfincs_data/observation_lines.geojson
+  data_type: GeoDataFrame
+  driver: pyogrio
+
+vito_mapping:
+  uri: sfincs_data/vito_mapping.csv
+  data_type: DataFrame
+  driver:
+    name: pandas
+    options:
+      index_col: 0
+
+era5_dummy:
+  uri: sfincs_data/era5_dummy.nc
+  data_type: RasterDataset
+  driver:
+    name: raster_xarray
+    options:
+      chunks:
+        latitude: 250
+        longitude: 240
+        time: 30
+      combine: by_coords
+      decode_times: true
+      parallel: true
+  metadata:
+    crs: 4326
+  data_adapter:
+    rename:
+      swh: hs
+      pp1d: tp
+      mwd: wd
+      wdw: ds
