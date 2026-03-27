@@ -5,8 +5,6 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
-    options:
-      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -590,8 +588,6 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
-    options:
-      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -2779,6 +2775,58 @@ packages:
   - folium>=0.19.0,<1.0 ; extra == 'docs'
   - mapclassify>=2.8.0,<3.0 ; extra == 'docs'
   requires_python: '>=3.11,<3.13'
+  editable: true
+- pypi: ./
+  name: flood-adapt
+  version: 2.0.3
+  sha256: 2a3cdd6ad91fb51562656b0a8d7b93cf3ee49a9426241c49566b26bbdbd99529
+  requires_dist:
+  - cartopy
+  - cht-cyclones>=1.0.3,<2.0
+  - cht-meteo>=0.3.1,<1.0
+  - cht-observations>=0.2.1,<1.0
+  - cht-tide>=0.1.1,<1.0
+  - ffmpeg>=1.0,<2.0
+  - contextily>=1.0,<2.0
+  - fiat-toolbox>=0.1.23,<0.2.0
+  - fiona>=1.0,<2.0
+  - geojson>=3.0,<4.0
+  - geopandas>=1.0,<2.0
+  - hydromt-fiat>=1.0.0.dev0
+  - hydromt-sfincs[quadtree]>=2.0.0.dev0
+  - numpy>=1.0,<2.0
+  - numpy-financial>=1.0,<2.0
+  - pandas>=2.0,<3.0
+  - plotly>=6.0,<6.3
+  - pydantic>=2.0,<3.0
+  - pydantic-settings>=2.0,<3.0
+  - pyogrio<1.0
+  - tomli>=2.0,<3.0
+  - tomli-w>=1.0,<2.0
+  - typing-extensions
+  - pytest>=8.0,<9.0 ; extra == 'dev'
+  - pytest-cov>=6.0,<7.0 ; extra == 'dev'
+  - pre-commit==3.8.0 ; extra == 'dev'
+  - ruff==0.5.5 ; extra == 'dev'
+  - typos==1.23.6 ; extra == 'dev'
+  - build>=1.2,<2.0 ; extra == 'build'
+  - twine>=6.0,<7.0 ; extra == 'build'
+  - pyinstaller==6.13.0 ; extra == 'build'
+  - pefile<2024.8.26 ; extra == 'build'
+  - jupyter>=1.0,<2.0 ; extra == 'docs'
+  - jupyter-cache>=1.0,<2.0 ; extra == 'docs'
+  - nbstripout>=0.8.0,<0.9 ; extra == 'docs'
+  - matplotlib>=3.0,<4.0 ; extra == 'docs'
+  - quartodoc>=0.11.0,<1.0 ; extra == 'docs'
+  - griffe<2.0 ; extra == 'docs'
+  - sphinx>=8.0,<9.0 ; extra == 'docs'
+  - sphinx-rtd-theme>=3.0,<4.0 ; extra == 'docs'
+  - regex>=2024.11,<2025.0 ; extra == 'docs'
+  - minio>=7.2.15,<8 ; extra == 'docs'
+  - python-dotenv>=1.0,<2.0 ; extra == 'docs'
+  - folium>=0.19.0,<1.0 ; extra == 'docs'
+  - mapclassify>=2.8.0,<3.0 ; extra == 'docs'
+  requires_python: '>=3.11,<3.13'
 - pypi: https://files.pythonhosted.org/packages/b5/a8/5f764f333204db0390362a4356d03a43626997f26818a0e9396f1b3bd8c9/folium-0.20.0-py2.py3-none-any.whl
   name: folium
   version: 0.20.0
@@ -3495,6 +3543,86 @@ packages:
   - pytest-mock ; extra == 'test'
   - responses ; extra == 'test'
   requires_python: '>=3.11'
+  editable: true
+- pypi: ../hydromt_fiat
+  name: hydromt-fiat
+  version: 1.0.0.dev0
+  sha256: 94194e8d8bafdaa3b60ea10485c12e2839848c5bf7727d2892534cd732482edc
+  requires_dist:
+  - geopandas
+  - hydromt>=1.3.0
+  - numpy
+  - osmnx
+  - pandas
+  - pint
+  - pooch
+  - pyproj
+  - requests
+  - shapely
+  - tomlkit
+  - xarray
+  - build ; extra == 'dev'
+  - mypy ; extra == 'dev'
+  - pre-commit ; extra == 'dev'
+  - python-magic ; extra == 'dev'
+  - ruff ; extra == 'dev'
+  - sbom4python ; extra == 'dev'
+  - nbsphinx ; extra == 'docs'
+  - pydata-sphinx-theme ; extra == 'docs'
+  - sphinx>=8.2.0 ; extra == 'docs'
+  - sphinx-design ; extra == 'docs'
+  - cartopy ; extra == 'examples'
+  - jupyterlab ; extra == 'examples'
+  - nbconvert==7.13.1 ; extra == 'examples'
+  - notebook ; extra == 'examples'
+  - pandoc ; extra == 'examples'
+  - pytest>=2.7.3 ; extra == 'test'
+  - pytest-cov ; extra == 'test'
+  - pytest-mock ; extra == 'test'
+  - responses ; extra == 'test'
+  requires_python: '>=3.11'
+- pypi: ../hydromt_sfincs
+  name: hydromt-sfincs
+  version: 2.0.0.dev0
+  sha256: f7f84766d502332c44bc399c48da94ea589a17f7f36201efc5d8ff6fb4e0127e
+  requires_dist:
+  - affine
+  - cht-tide
+  - geopandas>1.0
+  - hydromt>=1.3.0,<2.0
+  - mapbox-earcut
+  - numba
+  - numpy
+  - pandas<3.0.0
+  - pillow
+  - pyflwdir>=0.5.10
+  - pyproj
+  - rasterio
+  - scipy
+  - shapely
+  - xarray
+  - xugrid>=0.14,<1.0
+  - hydromt-sfincs[examples] ; extra == 'doc'
+  - nbsphinx ; extra == 'doc'
+  - pydata-sphinx-theme>=0.15.2 ; extra == 'doc'
+  - sphinx-autosummary-accessors ; extra == 'doc'
+  - sphinx>=8.0.0,<9.0.0 ; extra == 'doc'
+  - sphinx-design ; extra == 'doc'
+  - autodoc-pydantic ; extra == 'doc'
+  - cartopy ; extra == 'examples'
+  - descartes ; extra == 'examples'
+  - ffmpeg ; extra == 'examples'
+  - jupyterlab ; extra == 'examples'
+  - matplotlib ; extra == 'examples'
+  - pillow ; extra == 'examples'
+  - hydromt-sfincs[test,doc,examples,quadtree] ; extra == 'full'
+  - datashader ; extra == 'quadtree'
+  - black[jupyter] ; extra == 'test'
+  - pytest>=2.7.3 ; extra == 'test'
+  - pytest-cov ; extra == 'test'
+  - pre-commit ; extra == 'test'
+  requires_python: '>=3.11'
+  editable: true
 - pypi: ../hydromt_sfincs
   name: hydromt-sfincs
   version: 2.0.0.dev0

@@ -3,7 +3,10 @@ import shutil
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
+import pandas as pd
 import pytest
+from hydromt.writers import write_yaml
 from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
 from hydromt_fiat.utils import (
@@ -13,6 +16,7 @@ from hydromt_fiat.utils import (
 )
 from hydromt_sfincs import SfincsModel
 from requests.exceptions import ConnectionError, RequestException
+from shapely import Point
 
 
 @pytest.fixture(scope="session")
@@ -25,7 +29,19 @@ def cache_dir(test_data_dir: Path) -> Path:
     return test_data_dir / ".cache"
 
 
-## FIAT
+@pytest.fixture(scope="session")
+def region(test_data_dir: Path) -> gpd.GeoDataFrame:
+    gdf = gpd.read_file(test_data_dir / "region.geojson")
+    assert len(gdf) == 1
+    assert gdf.crs is not None
+    return gdf
+
+
+@pytest.fixture(scope="session")
+def rng() -> np.random.Generator:
+    return np.random.default_rng(seed=42)
+
+
 def check_connection(fn):
     @functools.wraps(fn)
     def inner(*args, **kwargs):
@@ -41,68 +57,103 @@ def check_connection(fn):
     return inner
 
 
+## FIAT
 @pytest.fixture(scope="session")
 @check_connection
-def fiat_buildings_path(cache_dir: Path) -> Path:
-    p = fetch_data("test-build-data", retries=1, cache_dir=cache_dir)
-    assert Path(p, "buildings", "buildings.fgb").is_file()
-    return p
-
-
-@pytest.fixture(scope="session")
-def fiat_data_catalog_yml(fiat_buildings_path: Path) -> Path:
-    p = Path(fiat_buildings_path, "data_catalog.yml")
+def fiat_global_data_catalog_yml(cache_dir: Path) -> Path:
+    data_path = fetch_data("global-data", retries=1, cache_dir=cache_dir)
+    assert Path(data_path, "exposure", "jrc_damage_values.csv").is_file()
+    p = Path(data_path, "data_catalog.yml")
     assert p.is_file()
     return p
 
 
 @pytest.fixture(scope="session")
-@check_connection
-def fiat_global_data_path(cache_dir: Path) -> Path:
-    p = fetch_data("global-data", retries=1, cache_dir=cache_dir)
-    assert Path(p, "exposure", "jrc_damage_values.csv").is_file()
-    return p
+def fake_fiat_data_catalog_yml(
+    cache_dir: Path, region: gpd.GeoDataFrame, rng: np.random.Generator
+) -> Path:
+    """Create fake FIAT buildings data within the SFINCS region."""
+    fake_dir = cache_dir / "fake_fiat_data"
+    fake_dir.mkdir(parents=True, exist_ok=True)
+    buildings_dir = fake_dir / "buildings"
+    buildings_dir.mkdir(exist_ok=True)
 
+    # Generate random points inside the sfincs region
+    bounds = region.total_bounds
+    n_buildings = 20
+    points = []
+    while len(points) < n_buildings:
+        x = rng.uniform(bounds[0], bounds[2])
+        y = rng.uniform(bounds[1], bounds[3])
+        pt = Point(x, y)
+        if region.contains(pt).any():
+            points.append(pt)
 
-@pytest.fixture(scope="session")
-def fiat_global_data_catalog_yml(fiat_global_data_path: Path) -> Path:
-    p = Path(fiat_global_data_path, "data_catalog.yml")
-    assert p.is_file()
-    return p
+    building_types = ["woonfunctie", "industriefunctie", "kantoorfunctie"]
+    types = rng.choice(building_types, n_buildings)
+    buildings = gpd.GeoDataFrame(
+        {"gebruiksdoel": types},
+        geometry=points,
+        crs=region.crs,
+    )
+    buildings.to_file(buildings_dir / "buildings.fgb", driver="FlatGeobuf")
 
+    # Create buildings link CSV
+    link = pd.DataFrame(
+        {
+            "gebruiksdoel": ["woonfunctie", "industriefunctie", "kantoorfunctie"],
+            "object_type": ["residential", "industrial", "commercial"],
+            "count": [10, 5, 5],
+        }
+    )
+    link.to_csv(buildings_dir / "buildings-jrc_map.csv", index=False)
 
-@pytest.fixture(scope="session")
-def fiat_region_geojson(fiat_buildings_path: Path) -> Path:
-    p = Path(fiat_buildings_path, "region_small.geojson")
-    assert p.is_file()
-    return p
+    # Write data catalog YAML
+    catalog = {
+        "buildings": {
+            "data_type": "GeoDataFrame",
+            "uri": "buildings/buildings.fgb",
+            "driver": {
+                "name": "pyogrio",
+                "filesystem": "local",
+            },
+            "metadata": {
+                "crs": region.crs.to_epsg(),
+            },
+        },
+        "buildings_link": {
+            "data_type": "DataFrame",
+            "uri": "buildings/buildings-jrc_map.csv",
+            "driver": {
+                "name": "pandas",
+                "filesystem": "local",
+            },
+        },
+    }
+    catalog_path = fake_dir / "data_catalog.yml"
+    write_yaml(catalog_path, catalog)
 
-
-@pytest.fixture(scope="session")
-def fiat_region(fiat_region_geojson: Path) -> gpd.GeoDataFrame:
-    gdf = gpd.read_file(fiat_region_geojson)
-    assert len(gdf) == 1
-    return gdf
+    return catalog_path
 
 
 @pytest.fixture(scope="session")
 def build_fiat_model(
     cache_dir: Path,
-    fiat_data_catalog_yml: Path,
+    fake_fiat_data_catalog_yml: Path,
     fiat_global_data_catalog_yml: Path,
-    fiat_region: gpd.GeoDataFrame,
+    region: gpd.GeoDataFrame,
 ):
     ## HydroMT-FIAT
     # Setup the model
     model = FIATModel(
         root=cache_dir / "test_models" / "fiat",
         mode="w+",
-        data_libs=[fiat_data_catalog_yml, fiat_global_data_catalog_yml],
+        data_libs=[fake_fiat_data_catalog_yml, fiat_global_data_catalog_yml],
     )
 
     # Add model type and region
     model.setup_config(**{MODEL_TYPE: GEOM})
-    model.setup_region(fiat_region)
+    model.setup_region(region)
 
     # Setup the vulnerability
     model.vulnerability.setup(
@@ -146,22 +197,8 @@ def sfincs_data_yml(test_data_dir: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
-def sfincs_region_geojson(test_data_dir: Path) -> Path:
-    p = test_data_dir / "sfincs_region.geojson"
-    assert p.is_file()
-    return p
-
-
-@pytest.fixture(scope="session")
-def sfincs_region(sfincs_region_geojson: Path) -> gpd.GeoDataFrame:
-    gdf = gpd.read_file(sfincs_region_geojson)
-    assert len(gdf) == 1
-    return gdf
-
-
-@pytest.fixture(scope="session")
 def build_sfincs_model_regular(
-    cache_dir: Path, sfincs_data_yml: Path, sfincs_region: gpd.GeoDataFrame
+    cache_dir: Path, sfincs_data_yml: Path, region: gpd.GeoDataFrame
 ):
     root = cache_dir / "test_models" / "sfincs" / "regular"
     if root.exists():
@@ -182,7 +219,7 @@ def build_sfincs_model_regular(
         dtrstout=0.0,
     )
     model.grid.create_from_region(
-        region={"geom": sfincs_region},
+        region={"geom": region},
         res=150,
         crs="utm",
         rotated=True,
@@ -193,8 +230,8 @@ def build_sfincs_model_regular(
             {"elevation": "gebco"},
         ]
     )
-    model.mask.create_active(zmin=-5)
-    model.mask.create_boundary(btype="waterlevel", zmax=-1)
+    model.mask.create_active(zmin=-3)
+    model.mask.create_boundary(btype="waterlevel", zmax=-3)
     model.subgrid.create(
         elevation_list=[
             {"elevation": "merit_hydro", "zmin": 0.001},
@@ -225,7 +262,7 @@ def build_sfincs_model_regular(
 
 @pytest.fixture(scope="session")
 def build_sfincs_model_quadtree(
-    cache_dir: Path, sfincs_data_yml: Path, sfincs_region: gpd.GeoDataFrame
+    cache_dir: Path, sfincs_data_yml: Path, region: gpd.GeoDataFrame
 ):
     root = cache_dir / "test_models" / "sfincs" / "quadtree"
     if root.exists():
@@ -246,7 +283,7 @@ def build_sfincs_model_quadtree(
         dtrstout=0.0,
     )
     model.quadtree_grid.create_from_region(
-        region={"geom": sfincs_region},
+        region={"geom": region},
         res=150,
         crs="utm",
         rotated=True,
@@ -257,8 +294,8 @@ def build_sfincs_model_quadtree(
             {"elevation": "gebco"},
         ]
     )
-    model.quadtree_mask.create_active(zmin=-5)
-    model.quadtree_mask.create_boundary(btype="waterlevel", zmax=-1)
+    model.quadtree_mask.create_active(zmin=-3)
+    model.quadtree_mask.create_boundary(btype="waterlevel", zmax=-3)
     model.quadtree_subgrid.create(
         elevation_list=[
             {"elevation": "merit_hydro", "zmin": 0.001},
