@@ -285,3 +285,13 @@ def pytest_runtest_setup(item):
     test_name = item.name
     logger = FloodAdaptLogging.getLogger()
     logger.info(f"\nStarting test: {test_name}\n")
+
+
+@pytest.fixture
+def sfincs_data_dir(test_data_dir: Path) -> Path:
+    return test_data_dir / "sfincs_data"
+
+
+@pytest.fixture
+def cache_dir(test_data_dir: Path) -> Path:
+    return test_data_dir / ".cache"

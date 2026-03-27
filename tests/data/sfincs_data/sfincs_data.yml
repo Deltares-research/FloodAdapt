@@ -4,7 +4,7 @@ region:
   driver: pyogrio
 
 observations:
-  uri: sfincs_data/observations.csv
+  uri: observations.csv
   data_type: GeoDataFrame
   driver:
     name: geodataframe_table
@@ -12,7 +12,7 @@ observations:
     crs: 4326
 
 discharge:
-  uri: sfincs_data/discharge.csv
+  uri: discharge.csv
   data_type: DataFrame
   driver:
     name: pandas
@@ -21,7 +21,7 @@ discharge:
       parse_dates: true
 
 wind:
-  uri: sfincs_data/wind.csv
+  uri: wind.csv
   data_type: DataFrame
   driver:
     name: pandas
@@ -30,22 +30,22 @@ wind:
       parse_dates: true
 
 weir:
-  uri: sfincs_data/weir.geojson
+  uri: weir.geojson
   data_type: GeoDataFrame
   driver: pyogrio
 
 drainage:
-  uri: sfincs_data/drainage.geojson
+  uri: drainage.geojson
   data_type: GeoDataFrame
   driver: pyogrio
 
 observation_lines:
-  uri: sfincs_data/observation_lines.geojson
+  uri: observation_lines.geojson
   data_type: GeoDataFrame
   driver: pyogrio
 
 vito_mapping:
-  uri: sfincs_data/vito_mapping.csv
+  uri: vito_mapping.csv
   data_type: DataFrame
   driver:
     name: pandas
@@ -53,7 +53,7 @@ vito_mapping:
       index_col: 0
 
 era5_dummy:
-  uri: sfincs_data/era5_dummy.nc
+  uri: era5_dummy.nc
   data_type: RasterDataset
   driver:
     name: raster_xarray

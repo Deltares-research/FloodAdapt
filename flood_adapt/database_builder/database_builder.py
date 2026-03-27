@@ -63,7 +63,6 @@ from flood_adapt.config.impacts import (
     AggregationModel,
     BenefitsModel,
     BFEModel,
-    EquityModel,
     FloodmapType,
     RiskModel,
     SVIModel,
@@ -558,6 +557,7 @@ class DatabaseBuilder:
 
     def __init__(self, config: ConfigModel):
         self.config = config
+        self._building_footprints: gpd.GeoDataFrame = gpd.GeoDataFrame()
 
         # Set database root
         if config.database_path:
@@ -693,27 +693,23 @@ class DatabaseBuilder:
         shutil.copytree(user_provided, location_in_db)
         in_db = HydromtFiatModel(root=str(location_in_db), mode="r+")
         in_db.read()
-        # Add check to make sure the geoms are correct
-        # TODO this should be handled in hydromt-FIAT
-        no_geoms = len(
-            [name for name in in_db.config["exposure"]["geom"].keys() if "file" in name]
-        )
-        in_db.exposure.exposure_geoms = in_db.exposure.exposure_geoms[:no_geoms]
-        in_db.exposure._geom_names = in_db.exposure._geom_names[:no_geoms]
 
         # Make sure that a region polygon is included
-        if "region" not in in_db.geoms:
-            gdf = in_db.exposure.get_full_gdf(in_db.exposure.exposure_db)
-            # Combine all geometries into a single geometry
-            merged_geometry = gdf.unary_union
+        if in_db.region is None or in_db.region.empty:
+            # Build region from all exposure geometries
+            all_geoms = [
+                gdf for gdf in in_db.exposure_geoms.data.values() if len(gdf) > 0
+            ]
+            if all_geoms:
+                combined = pd.concat(all_geoms, ignore_index=True)
+                merged_geometry = combined.geometry.unary_union
 
-            # If the result is not a polygon, you can create a convex hull
-            if not isinstance(merged_geometry, Polygon):
-                merged_geometry = merged_geometry.convex_hull
-            # Create a new GeoDataFrame with the resulting polygon
-            in_db.geoms["region"] = gpd.GeoDataFrame(
-                geometry=[merged_geometry], crs=gdf.crs
-            )
+                # If the result is not a polygon, you can create a convex hull
+                if not isinstance(merged_geometry, Polygon):
+                    merged_geometry = merged_geometry.convex_hull
+                in_db.setup_region(
+                    gpd.GeoDataFrame(geometry=[merged_geometry], crs=combined.crs)
+                )
 
         self.fiat_model = in_db
 
@@ -747,14 +743,13 @@ class DatabaseBuilder:
         user_model.read()
         if user_model.crs is None:
             raise ValueError("CRS is not defined in the SFINCS model.")
-        epsg = user_model.crs.to_epsg()
 
         location_in_db = self.static_path / "templates" / "offshore"
         if location_in_db.exists():
             shutil.rmtree(location_in_db)
         shutil.copytree(user_provided, location_in_db)
         in_db = HydromtSfincsModel(str(location_in_db), mode="r+")
-        in_db.read(epsg=epsg)
+        in_db.read()
         self.sfincs_offshore_model = in_db
 
     ### FIAT ###
@@ -812,14 +807,10 @@ class DatabaseBuilder:
         roads_gpkg = self.create_roads()
 
         # Get classes of non-building objects
-        non_buildings = ~self.fiat_model.exposure.exposure_db[
-            _FIAT_COLUMNS.object_id
-        ].isin(self._get_fiat_building_geoms()[_FIAT_COLUMNS.object_id])
-        non_building_names = list(
-            self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.primary_object_type][
-                non_buildings
-            ].unique()
-        )
+        full_gdf = self._get_fiat_gdf_full()
+        building_ids = self._get_fiat_building_geoms()[_FIAT_COLUMNS.object_id]
+        non_buildings = ~full_gdf[_FIAT_COLUMNS.object_id].isin(building_ids)
+        non_building_names = list(full_gdf["object_type"][non_buildings].unique())
 
         # Update elevations
         self.update_fiat_elevation()
@@ -827,7 +818,7 @@ class DatabaseBuilder:
         self._svi = self.create_svi()
 
         config = FiatConfigModel(
-            exposure_crs=self.fiat_model.exposure.crs,
+            exposure_crs=str(self.fiat_model.exposure_geoms.crs),
             floodmap_type=self.read_floodmap_type(),
             bfe=self.create_bfe(),
             non_building_names=non_building_names,
@@ -843,20 +834,21 @@ class DatabaseBuilder:
 
         # Update output geoms names
         output_geom = {}
-        counter = 0
-        for key in self.fiat_model.config["exposure"]["geom"].keys():
-            if "file" in key:
-                counter += 1
-                output_geom[f"name{counter}"] = Path(
-                    self.fiat_model.config["exposure"]["geom"][key]
-                ).name
-        self.fiat_model.config["output"]["geom"] = output_geom
+        for counter, name in enumerate(
+            self.fiat_model.exposure_geoms.data.keys(), start=1
+        ):
+            output_geom[f"name{counter}"] = name
+        self.fiat_model.config.set("output.geom", output_geom)
+
         # Make sure objects are ordered based on object id
-        self.fiat_model.exposure.exposure_db = (
-            self.fiat_model.exposure.exposure_db.sort_values(
-                by=[_FIAT_COLUMNS.object_id], ignore_index=True
-            )
-        )
+        for name, gdf in self.fiat_model.exposure_geoms.data.items():
+            if _FIAT_COLUMNS.object_id in gdf.columns:
+                self.fiat_model.exposure_geoms.set(
+                    data=gdf.sort_values(
+                        by=[_FIAT_COLUMNS.object_id], ignore_index=True
+                    ),
+                    name=name,
+                )
         # Update FIAT model with the new config
         self.fiat_model.write()
 
@@ -888,68 +880,59 @@ class DatabaseBuilder:
                 f"Ground elevation for FIAT objects is in '{FIAT_units}', while SFINCS ground elevation is in 'meters'. Values in the exposure csv will be converted by a factor of {conversion_factor}"
             )
         # Read in DEM and objects
-        exposure = self.fiat_model.exposure.exposure_db
-        dem = rxr.open_rasterio(dem_file)
+        import rasterio
+
         gdf = self._get_fiat_gdf_full()
 
-        # Ensure gdf has the same CRS as dem
         # Determine the CRS to use for sampling
-        if (
-            hasattr(self.sfincs_overland_model, "crs")
-            and self.sfincs_overland_model.crs is not None
-        ):
-            target_crs = self.sfincs_overland_model.crs
-        elif (
-            hasattr(dem, "rio") and hasattr(dem.rio, "crs") and dem.rio.crs is not None
-        ):
-            target_crs = dem.rio.crs
-        else:
-            target_crs = gdf.crs
-            logger.warning(
-                "Could not determine CRS from SFINCS model or DEM raster. Assuming the CRS is the same as the FIAT model."
+        with rasterio.open(dem_file) as src:
+            dem_crs = src.crs
+            target_crs = (
+                self.sfincs_overland_model.crs
+                if self.sfincs_overland_model.crs is not None
+                else dem_crs
             )
 
-        if gdf.crs != target_crs:
-            gdf = gdf.to_crs(target_crs)
+            if gdf.crs != target_crs:
+                gdf = gdf.to_crs(target_crs)
 
-        # Sample DEM at the centroid of each geometry
-        gdf["centroid"] = gdf.geometry.centroid
-        x_points = xr.DataArray(gdf["centroid"].x, dims="points")
-        y_points = xr.DataArray(gdf["centroid"].y, dims="points")
-        gdf["elev"] = (
-            dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
-            * conversion_factor
-        )
+            # Sample DEM at the centroid of each geometry
+            centroids = gdf.geometry.centroid
+            coords = list(zip(centroids.x, centroids.y))
+            sampled = list(src.sample(coords, indexes=1))
+            gdf["elev"] = [v[0] * conversion_factor for v in sampled]
 
-        # Merge updated elevation back into exposure DataFrame
-        exposure = exposure.merge(
-            gdf[[_FIAT_COLUMNS.object_id, "elev"]],
-            on=_FIAT_COLUMNS.object_id,
-            how="left",
-        )
-        exposure[_FIAT_COLUMNS.ground_elevation] = exposure["elev"]
-        del exposure["elev"]
-
-        self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(exposure)
+        # Merge updated elevation back into all exposure GeoDataFrames
+        elev_map = gdf.set_index(_FIAT_COLUMNS.object_id)["elev"]
+        for name, exp_gdf in self.fiat_model.exposure_geoms.data.items():
+            if _FIAT_COLUMNS.object_id in exp_gdf.columns:
+                exp_gdf = exp_gdf.copy()
+                exp_gdf[_FIAT_COLUMNS.ground_elevation] = exp_gdf[
+                    _FIAT_COLUMNS.object_id
+                ].map(elev_map)
+                self.fiat_model.exposure_geoms.set(data=exp_gdf, name=name)
 
     def read_damage_unit(self) -> str:
-        if self.fiat_model.exposure.damage_unit is None:
+        # Check config for global.damage_unit
+        damage_unit = self.fiat_model.config.get("global.damage_unit")
+        if damage_unit is None:
             logger.warning(
                 "Delft-FIAT model was missing damage units so '$' was assumed."
             )
-            self.fiat_model.exposure.damage_unit = "$"
-        return self.fiat_model.exposure.damage_unit
+            damage_unit = "$"
+        return damage_unit
 
     @debug_timer
     def read_floodmap_type(self) -> FloodmapType:
         if self.config.floodmap_type is not None:
             return self.config.floodmap_type
         else:
-            # If there is at least on object that uses the area method, use water depths for FA calcs
+            # If there is at least one object that uses the area method, use water depths for FA calcs
+            full_gdf = self._get_fiat_gdf_full()
             if (
-                self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.extraction_method]
-                == "area"
-            ).any():
+                _FIAT_COLUMNS.extraction_method in full_gdf.columns
+                and (full_gdf[_FIAT_COLUMNS.extraction_method] == "area").any()
+            ):
                 return FloodmapType.water_depth
             else:
                 return FloodmapType.water_level
@@ -957,22 +940,20 @@ class DatabaseBuilder:
     @debug_timer
     def create_roads(self) -> Optional[str]:
         # Make sure that FIAT roads are polygons
-        if self.config.fiat_roads_name not in self.fiat_model.exposure.geom_names:
+        geom_names = list(self.fiat_model.exposure_geoms.data.keys())
+        if self.config.fiat_roads_name not in geom_names:
             logger.warning(
                 "Road objects are not available in the FIAT model and thus would not be available in FloodAdapt."
             )
             # TODO check how this naming of output geoms should become more explicit!
             return None
 
-        roads = self.fiat_model.exposure.exposure_geoms[self._get_fiat_road_index()]
+        roads = self.fiat_model.exposure_geoms.data[self.config.fiat_roads_name]
 
         # TODO do we need the lanes column?
-        if (
-            _FIAT_COLUMNS.segment_length
-            not in self.fiat_model.exposure.exposure_db.columns
-        ):
+        if _FIAT_COLUMNS.segment_length not in roads.columns:
             logger.warning(
-                f"'{_FIAT_COLUMNS.segment_length}' column not present in the FIAT exposure csv. Road impact infometrics cannot be produced."
+                f"'{_FIAT_COLUMNS.segment_length}' column not present in the FIAT exposure data. Road impact infometrics cannot be produced."
             )
 
         # TODO should this should be performed through hydromt-FIAT?
@@ -980,8 +961,10 @@ class DatabaseBuilder:
             roads = roads.to_crs(roads.estimate_utm_crs())
             road_width = self.config.road_width.convert(us.UnitTypesLength.meters)
             roads.geometry = roads.geometry.buffer(road_width / 2, cap_style=2)
-            roads = roads.to_crs(self.fiat_model.exposure.crs)
-            self.fiat_model.exposure.exposure_geoms[self._get_fiat_road_index()] = roads
+            roads = roads.to_crs(self.fiat_model.exposure_geoms.crs)
+            self.fiat_model.exposure_geoms.set(
+                data=roads, name=self.config.fiat_roads_name
+            )
             logger.info(
                 f"FIAT road objects transformed from lines to polygons assuming a road width of {self.config.road_width} meters."
             )
@@ -1045,24 +1028,18 @@ class DatabaseBuilder:
             )
             return None
         # check if it is spatially joined and/or exists already
-        elif "BF_FID" in self.fiat_model.exposure.exposure_db.columns:
-            add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-            fiat_path = Path(self.fiat_model.root)
-
-            if not (add_attrs and "BF_FID" in [attr["name"] for attr in add_attrs]):
-                raise KeyError(
-                    "While 'BF_FID' column exists, connection to a spatial footprints file is missing."
-                )
-
-            ind = [attr["name"] for attr in add_attrs].index("BF_FID")
-            footprints = add_attrs[ind]
-            footprints_path = fiat_path / footprints["file"]
-
-            if not footprints_path.exists():
+        elif "BF_FID" in self._get_fiat_building_geoms().columns:
+            # spatial_joins no longer available in hydromt-FIAT v1;
+            # check for BF_FID file in model directory
+            fiat_path = self.fiat_model.root.path
+            bf_candidates = list(
+                (fiat_path / "exposure" / "building_footprints").glob("*.gpkg")
+            )
+            if not bf_candidates:
                 raise FileNotFoundError(
-                    f"While 'BF_FID' column exists, building footprints file {footprints_path} not found."
+                    "While 'BF_FID' column exists, building footprints file not found."
                 )
-
+            footprints_path = bf_candidates[0]
             logger.info(f"Using the building footprints located at {footprints_path}.")
             return footprints_path.relative_to(self.static_path)
 
@@ -1125,49 +1102,7 @@ class DatabaseBuilder:
         # TODO split this to 3 methods?
         aggregation_areas = []
 
-        # first check if the FIAT model has existing aggregation areas
-        if self.fiat_model.spatial_joins["aggregation_areas"]:
-            # Use the aggregation areas from the FIAT model
-            for aggr in self.fiat_model.spatial_joins["aggregation_areas"]:
-                # Check if the exposure csv has the correct column
-                col_name = _FIAT_COLUMNS.aggregation_label.format(name=aggr["name"])
-                if col_name not in self.fiat_model.exposure.exposure_db.columns:
-                    raise KeyError(
-                        f"While aggregation area '{aggr['name']}' exists in the spatial joins of the FIAT model, the column '{col_name}' is missing in the exposure csv."
-                    )
-                # Check equity config
-                if aggr["equity"] is not None:
-                    equity_config = EquityModel(
-                        census_data=str(
-                            self.static_path.joinpath(
-                                "templates", "fiat", aggr["equity"]["census_data"]
-                            )
-                            .relative_to(self.static_path)
-                            .as_posix()
-                        ),
-                        percapitaincome_label=aggr["equity"]["percapitaincome_label"],
-                        totalpopulation_label=aggr["equity"]["totalpopulation_label"],
-                    )
-                else:
-                    equity_config = None
-                # Make aggregation config
-                aggr = AggregationModel(
-                    name=aggr["name"],
-                    file=str(
-                        self.static_path.joinpath("templates", "fiat", aggr["file"])
-                        .relative_to(self.static_path)
-                        .as_posix()
-                    ),
-                    field_name=aggr["field_name"],
-                    equity=equity_config,
-                )
-                aggregation_areas.append(aggr)
-
-                logger.info(
-                    f"Aggregation areas: {aggr.name} from the FIAT model are going to be used."
-                )
-
-        # Then check if the user has provided extra aggregation areas in the config
+        # Then check if the user has provided aggregation areas in the config
         if self.config.aggregation_areas:
             # Loop through aggr areas given in config
             for aggr in self.config.aggregation_areas:
@@ -1177,13 +1112,12 @@ class DatabaseBuilder:
                 else:
                     aggr_name = Path(aggr.file).stem
                 # If aggregation area already in FIAT model raise Error
-                if aggr_name in [aggr.name for aggr in aggregation_areas]:
+                if aggr_name in [a.name for a in aggregation_areas]:
                     logger.warning(
                         f"Aggregation area '{aggr_name}' already exists in the FIAT model. The input aggregation area will be ignored."
                     )
                     continue
                 # Do spatial join of FIAT objects and aggregation areas
-                exposure_csv = self.fiat_model.exposure.exposure_db
                 gdf = self._get_fiat_gdf_full()
                 gdf_joined, aggr_areas = self.spatial_join(
                     objects=gdf[[_FIAT_COLUMNS.object_id, "geometry"]],
@@ -1192,30 +1126,13 @@ class DatabaseBuilder:
                     rename=_FIAT_COLUMNS.aggregation_label.format(name=aggr_name),
                     filter=True,
                 )
-                aggr_path = Path(self.fiat_model.root).joinpath(
+                aggr_path = self.fiat_model.root.path.joinpath(
                     "exposure", "aggregation_areas", f"{Path(aggr.file).stem}.gpkg"
                 )
                 aggr_path.parent.mkdir(parents=True, exist_ok=True)
                 aggr_areas.to_file(aggr_path)
-                exposure_csv = exposure_csv.merge(
-                    gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
-                )
-                self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
-                    exposure_csv
-                )
-                # Update spatial joins in FIAT model
-                if self.fiat_model.spatial_joins["aggregation_areas"] is None:
-                    self.fiat_model.spatial_joins["aggregation_areas"] = []
-                self.fiat_model.spatial_joins["aggregation_areas"].append(
-                    {
-                        "name": aggr_name,
-                        "file": aggr_path.relative_to(self.fiat_model.root).as_posix(),
-                        "field_name": _FIAT_COLUMNS.aggregation_label.format(
-                            name=aggr_name
-                        ),
-                        "equity": None,  # TODO allow adding equity as well?
-                    }
-                )
+                # Merge aggregation label into all exposure GeoDataFrames
+                self._merge_column_into_exposure(gdf_joined, _FIAT_COLUMNS.object_id)
                 # Update the aggregation areas list in the config
                 aggregation_areas.append(
                     AggregationModel(
@@ -1230,16 +1147,17 @@ class DatabaseBuilder:
                     f"Aggregation areas: {aggr_name} provided in the config are going to be used."
                 )
 
-        # No config provided, no aggr areas in the model -> try to use the region file as a mock aggregation area
-        if (
-            not self.fiat_model.spatial_joins["aggregation_areas"]
-            and not self.config.aggregation_areas
-        ):
-            exposure_csv = self.fiat_model.exposure.exposure_db
-            region = self.fiat_model.geoms["region"]
-            region = region.explode().reset_index()
+        # No config provided -> try to use the region file as a mock aggregation area
+        if not self.config.aggregation_areas:
+            region = self.fiat_model.region
+            region = gpd.GeoDataFrame(
+                geometry=region.geometry.explode(index_parts=False).reset_index(
+                    drop=True
+                ),
+                crs=region.crs,
+            )
             region["aggr_id"] = ["region_" + str(i) for i in np.arange(len(region)) + 1]
-            aggregation_path = Path(self.fiat_model.root).joinpath(
+            aggregation_path = self.fiat_model.root.path.joinpath(
                 "aggregation_areas", "region.geojson"
             )
             if not aggregation_path.parent.exists():
@@ -1257,16 +1175,11 @@ class DatabaseBuilder:
             gdf = self._get_fiat_gdf_full()
             gdf_joined, aggr_areas = self.spatial_join(
                 objects=gdf[[_FIAT_COLUMNS.object_id, "geometry"]],
-                layer=region,
+                layer=aggregation_path,
                 field_name="aggr_id",
                 rename=_FIAT_COLUMNS.aggregation_label.format(name="region"),
             )
-            exposure_csv = exposure_csv.merge(
-                gdf_joined, on=_FIAT_COLUMNS.object_id, how="left"
-            )
-            self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
-                exposure_csv
-            )
+            self._merge_column_into_exposure(gdf_joined, _FIAT_COLUMNS.object_id)
             logger.warning(
                 "No aggregation areas were available in the FIAT model and none were provided in the config file. The region file will be used as a mock aggregation area."
             )
@@ -1276,7 +1189,6 @@ class DatabaseBuilder:
     def create_svi(self) -> Optional[SVIModel]:
         if self.config.svi:
             svi_file = self._check_exists_and_absolute(self.config.svi.file)
-            exposure_csv = self.fiat_model.exposure.exposure_db
             buildings_joined, svi = self.spatial_join(
                 self._get_fiat_building_geoms(),
                 svi_file,
@@ -1284,22 +1196,8 @@ class DatabaseBuilder:
                 rename="SVI",
                 filter=True,
             )
-            # Add column to exposure
-            if "SVI" in exposure_csv.columns:
-                logger.info(
-                    f"'SVI' column in the FIAT exposure csv will be replaced by {svi_file.as_posix()}."
-                )
-                del exposure_csv["SVI"]
-            else:
-                logger.info(
-                    f"'SVI' column in the FIAT exposure csv will be filled by {svi_file.as_posix()}."
-                )
-            exposure_csv = exposure_csv.merge(
-                buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
-            )
-            self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(
-                exposure_csv
-            )
+            # Merge SVI column into exposure GeoDataFrames
+            self._merge_column_into_exposure(buildings_joined, _FIAT_COLUMNS.object_id)
 
             # Save the spatial file for future use
             svi_path = self.static_path / "templates" / "fiat" / "svi" / "svi.gpkg"
@@ -1313,31 +1211,25 @@ class DatabaseBuilder:
                 geom=Path(svi_path.relative_to(self.static_path)).as_posix(),
                 field_name="SVI",
             )
-        elif "SVI" in self.fiat_model.exposure.exposure_db.columns:
+        elif "SVI" in self._get_fiat_gdf_full().columns:
             logger.info(
-                "'SVI' column present in the FIAT exposure csv. Vulnerability type infometrics can be produced."
+                "'SVI' column present in the FIAT exposure data. Vulnerability type infometrics can be produced."
             )
-            add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-            if add_attrs is None:
-                logger.warning(
-                    "'SVI' column present in the FIAT exposure csv, but no spatial join found with the SVI map."
-                )
-                return None
-
-            if "SVI" not in [attr["name"] for attr in add_attrs]:
+            # Try to find existing SVI file in the FIAT model
+            svi_candidates = list((self.fiat_model.root.path / "svi").glob("*.gpkg"))
+            if not svi_candidates:
                 logger.warning("No SVI map found to display in the FloodAdapt GUI!")
                 return None
 
-            ind = [attr["name"] for attr in add_attrs].index("SVI")
-            svi = add_attrs[ind]
-            svi_path = self.static_path / "templates" / "fiat" / svi["file"]
-            logger.info(
-                f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['file']}"
+            svi_path = (
+                self.static_path / "templates" / "fiat" / "svi" / svi_candidates[0].name
             )
-            # Save site attributes
+            logger.info(
+                f"An SVI map can be shown in FloodAdapt GUI using 'SVI' column from {svi_candidates[0]}"
+            )
             return SVIModel(
                 geom=Path(svi_path.relative_to(self.static_path)).as_posix(),
-                field_name=svi["field_name"],
+                field_name="SVI",
             )
 
         else:
@@ -1437,7 +1329,7 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_dem_model(self) -> DemModel:
-        subgrid_sfincs_folder = Path(self.sfincs_overland_model.root) / "subgrid"
+        subgrid_sfincs_folder = self.sfincs_overland_model.root.path / "subgrid"
         subgrid_sfincs_folder_exist = subgrid_sfincs_folder.is_dir()
         if self.config.dem:
             subgrid_sfincs = Path(self.config.dem.filename)
@@ -1616,17 +1508,12 @@ class DatabaseBuilder:
 
     @debug_timer
     def create_rivers(self) -> list[RiverModel]:
-        src_file = Path(self.sfincs_overland_model.root) / "sfincs.src"
-        if not src_file.exists():
+        if self.sfincs_overland_model.discharge_points.nr_points == 0:
             logger.warning("No rivers found in the SFINCS model.")
             return []
 
-        df = pd.read_csv(src_file, delim_whitespace=True, header=None, names=["x", "y"])
-        river_locs = gpd.GeoDataFrame(
-            df,
-            geometry=gpd.points_from_xy(df.x, df.y),
-            crs=self.sfincs_overland_model.crs,
-        )
+        river_locs = self.sfincs_overland_model.discharge_points.gdf.copy()
+        river_locs = river_locs.reset_index(drop=True)
 
         if self.config.river_names:
             if len(self.config.river_names) != len(river_locs):
@@ -1635,19 +1522,19 @@ class DatabaseBuilder:
                 raise ValueError(msg)
             else:
                 river_locs["name"] = self.config.river_names
-        else:
+        elif "name" not in river_locs.columns:
             river_locs["name"] = [f"river_{idx}" for idx in range(len(river_locs))]
 
         rivers = []
         for idx, row in river_locs.iterrows():
-            if "dis" in self.sfincs_overland_model.forcing:
+            try:
                 discharge = (
-                    self.sfincs_overland_model.forcing["dis"]
+                    self.sfincs_overland_model.discharge_points.data["dis"]
                     .sel(index=idx + 1)
                     .to_numpy()
                     .mean()
                 )
-            else:
+            except (KeyError, IndexError):
                 discharge = 0
                 logger.warning(
                     f"No river discharge conditions were found in the SFINCS model for river {idx}. A default value of 0 will be used."
@@ -1655,8 +1542,8 @@ class DatabaseBuilder:
 
             river = RiverModel(
                 name=row["name"],
-                x_coordinate=row.x,
-                y_coordinate=row.y,
+                x_coordinate=row.geometry.x,
+                y_coordinate=row.geometry.y,
                 mean_discharge=us.UnitfulDischarge(
                     value=discharge, units=self.unit_system.default_discharge_units
                 ),
@@ -1834,22 +1721,11 @@ class DatabaseBuilder:
     def create_offshore_model(self) -> Optional[FloodModel]:
         if self.sfincs_offshore_model is None:
             return None
-        # Connect boundary points of overland to output points of offshore
-        # First read in the boundary locations from the overland model
-        fn = Path(self.sfincs_overland_model.root) / "sfincs.bnd"
-        lines = []
-        if fn.exists():
-            with open(fn) as f:
-                lines = f.readlines()
-        coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
-        x, y = zip(*coords)
-        bnd = gpd.GeoDataFrame(
-            geometry=gpd.points_from_xy(x, y),
-            crs=self.sfincs_overland_model.config["epsg"],
+        # Read boundary point locations from the overland model and transform to offshore CRS
+        bnd = self.sfincs_overland_model.water_level.gdf.to_crs(
+            self.sfincs_offshore_model.crs
         )
-        # Then transform points to offshore crs and save them as observation points
-        obs_geo = bnd.to_crs(self.sfincs_offshore_model.config["epsg"])
-        self.sfincs_offshore_model.setup_observation_points(obs_geo)
+        self.sfincs_offshore_model.observation_points.set(bnd, merge=False)
         self.sfincs_offshore_model.write()
         logger.info(
             "Output points of the offshore SFINCS model were reconfigured to the boundary points of the overland SFINCS model."
@@ -1914,10 +1790,18 @@ class DatabaseBuilder:
     @debug_timer
     def read_location(self) -> tuple[float, float]:
         # Get center of area of interest
-        if not self.fiat_model.region.empty:
-            center = self.fiat_model.region.dissolve().centroid.to_crs(4326)[0]
+        region = self.fiat_model.region
+        if region is not None and not region.empty:
+            center = (
+                gpd.GeoDataFrame(geometry=region.geometry)
+                .dissolve()
+                .centroid.to_crs(4326)
+                .iloc[0]
+            )
         else:
-            center = self._get_fiat_building_geoms().dissolve().centroid.to_crs(4326)[0]
+            center = (
+                self._get_fiat_building_geoms().dissolve().centroid.to_crs(4326).iloc[0]
+            )
         return center.x, center.y
 
     @debug_timer
@@ -2254,17 +2138,19 @@ class DatabaseBuilder:
 
     def _determine_if_wl_boundaries(self) -> bool:
         # https://sfincs.readthedocs.io/en/latest/parameters.html
-        mask = (
-            self.sfincs_overland_model.mask
-            if self.sfincs_overland_model.mask is not None
-            else xr.DataArray()
-        )
-        mask_has_bnd = bool(
-            (mask == 2).any()
-        )  # boundary points are marked with 2 in the SFINCS mask
-        has_bnd_points = (
-            "bndfile" in self.sfincs_overland_model.config
-        )  # check if boundary points are specified
+        if self.sfincs_overland_model.grid_type == "regular":
+            mask = self.sfincs_overland_model.mask
+        elif self.sfincs_overland_model.grid_type == "quadtree":
+            mask = self.sfincs_overland_model.quadtree_mask
+        else:
+            return False
+
+        # boundary points are marked with 2 in the SFINCS mask
+        mask_has_bnd = bool((mask.data == 2).any())
+
+        # check if boundary points are specified
+        has_bnd_points = bool(self.sfincs_overland_model.config.data.bndfile)
+
         if mask_has_bnd and has_bnd_points:
             has_bnd = True
         elif mask_has_bnd and not has_bnd_points:
@@ -2383,16 +2269,16 @@ class DatabaseBuilder:
         gpd.GeoDataFrame
             A GeoDataFrame containing the building geometries.
         """
-        building_indices = self._get_fiat_building_index()
+        building_names = self._get_fiat_building_names()
         buildings = pd.concat(
-            [self.fiat_model.exposure.exposure_geoms[i] for i in building_indices],
+            [self.fiat_model.exposure_geoms.data[name] for name in building_names],
             ignore_index=True,
         )
         return buildings
 
     @debug_timer
     def _join_building_footprints(
-        self, building_footprints: gpd.GeoDataFrame, field_name: str
+        self, building_footprints: Union[str, Path, gpd.GeoDataFrame], field_name: str
     ) -> Path:
         """
         Join building footprints with existing building data and updates the exposure CSV.
@@ -2414,12 +2300,11 @@ class DatabaseBuilder:
         8. Logs the location where the building footprints are saved.
         """
         buildings = self._get_fiat_building_geoms()
-        exposure_csv = self.fiat_model.exposure.exposure_db
-        if "BF_FID" in exposure_csv.columns:
+        building_gdf = self._get_fiat_gdf_full()
+        if "BF_FID" in building_gdf.columns:
             logger.warning(
                 "Column 'BF_FID' already exists in the exposure columns and will be replaced."
             )
-            del exposure_csv["BF_FID"]
         buildings_joined, building_footprints = self.spatial_join(
             buildings,
             building_footprints,
@@ -2434,21 +2319,18 @@ class DatabaseBuilder:
             .sort_values(by=[_FIAT_COLUMNS.object_id])
         )
         # Create folder
-        bf_folder = Path(self.fiat_model.root) / "exposure" / "building_footprints"
+        bf_folder = self.fiat_model.root.path / "exposure" / "building_footprints"
         bf_folder.mkdir(parents=True, exist_ok=True)
 
         # Save the spatial file for future use
         geo_path = bf_folder / "building_footprints.gpkg"
         building_footprints.to_file(geo_path)
 
-        # Save to exposure csv
-        exposure_csv = exposure_csv.merge(
-            buildings_joined, on=_FIAT_COLUMNS.object_id, how="left"
-        )
+        # Merge BF_FID into exposure GeoDataFrames
+        self._merge_column_into_exposure(buildings_joined, _FIAT_COLUMNS.object_id)
 
-        # Set model building footprints
-        self.fiat_model.building_footprint = building_footprints
-        self.fiat_model.exposure.exposure_db = self._clean_suffix_columns(exposure_csv)
+        # Store building footprints for possible clipping later
+        self._building_footprints = building_footprints
 
         # Save site attributes
         buildings_path = geo_path.relative_to(self.static_path)
@@ -2486,24 +2368,33 @@ class DatabaseBuilder:
 
         # Clip the fiat region
         clipped_region = self.fiat_model.region.to_crs(crs).clip(sfincs_extend)
-        self.fiat_model.geoms["region"] = clipped_region
+        self.fiat_model.setup_region(clipped_region)
 
         # Clip the exposure geometries
         gdf = self._clip_gdf(gdf, sfincs_extend, predicate="within")
 
-        # Save exposure dataframe
-        del gdf["geometry"]
-        self.fiat_model.exposure.exposure_db = gdf.reset_index(drop=True)
+        # Update exposure GeoDataFrames to only contain clipped objects
+        remaining_ids = set(gdf[_FIAT_COLUMNS.object_id])
+        for name, exp_gdf in self.fiat_model.exposure_geoms.data.items():
+            if _FIAT_COLUMNS.object_id in exp_gdf.columns:
+                filtered = exp_gdf[
+                    exp_gdf[_FIAT_COLUMNS.object_id].isin(remaining_ids)
+                ].reset_index(drop=True)
+                self.fiat_model.exposure_geoms.set(data=filtered, name=name)
 
         # Make
         self._delete_extra_geometries()
 
         # Clip the building footprints
         fieldname = "BF_FID"
-        if clip_footprints and not self.fiat_model.building_footprint.empty:
+        if (
+            clip_footprints
+            and hasattr(self, "_building_footprints")
+            and not self._building_footprints.empty
+        ):
             # Get buildings after filtering and their footprint id
-            self.fiat_model.building_footprint = self.fiat_model.building_footprint[
-                self.fiat_model.building_footprint[fieldname].isin(gdf[fieldname])
+            self._building_footprints = self._building_footprints[
+                self._building_footprints[fieldname].isin(gdf[fieldname])
             ].reset_index(drop=True)
 
     @staticmethod
@@ -2525,7 +2416,7 @@ class DatabaseBuilder:
     @debug_timer
     def spatial_join(
         objects: gpd.GeoDataFrame,
-        layer: Union[str, gpd.GeoDataFrame],
+        layer: Union[str, Path, gpd.GeoDataFrame],
         field_name: str,
         rename: Optional[str] = None,
         filter: Optional[bool] = False,
@@ -2545,7 +2436,7 @@ class DatabaseBuilder:
 
         """
         # Read in layer and keep only column of interest
-        if not isinstance(layer, gpd.GeoDataFrame):
+        if isinstance(layer, (str, Path)):
             layer = gpd.read_file(layer)
         layer = layer[[field_name, "geometry"]]
         layer = layer.to_crs(objects.crs)
@@ -2571,23 +2462,47 @@ class DatabaseBuilder:
             layer = layer.rename(columns={field_name: rename})
         return objects_joined, layer
 
-    def _get_fiat_building_index(self) -> list[int]:
+    def _get_fiat_building_names(self) -> list[str]:
         names = self.config.fiat_buildings_name
         if isinstance(names, str):
             names = [names]
-        indices = [
-            self.fiat_model.exposure.geom_names.index(name)
-            for name in names
-            if name in self.fiat_model.exposure.geom_names
-        ]
-        if indices:
-            return indices
+        geom_names = list(self.fiat_model.exposure_geoms.data.keys())
+        result = [name for name in names if name in geom_names]
+        if result:
+            return result
         raise ValueError(
             f"None of the specified building geometry names {names} found in FIAT model exposure geom_names."
         )
 
-    def _get_fiat_road_index(self) -> int:
-        return self.fiat_model.exposure.geom_names.index(self.config.fiat_roads_name)
+    def _get_fiat_road_name(self) -> str:
+        geom_names = list(self.fiat_model.exposure_geoms.data.keys())
+        if self.config.fiat_roads_name not in geom_names:
+            raise ValueError(
+                f"Road geometry name '{self.config.fiat_roads_name}' not found in FIAT model."
+            )
+        return self.config.fiat_roads_name
+
+    def _merge_column_into_exposure(
+        self, joined_df: pd.DataFrame, merge_on: str
+    ) -> None:
+        """Merge a column from a joined DataFrame into all exposure GeoDataFrames.
+
+        Parameters
+        ----------
+        joined_df : pd.DataFrame
+            DataFrame with merge_on column and additional columns to merge.
+        merge_on : str
+            Column name to merge on (e.g. object_id).
+        """
+        new_cols = [c for c in joined_df.columns if c != merge_on]
+        for name, gdf in self.fiat_model.exposure_geoms.data.items():
+            if merge_on in gdf.columns:
+                # Drop existing columns to avoid _x/_y suffixes
+                gdf = gdf.drop(
+                    columns=[c for c in new_cols if c in gdf.columns], errors="ignore"
+                )
+                merged = gdf.merge(joined_df, on=merge_on, how="left")
+                self.fiat_model.exposure_geoms.set(data=merged, name=name)
 
     @debug_timer
     def _get_closest_station(self):
@@ -2709,31 +2624,31 @@ class DatabaseBuilder:
         -------
             None
         """
-        # Make sure only csv objects have geometries
-        for i, geoms in enumerate(self.fiat_model.exposure.exposure_geoms):
+        # Make sure only objects referenced in the exposure data have geometries
+        for name, geoms in self.fiat_model.exposure_geoms.data.items():
             if _FIAT_COLUMNS.object_id not in geoms.columns:
                 logger.warning(
-                    f"Geometry '{self.fiat_model.exposure.geom_names[i]}' does not have an '{_FIAT_COLUMNS.object_id}' column and will be ignored."
+                    f"Geometry '{name}' does not have an '{_FIAT_COLUMNS.object_id}' column and will be ignored."
                 )
                 continue
-            keep = geoms[_FIAT_COLUMNS.object_id].isin(
-                self.fiat_model.exposure.exposure_db[_FIAT_COLUMNS.object_id]
+            all_obj_ids = set()
+            for gdf in self.fiat_model.exposure_geoms.data.values():
+                if _FIAT_COLUMNS.object_id in gdf.columns:
+                    all_obj_ids.update(gdf[_FIAT_COLUMNS.object_id])
+            keep = geoms[_FIAT_COLUMNS.object_id].isin(all_obj_ids)
+            self.fiat_model.exposure_geoms.set(
+                data=geoms[keep].reset_index(drop=True), name=name
             )
-            geoms = geoms[keep].reset_index(drop=True)
-            self.fiat_model.exposure.exposure_geoms[i] = geoms
 
     def _get_exposure_type(self) -> Literal["OSM", "NSI", None]:
         # Define the allowed types for OSM
-        osm_types = ["residential", "commercial", "industrial", "road"]
-        nsi_types = ["RES", "COM", "IND", "PUB", "road"]
-        unique_types = set(
-            self.fiat_model.exposure.exposure_db[
-                _FIAT_COLUMNS.primary_object_type
-            ].unique()
-        )
-        if unique_types.issubset(set(osm_types)):
+        osm_types = {"residential", "commercial", "industrial", "road"}
+        nsi_types = {"RES", "COM", "IND", "PUB", "road"}
+        gdf = self._get_fiat_gdf_full()
+        unique_types = set(gdf["object_type"].unique())
+        if unique_types.issubset(osm_types):
             return "OSM"
-        elif unique_types.issubset(set(nsi_types)):
+        elif unique_types.issubset(nsi_types):
             return "NSI"
         else:
             return None
@@ -2746,9 +2661,12 @@ class DatabaseBuilder:
         -------
             gpd.GeoDataFrame: The full GeoDataFrame of the Fiat model.
         """
-        gdf = self.fiat_model.exposure.get_full_gdf(
-            self.fiat_model.exposure.exposure_db
-        )
+        gdfs = [
+            gdf for gdf in self.fiat_model.exposure_geoms.data.values() if len(gdf) > 0
+        ]
+        if not gdfs:
+            return gpd.GeoDataFrame()
+        gdf = pd.concat(gdfs, ignore_index=True)
         # Keep only unique "object_id" rows, keeping the first occurrence
         gdf = gdf.drop_duplicates(
             subset=_FIAT_COLUMNS.object_id, keep="first"

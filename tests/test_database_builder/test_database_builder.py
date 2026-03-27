@@ -46,26 +46,32 @@ from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.objects.forcing import unit_system as us
 from flood_adapt.objects.forcing.tide_gauge import TideGaugeSource
 from flood_adapt.objects.forcing.timeseries import Scstype
+from tests.data.create_test_input import (
+    _create_event_set,
+)
 
 
 class TestDataBaseBuilder:
-    @pytest.fixture(scope="function")
-    def mock_config(self):
+    @pytest.fixture
+    def test_model_dir(self, cache_dir: Path) -> Path:
+        return cache_dir / "test_models"
+
+    @pytest.fixture
+    def mock_config(self, test_model_dir: Path):
         """Create a temporary database path and return a minimal mocked ConfigModel object."""
         self.db_path = Settings().database_path
-        self.static_path = self.db_path / "static"
-        self.templates_path = self.db_path / "static" / "templates"
+
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:
             config = Mock(spec=ConfigModel)
             config.database_path = tmpdirname
             config.name = "charleston_db_builder"
-            config.fiat = str(self.templates_path / "fiat")
+            config.fiat = str(test_model_dir / "fiat")
             config.sfincs_overland = FloodModel(
-                name=str(self.templates_path / "overland"),
+                name=str(test_model_dir / "sfincs" / "quadtree"),
                 reference="NAVD88",
             )
             config.sfincs_offshore = FloodModel(
-                name=str(self.templates_path / "offshore"),
+                name=str(test_model_dir / "sfincs" / "offshore"),
                 reference="MSL",
             )
             config.unit_system = UnitSystems.imperial
@@ -77,7 +83,7 @@ class TestDataBaseBuilder:
 
             yield config
 
-    @pytest.fixture(scope="function")
+    @pytest.fixture
     def mock_aggregation_areas(self):
         """Fixture to mock the create_aggregation_areas method."""
         return Mock(
@@ -91,10 +97,17 @@ class TestDataBaseBuilder:
             ]
         )
 
+    @pytest.fixture
+    def event_set(self, tmp_path: Path) -> Path:
+        event_set = _create_event_set("test_set")
+        path = tmp_path / "test_set" / "test_set.toml"
+        event_set.save(path)
+        return path
+
     ### Fiat ###
-    def test_read_fiat_model(self, mock_config: ConfigModel):
+    def test_read_fiat_model(self, mock_config: ConfigModel, test_model_dir: Path):
         # Arrange
-        mock_config.fiat = str(self.templates_path / "fiat")
+        mock_config.fiat = str(test_model_dir / "fiat")
         builder = DatabaseBuilder(mock_config)
 
         # Act
@@ -115,15 +128,13 @@ class TestDataBaseBuilder:
         assert risk.return_periods == mock_config.return_periods
 
     def test_create_risk_model_returns_default_risk_if_risk_event(
-        self, mock_config: ConfigModel
+        self, mock_config: ConfigModel, event_set: Path
     ):
         # Arrange
-        mock_config.probabilistic_set = str(
-            self.db_path / "input" / "events" / "test_set"
-        )
+        mock_config.probabilistic_set = str(event_set.parent)
         mock_config.return_periods = []
         builder = DatabaseBuilder(mock_config)
-        builder._probabilistic_set_name = "test_set"
+        builder._probabilistic_set_name = event_set.stem
 
         # Act
         risk = builder.create_risk_model()
@@ -131,23 +142,21 @@ class TestDataBaseBuilder:
         # Assert
         assert risk == RiskModel()
 
-    def test_add_probabilistic_set(self, mock_config: ConfigModel):
+    def test_add_probabilistic_set(self, mock_config: ConfigModel, event_set: Path):
         # Arrange
-        mock_config.probabilistic_set = str(
-            self.db_path / "input" / "events" / "test_set"
-        )
+        mock_config.probabilistic_set = str(event_set.parent)
         builder = DatabaseBuilder(mock_config)
         builder.add_probabilistic_set()
 
-        assert builder._probabilistic_set_name == "test_set"
+        assert builder._probabilistic_set_name == event_set.stem
 
-    def test_create_benefits_with_test_set(self, mock_config: ConfigModel):
+    def test_create_benefits_with_test_set(
+        self, mock_config: ConfigModel, event_set: Path
+    ):
         # Arrange
-        mock_config.probabilistic_set = str(
-            self.db_path / "input" / "events" / "test_set"
-        )
+        mock_config.probabilistic_set = str(event_set.parent)
         builder = DatabaseBuilder(mock_config)
-        builder._probabilistic_set_name = "test_set"
+        builder._probabilistic_set_name = event_set.stem
 
         # Act
         benefits = builder.create_benefit_config()
@@ -198,12 +207,14 @@ class TestDataBaseBuilder:
         # Assert
         assert footprints is None
 
-    def test_create_footprints_from_config(self, mock_config: ConfigModel):
+    def test_create_footprints_from_config(
+        self, mock_config: ConfigModel, test_model_dir: Path
+    ):
         # TODO check
         # Arrange
         mock_config.building_footprints = SpatialJoinModel(
             name="BF_FID",
-            file=str(self.templates_path / "fiat/exposure/buildings.gpkg"),
+            file=str(test_model_dir / "fiat/exposure/buildings.gpkg"),
             field_name="object_id",
         )
         mock_config.fiat_buildings_name = "buildings"
@@ -311,21 +322,19 @@ class TestDataBaseBuilder:
         # Assert
         assert footprints is None
 
-    def test_create_aggregation_areas_from_config(self, mock_config: ConfigModel):
+    def test_create_aggregation_areas_from_config(
+        self, mock_config: ConfigModel, test_model_dir: Path
+    ):
         # Arrange
         mock_config.aggregation_areas = [
             SpatialJoinModel(
                 name="aggr_lvl_1",
-                file=str(
-                    self.templates_path / "fiat/aggregation_areas/aggr_lvl_1.geojson"
-                ),
+                file=str(test_model_dir / "fiat/aggregation_areas/aggr_lvl_1.geojson"),
                 field_name="name",
             ),
             SpatialJoinModel(
                 name="aggr_lvl_2",
-                file=str(
-                    self.templates_path / "fiat/aggregation_areas/aggr_lvl_2.geojson"
-                ),
+                file=str(test_model_dir / "fiat/aggregation_areas/aggr_lvl_2.geojson"),
                 field_name="name",
             ),
         ]
@@ -425,10 +434,11 @@ class TestDataBaseBuilder:
         ]
         assert areas == expected_areas
 
-    def test_create_bfe(self, mock_config: ConfigModel):
+    def test_create_bfe(self, mock_config: ConfigModel, test_data_dir: Path):
         # Arrange
+        # TODO ! put bfe for the new models in the test data dir and use it here
         mock_config.bfe = SpatialJoinModel(
-            file=str(self.static_path / "bfe/bfe.geojson"),
+            file=str(test_data_dir / "bfe/bfe.geojson"),
             name="bfe",
             field_name="bfe",
         )
@@ -463,10 +473,11 @@ class TestDataBaseBuilder:
         assert bfe is None
         assert not (builder.static_path / "bfe").exists()
 
-    def test_create_svi(self, mock_config: ConfigModel):
+    def test_create_svi(self, mock_config: ConfigModel, test_data_dir: Path):
         # Arrange
+        # TODO ! put svi for the new models in the test data dir and use it here
         mock_config.svi = SviConfigModel(
-            file=str(self.static_path / "templates/fiat/svi/CDC_svi_2020.gpkg"),
+            file=str(test_data_dir / "fiat/svi/CDC_svi_2020.gpkg"),
             field_name="SVI",
             threshold=0.5,
         )
@@ -580,10 +591,10 @@ class TestDataBaseBuilder:
         assert sfincs is None
         assert not (builder.static_path / "templates" / "offshore").exists()
 
-    def test_create_slr(self, mock_config: ConfigModel):
+    def test_create_slr(self, mock_config: ConfigModel, test_data_dir: Path):
         # Arrange
         mock_config.slr_scenarios = SlrScenariosModel(
-            file=str(self.static_path / "slr/slr.csv"),
+            file=str(test_data_dir / "slr.csv"),
             relative_to_year=2020,
         )
         builder = DatabaseBuilder(mock_config)
@@ -616,10 +627,10 @@ class TestDataBaseBuilder:
         assert slr is None
         assert not (builder.static_path / "slr").exists()
 
-    def test_create_scs(self, mock_config: ConfigModel):
+    def test_create_scs(self, mock_config: ConfigModel, test_data_dir: Path):
         # Arrange
         mock_config.scs = SCSModel(
-            file=str(self.static_path / "scs/scs_rainfall.csv"),
+            file=str(test_data_dir / "scs_rainfall.csv"),
             type=Scstype.type3,
         )
         builder = DatabaseBuilder(mock_config)
@@ -648,10 +659,18 @@ class TestDataBaseBuilder:
         assert scs is None
         assert not (builder.static_path / "scs").exists()
 
-    def test_create_dem_index_created(self, mock_config: ConfigModel):
+    def test_create_dem_index_created(
+        self, mock_config: ConfigModel, test_model_dir: Path
+    ):
         # Arrange
         mock_config.dem = DemModel(
-            filename=str(self.static_path / "dem/charleston_14m.tif"),
+            filename=str(
+                test_model_dir
+                / "sfincs"
+                / "quadtree"
+                / "subgrid"
+                / "dep_subgrid_lev0.tif"
+            ),
             units=us.UnitTypesLength.meters,
         )
         mock_config.gui = GuiConfigModel(
@@ -875,11 +894,11 @@ class TestDataBaseBuilder:
         assert any("TotalDamageEvent" in query["name"] for query in attrs["queries"])
 
     def test_create_infometrics_with_default_infographics(
-        self, mock_config: ConfigModel, mock_aggregation_areas
+        self, mock_config: ConfigModel, mock_aggregation_areas, test_model_dir: Path
     ):
         # Arrange
         mock_config.svi = SviConfigModel(
-            file=str(self.templates_path / "fiat/svi/CDC_svi_2020.gpkg"),
+            file=str(test_model_dir / "fiat/svi/CDC_svi_2020.gpkg"),
             field_name="SVI",
             threshold=0.8,
         )
@@ -1091,10 +1110,11 @@ class TestDataBaseBuilder:
             ), "Unexpected 'Finished' message found at this log level"
 
     @pytest.fixture(scope="function")
-    def full_config(self):
-        db_path = Settings().database_path
-        static_path = db_path / "static"
-        templates_path = db_path / "static" / "templates"
+    def full_config(self, cache_dir: Path, test_data_dir: Path) -> ConfigModel:
+        test_model_dir = cache_dir / "test_models"
+        overland_dir = test_model_dir / "sfincs" / "quadtree"
+        offshore_dir = test_model_dir / "sfincs" / "offshore"
+
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdirname:
             config = ConfigModel(
                 #
@@ -1110,32 +1130,31 @@ class TestDataBaseBuilder:
                     max_benefits=5e6,
                 ),
                 infographics=True,
-                probabilistic_set=str(db_path / "input" / "events" / "test_set"),
+                # probabilistic_set=str(db_path / "input" / "events" / "test_set"),
                 #
                 # SFINCS
                 #
                 sfincs_overland=FloodModel(
-                    name=str(templates_path / "overland"),
+                    name=str(overland_dir),
                     reference="NAVD88",
                 ),
                 sfincs_offshore=FloodModel(
-                    name=str(templates_path / "offshore"),
+                    name=str(offshore_dir),
                     reference="MSL",
                     vertical_offset=us.UnitfulLength(
                         value=0.33, units=us.UnitTypesLength.feet
                     ),
                 ),
                 dem=DemModel(
-                    filename=str(static_path / "dem/charleston_14m.tif"),
+                    filename=str(overland_dir / "subgrid" / "dep_subgrid_lev0.tif"),
                     units=us.UnitTypesLength.meters,
                 ),
-                excluded_datums=["NAVD88"],
                 slr_scenarios=SlrScenariosModel(
-                    file=str(static_path / "slr/slr.csv"),
+                    file=str(test_data_dir / "slr.csv"),
                     relative_to_year=2020,
                 ),
                 scs=SCSModel(
-                    file=str(static_path / "scs/scs_rainfall.csv"),
+                    file=str(test_data_dir / "scs_rainfall.csv"),
                     type=Scstype.type3,
                 ),
                 tide_gauge=TideGaugeConfigModel(
@@ -1148,61 +1167,54 @@ class TestDataBaseBuilder:
                 cyclone_basin=Basins.NA,
                 obs_point=[
                     ObsPointModel(
-                        name="ashley_river",
-                        description="Ashley River - James Island Expy",
-                        lat=32.7765,
-                        lon=-79.9543,
-                    ),
-                    ObsPointModel(
-                        name=8665530,
-                        description="Charleston Cooper River Entrance",
-                        ID=8665530,
-                        lat=32.78,
-                        lon=-79.9233,
+                        name="river entrance",
+                        description="https://psmsl.org/data/obtaining/stations/168.php",
+                        ID=168,
+                        lat=45.433333,
+                        lon=12.333333,
                     ),
                 ],
                 #
                 # FIAT
                 #
-                fiat=str(templates_path / "fiat"),
-                aggregation_areas=[
-                    SpatialJoinModel(
-                        name="aggr_lvl_1",
-                        file=str(
-                            templates_path / "fiat/aggregation_areas/aggr_lvl_1.geojson"
-                        ),
-                        field_name="name",
-                    ),
-                    SpatialJoinModel(
-                        name="aggr_lvl_2",
-                        file=str(
-                            templates_path / "fiat/aggregation_areas/aggr_lvl_2.geojson"
-                        ),
-                        field_name="name",
-                    ),
-                ],
+                fiat=str(test_model_dir / "fiat"),
+                # aggregation_areas=[
+                #     SpatialJoinModel(
+                #         name="aggr_lvl_1",
+                #         file=str(
+                #             test_model_dir / "fiat/aggregation_areas/aggr_lvl_1.geojson"
+                #         ),
+                #         field_name="name",
+                #     ),
+                #     SpatialJoinModel(
+                #         name="aggr_lvl_2",
+                #         file=str(
+                #             test_model_dir / "fiat/aggregation_areas/aggr_lvl_2.geojson"
+                #         ),
+                #         field_name="name",
+                #     ),
+                # ],
                 building_footprints=FootprintsOptions.OSM,
                 fiat_buildings_name="buildings",
                 fiat_roads_name="roads",
-                bfe=SpatialJoinModel(
-                    file=str(static_path / "bfe/bfe.geojson"),
-                    name="bfe",
-                    field_name="bfe",
-                ),
-                svi=SviConfigModel(
-                    file=str(static_path / "templates/fiat/svi/CDC_svi_2020.gpkg"),
-                    field_name="SVI",
-                    threshold=0.5,
-                ),
+                # bfe=SpatialJoinModel(
+                #     file=str(static_path / "bfe/bfe.geojson"),
+                #     name="bfe",
+                #     field_name="bfe",
+                # ),
+                # svi=SviConfigModel(
+                #     file=str(static_path / "templates/fiat/svi/CDC_svi_2020.gpkg"),
+                #     field_name="SVI",
+                #     threshold=0.5,
+                # ),
                 road_width=us.UnitfulLength(value=5, units=us.UnitTypesLength.meters),
                 return_periods=[1, 2, 5, 10, 25, 50, 100],
             )
             yield config
 
-    def test_config_model_raises_when_non_coastal_with_offshore(self):
-        db_path = Settings().database_path
-        templates_path = db_path / "static" / "templates"
-
+    def test_config_model_raises_when_non_coastal_with_offshore(
+        self, test_model_dir: Path
+    ):
         with pytest.raises(ValidationError) as exc_info:
             ConfigModel(
                 name="test_db",
@@ -1215,14 +1227,14 @@ class TestDataBaseBuilder:
                     max_benefits=5e6,
                 ),
                 sfincs_overland=FloodModel(
-                    name=str(templates_path / "overland"),
+                    name=str(test_model_dir / "sfincs" / "quadtree"),
                     reference="NAVD88",
                 ),
                 sfincs_offshore=FloodModel(
-                    name=str(templates_path / "offshore"),
+                    name=str(test_model_dir / "sfincs" / "offshore"),
                     reference="MSL",
                 ),
-                fiat=str(templates_path / "fiat"),
+                fiat=str(test_model_dir / "fiat"),
             )
 
         error_msg = str(exc_info.value)

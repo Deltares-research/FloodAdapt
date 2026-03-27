@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "overland_obs_points",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 1 }, "geometry": { "type": "Point", "coordinates": [ 12.72782298690842, 45.530154682381301 ] } }
+]
+}

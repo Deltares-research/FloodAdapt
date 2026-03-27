@@ -1,5 +1,6 @@
 import functools
 import shutil
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import geopandas as gpd
@@ -18,10 +19,26 @@ from hydromt_sfincs import SfincsModel
 from requests.exceptions import ConnectionError, RequestException
 from shapely import Point
 
+from flood_adapt.database_builder import (
+    ConfigModel,
+    FloodModel,
+    UnitSystems,
+    create_database,
+)
+from flood_adapt.database_builder.database_builder import GuiConfigModel
+from flood_adapt.misc.log import FloodAdaptLogging
+
+logger = FloodAdaptLogging.getLogger("build test database")
+
 
 @pytest.fixture(scope="session")
 def test_data_dir() -> Path:
     return Path(__file__).parent / "data"
+
+
+@pytest.fixture(scope="session")
+def sfincs_data_dir(test_data_dir: Path) -> Path:
+    return test_data_dir / "sfincs_data"
 
 
 @pytest.fixture(scope="session")
@@ -30,8 +47,16 @@ def cache_dir(test_data_dir: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
-def region(test_data_dir: Path) -> gpd.GeoDataFrame:
-    gdf = gpd.read_file(test_data_dir / "region.geojson")
+def overland_region(sfincs_data_dir: Path) -> gpd.GeoDataFrame:
+    gdf = gpd.read_file(sfincs_data_dir / "overland_region.geojson")
+    assert len(gdf) == 1
+    assert gdf.crs is not None
+    return gdf
+
+
+@pytest.fixture(scope="session")
+def offshore_region(sfincs_data_dir: Path) -> gpd.GeoDataFrame:
+    gdf = gpd.read_file(sfincs_data_dir / "offshore_region.geojson")
     assert len(gdf) == 1
     assert gdf.crs is not None
     return gdf
@@ -70,7 +95,7 @@ def fiat_global_data_catalog_yml(cache_dir: Path) -> Path:
 
 @pytest.fixture(scope="session")
 def fake_fiat_data_catalog_yml(
-    cache_dir: Path, region: gpd.GeoDataFrame, rng: np.random.Generator
+    cache_dir: Path, overland_region: gpd.GeoDataFrame, rng: np.random.Generator
 ) -> Path:
     """Create fake FIAT buildings data within the SFINCS region."""
     fake_dir = cache_dir / "fake_fiat_data"
@@ -79,14 +104,14 @@ def fake_fiat_data_catalog_yml(
     buildings_dir.mkdir(exist_ok=True)
 
     # Generate random points inside the sfincs region
-    bounds = region.total_bounds
+    bounds = overland_region.total_bounds
     n_buildings = 20
     points = []
     while len(points) < n_buildings:
         x = rng.uniform(bounds[0], bounds[2])
         y = rng.uniform(bounds[1], bounds[3])
         pt = Point(x, y)
-        if region.contains(pt).any():
+        if overland_region.contains(pt).any():
             points.append(pt)
 
     building_types = ["woonfunctie", "industriefunctie", "kantoorfunctie"]
@@ -94,7 +119,7 @@ def fake_fiat_data_catalog_yml(
     buildings = gpd.GeoDataFrame(
         {"gebruiksdoel": types},
         geometry=points,
-        crs=region.crs,
+        crs=overland_region.crs,
     )
     buildings.to_file(buildings_dir / "buildings.fgb", driver="FlatGeobuf")
 
@@ -118,7 +143,7 @@ def fake_fiat_data_catalog_yml(
                 "filesystem": "local",
             },
             "metadata": {
-                "crs": region.crs.to_epsg(),
+                "crs": overland_region.crs.to_epsg(),
             },
         },
         "buildings_link": {
@@ -141,19 +166,23 @@ def build_fiat_model(
     cache_dir: Path,
     fake_fiat_data_catalog_yml: Path,
     fiat_global_data_catalog_yml: Path,
-    region: gpd.GeoDataFrame,
+    overland_region: gpd.GeoDataFrame,
 ):
+    root = (cache_dir / "test_models" / "fiat").resolve()
+    if root.exists():
+        return FIATModel(root=root, mode="r")
+
     ## HydroMT-FIAT
     # Setup the model
     model = FIATModel(
-        root=cache_dir / "test_models" / "fiat",
+        root=root,
         mode="w+",
         data_libs=[fake_fiat_data_catalog_yml, fiat_global_data_catalog_yml],
     )
 
     # Add model type and region
     model.setup_config(**{MODEL_TYPE: GEOM})
-    model.setup_region(region)
+    model.setup_region(overland_region.copy())
 
     # Setup the vulnerability
     model.vulnerability.setup(
@@ -190,36 +219,41 @@ def build_fiat_model(
 
 ## SFINCS
 @pytest.fixture(scope="session")
-def sfincs_data_yml(test_data_dir: Path) -> Path:
-    p = test_data_dir / "sfincs_data.yml"
+def sfincs_data_yml(sfincs_data_dir: Path) -> Path:
+    p = sfincs_data_dir / "sfincs_data.yml"
     assert p.is_file()
     return p
 
 
 @pytest.fixture(scope="session")
 def build_sfincs_model_regular(
-    cache_dir: Path, sfincs_data_yml: Path, region: gpd.GeoDataFrame
+    cache_dir: Path,
+    sfincs_data_yml: Path,
+    overland_region: gpd.GeoDataFrame,
+    offshore_region: gpd.GeoDataFrame,
 ):
-    root = cache_dir / "test_models" / "sfincs" / "regular"
+    root = (cache_dir / "test_models" / "sfincs" / "regular").resolve()
     if root.exists():
-        shutil.rmtree(root)
+        logger.info(f"SFINCS model already exists at {root}, loading existing model")
+        return SfincsModel(root=str(root), mode="r")
 
     model = SfincsModel(
         root=str(root),
         mode="w+",
         data_libs=["artifact_data", sfincs_data_yml.as_posix()],
     )
+    tref = datetime(2025, 2, 1)
     model.config.update(
-        tref="20100201 000000",
-        tstart="20100205 000000",
-        tstop="20100207 000000",
+        tref=tref.strftime("%Y%m%d %H%M%S"),
+        tstart=(tref + timedelta(days=4)).strftime("%Y%m%d %H%M%S"),
+        tstop=(tref + timedelta(days=6)).strftime("%Y%m%d %H%M%S"),
         dtmapout=86400.0,
         dthisout=86400.0,
         tspinup=0.0,
         dtrstout=0.0,
     )
     model.grid.create_from_region(
-        region={"geom": region},
+        region={"geom": overland_region.copy()},
         res=150,
         crs="utm",
         rotated=True,
@@ -231,7 +265,14 @@ def build_sfincs_model_regular(
         ]
     )
     model.mask.create_active(zmin=-3)
-    model.mask.create_boundary(btype="waterlevel", zmax=-3)
+    model.mask.create_boundary(
+        btype="waterlevel", zmax=-3, include_polygon=offshore_region
+    )
+    model.water_level.create_boundary_points_from_mask()
+    model.water_level.create_timeseries(
+        shape="constant",
+        offset=0,
+    )
     model.subgrid.create(
         elevation_list=[
             {"elevation": "merit_hydro", "zmin": 0.001},
@@ -262,28 +303,33 @@ def build_sfincs_model_regular(
 
 @pytest.fixture(scope="session")
 def build_sfincs_model_quadtree(
-    cache_dir: Path, sfincs_data_yml: Path, region: gpd.GeoDataFrame
+    cache_dir: Path,
+    sfincs_data_yml: Path,
+    overland_region: gpd.GeoDataFrame,
+    offshore_region: gpd.GeoDataFrame,
 ):
     root = cache_dir / "test_models" / "sfincs" / "quadtree"
     if root.exists():
-        shutil.rmtree(root)
+        logger.info(f"SFINCS model already exists at {root}, loading existing model")
+        return SfincsModel(root=str(root), mode="r")
 
     model = SfincsModel(
         root=str(root),
         mode="w+",
         data_libs=["artifact_data", sfincs_data_yml.as_posix()],
     )
+    tref = datetime(2025, 2, 1)
     model.config.update(
-        tref="20100201 000000",
-        tstart="20100205 000000",
-        tstop="20100207 000000",
+        tref=tref.strftime("%Y%m%d %H%M%S"),
+        tstart=(tref + timedelta(days=4)).strftime("%Y%m%d %H%M%S"),
+        tstop=(tref + timedelta(days=6)).strftime("%Y%m%d %H%M%S"),
         dtmapout=86400.0,
         dthisout=86400.0,
         tspinup=0.0,
         dtrstout=0.0,
     )
     model.quadtree_grid.create_from_region(
-        region={"geom": region},
+        region={"geom": overland_region.copy()},
         res=150,
         crs="utm",
         rotated=True,
@@ -295,7 +341,14 @@ def build_sfincs_model_quadtree(
         ]
     )
     model.quadtree_mask.create_active(zmin=-3)
-    model.quadtree_mask.create_boundary(btype="waterlevel", zmax=-3)
+    model.quadtree_mask.create_boundary(
+        btype="waterlevel", zmax=-3, include_polygon=offshore_region
+    )
+    model.water_level.create_boundary_points_from_mask()
+    model.water_level.create_timeseries(
+        shape="constant",
+        offset=0,
+    )
     model.quadtree_subgrid.create(
         elevation_list=[
             {"elevation": "merit_hydro", "zmin": 0.001},
@@ -324,12 +377,149 @@ def build_sfincs_model_quadtree(
     return model
 
 
+@pytest.fixture(scope="session")
+def build_sfincs_model_offshore(
+    cache_dir: Path,
+    sfincs_data_yml: Path,
+    overland_region: gpd.GeoDataFrame,
+    offshore_region: gpd.GeoDataFrame,
+):
+    root = (cache_dir / "test_models" / "sfincs" / "offshore").resolve()
+    if root.exists():
+        logger.info(f"SFINCS model already exists at {root}, loading existing model")
+        return SfincsModel(root=str(root), mode="r")
+
+    # Offshore model: coarser grid, only bathymetry + water level boundaries
+    model = SfincsModel(
+        root=str(root),
+        mode="w+",
+        data_libs=["artifact_data", sfincs_data_yml.as_posix()],
+    )
+    tref = datetime(2025, 2, 1)
+    model.config.update(
+        tref=tref.strftime("%Y%m%d %H%M%S"),
+        tstart=(tref + timedelta(days=4)).strftime("%Y%m%d %H%M%S"),
+        tstop=(tref + timedelta(days=6)).strftime("%Y%m%d %H%M%S"),
+        dtmapout=86400.0,
+        dthisout=86400.0,
+        tspinup=0.0,
+        dtrstout=0.0,
+    )
+    model.grid.create_from_region(
+        region={"geom": offshore_region},
+        res=500,
+        crs="utm",
+        rotated=True,
+    )
+    model.elevation.create(
+        elevation_list=[{"elevation": "gebco"}],
+    )
+    model.mask.create_active(zmin=-2000)
+    model.mask.create_boundary(btype="waterlevel", zmax=-1)
+    model.water_level.create_boundary_points_from_mask()
+    model.water_level.create_timeseries(
+        shape="constant",
+        offset=0,
+    )
+    model.write()
+    return model
+
+
+def _build_database(
+    *,
+    name: str,
+    cache_dir: Path,
+    fiat_model: FIATModel,
+    sfincs_model: SfincsModel,
+    sfincs_offshore: SfincsModel | None = None,
+):
+    db_path = cache_dir / "Database" / name
+    if db_path.exists():
+        logger.info(
+            f"Database {name} already exists at {db_path}, deleting existing database"
+        )
+        shutil.rmtree(db_path)
+
+    offshore = None
+    if sfincs_offshore is not None:
+        offshore = FloodModel(
+            name=str(sfincs_offshore.root.path.resolve()),
+            reference="MSL",
+        )
+
+    config = ConfigModel(
+        name=db_path.name,
+        database_path=str(db_path.parent),
+        unit_system=UnitSystems.metric,
+        fiat=str(fiat_model.root.path.resolve()),
+        sfincs_overland=FloodModel(
+            name=str(sfincs_model.root.path.resolve()),
+            reference="MSL",
+        ),
+        sfincs_offshore=offshore,
+        gui=GuiConfigModel(
+            max_flood_depth=5,
+            max_aggr_dmg=1e6,
+            max_footprint_dmg=250000,
+            max_benefits=5e6,
+        ),
+        building_footprints=None,
+        cyclones=False,
+    )
+    create_database(config)
+    return db_path
+
+
+@pytest.fixture(scope="session")
+def build_database_regular(
+    cache_dir: Path,
+    build_fiat_model: FIATModel,
+    build_sfincs_model_regular: SfincsModel,
+    build_sfincs_model_offshore: SfincsModel,
+):
+    return _build_database(
+        name="regular",
+        cache_dir=cache_dir,
+        fiat_model=build_fiat_model,
+        sfincs_model=build_sfincs_model_regular,
+        sfincs_offshore=build_sfincs_model_offshore,
+    )
+
+
+@pytest.fixture(scope="session")
+def build_database_quadtree(
+    cache_dir: Path,
+    build_fiat_model: FIATModel,
+    build_sfincs_model_quadtree: SfincsModel,
+    build_sfincs_model_offshore: SfincsModel,
+):
+    return _build_database(
+        name="quadtree",
+        cache_dir=cache_dir,
+        fiat_model=build_fiat_model,
+        sfincs_model=build_sfincs_model_quadtree,
+        sfincs_offshore=build_sfincs_model_offshore,
+    )
+
+
 def test_models(
     build_fiat_model: FIATModel,
     build_sfincs_model_regular: SfincsModel,
     build_sfincs_model_quadtree: SfincsModel,
+    build_sfincs_model_offshore: SfincsModel,
 ):
     """Test that the models can be built and written without errors."""
     assert build_fiat_model is not None
     assert build_sfincs_model_regular is not None
     assert build_sfincs_model_quadtree is not None
+    assert build_sfincs_model_offshore is not None
+
+
+def test_databases(build_database_regular: Path, build_database_quadtree: Path):
+    """Test that the database can be built without errors."""
+    for build_database in [build_database_regular, build_database_quadtree]:
+        assert build_database.exists()
+        assert (build_database / "static" / "config" / "site.toml").is_file()
+        assert (build_database / "static" / "templates" / "fiat").is_dir()
+        assert (build_database / "static" / "templates" / "overland").is_dir()
+        assert (build_database / "static" / "templates" / "offshore").is_dir()
