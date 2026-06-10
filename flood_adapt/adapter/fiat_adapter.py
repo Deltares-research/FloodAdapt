@@ -1286,13 +1286,33 @@ class FiatAdapter(IImpactAdapter):
                 return
 
         # Get the infographic
-        InforgraphicFactory.create_infographic_file_writer(
-            infographic_mode=mode,
-            scenario_name=name,
-            metrics_full_path=metrics_path,
-            config_base_path=config_base_path,
-            output_base_path=output_base_path,
-        ).write_infographics_to_file()
+        try:
+            InforgraphicFactory.create_infographic_file_writer(
+                infographic_mode=mode,
+                scenario_name=name,
+                metrics_full_path=metrics_path,
+                config_base_path=config_base_path,
+                output_base_path=output_base_path,
+            ).write_infographics_to_file()
+        except KeyError as e:
+            missing_key = e.args[0] if e.args else str(e)
+            if missing_key == "query":
+                raise KeyError(
+                    "Failed to create the risk infographic. The configuration file "
+                    f"'config_risk_charts.toml' in '{config_base_path}' is missing a "
+                    "'query' field in the [Other.Expected_Damages] and/or [Other.Flooded] "
+                    "sections. This field is required by the installed fiat_toolbox version "
+                    "and must contain the metric name to display, e.g.:\n"
+                    '    [Other.Expected_Damages]\n        query = "ExpectedAnnualDamages"\n'
+                    '    [Other.Flooded]\n        query = "FloodedHomes"\n'
+                    "Add these lines to make the database compatible."
+                ) from e
+            raise KeyError(
+                f"Failed to create the infographic. The metric '{missing_key}' referenced in "
+                f"the infographic configuration in '{config_base_path}' was not found in the "
+                f"metrics file '{metrics_path}'. Check that the 'query' values in "
+                "'config_risk_charts.toml' match the metric names produced for this scenario."
+            ) from e
 
     def add_equity(
         self,
