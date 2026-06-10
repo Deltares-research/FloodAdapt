@@ -280,23 +280,23 @@ class Database(IDatabase):
         return self.scenarios.output_path.joinpath(scenario_name, "Flooding")
 
     def get_topobathy_path(self) -> str:
-        """Return the path of the topobathy tiles in order to create flood maps with water level maps.
+        """Return the path of the topobathy GeoTIFF in order to create flood maps with water level maps.
 
         Returns
         -------
         str
-            path to topobathy tiles
+            path to topobathy GeoTIFF
         """
         path = self.static_path / "dem" / self.site.sfincs.dem.filename
         return path.as_posix()
 
     def get_index_path(self) -> str:
-        """Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.
+        """Return the path of the index GeoTIFF which is used to connect each water level cell with the topobathy GeoTIFF.
 
         Returns
         -------
         str
-            path to index tiles
+            path to index GeoTIFF
         """
         index_path = self.static_path / "dem" / "index.tif"
         return index_path.as_posix()

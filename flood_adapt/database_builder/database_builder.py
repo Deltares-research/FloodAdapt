@@ -2,7 +2,6 @@ import datetime
 import gc
 import logging
 import math
-import os
 import re
 import shutil
 import warnings
@@ -1420,31 +1419,25 @@ class DatabaseBuilder:
         fa_subgrid_path = self.static_path / "dem" / dem_file.name
         fa_subgrid_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Check tiles
-        tiles_sfincs = Path(self.sfincs_overland_model.root) / "tiles"
-        fa_tiles_path = self.static_path / "dem" / "tiles"
-        if tiles_sfincs.exists():
-            shutil.move(tiles_sfincs, fa_tiles_path)
-            if (fa_tiles_path / "index").exists():
-                os.rename(fa_tiles_path / "index", fa_tiles_path / "indices")
-            logger.info(
-                "Tiles were already available in the SFINCS model and will directly be used in FloodAdapt."
-            )
-        else:
-            # Make tiles
-            fa_tiles_path.mkdir(parents=True)
-            self.sfincs_overland_model.setup_tiles(
-                path=fa_tiles_path,
-                datasets_dep=[{"elevtn": dem_file}],
-                zoom_range=[0, 13],
-                fmt="png",
-            )
-            logger.info(
-                f"Tiles were created using the {subgrid_sfincs.as_posix()} as the elevation map."
-            )
-
         shutil.copy2(dem_file, fa_subgrid_path)
         self._dem_path = fa_subgrid_path
+
+        # Create the index GeoTIFF that maps each high-resolution DEM pixel to its
+        # SFINCS grid cell. The GUI (Guitares image overlays via cht_tiling) renders
+        # topography and flood maps from the single DEM GeoTIFF + this index.tif,
+        # so we no longer build the deprecated PNG tile pyramids.
+        from hydromt_sfincs.workflows.downscaling import make_index_cog
+
+        index_path = self.static_path / "dem" / "index.tif"
+        make_index_cog(
+            model=self.sfincs_overland_model,
+            indices_fn=index_path,
+            topobathy_fn=fa_subgrid_path.as_posix(),
+        )
+        logger.info(
+            f"Index GeoTIFF was created at {index_path.as_posix()} using "
+            f"{subgrid_sfincs.as_posix()} as the elevation map."
+        )
 
         # Remove the original subgrid folder if it exists
         if delete_sfincs_folder:
