@@ -307,8 +307,7 @@ class Database(IDatabase):
         Databases built for the old GUI shipped the topobathy/index data as
         PNG tiles under ``static/dem/tiles``. The current GUI
         (Guitares image overlays via cht_tiling) instead reads single GeoTIFFs:
-        the subgrid DEM (``{self.site.sfincs.dem.filename}.tif``) and an index raster (``index.tif``).
-
+        the subgrid DEM (``{self.site.sfincs.dem.filename}``) and an index raster (``index.tif``).
         This runs once when a database is opened and:
           1. Generates ``index.tif`` from the overland SFINCS model if it is missing.
           2. Deletes the deprecated ``static/dem/tiles`` folder if it is present.
