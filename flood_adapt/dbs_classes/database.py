@@ -332,10 +332,10 @@ class Database(IDatabase):
             try:
                 self._generate_index_geotiff(index_path)
             except Exception as e:
-                logger.warning(
+                raise DatabaseError(
                     f"Could not generate the index GeoTIFF at {index_path.as_posix()}: "
                     f"{e}. The flood map will not render until it is available."
-                )
+                ) from e
 
         # 2. Remove the deprecated tile pyramids.
         if tiles_dir.exists():
@@ -362,7 +362,9 @@ class Database(IDatabase):
         from hydromt_sfincs import SfincsModel as HydromtSfincsModel
         from hydromt_sfincs.workflows.downscaling import make_index_cog
 
-        overland_root = self.static_path / "templates" / "overland"
+        overland_root = (
+            self.static_path / "templates" / self.site.sfincs.config.overland_model.name
+        )
         logger.info(
             f"Generating index GeoTIFF at {index_path.as_posix()} from SFINCS model "
             f"{overland_root.as_posix()} ..."
