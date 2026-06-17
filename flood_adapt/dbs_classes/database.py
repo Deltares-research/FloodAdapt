@@ -410,7 +410,8 @@ class Database(IDatabase):
         Returns
         -------
         np.array
-            2D map of maximum water levels
+            1D per-cell array of maximum water levels,
+            matching the cell numbering of the index GeoTIFF
         """
         # If single event read with hydromt-sfincs
         if not return_period:
