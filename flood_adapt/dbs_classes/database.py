@@ -341,7 +341,7 @@ class Database(IDatabase):
             logger.warning(
                 f"Removing deprecated DEM tile pyramids at {tiles_dir.as_posix()}. The "
                 "GUI no longer renders raster layers from PNG tiles; it uses the single "
-                f"GeoTIFFs ({self.site.sfincs.dem.filename}.tif / index.tif) instead, so these tiles are no "
+                f"GeoTIFFs ({self.site.sfincs.dem.filename} / index.tif) instead, so these tiles are no "
                 "longer used and are being deleted to avoid confusion and save space."
             )
             try:
