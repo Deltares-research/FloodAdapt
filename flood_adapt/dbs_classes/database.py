@@ -117,6 +117,10 @@ class Database(IDatabase):
 
         self._init_done = True
 
+        # Bring the database dem and index data up to date with what the GUI expects
+        # (single GeoTIFFs instead of the deprecated tiles).
+        self._migrate_deprecated_tiles()
+
         # Delete any unfinished/crashed scenario output after initialization
         self.cleanup()
 
@@ -276,26 +280,102 @@ class Database(IDatabase):
         return self.scenarios.output_path.joinpath(scenario_name, "Flooding")
 
     def get_topobathy_path(self) -> str:
-        """Return the path of the topobathy tiles in order to create flood maps with water level maps.
+        """Return the path of the topobathy GeoTIFF in order to create flood maps with water level maps.
 
         Returns
         -------
         str
-            path to topobathy tiles
+            path to topobathy GeoTIFF
         """
-        path = self.input_path.parent.joinpath("static", "dem", "tiles", "topobathy")
+        path = self.static_path / "dem" / self.site.sfincs.dem.filename
         return path.as_posix()
 
     def get_index_path(self) -> str:
-        """Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.
+        """Return the path of the index GeoTIFF which is used to connect each water level cell with the topobathy GeoTIFF.
 
         Returns
         -------
         str
-            path to index tiles
+            path to index GeoTIFF
         """
-        path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
-        return path.as_posix()
+        index_path = self.static_path / "dem" / "index.tif"
+        return index_path.as_posix()
+
+    def _migrate_deprecated_tiles(self) -> None:
+        """Update the static DEM data to the single-GeoTIFF format the GUI expects.
+
+        Databases built for the old GUI shipped the topobathy/index data as
+        PNG tiles under ``static/dem/tiles``. The current GUI
+        (Guitares image overlays via cht_tiling) instead reads single GeoTIFFs:
+        the subgrid DEM (``{self.site.sfincs.dem.filename}``) and an index raster (``index.tif``).
+        This runs once when a database is opened and:
+          1. Generates ``index.tif`` from the overland SFINCS model if it is missing.
+          2. Deletes the deprecated ``static/dem/tiles`` folder if it is present.
+
+        All actions are logged with a warning explaining why, since this mutates the
+        opened database on disk. Failures are caught and logged so that opening the
+        database never fails because of this migration; if the index cannot be
+        generated the flood map simply will not render until it is available.
+        """
+        dem_dir = self.static_path / "dem"
+        index_path = dem_dir / "index.tif"
+        tiles_dir = dem_dir / "tiles"
+
+        # 1. Ensure the index GeoTIFF exists.
+        if not index_path.exists():
+            logger.warning(
+                f"Index GeoTIFF not found at {index_path.as_posix()}. This database "
+                "predates the single-GeoTIFF DEM format used by the GUI. Generating it "
+                "once from the overland SFINCS model; this may take a moment."
+            )
+            try:
+                self._generate_index_geotiff(index_path)
+            except Exception as e:
+                raise DatabaseError(
+                    f"Could not generate the index GeoTIFF at {index_path.as_posix()}: "
+                    f"{e}. The flood map will not render until it is available."
+                ) from e
+
+        # 2. Remove the deprecated tile pyramids.
+        if tiles_dir.exists():
+            logger.warning(
+                f"Removing deprecated DEM tile pyramids at {tiles_dir.as_posix()}. The "
+                "GUI no longer renders raster layers from PNG tiles; it uses the single "
+                f"GeoTIFFs ({self.site.sfincs.dem.filename} / index.tif) instead, so these tiles are no "
+                "longer used and are being deleted to avoid confusion and save space."
+            )
+            try:
+                shutil.rmtree(tiles_dir)
+            except Exception as e:
+                logger.warning(
+                    f"Could not delete the deprecated tiles folder {tiles_dir.as_posix()}: "
+                    f"{e}. It is unused and can be removed manually."
+                )
+
+    def _generate_index_geotiff(self, index_path: Path) -> None:
+        """Generate the index GeoTIFF from the overland SFINCS model and the subgrid DEM.
+
+        Mirrors flood_adapt's ``database_builder.create_dem_model``: each high-resolution
+        DEM pixel is mapped to its SFINCS grid cell index. Heavy imports are done lazily.
+        """
+        from hydromt_sfincs import SfincsModel as HydromtSfincsModel
+        from hydromt_sfincs.workflows.downscaling import make_index_cog
+
+        overland_root = (
+            self.static_path / "templates" / self.site.sfincs.config.overland_model.name
+        )
+        logger.info(
+            f"Generating index GeoTIFF at {index_path.as_posix()} from SFINCS model "
+            f"{overland_root.as_posix()} ..."
+        )
+        index_path.parent.mkdir(parents=True, exist_ok=True)
+        model = HydromtSfincsModel(root=overland_root.resolve().as_posix(), mode="r")
+        model.read()
+        make_index_cog(
+            model=model,
+            indices_fn=index_path,
+            topobathy_fn=self.get_topobathy_path(),
+        )
 
     def get_depth_conversion(self) -> float:
         """Return the flood depth conversion that is need in the gui to plot the flood map.
@@ -330,7 +410,8 @@ class Database(IDatabase):
         Returns
         -------
         np.array
-            2D map of maximum water levels
+            1D per-cell array of maximum water levels,
+            matching the cell numbering of the index GeoTIFF
         """
         # If single event read with hydromt-sfincs
         if not return_period:
@@ -349,6 +430,11 @@ class Database(IDatabase):
             )
             with xr.open_dataset(file_path) as ds:
                 zsmax = ds["risk_map"][:, :].to_numpy().T
+        # Flatten to a 1D per-cell array in Fortran order, matching the cell
+        # numbering of the index GeoTIFF (make_index_cog), as expected by the
+        # cht_tiling FloodMap used by the GUI.
+        if zsmax.ndim >= 2:
+            zsmax = zsmax.flatten("F")
         return zsmax
 
     def get_flood_map_geotiff(
