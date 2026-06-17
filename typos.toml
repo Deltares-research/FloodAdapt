@@ -10,3 +10,5 @@ ignore-hidden = true
 
 [default.extend-words]
 strat = "strat"
+guitares = "guitares"
+Guitares = "Guitares"

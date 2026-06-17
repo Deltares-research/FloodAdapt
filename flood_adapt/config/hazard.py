@@ -112,9 +112,12 @@ class DemModel(BaseModel):
         The path to the digital elevation model file.
     units : us.UnitTypesLength
         The units of the digital elevation model file.
+    index_file : str, default="index.tif"
+        The path to the index file for the digital elevation model file.
     """
 
     filename: str
+    index_file: str = "index.tif"
     units: us.UnitTypesLength
 
 
