@@ -1446,7 +1446,9 @@ class DatabaseBuilder:
                 shutil.rmtree(subgrid_sfincs_folder)
 
         return DemModel(
-            filename=fa_subgrid_path.name, units=us.UnitTypesLength.meters
+            filename=fa_subgrid_path.name,
+            units=us.UnitTypesLength.meters,
+            index_file=index_path.name,
         )  # always in meters
 
     @debug_timer
