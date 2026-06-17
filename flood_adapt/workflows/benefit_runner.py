@@ -20,6 +20,16 @@ from flood_adapt.misc.path_builder import (
 from flood_adapt.objects.benefits.benefits import Benefit
 from flood_adapt.objects.scenarios.scenarios import Scenario
 
+# Metadata rows that may precede the aggregation-zone values in the infometrics
+# file. Their count/order is not stable (e.g. "Show In Metrics Map" was added
+# later), so they are dropped by name, not by position.
+INFOMETRICS_METADATA_ROWS = [
+    "Description",
+    "Long Name",
+    "Show In Metrics Table",
+    "Show In Metrics Map",
+]
+
 
 class BenefitRunner:
     """Object holding all attributes and methods related to a benefit analysis."""
@@ -353,7 +363,10 @@ class BenefitRunner:
                     # Get metrics per scenario and per aggregation
                     aggregated_metrics = MetricsFileReader(
                         aggregation_fn,
-                    ).read_aggregated_metric_from_file(var_metric[var])[2:]
+                    ).read_aggregated_metric_from_file(var_metric[var])
+                    aggregated_metrics = aggregated_metrics.drop(
+                        index=INFOMETRICS_METADATA_ROWS, errors="ignore"
+                    )
                     aggregated_metrics = aggregated_metrics.loc[
                         aggregated_metrics.index.dropna()
                     ]
