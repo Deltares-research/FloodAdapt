@@ -1,6 +1,7 @@
 """Utility for downloading the SFINCS binary with license acceptance."""
 
 import argparse
+import os
 import platform
 import sys
 import urllib.request
@@ -8,13 +9,13 @@ from pathlib import Path
 
 _SFINCS_LICENSE_URL = "https://raw.githubusercontent.com/Deltares/SFINCS/main/LICENSE"
 
-_SFINCS_LICENSE_TEXT = """\
+_SFINCS_LICENSE_TEXT = f"""\
 SFINCS (Super-Fast INundation of CoastS) is developed by Deltares.
 
 The SFINCS binary is provided under the terms of the GNU Lesser General
 Public License v2.1 (LGPL-2.1).
 
-Full license text: https://raw.githubusercontent.com/Deltares/SFINCS/main/LICENSE
+Full license text: {_SFINCS_LICENSE_URL}
 SFINCS repository:  https://github.com/Deltares/SFINCS
 
 By accepting these terms you agree to:
@@ -40,8 +41,6 @@ _SFINCS_DOWNLOAD_URLS: dict[tuple[str, str], str] = {
 
 def _get_default_download_url() -> str:
     """Return the default SFINCS download URL for the current platform."""
-    import os
-
     env_url = os.environ.get("SFINCS_DOWNLOAD_URL")
     if env_url:
         return env_url
