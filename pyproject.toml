@@ -82,6 +82,9 @@ docs = [
 [project.urls]
 Source = "https://github.com/Deltares-research/FloodAdapt"
 
+[project.scripts]
+download-sfincs = "flood_adapt.misc.sfincs_download:main"
+
 ### setuptools ###
 [tool.setuptools]
 zip-safe = false
