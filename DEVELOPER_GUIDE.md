@@ -80,7 +80,7 @@ To run the tests of FloodAdapt, you are required to have a test database (contai
 These can be downloaded with
 
 ```bash
-pixi run fetch-data
+pixi run fetch-data --path-in-bucket system/<sfincs_vXY> system/<fiat_vXY>
 ```
 
 > Note: `fetch-data` task requires the `MINIO_ACCESS_TOKEN` and `MINIO_SECRET_TOKEN` environment variables, tokens for which can be requested by contacting `FloodAdapt@deltares.nl`.
