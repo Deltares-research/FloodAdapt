@@ -38,7 +38,7 @@ jobs:
 
       - name: Build docs
         run: |
-          pixi run fetch-data --path-in-bucket examples system/win-64/fiat_v0.2.1 system/win-64/sfincs_v2.2.1-alpha-coldEze
+          pixi run fetch-data --path-in-bucket examples system/win-64/fiat_v0.2.1 system/win-64/sfincs_v2.1.1-Dollerup
           pixi run render-docs
 
       - name: Read version
