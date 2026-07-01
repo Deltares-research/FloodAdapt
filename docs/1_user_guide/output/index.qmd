@@ -15,7 +15,7 @@ The infographic is visible in the map window’s collapsible frame. The user can
 :::
 
 ### Metrics and infographic
-The metrics and infographic will contain different information for a risk scenario and an event scenario. This information is configured separately for event scenarios and risk scenarios at system set-up (see information on how the infometrics and infographic are configured in the [setup guide](../../4_system_setup/database.qmd). @fig-infoG_event shows an example of the infographic for an event scenario and @fig-infoG_risk shows an example of the infographic for a risk scenario. The basic structure of the infographic, highlighted in the figures, is fixed but the information within that structure can be tailored at system setup.
+The metrics and infographic will contain different information for a risk scenario and an event scenario. This information is configured separately for event scenarios and risk scenarios at system set-up (see information on how the infometrics and infographic are configured in the [setup guide](../../4_system_setup/index.qmd)). @fig-infoG_event shows an example of the infographic for an event scenario and @fig-infoG_risk shows an example of the infographic for a risk scenario. The basic structure of the infographic, highlighted in the figures, is fixed but the information within that structure can be tailored at system setup.
 
 ![**Infographic for an event scenario**](../../_static/images/output_infographic_event.png){width=70% fig-align=left #fig-infoG_event}
 
