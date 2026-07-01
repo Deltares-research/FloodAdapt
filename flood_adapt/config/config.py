@@ -54,7 +54,7 @@ class Settings(BaseSettings):
         Whether to validate the existence of the paths to the SFINCS and FIAT binaries. Alias: `USE_BINARIES` (environment variable).
     sfincs_bin_path : Path | None, default is None
         The path to the SFINCS binary. Alias: `SFINCS_BIN_PATH` (environment variable).
-    sfincs_version : str, default is '2.2.1-alpha col d'Eze'
+    sfincs_version : str, default is '2.1.1-Dollerup'
         The expected version of the SFINCS binary. Alias: `SFINCS_VERSION` (environment variable).
     fiat_bin_path : Path | None, default is None
         The path to the FIAT binary. Alias: `FIAT_BIN_PATH` (environment variable).
@@ -217,7 +217,7 @@ class Settings(BaseSettings):
 
         ------------------------------------------
 
-        Build-Revision: $Rev: v2.2.1-alpha col d'Eze
+        Build-Revision: $Rev: v2.1.1-Dollerup
         Build-Date: $Date: 2025-06-02
 
         ------ Preparing model simulation --------
