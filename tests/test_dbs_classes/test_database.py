@@ -106,6 +106,25 @@ def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
     dbs.shutdown()
 
 
+def test_migrate_deprecated_tiles_keeps_tiles(tmp_path):
+    # Arrange
+    db = object.__new__(Database)
+    db.static_path = tmp_path
+
+    dem_dir = tmp_path / "dem"
+    tiles_dir = dem_dir / "tiles"
+    tiles_dir.mkdir(parents=True)
+    (tiles_dir / "tile.png").write_text("tile")
+    (dem_dir / "index.tif").write_bytes(b"index")
+
+    # Act
+    db._migrate_deprecated_tiles()
+
+    # Assert
+    assert tiles_dir.is_dir()
+    assert (tiles_dir / "tile.png").is_file()
+
+
 def test_shutdown_AfterShutdown_VarsAreNone():
     # Arrange
     dbs = Database(Settings().database_root, Settings().database_name)
