@@ -114,7 +114,7 @@ class Settings(BaseSettings):
         exclude=True,
     )
     sfincs_version: str = Field(
-        default="2.2.1-alpha col d'Eze",
+        default="2.1.1-Dollerup",
         alias="SFINCS_VERSION",  # environment variable: SFINCS_VERSION
         description="The expected version of the sfincs binary. "
         "If the version of the binary does not match this version, an error is raised.",
