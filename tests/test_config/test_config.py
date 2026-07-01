@@ -51,7 +51,7 @@ def mock_subprocess_run(
     expected_sfincs_output = (
         "------------ Welcome to SFINCS ------------\n"
         "\n"
-        "Build-Revision: $Rev: v2.2.1-alpha col d'Eze\n"
+        "Build-Revision: $Rev: v2.1.1-Dollerup\n"
         "Build-Date: $Date: 2025-06-02\n"
     )
     expected_fiat_output = "FIAT 0.2.1, build 2025-02-24T16:19:19 UTC+0100\n"
@@ -249,7 +249,7 @@ def test_get_sfincs_version_success(
         FIAT_BIN_PATH=fiat,
         USE_BINARIES=True,
     )
-    assert s.get_sfincs_version() == "2.2.1-alpha col d'Eze"
+    assert s.get_sfincs_version() == "2.1.1-Dollerup"
 
 
 def test_get_sfincs_version_no_match_regex(

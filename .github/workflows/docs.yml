@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
@@ -30,7 +30,7 @@ jobs:
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.8.4
         with:
-          pixi-version: v0.44.0
+          pixi-version: v0.70.2
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }} # only save cache on push to main
           environments: default
@@ -38,7 +38,7 @@ jobs:
 
       - name: Build docs
         run: |
-          pixi run fetch-data
+          pixi run fetch-data --path-in-bucket examples system/win-64/fiat_v0.2.1 system/win-64/sfincs_v2.2.1-alpha-coldEze
           pixi run render-docs
 
       - name: Read version
