@@ -117,8 +117,8 @@ class Database(IDatabase):
 
         self._init_done = True
 
-        # Bring the database dem and index data up to date with what the GUI expects
-        # (single GeoTIFFs instead of the deprecated tiles).
+        # Ensure the index GeoTIFF exists for the new GUI while keeping legacy tiles
+        # available for older GUIs that still read them.
         self._migrate_deprecated_tiles()
 
         # Delete any unfinished/crashed scenario output after initialization
@@ -304,22 +304,19 @@ class Database(IDatabase):
     def _migrate_deprecated_tiles(self) -> None:
         """Update the static DEM data to the single-GeoTIFF format the GUI expects.
 
-        Databases built for the old GUI shipped the topobathy/index data as
-        PNG tiles under ``static/dem/tiles``. The current GUI
-        (Guitares image overlays via cht_tiling) instead reads single GeoTIFFs:
-        the subgrid DEM (``{self.site.sfincs.dem.filename}``) and an index raster (``index.tif``).
-        This runs once when a database is opened and:
-          1. Generates ``index.tif`` from the overland SFINCS model if it is missing.
-          2. Deletes the deprecated ``static/dem/tiles`` folder if it is present.
+        Databases built for the old GUI shipped the topobathy/index data as PNG tiles
+        under ``static/dem/tiles``. The current GUI (Guitares image overlays via
+        cht_tiling) reads single GeoTIFFs: the subgrid DEM
+        (``{self.site.sfincs.dem.filename}``) and an index raster (``index.tif``).
+        This runs once when a database is opened and generates ``index.tif`` from the
+        overland SFINCS model if it is missing, while leaving any legacy tiles in
+        place so older GUIs can still open the database.
 
-        All actions are logged with a warning explaining why, since this mutates the
-        opened database on disk. Failures are caught and logged so that opening the
-        database never fails because of this migration; if the index cannot be
-        generated the flood map simply will not render until it is available.
+        If the index cannot be generated, a ``DatabaseError`` is raised and opening
+        the database fails until the index is available.
         """
         dem_dir = self.static_path / "dem"
         index_path = dem_dir / "index.tif"
-        tiles_dir = dem_dir / "tiles"
 
         # 1. Ensure the index GeoTIFF exists.
         if not index_path.exists():
@@ -335,22 +332,6 @@ class Database(IDatabase):
                     f"Could not generate the index GeoTIFF at {index_path.as_posix()}: "
                     f"{e}. The flood map will not render until it is available."
                 ) from e
-
-        # 2. Remove the deprecated tile pyramids.
-        if tiles_dir.exists():
-            logger.warning(
-                f"Removing deprecated DEM tile pyramids at {tiles_dir.as_posix()}. The "
-                "GUI no longer renders raster layers from PNG tiles; it uses the single "
-                f"GeoTIFFs ({self.site.sfincs.dem.filename} / index.tif) instead, so these tiles are no "
-                "longer used and are being deleted to avoid confusion and save space."
-            )
-            try:
-                shutil.rmtree(tiles_dir)
-            except Exception as e:
-                logger.warning(
-                    f"Could not delete the deprecated tiles folder {tiles_dir.as_posix()}: "
-                    f"{e}. It is unused and can be removed manually."
-                )
 
     def _generate_index_geotiff(self, index_path: Path) -> None:
         """Generate the index GeoTIFF from the overland SFINCS model and the subgrid DEM.
