@@ -42,24 +42,24 @@ class Settings(BaseSettings):
 
     Attributes
     ----------
-    database_name : str | None, default is None
-        The name of the database. Alias: `DATABASE_NAME` (environment variable).
-    database_root : Path | None, default is None
-        The root directory of the database. Alias: `DATABASE_ROOT` (environment variable).
-    delete_crashed_runs : bool, default is False
-        Whether to delete crashed/corrupted runs immediately after they are detected. Alias: `DELETE_CRASHED_RUNS` (environment variable).
-    validate_allowed_forcings : bool, default is False
-        Whether to validate the forcing types and sources against the allowed forcings in the event model. Alias: `VALIDATE_ALLOWED_FORCINGS` (environment variable).
-    use_binaries : bool, default is False
-        Whether to validate the existence of the paths to the SFINCS and FIAT binaries. Alias: `USE_BINARIES` (environment variable).
-    sfincs_bin_path : Path | None, default is None
-        The path to the SFINCS binary. Alias: `SFINCS_BIN_PATH` (environment variable).
-    sfincs_version : str, default is '2.1.1-Dollerup'
-        The expected version of the SFINCS binary. Alias: `SFINCS_VERSION` (environment variable).
-    fiat_bin_path : Path | None, default is None
-        The path to the FIAT binary. Alias: `FIAT_BIN_PATH` (environment variable).
-    fiat_version : str, default is '0.2.1'
-        The expected version of the FIAT binary. Alias: `FIAT_VERSION` (environment variable).
+    database_name : str | None
+        The name of the database. Defaults to None. Alias: `DATABASE_NAME` (environment variable).
+    database_root : Path | None
+        The root directory of the database. Defaults to None. Alias: `DATABASE_ROOT` (environment variable).
+    delete_crashed_runs : bool
+        Whether to delete crashed/corrupted runs immediately after they are detected. Defaults to False. Alias: `DELETE_CRASHED_RUNS` (environment variable).
+    validate_allowed_forcings : bool
+        Whether to validate the forcing types and sources against the allowed forcings in the event model. Defaults to False. Alias: `VALIDATE_ALLOWED_FORCINGS` (environment variable).
+    use_binaries : bool
+        Whether to validate the existence of the paths to the SFINCS and FIAT binaries. Defaults to False. Alias: `USE_BINARIES` (environment variable).
+    sfincs_bin_path : Path | None
+        The path to the SFINCS binary. Defaults to None. Alias: `SFINCS_BIN_PATH` (environment variable).
+    sfincs_version : str
+        The expected version of the SFINCS binary. Defaults to '2.1.1-Dollerup'. Alias: `SFINCS_VERSION` (environment variable).
+    fiat_bin_path : Path | None
+        The path to the FIAT binary. Defaults to None. Alias: `FIAT_BIN_PATH` (environment variable).
+    fiat_version : str
+        The expected version of the FIAT binary. Defaults to '0.2.1'. Alias: `FIAT_VERSION` (environment variable).
 
     Properties
     ----------
