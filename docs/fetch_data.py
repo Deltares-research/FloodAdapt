@@ -20,7 +20,7 @@ import logging
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 from minio import Minio
 
 logger = logging.getLogger("fetch-data")
@@ -64,9 +64,18 @@ def prepare_client(access_key: str, secret_key: str) -> Minio:
     )
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        format="%(name)s - %(levelname)s - %(message)s",
+        level=logging.INFO
+    )
     data_dir = Path(__file__).parent / "_data"
 
-    load_dotenv()
+    env_path = find_dotenv()
+    if env_path:
+        logger.info(f"Loading environment variables from {env_path}")
+        load_dotenv(env_path, verbose=True)
+    else:
+        logger.warning("No .env file found.")
 
     parser = argparse.ArgumentParser(description="Download data from MinIO bucket.")
     parser.add_argument(
@@ -115,11 +124,8 @@ if __name__ == "__main__":
             " or provide them as command line arguments. Refer to the __doc__ at the top "
             "of this file for more information."
         )
+    logging.getLogger().setLevel(args.log_level)
 
-    logging.basicConfig(
-        format="%(name)s - %(levelname)s - %(message)s",
-        level=args.log_level
-    )
 
     client = prepare_client(access_key=args.access_key, secret_key=args.secret_key)
 
