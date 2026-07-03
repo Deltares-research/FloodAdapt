@@ -867,7 +867,7 @@ class FloodAdapt:
 
         Returns
         -------
-        gdf : GeoDataFrame, optional
+        gdf : gpd.GeoDataFrame
             A GeoDataFrame with the observation points and their corresponding HTML paths for the timeseries.
             Each row contains the station name and the path to the HTML file with the timeseries.
             None if no observation points are found or if the scenario has not been run yet.
@@ -989,7 +989,7 @@ class FloodAdapt:
 
         Returns
         -------
-        aggregation_areas : dict[str, GeoDataFrame]
+        aggregation_areas : dict[str, gpd.GeoDataFrame]
             list of geodataframes with the polygons defining the aggregation areas
         """
         return self.database.static.get_aggregation_areas()
@@ -1015,7 +1015,7 @@ class FloodAdapt:
 
         Returns
         -------
-        model_boundary : GeoDataFrame
+        model_boundary : gpd.GeoDataFrame
             GeoDataFrame with the model boundary
         """
         return self.database.static.get_model_boundary()

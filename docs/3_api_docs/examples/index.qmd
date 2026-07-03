@@ -26,7 +26,7 @@ Each notebook includes narrative explanations and inline code cells. You can cop
 ---
 
 ## Examples
-- [1. Database Builder](database_builder/index.qmd) Demonstrates how to initialize a FloodAdapt project by building the required database structure. This includes importing and configuring SFINCS and Delft-FIAT models, setting up spatial data, and preparing the backend for scenario analysis.
+- [1. Database Builder](database_builder/database_builder.ipynb) Demonstrates how to initialize a FloodAdapt project by building the required database structure. This includes importing and configuring SFINCS and Delft-FIAT models, setting up spatial data, and preparing the backend for scenario analysis.
 - [2. Simple Scenario](scenarios/simple_scenario.ipynb) Walks through a basic flood scenario setup using predefined hazard and exposure data. Ideal for first-time users, this example illustrates the core workflow of defining a flood event, running simulations, and interpreting impact results.
 - [3. Events](events/index.qmd) Explains how to configure and manage flood events within FloodAdapt. Learn to define event characteristics such as rainfall intensity, duration, and spatial distribution, and understand how these parameters influence flood modeling outcomes.
 - [4. Projections](projections/projections.ipynb) Covers the integration of long-term projections into flood risk assessments. This includes modeling future conditions like sea level rise, land subsidence, and socio-economic changes to evaluate their impact on flood hazards and vulnerabilities.

@@ -43,7 +43,7 @@ class ValueUnitPair(ABC, BaseModel, Generic[TUnit]):
     ----------
     value: float
         The numerical value.
-    units : Unit
+    units : unit enum
         The units of the value.
     """
 
@@ -58,7 +58,7 @@ class ValueUnitPair(ABC, BaseModel, Generic[TUnit]):
 
         Parameters
         ----------
-        new_units : Unit
+        new_units : unit enum
             The new units.
 
         Returns
@@ -76,7 +76,7 @@ class ValueUnitPair(ABC, BaseModel, Generic[TUnit]):
 
         Parameters
         ----------
-        new_units : Unit
+        new_units : unit enum
             The new units.
 
         Returns
@@ -221,12 +221,18 @@ class UnitTypesLength(str, Enum):
 
     Attributes
     ----------
-    meters : meters
-    centimeters : centimeters
-    millimeters : millimeters
-    feet : feet
-    inch : inch
-    miles : miles
+    meters
+        Length in meters.
+    centimeters
+        Length in centimeters.
+    millimeters
+        Length in millimeters.
+    feet
+        Length in feet.
+    inch
+        Length in inches.
+    miles
+        Length in miles.
     """
 
     meters = "meters"
@@ -289,7 +295,8 @@ class UnitTypesDirection(str, Enum):
 
     Attributes
     ----------
-    degrees : degrees
+    degrees
+        Direction in degrees.
     """
 
     degrees = "deg N"
@@ -300,10 +307,14 @@ class UnitTypesTime(str, Enum):
 
     Attributes
     ----------
-    seconds : seconds
-    minutes : minutes
-    hours : hours
-    days : days
+    seconds
+        Duration in seconds.
+    minutes
+        Duration in minutes.
+    hours
+        Duration in hours.
+    days
+        Duration in days.
     """
 
     seconds = "seconds"

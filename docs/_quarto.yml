@@ -69,6 +69,94 @@ quartodoc:
         - Settings
         - Site
 
+    - title: "Site configuration models"
+      desc: "The pydantic models that make up the FloodAdapt site configuration. These are the building blocks of the Site object, describing the SFINCS flood model, the Delft-FIAT impact model, the GUI, and the hazard configuration."
+      contents:
+        # Site
+        - name: SiteBuilder
+          package: flood_adapt.config.site
+        - name: StandardObjectModel
+          package: flood_adapt.config.site
+        # SFINCS flood model
+        - name: SfincsModel
+          package: flood_adapt.config.sfincs
+        - name: SfincsConfigModel
+          package: flood_adapt.config.sfincs
+        # Delft-FIAT impact model
+        - name: FiatModel
+          package: flood_adapt.config.fiat
+        - name: FiatConfigModel
+          package: flood_adapt.config.fiat
+        # Hazard
+        - name: FloodModel
+          package: flood_adapt.config.hazard
+        - name: Cstype
+          package: flood_adapt.config.hazard
+        - name: AsciiStr
+          package: flood_adapt.config.hazard
+        - name: Scstype
+          package: flood_adapt.objects.forcing.timeseries
+        - name: WaterlevelReferenceModel
+          package: flood_adapt.config.hazard
+        - name: DatumModel
+          package: flood_adapt.config.hazard
+        - name: DemModel
+          package: flood_adapt.config.hazard
+        - name: SlrScenariosModel
+          package: flood_adapt.config.hazard
+        - name: CycloneTrackDatabaseModel
+          package: flood_adapt.config.hazard
+        - name: FloodFrequencyModel
+          package: flood_adapt.config.hazard
+        - name: ObsPointModel
+          package: flood_adapt.config.hazard
+        - name: RiverModel
+          package: flood_adapt.config.hazard
+        - name: SCSModel
+          package: flood_adapt.config.hazard
+        # Impacts
+        - name: RiskModel
+          package: flood_adapt.config.impacts
+        - name: FloodmapType
+          package: flood_adapt.config.impacts
+        - name: BenefitsModel
+          package: flood_adapt.config.impacts
+        - name: AggregationModel
+          package: flood_adapt.config.impacts
+        - name: BFEModel
+          package: flood_adapt.config.impacts
+        - name: EquityModel
+          package: flood_adapt.config.impacts
+        - name: NoFootprintsModel
+          package: flood_adapt.config.impacts
+        - name: SVIModel
+          package: flood_adapt.config.impacts
+        # GUI
+        - name: GuiModel
+          package: flood_adapt.config.gui
+        - name: GuiUnitModel
+          package: flood_adapt.config.gui
+        - name: OutputLayers
+          package: flood_adapt.config.gui
+        - name: VisualizationLayers
+          package: flood_adapt.config.gui
+        - name: VisualizationLayer
+          package: flood_adapt.config.gui
+        - name: PlottingModel
+          package: flood_adapt.config.gui
+        - name: Layer
+          package: flood_adapt.config.gui
+        - name: SyntheticTideModel
+          package: flood_adapt.config.gui
+        - name: AggregationDmgLayer
+          package: flood_adapt.config.gui
+        - name: BenefitsLayer
+          package: flood_adapt.config.gui
+        - name: FloodMapLayer
+          package: flood_adapt.config.gui
+        - name: FootprintsDmgLayer
+          package: flood_adapt.config.gui
+
     - title: "Object models"
       package: flood_adapt.objects.object_model
       desc: "Object models in FloodAdapt are the components that are saved in the database. They define the configuration, input and output of the model kernels. The database stores Objects, and returns Objects when queried. "
@@ -142,6 +230,9 @@ quartodoc:
       package: flood_adapt.unit_system
       desc: "Unit system for FloodAdapt. The unit system is used to convert between different units of measurement, and to define the units of the input and output of the models."
       contents:
+        - name: unit_system
+          package: flood_adapt.objects.forcing
+          members: []
         # Unitful classes
         - ValueUnitPair
         - UnitfulLength
@@ -179,6 +270,20 @@ quartodoc:
         - SviConfigModel
         - Basins
         - TideGaugeConfigModel
+        - name: TideGaugeSource
+          package: flood_adapt.objects.forcing.tide_gauge
+
+    - title: "Exceptions"
+      package: flood_adapt.misc.exceptions
+      desc: "Exceptions raised by the FloodAdapt API, for example when interacting with the database."
+      contents:
+        - FloodAdaptError
+        - DatabaseError
+        - IsStandardObjectError
+        - AlreadyExistsError
+        - DoesNotExistError
+        - IsUsedInError
+        - ConfigError
 
 website:
   title: "Flood Adapt Documentation"
@@ -233,8 +338,6 @@ format:
     grid:
       content-mode: standard
     url-format: relative
-    filters:
-      - lightbox
     lightbox: auto
 
 execute:

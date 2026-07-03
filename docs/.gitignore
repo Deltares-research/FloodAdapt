@@ -8,3 +8,5 @@
 objects.json
 _version.yml
 3_api_docs/_sidebar.yml
+
+**/*.quarto_ipynb
