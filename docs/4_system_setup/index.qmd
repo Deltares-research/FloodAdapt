@@ -10,13 +10,13 @@ Two important components of a FloodAdapt database are the flood and impact model
 
 The recommended way to build these models is with the HydroMT model builders:
 
-* **SFINCS models** with [HydroMT-SFINCS](https://deltares.github.io/hydromt_sfincs/). FloodAdapt is tested with `hydromt-sfincs >=1.2.2,<2.0`.
-* **Delft-FIAT models** with [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/). FloodAdapt is tested with `hydromt-fiat >=0.5.10,<1.0`.
+* **SFINCS models** with [HydroMT-SFINCS](https://deltares.github.io/hydromt_sfincs/). FloodAdapt has been tested with <code>hydromt-sfincs {{< meta hydromt_sfincs >}}</code>.
+* **Delft-FIAT models** with [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/). FloodAdapt has been tested with <code>hydromt-fiat {{< meta hydromt_fiat >}}</code>.
 
-FloodAdapt runs these models using the SFINCS and Delft-FIAT executables (model kernels). The current release works with the [SFINCS](https://sfincs.readthedocs.io/en/v2.1.1_dollerup_release/overview.html) `v2.1.1-Dollerup` executable and the [Delft-FIAT](https://deltares.github.io/Delft-FIAT/v0.2.1/) `v0.2.1` executable.
+FloodAdapt runs these models using the SFINCS and Delft-FIAT executables (model kernels). FloodAdapt `v{{< meta version >}}` has been tested with the [SFINCS](https://sfincs.readthedocs.io/en/v2.1.1_dollerup_release/overview.html) `v{{< meta sfincs_exe >}}` executable and the [Delft-FIAT](https://deltares.github.io/Delft-FIAT/v0.2.1/) `v{{< meta fiat_exe >}}` executable.
 :::
 
-The FloodAdapt database-builder is intended to greatly simplify the process of setting up FloodAdapt in a new location. The FloodAdapt software is an 'empty shell' that must be connected to a site-specific database. The database-builder aids the user in setting up this database.
+The FloodAdapt database-builder is intended to simplify the process of setting up FloodAdapt in a new location. The FloodAdapt software is an 'empty shell' that must be connected to a site-specific database. The database-builder aids the user in setting up this database.
 
 The most critical components of the FloodAdapt database are the SFINCS and Delft-FIAT models, both of which can be generated with the [HydroMT-SFINCS](https://deltares.github.io/hydromt_sfincs/) and [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/) model builders. Once these have been created, users can run the FloodAdapt database-builder to generate a complete database for a functioning FloodAdapt application at their site. See the [Database Builder (Python) example](../3_api_docs/examples/database_builder/database_builder.ipynb) for a worked example.
 
